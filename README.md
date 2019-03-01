@@ -19,7 +19,7 @@ Kros.KORM is available from:
 
 ## Contributing Guide
 
-To contribute with new topics/information or make changes, see [contributing](https://github.com/Kros-sk/Kros.Libs/blob/master/CONTRIBUTING.md) for instructions and guidelines.
+To contribute with new topics/information or make changes, see [contributing](https://github.com/Kros-sk/Kros.KORM/blob/master/CONTRIBUTING.md) for instructions and guidelines.
 
 ## This topic contains following sections
 
