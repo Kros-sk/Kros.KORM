@@ -1,0 +1,70 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;netcoreapp2.1;net46</TargetFrameworks>
+    <Company>KROS a.s.</Company>
+    <Version>3.9.0</Version>
+    <Authors>KROS a.s.</Authors>
+    <Title>Kros.KORM</Title>
+    <Description>KORM is fast, easy to use, micro .NET Standard ORM tool. (Kros Object Relation Mapper)</Description>
+    <Copyright>Copyright © KROS a.s.</Copyright>
+    <SignAssembly>false</SignAssembly>
+    <AssemblyOriginatorKeyFile>Kros.KORM.snk</AssemblyOriginatorKeyFile>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <RootNamespace>Kros.KORM</RootNamespace>
+    <ApplicationIcon>icon.ico</ApplicationIcon>
+    <Product>Kros.KORM</Product>
+    <AssemblyName>Kros.KORM</AssemblyName>
+    <DocumentationFile>$(OutDir)Kros.KORM.xml</DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PackageId>Kros.KORM</PackageId>
+    <PackageReleaseNotes>https://github.com/Kros-sk/Kros.KORM/releases</PackageReleaseNotes>
+    <PackageProjectUrl>https://github.com/Kros-sk/Kros.KORM/blob/master/README.md</PackageProjectUrl>
+    <PackageTags>Kros;KORM;ORM;Database;DAL;SQL;Database;MSSQL;Data;BulkInsert;BulkOperation;BulkCopy;
+    BulkUpdate;Bulk Insert;Bulk Update</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageIconUrl>https://en.gravatar.com/userimage/137934964/524e95fbd8c2e8779e02819ab6902bef.png</PackageIconUrl>
+    <RepositoryUrl>https://github.com/Kros-sk/Kros.KORM</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netstandard2.0|AnyCPU'">
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">
+    <Reference Include="System.Configuration" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="Resources\MigrationsHistoryTableScript.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\MigrationsHistoryTableScript.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Kros.Utils" Version="1.9.0" />
+    <PackageReference Include="System.Reflection.Emit.Lightweight" Version="4.3.0" />
+    <PackageReference Include="System.ValueTuple" Version="4.5.0" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <PackageReference Include="System.Configuration.ConfigurationManager">
+      <Version>4.4.1</Version>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2.1'">
+    <PackageReference Include="System.Configuration.ConfigurationManager">
+      <Version>4.5.0</Version>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+</Project>
