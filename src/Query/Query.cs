@@ -218,7 +218,7 @@ namespace Kros.KORM.Query
         /// </returns>
         /// <exception cref="ArgumentNullException">if <c>whereCondition</c> is null or white string.</exception>
         /// <example>
-        ///   <code source="..\..\..\..\Documentation\Examples\Kros.KORM.Examples\IQueryExample.cs" title="Any" region="Any" language="cs" />
+        ///   <code source="..\..\Documentation\Examples\Kros.KORM.Examples\IQueryExample.cs" title="Any" region="Any" language="cs" />
         /// </example>
         public bool Any(RawSqlString whereCondition, params object[] args)
         {
@@ -311,7 +311,7 @@ namespace Kros.KORM.Query
         /// </returns>
         /// <example>
         /// <code
-        ///   source="..\..\..\..\Documentation\Examples\Kros.KORM.Examples\IQueryExample.cs"
+        ///   source="..\..\Documentation\Examples\Kros.KORM.Examples\IQueryExample.cs"
         ///   title="Execute string scalar"
         ///   region="ExecuteScalar"
         ///   language="cs" />
@@ -328,7 +328,7 @@ namespace Kros.KORM.Query
         /// </returns>
         /// <example>
         /// <code
-        ///   source="..\..\..\..\Documentation\Examples\Kros.KORM.Examples\IQueryExample.cs"
+        ///   source="..\..\Documentation\Examples\Kros.KORM.Examples\IQueryExample.cs"
         ///   title="Execute string scalar"
         ///   region="ExecuteStringScalar"
         ///   language="cs" />
@@ -359,7 +359,7 @@ namespace Kros.KORM.Query
         /// </returns>
         /// <example>
         /// <code
-        ///   source="..\..\..\..\Documentation\Examples\Kros.KORM.Examples\IQueryExample.cs"
+        ///   source="..\..\Documentation\Examples\Kros.KORM.Examples\IQueryExample.cs"
         ///   title="Execute generic scalar"
         ///   region="ExecuteScalarGeneric"
         ///   language="cs" />

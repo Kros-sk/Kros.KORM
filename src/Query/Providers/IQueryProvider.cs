@@ -178,12 +178,12 @@ namespace Kros.KORM.Query
         /// For the examples, we expect to have a <see cref="Database"/> initialized and a <c>Person</c> class defined.
         /// </para>
         /// <code
-        ///   source="..\..\..\..\Documentation\Examples\Kros.KORM.Examples\ExecuteStoredProcedureExamples.cs"
+        ///   source="..\..\..\Documentation\Examples\Kros.KORM.Examples\ExecuteStoredProcedureExamples.cs"
         ///   title="ExecuteStoredProcedure assumptions"
         ///   region="Init"
         ///   language="cs" />
         /// <code
-        ///   source="..\..\..\..\Documentation\Examples\Kros.KORM.Examples\ExecuteStoredProcedureExamples.cs"
+        ///   source="..\..\..\Documentation\Examples\Kros.KORM.Examples\ExecuteStoredProcedureExamples.cs"
         ///   title="ExecuteStoredProcedure examples"
         ///   region="Examples"
         ///   language="cs" />

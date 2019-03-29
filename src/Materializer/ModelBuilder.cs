@@ -297,7 +297,7 @@ namespace Kros.KORM.Materializer
         /// IEnumerable of models.
         /// </returns>
         /// <example>
-        /// <code source="..\..\..\..\Documentation\Examples\Kros.KORM.Examples\IModelBuilderExample.cs"
+        /// <code source="..\..\Documentation\Examples\Kros.KORM.Examples\IModelBuilderExample.cs"
         ///     title="Materialize data table"
         ///     region="ModelBuilderDataTableExample"
         ///     language="cs" />

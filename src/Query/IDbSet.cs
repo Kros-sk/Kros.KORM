@@ -87,7 +87,7 @@ namespace Kros.KORM.Query
         /// Bulk inserts pending added items.
         /// </summary>
         /// <example>
-        ///   <code source="..\..\..\..\Documentation\Examples\Kros.KORM.Examples\WelcomeExample.cs" title="Bulk insert" region="BulkInsert" language="cs" />
+        ///   <code source="..\..\Documentation\Examples\Kros.KORM.Examples\WelcomeExample.cs" title="Bulk insert" region="BulkInsert" language="cs" />
         /// </example>
         void BulkInsert();
 
@@ -118,7 +118,7 @@ namespace Kros.KORM.Query
         /// Bulk updates pending edited items.
         /// </summary>
         /// <example>
-        ///   <code source="..\..\..\..\Documentation\Examples\Kros.KORM.Examples\WelcomeExample.cs" title="Bulk update" region="BulkUpdate" language="cs" />
+        ///   <code source="..\..\Documentation\Examples\Kros.KORM.Examples\WelcomeExample.cs" title="Bulk update" region="BulkUpdate" language="cs" />
         /// </example>
         void BulkUpdate();
 

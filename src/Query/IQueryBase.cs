@@ -31,7 +31,7 @@ namespace Kros.KORM.Query
         /// Returns a maximum of 2033 characters.
         /// </returns>
         /// <example>
-        /// <code source="..\..\..\..\Documentation\Examples\Kros.KORM.Examples\IQueryExample.cs" title="Execute scalar" region="ExecuteScalar" language="cs" />
+        /// <code source="..\..\Documentation\Examples\Kros.KORM.Examples\IQueryExample.cs" title="Execute scalar" region="ExecuteScalar" language="cs" />
         /// </example>
         object ExecuteScalar();
 
@@ -44,7 +44,7 @@ namespace Kros.KORM.Query
         /// Returns a maximum of 2033 characters.
         /// </returns>
         /// <example>
-        /// <code source="..\..\..\..\Documentation\Examples\Kros.KORM.Examples\IQueryExample.cs" title="Execute scalar" region="ExecuteScalar" language="cs" />
+        /// <code source="..\..\Documentation\Examples\Kros.KORM.Examples\IQueryExample.cs" title="Execute scalar" region="ExecuteScalar" language="cs" />
         /// </example>
         string ExecuteStringScalar();
 
@@ -57,7 +57,7 @@ namespace Kros.KORM.Query
         /// Returns a maximum of 2033 characters.
         /// </returns>
         /// <example>
-        /// <code source="..\..\..\..\Documentation\Examples\Kros.KORM.Examples\IQueryExample.cs" title="Execute scalar" region="ExecuteScalar" language="cs" />
+        /// <code source="..\..\Documentation\Examples\Kros.KORM.Examples\IQueryExample.cs" title="Execute scalar" region="ExecuteScalar" language="cs" />
         /// </example>
         TRet? ExecuteScalar<TRet>() where TRet : struct;
     }

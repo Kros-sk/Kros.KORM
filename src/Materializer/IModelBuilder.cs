@@ -7,7 +7,7 @@ namespace Kros.KORM.Materializer
     /// Interface for ModelBuilder, which know materialize data from Ado to objects.
     /// </summary>
     /// <example>
-    /// <code source="..\..\..\..\Documentation\Examples\Kros.KORM.Examples\IModelBuilderExample.cs"
+    /// <code source="..\..\Documentation\Examples\Kros.KORM.Examples\IModelBuilderExample.cs"
     ///       title="Materialize data table"
     ///       region="ModelBuilderExample"
     ///       language="cs" />
@@ -23,7 +23,7 @@ namespace Kros.KORM.Materializer
         ///  IEnumerable of models.
         /// </returns>
         /// <example>
-        /// <code source="..\..\..\..\Documentation\Examples\Kros.KORM.Examples\IModelBuilderExample.cs"
+        /// <code source="..\..\Documentation\Examples\Kros.KORM.Examples\IModelBuilderExample.cs"
         ///       title="Materialize data table"
         ///       region="ModelBuilderDataTableExample"
         ///       language="cs" />
@@ -40,7 +40,7 @@ namespace Kros.KORM.Materializer
         /// IEnumerable of models.
         /// </returns>
         /// <example>
-        /// <code source="..\..\..\..\Documentation\Examples\Kros.KORM.Examples\IModelBuilderExample.cs"
+        /// <code source="..\..\Documentation\Examples\Kros.KORM.Examples\IModelBuilderExample.cs"
         ///       title="Materialize data reader"
         ///       region="ModelBuilderReaderExample"
         ///       language="cs" />
@@ -56,7 +56,7 @@ namespace Kros.KORM.Materializer
         /// Model.
         /// </returns>
         /// <example>
-        /// <code source="..\..\..\..\Documentation\Examples\Kros.KORM.Examples\IModelBuilderExample.cs"
+        /// <code source="..\..\Documentation\Examples\Kros.KORM.Examples\IModelBuilderExample.cs"
         ///       title="Materialize data row"
         ///       region="ModelBuilderDataRowExample"
         ///       language="cs" />

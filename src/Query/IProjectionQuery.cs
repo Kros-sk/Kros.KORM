@@ -19,7 +19,7 @@ namespace Kros.KORM.Query
         /// Query for enumerable models.
         /// </returns>
         /// <example>
-        /// <code source="..\..\..\..\Documentation\Examples\Kros.KORM.Examples\IQueryExample.cs" title="Projection" region="Where1" language="cs" />
+        /// <code source="..\..\Documentation\Examples\Kros.KORM.Examples\IQueryExample.cs" title="Projection" region="Where1" language="cs" />
         /// </example>
         /// <exception cref="ArgumentNullException">if <c>whereCondition</c> is null or white string.</exception>
         IFilteredQuery<T> Where(RawSqlString whereCondition, params object[] args);
@@ -79,7 +79,7 @@ namespace Kros.KORM.Query
         /// <see langword="true"/> if exist elements in the table which match condition; otherwise, false.
         /// </returns>
         /// <example>
-        /// <code source="..\..\..\..\Documentation\Examples\Kros.KORM.Examples\IQueryExample.cs" title="Check if exist elements in the table which match condition" region="Any" language="cs"  />
+        /// <code source="..\..\Documentation\Examples\Kros.KORM.Examples\IQueryExample.cs" title="Check if exist elements in the table which match condition" region="Any" language="cs"  />
         /// </example>
         /// <exception cref="ArgumentNullException">if <c>whereCondition</c> is null or white string.</exception>
         bool Any(RawSqlString whereCondition, params object[] args);
@@ -107,7 +107,7 @@ namespace Kros.KORM.Query
         /// Query for enumerable models.
         /// </returns>
         /// <example>
-        /// <code source="..\..\..\..\Documentation\Examples\Kros.KORM.Examples\IQueryExample.cs" title="OrderBy" region="OrderBy" language="cs" />
+        /// <code source="..\..\Documentation\Examples\Kros.KORM.Examples\IQueryExample.cs" title="OrderBy" region="OrderBy" language="cs" />
         /// </example>
         /// <exception cref="ArgumentNullException">if <c>orderBy</c> is null or white string.</exception>
         IOrderedQuery<T> OrderBy(string orderBy);
@@ -123,7 +123,7 @@ namespace Kros.KORM.Query
         /// You can also add HAVING statement.
         /// </remarks>
         /// <example>
-        /// <code source="..\..\..\..\Documentation\Examples\Kros.KORM.Examples\IQueryExample.cs" title="GroupBy" region="GroupBy" language="cs" />
+        /// <code source="..\..\Documentation\Examples\Kros.KORM.Examples\IQueryExample.cs" title="GroupBy" region="GroupBy" language="cs" />
         /// </example>
         /// <exception cref="ArgumentNullException">if <c>groupBy</c> is null or white string.</exception>
         IGroupedQuery<T> GroupBy(string groupBy);

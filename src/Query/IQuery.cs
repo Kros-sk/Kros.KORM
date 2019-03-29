@@ -19,11 +19,11 @@ namespace Kros.KORM.Query
     /// <example>
     ///   <para>
     ///     You can use standard string sql query for querying data.
-    ///     <code source="..\..\..\..\Documentation\Examples\Kros.KORM.Examples\IQueryExample.cs" title="Query data by sql" region="Sql" language="cs" />
+    ///     <code source="..\..\Documentation\Examples\Kros.KORM.Examples\IQueryExample.cs" title="Query data by sql" region="Sql" language="cs" />
     ///   </para>
     ///   <para>
     ///     You can use sql query builder.
-    ///     <code source="..\..\..\..\Documentation\Examples\Kros.KORM.Examples\IQueryExample.cs" title="Query data by query builder" region="Select" language="cs" />
+    ///     <code source="..\..\Documentation\Examples\Kros.KORM.Examples\IQueryExample.cs" title="Query data by query builder" region="Select" language="cs" />
     /// </para>
     /// </example>
     public interface IQuery<T> : IProjectionQuery<T>
@@ -73,7 +73,7 @@ namespace Kros.KORM.Query
         ///  When Select method is not call, query take columns by T model.
         /// </remarks>
         /// <example>
-        /// <code source="..\..\..\..\Documentation\Examples\Kros.KORM.Examples\IQueryExample.cs" title="Projection" region="Select12" language="cs" />
+        /// <code source="..\..\Documentation\Examples\Kros.KORM.Examples\IQueryExample.cs" title="Projection" region="Select12" language="cs" />
         /// </example>
         IQuery<T> Select(params string[] columns);
 
@@ -88,7 +88,7 @@ namespace Kros.KORM.Query
         ///  When <c>Select</c> method is not call, query take columns by T model.
         /// </remarks>
         /// <example>
-        /// <code source="..\..\..\..\Documentation\Examples\Kros.KORM.Examples\IQueryExample.cs" title="Projection" region="Select11" language="cs" />
+        /// <code source="..\..\Documentation\Examples\Kros.KORM.Examples\IQueryExample.cs" title="Projection" region="Select11" language="cs" />
         /// </example>
         /// <exception cref="ArgumentNullException">if <c>sqlPart</c> is null or white string.</exception>
         IQuery<T> Select(string selectPart);
@@ -105,7 +105,7 @@ namespace Kros.KORM.Query
         ///  When <c>Select</c> method is not call, query take columns by T model.
         /// </remarks>
         /// <example>
-        /// <code source="..\..\..\..\Documentation\Examples\Kros.KORM.Examples\IQueryExample.cs" title="Projection" region="Select13" language="cs" />
+        /// <code source="..\..\Documentation\Examples\Kros.KORM.Examples\IQueryExample.cs" title="Projection" region="Select13" language="cs" />
         /// </example>
         /// <exception cref="ArgumentNullException">if <c>selector</c> is null.</exception>
         IQuery<T> Select<TResult>(Func<T, TResult> selector);
@@ -121,7 +121,7 @@ namespace Kros.KORM.Query
         /// When <c>From</c> method is not call, query take table by T model type.
         /// </remarks>
         /// <example>
-        /// <code source="..\..\..\..\Documentation\Examples\Kros.KORM.Examples\IQueryExample.cs" title="From table" region="From" language="cs" />
+        /// <code source="..\..\Documentation\Examples\Kros.KORM.Examples\IQueryExample.cs" title="From table" region="From" language="cs" />
         /// </example>
         /// <exception cref="ArgumentNullException">if <c>table</c> is null or white string.</exception>
         IProjectionQuery<T> From(string table);

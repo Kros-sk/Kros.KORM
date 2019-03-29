@@ -62,7 +62,7 @@ namespace Kros.KORM.Metadata
         /// <param name="modelProperty">Expression for defined property to.</param>
         /// <param name="columnName">Database column name.</param>
         /// <example>
-        /// <code source="..\..\..\..\Documentation\Examples\Kros.KORM.Examples\ModelMapperExample.cs" title="SetColumnName" region="SetColumnName" language="cs" />
+        /// <code source="..\..\Documentation\Examples\Kros.KORM.Examples\ModelMapperExample.cs" title="SetColumnName" region="SetColumnName" language="cs" />
         /// </example>
         public void SetColumnName<TModel, TValue>(Expression<Func<TModel, TValue>> modelProperty, string columnName) where TModel : class
         {
@@ -113,7 +113,7 @@ namespace Kros.KORM.Metadata
         /// Get property injection configuration for model T.
         /// </summary>
         /// <example>
-        /// <code source="..\..\..\..\Documentation\Examples\Kros.KORM.Examples\WelcomeExample.cs" title="Injection" region="InectionConfiguration" language="cs" />
+        /// <code source="..\..\Documentation\Examples\Kros.KORM.Examples\WelcomeExample.cs" title="Injection" region="InectionConfiguration" language="cs" />
         /// </example>
         public IInjectionConfigurator<T> InjectionConfigurator<T>()
         {
