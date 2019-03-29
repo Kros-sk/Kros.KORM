@@ -9,6 +9,10 @@ Kros.KORM is simple, fast and easy to use micro-ORM framework for .NETStandard c
 * Saving changes to your data (Insert / Update / Delete)
 * Kros.KORM supports bulk operations for fast inserting and updating large amounts of data (BulkInsert, BulkDelete)
 
+### Documentation
+
+For configuration, general information and examples [see the documentation.](https://kros-sk.github.io/docs/Kros.KORM/)
+
 ### Download
 
 Kros.KORM is available from:
