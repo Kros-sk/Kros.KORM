@@ -286,6 +286,11 @@ namespace Kros.KORM.UnitTests.Query.Sql
                 throw new NotImplementedException();
             }
 
+            public bool SupportIdentity()
+            {
+                throw new NotImplementedException();
+            }
+
             public bool SupportsPrepareCommand() => true;
         }
 

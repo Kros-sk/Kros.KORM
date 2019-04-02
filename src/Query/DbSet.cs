@@ -284,17 +284,39 @@ namespace Kros.KORM.Query
         {
             if (items?.Count > 0)
             {
-                GeneratePrimaryKeys(items);
+                GenerateCustomPrimaryKeys(items);
+                bool hasIdentity = CheckIfCanUseIdentityPrimaryKey();
+
                 using (DbCommand command = _commandGenerator.GetInsertCommand())
                 {
                     PrepareCommand(command);
                     foreach (T item in items)
                     {
                         _commandGenerator.FillCommand(command, item);
-                        await ExecuteNonQueryAsync(command, useAsync);
+                        if (hasIdentity)
+                        {
+                            var id = 1;
+                            _tableInfo.IdentityPrimaryKey.SetValue(item, id);
+                        }
+                        else
+                        {
+                            await ExecuteNonQueryAsync(command, useAsync);
+                        }
                     }
                 }
             }
+        }
+
+        private bool CheckIfCanUseIdentityPrimaryKey()
+        {
+            var hasIdentity = _tableInfo.HasIdentityPrimaryKey;
+            if (hasIdentity && !_provider.SupportIdentity())
+            {
+                throw new InvalidOperationException(
+                    string.Format(Resources.ProviderDoesNotSupportIdentity, _provider.GetType().Name, typeof(T).Name));
+            }
+
+            return hasIdentity;
         }
 
         private async Task ExecuteNonQueryAsync(DbCommand command, bool useAsync)
@@ -309,7 +331,7 @@ namespace Kros.KORM.Query
             }
         }
 
-        private void GeneratePrimaryKeys(HashSet<T> items)
+        private void GenerateCustomPrimaryKeys(HashSet<T> items)
         {
             if (CanGeneratePrimaryKeys())
             {

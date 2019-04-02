@@ -73,8 +73,16 @@ namespace Kros.KORM.Query
         /// <summary>
         /// Returns, if provider supports peparing of command (<see cref="DbCommand.Prepare"/>).
         /// </summary>
-        /// <returns><see langword="true"/> is provider supports preparing command, otherwise <see langword="false"/>.</returns>
+        /// <returns><see langword="true"/> if provider supports preparing command, otherwise <see langword="false"/>.</returns>
         bool SupportsPrepareCommand();
+
+        /// <summary>
+        /// Returns, if provider support inserting into table, where primary key is set as Identity.
+        /// </summary>
+        /// <returns>
+        /// <see langword="true"/> if provider supports inserting into table, where primary key is set as identity.
+        /// </returns>
+        bool SupportIdentity();
 
         /// <summary>
         /// Sets correct data type to <paramref name="parameter"/>, according to column <paramref name="columnName"/>

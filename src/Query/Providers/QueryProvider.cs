@@ -178,6 +178,12 @@ namespace Kros.KORM.Query
         /// <returns>Returns <see langword="true"/>.</returns>
         public virtual bool SupportsPrepareCommand() => true;
 
+        /// <summary>
+        /// Returns, if provider support inserting into table, where primary key is set as Identity.
+        /// </summary>
+        /// <returns>Returns <see langword="true"/>.</returns>
+        public virtual bool SupportIdentity() => true;
+
         /// <inheritdoc cref="IQueryProvider.SetParameterDbType(DbParameter, string, string)"/>
         public void SetParameterDbType(DbParameter parameter, string tableName, string columnName)
         {

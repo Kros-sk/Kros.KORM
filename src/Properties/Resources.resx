@@ -193,6 +193,9 @@
   <data name="ParameterDataTypeNotSet" xml:space="preserve">
     <value>Data type of the parameter must be set, when its value is NULL. Parameter name: {0}.</value>
   </data>
+  <data name="ProviderDoesNotSupportIdentity" xml:space="preserve">
+    <value>The provider '{0}' does not support inserting values into table which model '{1}' has set primary key as Identity.</value>
+  </data>
   <data name="QueryGeneratorMethodNotSupported" xml:space="preserve">
     <value>The method '{0}' is not supported.</value>
   </data>

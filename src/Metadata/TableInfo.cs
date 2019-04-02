@@ -16,6 +16,7 @@ namespace Kros.KORM.Metadata
 
         private Dictionary<string, ColumnInfo> _columns;
         private Lazy<Dictionary<string, ColumnInfo>> _properties;
+        private Lazy<ColumnInfo> _identityPrimaryKey;
 
         #endregion
 
@@ -46,6 +47,9 @@ namespace Kros.KORM.Metadata
                    _columns.ToDictionary(columnInfo => columnInfo.Value.PropertyInfo.Name,
                            columnInfo => columnInfo.Value,
                            StringComparer.CurrentCultureIgnoreCase));
+
+            _identityPrimaryKey = new Lazy<ColumnInfo>(()
+                => PrimaryKey.FirstOrDefault(p => p.AutoIncrementMethodType == AutoIncrementMethodType.Indetity));
         }
 
         #endregion
@@ -81,6 +85,17 @@ namespace Kros.KORM.Metadata
         /// The columns.
         /// </value>
         public IEnumerable<ColumnInfo> Columns => _columns.Values;
+
+        /// <summary>
+        /// Column info, which is mark as <see cref="AutoIncrementMethodType.Indetity"/>.
+        /// <see langword="null"/> if no one of primary keys is mark.
+        /// </summary>
+        public ColumnInfo IdentityPrimaryKey => _identityPrimaryKey.Value;
+
+        /// <summary>
+        /// Has table primary key mark as <see cref="AutoIncrementMethodType.Indetity"/>?
+        /// </summary>
+        public bool HasIdentityPrimaryKey => IdentityPrimaryKey != null;
 
         #endregion
 

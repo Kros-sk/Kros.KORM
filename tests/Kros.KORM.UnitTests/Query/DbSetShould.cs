@@ -237,6 +237,33 @@ namespace Kros.KORM.UnitTests
             dbSet.DeletedItems.Should().BeEmpty();
         }
 
+        [Fact]
+        public void ThrowExceptionWhenProviderDoesNotSupportIdnetity()
+        {
+            var tableInfo = new TableInfo(new List<ColumnInfo>()
+            {
+                new ColumnInfo(){
+                    Name = "Id",
+                    IsPrimaryKey = true,
+                    AutoIncrementMethodType = AutoIncrementMethodType.Indetity
+                }
+            }, new List<PropertyInfo>(), null);
+
+            IDbSet<Person> dbSet = new DbSet<Person>(Substitute.For<ICommandGenerator<Person>>(),
+                                                     new FakeProvider(),
+                                                     Substitute.For<IQuery<Person>>(),
+                                                     tableInfo);
+
+            dbSet.Add(new Person() { Name = "A" });
+
+            var action = new Action(() => dbSet.CommitChanges());
+
+            action.Should()
+                .Throw<InvalidOperationException>()
+                .WithMessage("The provider 'FakeProvider' does not support inserting values " +
+                "into table which model 'Person' has set primary key as Identity.");
+        }
+
         #endregion
 
         #region Test classes
@@ -366,6 +393,8 @@ namespace Kros.KORM.UnitTests
             {
                 throw new NotImplementedException();
             }
+
+            public bool SupportIdentity() => false;
         }
 
         #endregion
