@@ -18,5 +18,10 @@ namespace Kros.KORM.Metadata
         /// KORM generate primary key for entity.
         /// </summary>
         Custom = 1,
+
+        /// <summary>
+        /// Sql server generates the primary key and KORM fills it into the entity.
+        /// </summary>
+        Indetity = 2
     }
 }
