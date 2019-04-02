@@ -405,7 +405,7 @@ Kros.KORM generates primary key for every inserted record, that does not have va
 When you set  `AutoIncrementMethodType` to `Identity`, Kros.KORM use `MsSql Identity` for generating primary key and fill generated keys into entity.
 ```sql
 CREATE TABLE [dbo].[Users](
-	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[Id] [bigint] IDENTITY(1,1) NOT NULL,
 	[FIrstName] [nvarchar](50) NULL,
  CONSTRAINT [PK_Users] PRIMARY KEY CLUSTERED
 (
@@ -416,10 +416,10 @@ CREATE TABLE [dbo].[Users](
 
 ```c#
 [Key(autoIncrementMethodType: AutoIncrementMethodType.Identity)]
-public int Id { get; set; }
+public long Id { get; set; }
 ```
 
-When you call `dbSet.CommitChanges()`, Kros.KORM fill generated keys into entity. Unfortunately, he doesn't know it when you call a method `dbSet.BulkInsert()`.
+When you call `dbSet.CommitChanges()`, Kros.KORM fill generated keys into entity. Unfortunately, doesn't know it when you call a method `dbSet.BulkInsert()`.
 
 
 #### Editing records in database
