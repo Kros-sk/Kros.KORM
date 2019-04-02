@@ -256,7 +256,7 @@ namespace Kros.KORM.UnitTests
 
             dbSet.Add(new Person() { Name = "A" });
 
-            var action = new Action(() => dbSet.CommitChanges());
+            Action action = () => dbSet.CommitChanges();
 
             action.Should()
                 .Throw<InvalidOperationException>()
