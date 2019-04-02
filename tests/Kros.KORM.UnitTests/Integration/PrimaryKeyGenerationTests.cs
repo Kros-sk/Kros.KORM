@@ -33,7 +33,6 @@ namespace Kros.KORM.UnitTests.Integration
 
         #endregion
 
-
         #region SQL Scripts
 
         private static readonly string CreateTable_People =
