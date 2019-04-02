@@ -386,7 +386,12 @@ For both of bulk operations you can provide data as an argument of method. The a
 
 #### Primary key generating
 
-Kros.KORM supports generating of primary keys for inserted records. Primary key must be simple `Int32` column. Primary key property in POCO class must be decorated by `Key` attribute and its property `AutoIncrementMethodType` must be set to `Custom`.
+Kros.KORM supports generating of primary keys for inserted records.
+
+Support two types of generating:
+1. Custom
+
+Primary key must be simple `Int32` column. Primary key property in POCO class must be decorated by `Key` attribute and its property `AutoIncrementMethodType` must be set to `Custom`.
 
 ```c#
 [Key(autoIncrementMethodType: AutoIncrementMethodType.Custom)]
@@ -394,6 +399,28 @@ public int Id { get; set; }
 ```
 
 Kros.KORM generates primary key for every inserted record, that does not have value for primary key property. For generating primary keys implementations of [IIdGenerator](https://kros-sk.github.io/Kros.Libs.Documentation/api/Kros.Utils/Kros.Data.IIdGenerator.html) are used.
+
+2. Identity
+
+When you set  `AutoIncrementMethodType` to `Identity`, Kros.KORM use `MsSql Identity` for generating primary key and fill generated keys into entity.
+```sql
+CREATE TABLE [dbo].[Users](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[FIrstName] [nvarchar](50) NULL,
+ CONSTRAINT [PK_Users] PRIMARY KEY CLUSTERED
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+```
+
+```c#
+[Key(autoIncrementMethodType: AutoIncrementMethodType.Identity)]
+public int Id { get; set; }
+```
+
+When you call `dbSet.CommitChanges()`, Kros.KORM fill generated keys into entity. Unfortunately, he doesn't know it when you call a method `dbSet.BulkInsert()`.
+
 
 #### Editing records in database
 
