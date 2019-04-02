@@ -395,6 +395,16 @@ namespace Kros.KORM.UnitTests
             }
 
             public bool SupportIdentity() => false;
+
+            public object ExecuteScalarCommand(IDbCommand command)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<object> ExecuteScalarCommandAsync(DbCommand command)
+            {
+                throw new NotImplementedException();
+            }
         }
 
         #endregion

@@ -40,6 +40,28 @@ namespace Kros.KORM.Query
         object ExecuteScalar<T>(IQuery<T> query);
 
         /// <summary>
+        /// Executes the query, and returns the first column of the first row in the result
+        /// set returned by the query. Additional columns or rows are ignored.
+        /// </summary>
+        /// <param name="command">The command.</param>
+        /// <returns>
+        /// The first column of the first row in the result set, or a null reference
+        /// (Nothingin Visual Basic) if the result set is empty.
+        /// </returns>
+        object ExecuteScalarCommand(IDbCommand command);
+
+        /// <summary>
+        /// Asynchronously executes the query, and returns the first column of the first row in the result
+        /// set returned by the query. Additional columns or rows are ignored.
+        /// </summary>
+        /// <param name="command">The command.</param>
+        /// <returns>
+        /// The first column of the first row in the result set, or a null reference
+        /// (Nothingin Visual Basic) if the result set is empty.
+        /// </returns>
+        Task<object> ExecuteScalarCommandAsync(DbCommand command);
+
+        /// <summary>
         /// Asynchronously executes action in transaction.
         /// </summary>
         /// <param name="action">Action which will be executed.</param>

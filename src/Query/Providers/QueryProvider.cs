@@ -270,6 +270,24 @@ namespace Kros.KORM.Query
         }
 
         /// <inheritdoc/>
+        public object ExecuteScalarCommand(IDbCommand command)
+        {
+            Check.NotNull(command, nameof(command));
+            _logger.LogCommand(command);
+
+            return command.ExecuteScalar();
+        }
+
+        /// <inheritdoc/>
+        public async Task<object> ExecuteScalarCommandAsync(DbCommand command)
+        {
+            Check.NotNull(command, nameof(command));
+            _logger.LogCommand(command);
+
+            return await command.ExecuteScalarAsync();
+        }
+
+        /// <inheritdoc/>
         public async Task ExecuteInTransactionAsync(Func<Task> action)
         {
             using (OpenConnection())

@@ -295,7 +295,7 @@ namespace Kros.KORM.Query
                         _commandGenerator.FillCommand(command, item);
                         if (hasIdentity)
                         {
-                            var id = 1;
+                            var id = await ExecuteScalarAsync(command, useAsync);
                             _tableInfo.IdentityPrimaryKey.SetValue(item, id);
                         }
                         else
@@ -328,6 +328,18 @@ namespace Kros.KORM.Query
             else
             {
                 _provider.ExecuteNonQueryCommand(command);
+            }
+        }
+
+        private async Task<object> ExecuteScalarAsync(DbCommand command, bool useAsync)
+        {
+            if (useAsync)
+            {
+                return await _provider.ExecuteScalarCommandAsync(command);
+            }
+            else
+            {
+                return _provider.ExecuteScalarCommand(command);
             }
         }
 

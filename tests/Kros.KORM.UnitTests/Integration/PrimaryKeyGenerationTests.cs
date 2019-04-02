@@ -46,7 +46,7 @@ $@"CREATE TABLE[dbo].[People] (
 ) ON [PRIMARY];";
 
         private static readonly string CreateTable_Foo =
-$@"CREATE TABLE[dbo].[People] (
+$@"CREATE TABLE[dbo].[Foo] (
     [FooId] [bigint] IDENTITY(1,1) NOT NULL,
     [Value] [nvarchar](50) NULL,
 
@@ -103,7 +103,7 @@ INSERT INTO People VALUES ('Thomas');";
         [Fact]
         public async Task DbSetShoulFillGeneratedIdsIntoEntitiesWhenPrimaryKeyHasDifferentName()
         {
-            using (var korm = CreateDatabase(CreateTable_People))
+            using (var korm = CreateDatabase(CreateTable_Foo))
             {
                 var data = new List<Foo>() {
                     new Foo() { Value = "Bar 1" },
