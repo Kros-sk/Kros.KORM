@@ -114,6 +114,11 @@ namespace Kros.KORM.Materializer
 
             var valueGetter = GetReaderValueGetter(srcType);
 
+            if (reader.IsDBNull(0))
+            {
+                return default(T);
+            }
+
             var value = valueGetter.Invoke(reader, new object[] { 0 });
             if (destType.Name == srcType.Name)
             {
