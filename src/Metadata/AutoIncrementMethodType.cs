@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Kros.KORM.Query;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -22,6 +23,7 @@ namespace Kros.KORM.Metadata
         /// <summary>
         /// Sql server generates the primary key and KORM fills it into the entity.
         /// </summary>
+        /// <remarks>When calling <see cref="IDbSet.BulkInsert"/> keys are not fill back to the entities.</remarks>
         Indetity = 2
     }
 }
