@@ -182,7 +182,7 @@ namespace Kros.KORM.Query
         /// Returns, if provider support inserting into table, where primary key is set as Identity.
         /// </summary>
         /// <returns>Returns <see langword="true"/>.</returns>
-        public virtual bool SupportIdentity() => true;
+        public virtual bool SupportsIdentity() => true;
 
         /// <inheritdoc cref="IQueryProvider.SetParameterDbType(DbParameter, string, string)"/>
         public void SetParameterDbType(DbParameter parameter, string tableName, string columnName)

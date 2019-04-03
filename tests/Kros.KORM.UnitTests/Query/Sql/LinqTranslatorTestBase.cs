@@ -296,7 +296,7 @@ namespace Kros.KORM.UnitTests.Query.Sql
                 throw new NotImplementedException();
             }
 
-            public bool SupportIdentity()
+            public bool SupportsIdentity()
             {
                 throw new NotImplementedException();
             }

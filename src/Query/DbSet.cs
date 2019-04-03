@@ -310,7 +310,7 @@ namespace Kros.KORM.Query
         private bool CheckIfCanUseIdentityPrimaryKey()
         {
             var hasIdentity = _tableInfo.HasIdentityPrimaryKey;
-            if (hasIdentity && !_provider.SupportIdentity())
+            if (hasIdentity && !_provider.SupportsIdentity())
             {
                 throw new InvalidOperationException(
                     string.Format(Resources.ProviderDoesNotSupportIdentity, _provider.GetType().Name, typeof(T).Name));

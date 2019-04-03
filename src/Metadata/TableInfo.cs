@@ -49,7 +49,7 @@ namespace Kros.KORM.Metadata
                            StringComparer.CurrentCultureIgnoreCase));
 
             _identityPrimaryKey = new Lazy<ColumnInfo>(()
-                => PrimaryKey.FirstOrDefault(p => p.AutoIncrementMethodType == AutoIncrementMethodType.Indetity));
+                => PrimaryKey.FirstOrDefault(p => p.AutoIncrementMethodType == AutoIncrementMethodType.Identity));
         }
 
         #endregion
@@ -87,13 +87,13 @@ namespace Kros.KORM.Metadata
         public IEnumerable<ColumnInfo> Columns => _columns.Values;
 
         /// <summary>
-        /// Column info, which is mark as <see cref="AutoIncrementMethodType.Indetity"/>.
+        /// Column info, which is mark as <see cref="AutoIncrementMethodType.Identity"/>.
         /// <see langword="null"/> if no one of primary keys is mark.
         /// </summary>
         public ColumnInfo IdentityPrimaryKey => _identityPrimaryKey.Value;
 
         /// <summary>
-        /// Has table primary key mark as <see cref="AutoIncrementMethodType.Indetity"/>?
+        /// Has table primary key mark as <see cref="AutoIncrementMethodType.Identity"/>?
         /// </summary>
         public bool HasIdentityPrimaryKey => IdentityPrimaryKey != null;
 

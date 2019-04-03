@@ -17,7 +17,7 @@ namespace Kros.KORM.UnitTests.Integration
         [Alias("People")]
         public class Person
         {
-            [Key("PK", AutoIncrementMethodType.Indetity)]
+            [Key("PK", AutoIncrementMethodType.Identity)]
             public int Id { get; set; }
 
             public string Name { get; set; }
@@ -25,7 +25,7 @@ namespace Kros.KORM.UnitTests.Integration
 
         public class Foo
         {
-            [Key("PK", AutoIncrementMethodType.Indetity)]
+            [Key("PK", AutoIncrementMethodType.Identity)]
             public long FooId { get; set; }
 
             public string Value { get; set; }

@@ -245,7 +245,7 @@ namespace Kros.KORM.UnitTests
                 new ColumnInfo(){
                     Name = "Id",
                     IsPrimaryKey = true,
-                    AutoIncrementMethodType = AutoIncrementMethodType.Indetity
+                    AutoIncrementMethodType = AutoIncrementMethodType.Identity
                 }
             }, new List<PropertyInfo>(), null);
 
@@ -260,8 +260,7 @@ namespace Kros.KORM.UnitTests
 
             action.Should()
                 .Throw<InvalidOperationException>()
-                .WithMessage("The provider 'FakeProvider' does not support inserting values " +
-                "into table which model 'Person' has set primary key as Identity.");
+                .WithMessage("*FakeProvider*Person*");
         }
 
         #endregion
@@ -394,7 +393,7 @@ namespace Kros.KORM.UnitTests
                 throw new NotImplementedException();
             }
 
-            public bool SupportIdentity() => false;
+            public bool SupportsIdentity() => false;
 
             public object ExecuteScalarCommand(IDbCommand command)
             {

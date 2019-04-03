@@ -22,8 +22,8 @@ namespace Kros.KORM.Metadata
 
         /// <summary>
         /// Sql server generates the primary key and KORM fills it into the entity.
+        /// When calling <see cref="IDbSet{T}.BulkInsert()"/> keys are not fill back to the entities.
         /// </summary>
-        /// <remarks>When calling <see cref="IDbSet.BulkInsert"/> keys are not fill back to the entities.</remarks>
-        Indetity = 2
+        Identity = 2
     }
 }

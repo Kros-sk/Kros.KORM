@@ -104,7 +104,7 @@ namespace Kros.KORM.Query
         /// <returns>
         /// <see langword="true"/> if provider supports inserting into table, where primary key is set as identity.
         /// </returns>
-        bool SupportIdentity();
+        bool SupportsIdentity();
 
         /// <summary>
         /// Sets correct data type to <paramref name="parameter"/>, according to column <paramref name="columnName"/>

@@ -257,7 +257,7 @@ namespace Kros.KORM.UnitTests.CommandGenerator
         {
             var columns = new List<ColumnInfo>() {
                 new ColumnInfo() { Name = "IdRow", PropertyInfo = GetPropertyInfo<Foo>("Id"),
-                    IsPrimaryKey = true, AutoIncrementMethodType = AutoIncrementMethodType.Indetity },
+                    IsPrimaryKey = true, AutoIncrementMethodType = AutoIncrementMethodType.Identity },
                 new ColumnInfo() { Name = "Salary", PropertyInfo = GetPropertyInfo<Foo>("Plat")}
             };
 
@@ -314,7 +314,7 @@ namespace Kros.KORM.UnitTests.CommandGenerator
         private class FooIdentity
         {
             [Alias("IdRow")]
-            [Key(AutoIncrementMethodType.Indetity)]
+            [Key(AutoIncrementMethodType.Identity)]
             public int Id { get; set; }
 
             [Alias("Salary")]
