@@ -178,6 +178,12 @@ namespace Kros.KORM.Query
         /// <returns>Returns <see langword="true"/>.</returns>
         public virtual bool SupportsPrepareCommand() => true;
 
+        /// <summary>
+        /// Returns, if provider support inserting into table, where primary key is set as Identity.
+        /// </summary>
+        /// <returns>Returns <see langword="true"/>.</returns>
+        public virtual bool SupportsIdentity() => true;
+
         /// <inheritdoc cref="IQueryProvider.SetParameterDbType(DbParameter, string, string)"/>
         public void SetParameterDbType(DbParameter parameter, string tableName, string columnName)
         {
@@ -261,6 +267,24 @@ namespace Kros.KORM.Query
                 }
                 return null;
             }
+        }
+
+        /// <inheritdoc/>
+        public object ExecuteScalarCommand(IDbCommand command)
+        {
+            Check.NotNull(command, nameof(command));
+            _logger.LogCommand(command);
+
+            return command.ExecuteScalar();
+        }
+
+        /// <inheritdoc/>
+        public async Task<object> ExecuteScalarCommandAsync(DbCommand command)
+        {
+            Check.NotNull(command, nameof(command));
+            _logger.LogCommand(command);
+
+            return await command.ExecuteScalarAsync();
         }
 
         /// <inheritdoc/>

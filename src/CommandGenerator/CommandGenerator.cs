@@ -4,6 +4,7 @@ using Kros.KORM.Properties;
 using Kros.KORM.Query;
 using Kros.KORM.Query.Expressions;
 using Kros.Utils;
+using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
@@ -19,11 +20,12 @@ namespace Kros.KORM.CommandGenerator
     {
         #region Constants
 
-        private const string INSERT_QUERY_BASE = "INSERT INTO [{0}] ({1}) VALUES ({2})";
+        private const string INSERT_QUERY_BASE = "INSERT INTO [{0}] ({1}){2} VALUES ({3})";
         private const string UPDATE_QUERY_BASE = "UPDATE [{0}] SET {1} WHERE {2}";
         private const string DELETE_QUERY_BASE = "DELETE FROM [{0}] WHERE {1}";
         private const string DELETE_QUERY_BASE_IN = "DELETE FROM [{0}] WHERE [{1}] IN (";
         private const int DEFAULT_MAX_PARAMETERS_FOR_DELETE_COMMANDS_IN_PART = 100;
+        private const string OutputStatement = " OUTPUT INSERTED.{0}";
 
         #endregion
 
@@ -34,6 +36,7 @@ namespace Kros.KORM.CommandGenerator
         private IQueryBase<T> _query;
         private List<ColumnInfo> _columnsInfo = null;
         private int _maxParametersForDeleteCommandsInPart = DEFAULT_MAX_PARAMETERS_FOR_DELETE_COMMANDS_IN_PART;
+        private Lazy<string> _outputStatement;
 
         #endregion
 
@@ -73,6 +76,7 @@ namespace Kros.KORM.CommandGenerator
             _tableInfo = tableInfo;
             _provider = provider;
             _query = query;
+            _outputStatement = new Lazy<string>(() => GetOutputStatement());
         }
 
         #endregion
@@ -85,12 +89,18 @@ namespace Kros.KORM.CommandGenerator
         /// <returns>Insert command.</returns>
         public DbCommand GetInsertCommand()
         {
-            var columns = GetQueryColumns();
+            var columns = GetQueryColumnsForInsert();
             var cmd = _provider.GetCommandForCurrentTransaction();
             AddParametersToCommand(cmd, columns);
             cmd.CommandText = GetInsertCommandText(columns);
+
             return cmd;
         }
+
+        private IEnumerable<ColumnInfo> GetQueryColumnsForInsert()
+            => _tableInfo.HasIdentityPrimaryKey
+            ? GetQueryColumns().Where(p => !p.IsPrimaryKey)
+            : GetQueryColumns();
 
         /// <summary>
         /// Gets the automatically generated DbCommand object required to perform updates on the database
@@ -303,8 +313,17 @@ namespace Kros.KORM.CommandGenerator
                 paramValues.AppendFormat("@{0}", column.Name);
             }
 
-            return string.Format(INSERT_QUERY_BASE, _tableInfo.Name, paramNames.ToString(), paramValues.ToString());
+            return string.Format(INSERT_QUERY_BASE,
+                _tableInfo.Name,
+                paramNames.ToString(),
+                _outputStatement.Value,
+                paramValues.ToString());
         }
+
+        private string GetOutputStatement()
+            => _tableInfo.HasIdentityPrimaryKey
+            ? string.Format(OutputStatement, _tableInfo.IdentityPrimaryKey.Name)
+            : string.Empty;
 
         private string GetUpdateCommandText(IEnumerable<ColumnInfo> columns)
         {

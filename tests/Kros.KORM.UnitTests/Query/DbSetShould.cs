@@ -237,6 +237,32 @@ namespace Kros.KORM.UnitTests
             dbSet.DeletedItems.Should().BeEmpty();
         }
 
+        [Fact]
+        public void ThrowExceptionWhenProviderDoesNotSupportIdnetity()
+        {
+            var tableInfo = new TableInfo(new List<ColumnInfo>()
+            {
+                new ColumnInfo(){
+                    Name = "Id",
+                    IsPrimaryKey = true,
+                    AutoIncrementMethodType = AutoIncrementMethodType.Identity
+                }
+            }, new List<PropertyInfo>(), null);
+
+            IDbSet<Person> dbSet = new DbSet<Person>(Substitute.For<ICommandGenerator<Person>>(),
+                                                     new FakeProvider(),
+                                                     Substitute.For<IQuery<Person>>(),
+                                                     tableInfo);
+
+            dbSet.Add(new Person() { Name = "A" });
+
+            Action action = () => dbSet.CommitChanges();
+
+            action.Should()
+                .Throw<InvalidOperationException>()
+                .WithMessage("*FakeProvider*Person*");
+        }
+
         #endregion
 
         #region Test classes
@@ -363,6 +389,18 @@ namespace Kros.KORM.UnitTests
             }
 
             public Task<int> ExecuteNonQueryAsync(string query, CommandParameterCollection parameters)
+            {
+                throw new NotImplementedException();
+            }
+
+            public bool SupportsIdentity() => false;
+
+            public object ExecuteScalarCommand(IDbCommand command)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<object> ExecuteScalarCommandAsync(DbCommand command)
             {
                 throw new NotImplementedException();
             }

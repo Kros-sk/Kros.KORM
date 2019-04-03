@@ -296,6 +296,15 @@ namespace Kros.KORM.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The provider &apos;{0}&apos; does not support inserting values into table which model &apos;{1}&apos; has set primary key as Identity..
+        /// </summary>
+        internal static string ProviderDoesNotSupportIdentity {
+            get {
+                return ResourceManager.GetString("ProviderDoesNotSupportIdentity", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The method &apos;{0}&apos; is not supported..
         /// </summary>
         internal static string QueryGeneratorMethodNotSupported {
