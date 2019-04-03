@@ -109,15 +109,15 @@ namespace Kros.KORM.Materializer
         // ToDo: Zrefaktorovať aby sa používal DynamicMethods.
         private static T FactoryForValueType<T>(IDataReader reader)
         {
-            Type destType = typeof(T);
-            Type srcType = reader.GetFieldType(0);
-
-            var valueGetter = GetReaderValueGetter(srcType);
-
             if (reader.IsDBNull(0))
             {
                 return default(T);
             }
+
+            Type destType = typeof(T);
+            Type srcType = reader.GetFieldType(0);
+
+            var valueGetter = GetReaderValueGetter(srcType);
 
             var value = valueGetter.Invoke(reader, new object[] { 0 });
             if (destType.Name == srcType.Name)
