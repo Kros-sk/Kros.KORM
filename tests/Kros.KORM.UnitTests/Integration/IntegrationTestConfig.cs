@@ -4,7 +4,7 @@
     {
         internal static string ConnectionString
         {
-            get => "Server=(local)\\SQL2016; UID=sa;PWD=Password12!; Persist Security Info = 'TRUE'";
+            get => "Server=CENSQL\\SQL16ENT;Persist Security Info=True;User ID=KrosPlus;Password=7040;";
         }
     }
 }
