@@ -7,7 +7,6 @@ using Kros.KORM.Metadata;
 using Kros.KORM.Metadata.Attribute;
 using Kros.KORM.Query;
 using Kros.KORM.Query.Providers;
-using Kros.KORM.Query.Sql;
 using NSubstitute;
 using System;
 using System.Collections.Generic;
@@ -29,6 +28,16 @@ namespace Kros.KORM.UnitTests.CommandGenerator
             const string expectedQuery = "INSERT INTO [Foo] ([IdRow], [Salary]) VALUES (@IdRow, @Salary)";
 
             DbCommand insert = GetFooGenerator().GetInsertCommand();
+
+            insert.CommandText.Should().Be(expectedQuery);
+        }
+
+        [Fact]
+        public void HaveCorrectInsertCommandTextWhenTableHaveIdentityPrimaryKey()
+        {
+            const string expectedQuery = "INSERT INTO [FooIdentity] ([Salary]) OUTPUT INSERTED.IdRow VALUES (@Salary)";
+
+            DbCommand insert = GetFooIdentityGenerator().GetInsertCommand();
 
             insert.CommandText.Should().Be(expectedQuery);
         }
@@ -221,6 +230,40 @@ namespace Kros.KORM.UnitTests.CommandGenerator
             return new TableInfo(columns, new List<PropertyInfo>(), null) { Name = "Foo" };
         }
 
+        private CommandGenerator<FooIdentity> GetFooIdentityGenerator()
+        {
+            var provider = Substitute.For<KORM.Query.IQueryProvider>();
+            provider.GetCommandForCurrentTransaction().Returns(a => { return new SqlCommand(); });
+
+            var query = CreateFooIdentityQuery();
+            query.Select(p => new { p.Id, p.Plat });
+            return new CommandGenerator<FooIdentity>(GetFooIdentityTableInfo(), provider, query);
+        }
+
+        private IQuery<FooIdentity> CreateFooIdentityQuery()
+        {
+            Query<FooIdentity> query = new Query<FooIdentity>(
+                new DatabaseMapper(new ConventionModelMapper()),
+                new SqlServerQueryProvider(
+                    new SqlConnection(),
+                    new SqlServerSqlExpressionVisitorFactory(new DatabaseMapper(new ConventionModelMapper())),
+                    Substitute.For<IModelBuilder>(),
+                    new Logger()));
+
+            return query;
+        }
+
+        private TableInfo GetFooIdentityTableInfo()
+        {
+            var columns = new List<ColumnInfo>() {
+                new ColumnInfo() { Name = "IdRow", PropertyInfo = GetPropertyInfo<Foo>("Id"),
+                    IsPrimaryKey = true, AutoIncrementMethodType = AutoIncrementMethodType.Identity },
+                new ColumnInfo() { Name = "Salary", PropertyInfo = GetPropertyInfo<Foo>("Plat")}
+            };
+
+            return new TableInfo(columns, new List<PropertyInfo>(), null) { Name = "FooIdentity" };
+        }
+
         private List<Foo> GetFooList(int itemsCount)
         {
             List<Foo> retVal = new List<Foo>();
@@ -266,6 +309,16 @@ namespace Kros.KORM.UnitTests.CommandGenerator
 
             [Converter(typeof(TestEnumConverter))]
             public TestEnum PropertyEnumConv { get; set; }
+        }
+
+        private class FooIdentity
+        {
+            [Alias("IdRow")]
+            [Key(AutoIncrementMethodType.Identity)]
+            public int Id { get; set; }
+
+            [Alias("Salary")]
+            public decimal Plat { get; set; }
         }
 
         private enum TestEnum

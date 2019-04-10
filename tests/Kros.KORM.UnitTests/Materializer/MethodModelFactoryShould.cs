@@ -645,10 +645,7 @@ namespace Kros.KORM.UnitTests.Materializer
                 throw new NotImplementedException();
             }
 
-            public bool IsDBNull(int i)
-            {
-                throw new NotImplementedException();
-            }
+            public bool IsDBNull(int i) => false;
 
             public bool NextResult()
             {

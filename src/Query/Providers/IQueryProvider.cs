@@ -40,6 +40,28 @@ namespace Kros.KORM.Query
         object ExecuteScalar<T>(IQuery<T> query);
 
         /// <summary>
+        /// Executes the query, and returns the first column of the first row in the result
+        /// set returned by the query. Additional columns or rows are ignored.
+        /// </summary>
+        /// <param name="command">The command.</param>
+        /// <returns>
+        /// The first column of the first row in the result set, or a null reference
+        /// (Nothingin Visual Basic) if the result set is empty.
+        /// </returns>
+        object ExecuteScalarCommand(IDbCommand command);
+
+        /// <summary>
+        /// Asynchronously executes the query, and returns the first column of the first row in the result
+        /// set returned by the query. Additional columns or rows are ignored.
+        /// </summary>
+        /// <param name="command">The command.</param>
+        /// <returns>
+        /// The first column of the first row in the result set, or a null reference
+        /// (Nothingin Visual Basic) if the result set is empty.
+        /// </returns>
+        Task<object> ExecuteScalarCommandAsync(DbCommand command);
+
+        /// <summary>
         /// Asynchronously executes action in transaction.
         /// </summary>
         /// <param name="action">Action which will be executed.</param>
@@ -73,8 +95,16 @@ namespace Kros.KORM.Query
         /// <summary>
         /// Returns, if provider supports peparing of command (<see cref="DbCommand.Prepare"/>).
         /// </summary>
-        /// <returns><see langword="true"/> is provider supports preparing command, otherwise <see langword="false"/>.</returns>
+        /// <returns><see langword="true"/> if provider supports preparing command, otherwise <see langword="false"/>.</returns>
         bool SupportsPrepareCommand();
+
+        /// <summary>
+        /// Returns, if provider support inserting into table, where primary key is set as Identity.
+        /// </summary>
+        /// <returns>
+        /// <see langword="true"/> if provider supports inserting into table, where primary key is set as identity.
+        /// </returns>
+        bool SupportsIdentity();
 
         /// <summary>
         /// Sets correct data type to <paramref name="parameter"/>, according to column <paramref name="columnName"/>

@@ -266,6 +266,16 @@ namespace Kros.KORM.UnitTests.Query.Sql
                 throw new NotImplementedException();
             }
 
+            public object ExecuteScalarCommand(IDbCommand command)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<object> ExecuteScalarCommandAsync(DbCommand command)
+            {
+                throw new NotImplementedException();
+            }
+
             public TResult ExecuteStoredProcedure<TResult>(string storedProcedureName)
             {
                 throw new NotImplementedException();
@@ -282,6 +292,11 @@ namespace Kros.KORM.UnitTests.Query.Sql
             }
 
             public void SetParameterDbType(DbParameter parameter, string tableName, string columnName)
+            {
+                throw new NotImplementedException();
+            }
+
+            public bool SupportsIdentity()
             {
                 throw new NotImplementedException();
             }
