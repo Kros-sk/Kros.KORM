@@ -1,4 +1,4 @@
-# Kros.KORM [![Build status](https://ci.appveyor.com/api/projects/status/xebjpdbakd45mfs4/branch/master?svg=true)](https://ci.appveyor.com/project/Kros/kros-libs-u2wo6/branch/master)
+# Kros.KORM [![Build Status](https://dev.azure.com/krossk/DevShared/_apis/build/status/Kros.KORM/Kros.KORM?branchName=master)](https://dev.azure.com/krossk/DevShared/_build/latest?definitionId=57&branchName=master)
 
 Kros.KORM is simple, fast and easy to use micro-ORM framework for .NETStandard created by Kros a.s. from Slovakia.
 
