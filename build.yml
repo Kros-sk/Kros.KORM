@@ -24,7 +24,7 @@ steps:
       folderPath: '$(System.DefaultWorkingDirectory)'
       fileType: 'json'
       targetFiles: '**/*[Tt]ests*/appsettings.json'
-      
+
   - task: DotNetCoreCLI@2
     displayName: 'Build'
     inputs:
