@@ -318,3 +318,4 @@ Kros.KORM/tests/Kros.KORM.PerformanceTests/TestRunnerScript.ps1
 
 /Documentattion/_site
 /Documentattion/api
+appsettings.local.json
