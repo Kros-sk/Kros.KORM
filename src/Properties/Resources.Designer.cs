@@ -411,5 +411,23 @@ namespace Kros.KORM.Properties {
                 return ResourceManager.GetString("UnaryOperatorIsNotSupported", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Method &apos;{0}&apos; can be call only one time..
+        /// </summary>
+        internal static string UseConnectionCanBeCallOnlyOne {
+            get {
+                return ResourceManager.GetString("UseConnectionCanBeCallOnlyOne", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Method &apos;{0}&apos; must be call before &apos;{1}&apos;.
+        /// </summary>
+        internal static string UseConnectionMustBeCall {
+            get {
+                return ResourceManager.GetString("UseConnectionMustBeCall", resourceCulture);
+            }
+        }
     }
 }

@@ -232,4 +232,10 @@
   <data name="UnaryOperatorIsNotSupported" xml:space="preserve">
     <value>The unary operator '{0}' is not supported.</value>
   </data>
+  <data name="UseConnectionCanBeCallOnlyOne" xml:space="preserve">
+    <value>Method '{0}' can be call only one time.</value>
+  </data>
+  <data name="UseConnectionMustBeCall" xml:space="preserve">
+    <value>Method '{0}' must be call before '{1}'</value>
+  </data>
 </root>
