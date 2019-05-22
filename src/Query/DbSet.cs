@@ -10,7 +10,6 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Threading.Tasks;
@@ -283,7 +282,7 @@ namespace Kros.KORM.Query
             }
         }
 
-        private delegate void SetIdentityPrimaryKeyDelegate(T item, object id);
+        private delegate void _setIdentityPrimaryKeyDelegate(T item, object id);
 
         private async Task CommitChangesAddedItemsAsync(HashSet<T> items, bool useAsync)
         {
@@ -311,7 +310,7 @@ namespace Kros.KORM.Query
                             ilGenerator.Emit(OpCodes.Ldarg_0);
                             ilGenerator.Emit(OpCodes.Ldarg_1);
 
-                            MethodInfo fnConvertMethod = typeof(System.Convert).GetMethod(
+                            MethodInfo fnConvertMethod = typeof(Convert).GetMethod(
                                 $"To{_tableInfo.IdentityPrimaryKey.PropertyInfo.PropertyType.Name}", new Type[] { typeof(object) });
 
                             ilGenerator.Emit(OpCodes.Call, fnConvertMethod);
@@ -322,7 +321,7 @@ namespace Kros.KORM.Query
                             ilGenerator.Emit(OpCodes.Callvirt, fnGetIdentity);
                             ilGenerator.Emit(OpCodes.Ret);
 
-                            var invoke = (SetIdentityPrimaryKeyDelegate)dynamicMethod.CreateDelegate(typeof(SetIdentityPrimaryKeyDelegate));
+                            var invoke = dynamicMethod.CreateDelegate(typeof(_setIdentityPrimaryKeyDelegate)) as _setIdentityPrimaryKeyDelegate;
                             invoke(item, id);
                             // ************
                         }
