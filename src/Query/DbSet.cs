@@ -10,6 +10,9 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
+using System.Reflection.Emit;
 using System.Threading.Tasks;
 
 namespace Kros.KORM.Query
@@ -280,6 +283,8 @@ namespace Kros.KORM.Query
             }
         }
 
+        private delegate void SetIdentityPrimaryKeyDelegate(T item, object id);
+
         private async Task CommitChangesAddedItemsAsync(HashSet<T> items, bool useAsync)
         {
             if (items?.Count > 0)
@@ -296,7 +301,30 @@ namespace Kros.KORM.Query
                         if (hasIdentity)
                         {
                             var id = await ExecuteScalarAsync(command, useAsync);
-                            _tableInfo.IdentityPrimaryKey.SetValue(item, id);
+                            //_tableInfo.IdentityPrimaryKey.SetValue(item, id);
+
+                            // ************
+                            var dynamicMethodArgs = new Type[] { typeof(T), typeof(object) };
+                            var dynamicMethod = new DynamicMethod("IdentityPrimaryKey_SetValue", typeof(void), dynamicMethodArgs);
+                            ILGenerator ilGenerator = dynamicMethod.GetILGenerator();
+
+                            ilGenerator.Emit(OpCodes.Ldarg_0);
+                            ilGenerator.Emit(OpCodes.Ldarg_1);
+
+                            MethodInfo fnConvertMethod = typeof(System.Convert).GetMethod(
+                                $"To{_tableInfo.IdentityPrimaryKey.PropertyInfo.PropertyType.Name}", new Type[] { typeof(object) });
+
+                            ilGenerator.Emit(OpCodes.Call, fnConvertMethod);
+
+                            MethodInfo fnGetIdentity = typeof(T).GetProperty(
+                                _tableInfo.IdentityPrimaryKey.Name, BindingFlags.Public | BindingFlags.Instance).GetSetMethod();
+
+                            ilGenerator.Emit(OpCodes.Callvirt, fnGetIdentity);
+                            ilGenerator.Emit(OpCodes.Ret);
+
+                            var invoke = (SetIdentityPrimaryKeyDelegate)dynamicMethod.CreateDelegate(typeof(SetIdentityPrimaryKeyDelegate));
+                            invoke(item, id);
+                            // ************
                         }
                         else
                         {
