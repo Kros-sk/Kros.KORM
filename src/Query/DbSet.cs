@@ -31,6 +31,7 @@ namespace Kros.KORM.Query
         private HashSet<T> _editedItems = new HashSet<T>();
         private HashSet<T> _deletedItems = new HashSet<T>();
         private readonly TableInfo _tableInfo;
+        private delegate void _setIdentityPrimaryKeyDelegate(T item, object id);
 
         #endregion
 
@@ -282,8 +283,6 @@ namespace Kros.KORM.Query
             }
         }
 
-        private delegate void _setIdentityPrimaryKeyDelegate(T item, object id);
-
         private async Task CommitChangesAddedItemsAsync(HashSet<T> items, bool useAsync)
         {
             if (items?.Count > 0)
@@ -300,9 +299,6 @@ namespace Kros.KORM.Query
                         if (hasIdentity)
                         {
                             var id = await ExecuteScalarAsync(command, useAsync);
-                            //_tableInfo.IdentityPrimaryKey.SetValue(item, id);
-
-                            // ************
                             var dynamicMethodArgs = new Type[] { typeof(T), typeof(object) };
                             var dynamicMethod = new DynamicMethod("IdentityPrimaryKey_SetValue", typeof(void), dynamicMethodArgs);
                             ILGenerator ilGenerator = dynamicMethod.GetILGenerator();
@@ -310,10 +306,10 @@ namespace Kros.KORM.Query
                             ilGenerator.Emit(OpCodes.Ldarg_0);
                             ilGenerator.Emit(OpCodes.Ldarg_1);
 
-                            MethodInfo fnConvertMethod = typeof(Convert).GetMethod(
-                                $"To{_tableInfo.IdentityPrimaryKey.PropertyInfo.PropertyType.Name}", new Type[] { typeof(object) });
-
-                            ilGenerator.Emit(OpCodes.Call, fnConvertMethod);
+                            if (_tableInfo.IdentityPrimaryKey.PropertyInfo.PropertyType.IsValueType)
+                            {
+                                ilGenerator.Emit(OpCodes.Unbox_Any, _tableInfo.IdentityPrimaryKey.PropertyInfo.PropertyType);
+                            }
 
                             MethodInfo fnGetIdentity = typeof(T).GetProperty(
                                 _tableInfo.IdentityPrimaryKey.Name, BindingFlags.Public | BindingFlags.Instance).GetSetMethod();
@@ -323,7 +319,6 @@ namespace Kros.KORM.Query
 
                             var invoke = dynamicMethod.CreateDelegate(typeof(_setIdentityPrimaryKeyDelegate)) as _setIdentityPrimaryKeyDelegate;
                             invoke(item, id);
-                            // ************
                         }
                         else
                         {

@@ -39,6 +39,7 @@ namespace Kros.KORM.CommandGenerator
         private List<ColumnInfo> _columnsInfo = null;
         private int _maxParametersForDeleteCommandsInPart = DEFAULT_MAX_PARAMETERS_FOR_DELETE_COMMANDS_IN_PART;
         private Lazy<string> _outputStatement;
+        private delegate object _getColumnValueDelegate(T item);
 
         #endregion
 
@@ -279,14 +280,9 @@ namespace Kros.KORM.CommandGenerator
             }
         }
 
-        private delegate object _getColumnValueDelegate(T item);
-
         /// <inheritdoc/>
         public object GetColumnValue(ColumnInfo columnInfo, T item)
         {
-            //var temp = columnInfo.PropertyInfo.GetValue(item, null);
-
-            //*****************
             var dynamicMethodArgs = new Type[] { typeof(T) };
             var dynamicMethod = new DynamicMethod("GetColumnValue", typeof(object), dynamicMethodArgs);
             ILGenerator ilGenerator = dynamicMethod.GetILGenerator();
@@ -307,8 +303,6 @@ namespace Kros.KORM.CommandGenerator
 
             var invoke = dynamicMethod.CreateDelegate(typeof(_getColumnValueDelegate)) as _getColumnValueDelegate;
             var value = invoke(item);
-
-            //*****************
 
             if (value != null)
             {
