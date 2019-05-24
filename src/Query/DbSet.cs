@@ -33,7 +33,7 @@ namespace Kros.KORM.Query
         private readonly HashSet<T> _deletedItems = new HashSet<T>();
         private readonly TableInfo _tableInfo;
         private readonly ICache<int, Delegate> _delegatesCache = new Cache<int, Delegate>();
-        private delegate void _setIdentityPrimaryKeyDelegate(T item, object id);
+        private delegate void SetIdentityPrimaryKeyDelegate(T item, object id);
 
         #endregion
 
@@ -301,7 +301,7 @@ namespace Kros.KORM.Query
                         if (hasIdentity)
                         {
                             var id = await ExecuteScalarAsync(command, useAsync);
-                            _setIdentityPrimaryKeyDelegate invokeDelegate = GetDelegate(item, _tableInfo.IdentityPrimaryKey);
+                            SetIdentityPrimaryKeyDelegate invokeDelegate = GetDelegate(item, _tableInfo.IdentityPrimaryKey);
                             invokeDelegate(item, id);
                         }
                         else
@@ -474,14 +474,14 @@ namespace Kros.KORM.Query
             }
         }
 
-        private _setIdentityPrimaryKeyDelegate GetDelegate(T item, ColumnInfo columnInfo)
+        private SetIdentityPrimaryKeyDelegate GetDelegate(T item, ColumnInfo columnInfo)
         {
-            var key = columnInfo.Name.ToUpper().GetHashCode() ^ item.GetHashCode();
+            var key = $"{columnInfo.Name}-{typeof(T).FullName}".GetHashCode();
 
-            return _delegatesCache.Get(key, () => CreateDelegate(columnInfo)) as _setIdentityPrimaryKeyDelegate;
+            return _delegatesCache.Get(key, () => CreateDelegate(columnInfo)) as SetIdentityPrimaryKeyDelegate;
         }
 
-        private _setIdentityPrimaryKeyDelegate CreateDelegate(ColumnInfo columnInfo)
+        private SetIdentityPrimaryKeyDelegate CreateDelegate(ColumnInfo columnInfo)
         {
             var dynamicMethodArgs = new Type[] { typeof(T), typeof(object) };
             var dynamicMethod = new DynamicMethod("IdentityPrimaryKey_SetValue", typeof(void), dynamicMethodArgs);
@@ -501,7 +501,7 @@ namespace Kros.KORM.Query
             ilGenerator.Emit(OpCodes.Callvirt, fnGetIdentity);
             ilGenerator.Emit(OpCodes.Ret);
 
-            return dynamicMethod.CreateDelegate(typeof(_setIdentityPrimaryKeyDelegate)) as _setIdentityPrimaryKeyDelegate;
+            return dynamicMethod.CreateDelegate(typeof(SetIdentityPrimaryKeyDelegate)) as SetIdentityPrimaryKeyDelegate;
         }
 
         #endregion

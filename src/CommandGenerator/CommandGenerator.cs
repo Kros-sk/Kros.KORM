@@ -41,7 +41,7 @@ namespace Kros.KORM.CommandGenerator
         private int _maxParametersForDeleteCommandsInPart = DEFAULT_MAX_PARAMETERS_FOR_DELETE_COMMANDS_IN_PART;
         private readonly Lazy<string> _outputStatement;
         private readonly ICache<int, Delegate> _delegatesCache = new Cache<int, Delegate>();
-        private delegate object _getColumnValueDelegate(T item);
+        private delegate object GetColumnValueDelegate(T item);
 
         #endregion
 
@@ -285,7 +285,7 @@ namespace Kros.KORM.CommandGenerator
         /// <inheritdoc/>
         public object GetColumnValue(ColumnInfo columnInfo, T item)
         {
-            _getColumnValueDelegate invokeDelegate = GetDelegate(item, columnInfo);
+            GetColumnValueDelegate invokeDelegate = GetDelegate(item, columnInfo);
             var value = invokeDelegate(item);
 
             if (value != null)
@@ -375,14 +375,14 @@ namespace Kros.KORM.CommandGenerator
             return string.Format(DELETE_QUERY_BASE, _tableInfo.Name, paramWherePart.ToString());
         }
 
-        private _getColumnValueDelegate GetDelegate(T item, ColumnInfo columnInfo)
+        private GetColumnValueDelegate GetDelegate(T item, ColumnInfo columnInfo)
         {
-            var key = columnInfo.Name.ToUpper().GetHashCode() ^ item.GetHashCode();
+            var key = $"{columnInfo.Name}-{typeof(T).FullName}".GetHashCode();
 
-            return _delegatesCache.Get(key, () => CreateDelegate(columnInfo)) as _getColumnValueDelegate;
+            return _delegatesCache.Get(key, () => CreateDelegate(columnInfo)) as GetColumnValueDelegate;
         }
 
-        private _getColumnValueDelegate CreateDelegate(ColumnInfo columnInfo)
+        private GetColumnValueDelegate CreateDelegate(ColumnInfo columnInfo)
         {
             var dynamicMethodArgs = new Type[] { typeof(T) };
             var dynamicMethod = new DynamicMethod("GetColumnValue", typeof(object), dynamicMethodArgs);
@@ -402,7 +402,7 @@ namespace Kros.KORM.CommandGenerator
 
             ilGenerator.Emit(OpCodes.Ret);
 
-            return dynamicMethod.CreateDelegate(typeof(_getColumnValueDelegate)) as _getColumnValueDelegate;
+            return dynamicMethod.CreateDelegate(typeof(GetColumnValueDelegate)) as GetColumnValueDelegate;
         }
 
         #endregion
