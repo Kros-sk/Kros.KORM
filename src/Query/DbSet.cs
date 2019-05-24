@@ -1,4 +1,5 @@
-﻿using Kros.KORM.CommandGenerator;
+﻿using Kros.Caching;
+using Kros.KORM.CommandGenerator;
 using Kros.KORM.Data;
 using Kros.KORM.Exceptions;
 using Kros.KORM.Metadata;
@@ -24,13 +25,14 @@ namespace Kros.KORM.Query
     {
         #region Private fields
 
-        private ICommandGenerator<T> _commandGenerator;
-        private IQueryProvider _provider;
-        private IQueryBase<T> _query;
-        private HashSet<T> _addedItems = new HashSet<T>();
-        private HashSet<T> _editedItems = new HashSet<T>();
-        private HashSet<T> _deletedItems = new HashSet<T>();
+        private readonly ICommandGenerator<T> _commandGenerator;
+        private readonly IQueryProvider _provider;
+        private readonly IQueryBase<T> _query;
+        private readonly HashSet<T> _addedItems = new HashSet<T>();
+        private readonly HashSet<T> _editedItems = new HashSet<T>();
+        private readonly HashSet<T> _deletedItems = new HashSet<T>();
         private readonly TableInfo _tableInfo;
+        private readonly ICache<int, Delegate> _delegatesCache = new Cache<int, Delegate>();
         private delegate void _setIdentityPrimaryKeyDelegate(T item, object id);
 
         #endregion
@@ -299,26 +301,8 @@ namespace Kros.KORM.Query
                         if (hasIdentity)
                         {
                             var id = await ExecuteScalarAsync(command, useAsync);
-                            var dynamicMethodArgs = new Type[] { typeof(T), typeof(object) };
-                            var dynamicMethod = new DynamicMethod("IdentityPrimaryKey_SetValue", typeof(void), dynamicMethodArgs);
-                            ILGenerator ilGenerator = dynamicMethod.GetILGenerator();
-
-                            ilGenerator.Emit(OpCodes.Ldarg_0);
-                            ilGenerator.Emit(OpCodes.Ldarg_1);
-
-                            if (_tableInfo.IdentityPrimaryKey.PropertyInfo.PropertyType.IsValueType)
-                            {
-                                ilGenerator.Emit(OpCodes.Unbox_Any, _tableInfo.IdentityPrimaryKey.PropertyInfo.PropertyType);
-                            }
-
-                            MethodInfo fnGetIdentity = typeof(T).GetProperty(
-                                _tableInfo.IdentityPrimaryKey.Name, BindingFlags.Public | BindingFlags.Instance).GetSetMethod();
-
-                            ilGenerator.Emit(OpCodes.Callvirt, fnGetIdentity);
-                            ilGenerator.Emit(OpCodes.Ret);
-
-                            var invoke = dynamicMethod.CreateDelegate(typeof(_setIdentityPrimaryKeyDelegate)) as _setIdentityPrimaryKeyDelegate;
-                            invoke(item, id);
+                            _setIdentityPrimaryKeyDelegate invokeDelegate = GetDelegate(item, _tableInfo.IdentityPrimaryKey);
+                            invokeDelegate(item, id);
                         }
                         else
                         {
@@ -488,6 +472,36 @@ namespace Kros.KORM.Query
                     }
                 }
             }
+        }
+
+        private _setIdentityPrimaryKeyDelegate GetDelegate(T item, ColumnInfo columnInfo)
+        {
+            var key = columnInfo.Name.ToUpper().GetHashCode() ^ item.GetHashCode();
+
+            return _delegatesCache.Get(key, () => CreateDelegate(columnInfo)) as _setIdentityPrimaryKeyDelegate;
+        }
+
+        private _setIdentityPrimaryKeyDelegate CreateDelegate(ColumnInfo columnInfo)
+        {
+            var dynamicMethodArgs = new Type[] { typeof(T), typeof(object) };
+            var dynamicMethod = new DynamicMethod("IdentityPrimaryKey_SetValue", typeof(void), dynamicMethodArgs);
+            ILGenerator ilGenerator = dynamicMethod.GetILGenerator();
+
+            ilGenerator.Emit(OpCodes.Ldarg_0);
+            ilGenerator.Emit(OpCodes.Ldarg_1);
+
+            if (columnInfo.PropertyInfo.PropertyType.IsValueType)
+            {
+                ilGenerator.Emit(OpCodes.Unbox_Any, columnInfo.PropertyInfo.PropertyType);
+            }
+
+            MethodInfo fnGetIdentity = typeof(T).GetProperty(
+                columnInfo.Name, BindingFlags.Public | BindingFlags.Instance).GetSetMethod();
+
+            ilGenerator.Emit(OpCodes.Callvirt, fnGetIdentity);
+            ilGenerator.Emit(OpCodes.Ret);
+
+            return dynamicMethod.CreateDelegate(typeof(_setIdentityPrimaryKeyDelegate)) as _setIdentityPrimaryKeyDelegate;
         }
 
         #endregion

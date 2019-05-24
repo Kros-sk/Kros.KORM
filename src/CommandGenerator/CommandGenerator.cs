@@ -1,4 +1,5 @@
-﻿using Kros.KORM.Converter;
+﻿using Kros.Caching;
+using Kros.KORM.Converter;
 using Kros.KORM.Metadata;
 using Kros.KORM.Properties;
 using Kros.KORM.Query;
@@ -33,12 +34,13 @@ namespace Kros.KORM.CommandGenerator
 
         #region Private Fields
 
-        private TableInfo _tableInfo;
-        private KORM.Query.IQueryProvider _provider;
-        private IQueryBase<T> _query;
+        private readonly TableInfo _tableInfo;
+        private readonly KORM.Query.IQueryProvider _provider;
+        private readonly IQueryBase<T> _query;
         private List<ColumnInfo> _columnsInfo = null;
         private int _maxParametersForDeleteCommandsInPart = DEFAULT_MAX_PARAMETERS_FOR_DELETE_COMMANDS_IN_PART;
-        private Lazy<string> _outputStatement;
+        private readonly Lazy<string> _outputStatement;
+        private readonly ICache<int, Delegate> _delegatesCache = new Cache<int, Delegate>();
         private delegate object _getColumnValueDelegate(T item);
 
         #endregion
@@ -283,26 +285,8 @@ namespace Kros.KORM.CommandGenerator
         /// <inheritdoc/>
         public object GetColumnValue(ColumnInfo columnInfo, T item)
         {
-            var dynamicMethodArgs = new Type[] { typeof(T) };
-            var dynamicMethod = new DynamicMethod("GetColumnValue", typeof(object), dynamicMethodArgs);
-            ILGenerator ilGenerator = dynamicMethod.GetILGenerator();
-
-            ilGenerator.Emit(OpCodes.Ldarg_0);
-
-            MethodInfo fnGetValue = typeof(T).GetProperty(
-                columnInfo.PropertyInfo.Name, BindingFlags.Public | BindingFlags.Instance).GetGetMethod();
-
-            ilGenerator.Emit(OpCodes.Callvirt, fnGetValue);
-
-            if (columnInfo.PropertyInfo.PropertyType.IsValueType)
-            {
-                ilGenerator.Emit(OpCodes.Box, columnInfo.PropertyInfo.PropertyType);
-            }
-
-            ilGenerator.Emit(OpCodes.Ret);
-
-            var invoke = dynamicMethod.CreateDelegate(typeof(_getColumnValueDelegate)) as _getColumnValueDelegate;
-            var value = invoke(item);
+            _getColumnValueDelegate invokeDelegate = GetDelegate(item, columnInfo);
+            var value = invokeDelegate(item);
 
             if (value != null)
             {
@@ -389,6 +373,36 @@ namespace Kros.KORM.CommandGenerator
             }
 
             return string.Format(DELETE_QUERY_BASE, _tableInfo.Name, paramWherePart.ToString());
+        }
+
+        private _getColumnValueDelegate GetDelegate(T item, ColumnInfo columnInfo)
+        {
+            var key = columnInfo.Name.ToUpper().GetHashCode() ^ item.GetHashCode();
+
+            return _delegatesCache.Get(key, () => CreateDelegate(columnInfo)) as _getColumnValueDelegate;
+        }
+
+        private _getColumnValueDelegate CreateDelegate(ColumnInfo columnInfo)
+        {
+            var dynamicMethodArgs = new Type[] { typeof(T) };
+            var dynamicMethod = new DynamicMethod("GetColumnValue", typeof(object), dynamicMethodArgs);
+            ILGenerator ilGenerator = dynamicMethod.GetILGenerator();
+
+            ilGenerator.Emit(OpCodes.Ldarg_0);
+
+            MethodInfo fnGetValue = typeof(T).GetProperty(
+                columnInfo.PropertyInfo.Name, BindingFlags.Public | BindingFlags.Instance).GetGetMethod();
+
+            ilGenerator.Emit(OpCodes.Callvirt, fnGetValue);
+
+            if (columnInfo.PropertyInfo.PropertyType.IsValueType)
+            {
+                ilGenerator.Emit(OpCodes.Box, columnInfo.PropertyInfo.PropertyType);
+            }
+
+            ilGenerator.Emit(OpCodes.Ret);
+
+            return dynamicMethod.CreateDelegate(typeof(_getColumnValueDelegate)) as _getColumnValueDelegate;
         }
 
         #endregion
