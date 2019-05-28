@@ -344,7 +344,23 @@ namespace Kros.KORM.Query
         }
 
         /// <inheritdoc/>
-        public async Task<int> ExecuteNonQueryAsync(string query) => await ExecuteNonQueryAsync(query, null);
+        public async Task<int> ExecuteNonQueryAsync(string query)
+            => await ExecuteNonQueryAsync(query, new CommandParameterCollection());
+
+        /// <inheritdoc/>
+        public Task<int> ExecuteNonQueryAsync(string query, params object[] parameters)
+        {
+            var paramsCollection = new CommandParameterCollection();
+            var tempParameters = new ParamEnumerator(query);
+
+            foreach (var parameter in parameters)
+            {
+                tempParameters.MoveNext();
+                paramsCollection.Add(tempParameters.Current, parameter);
+            }
+
+            return ExecuteNonQueryAsync(query, paramsCollection);
+        }
 
         /// <inheritdoc/>
         public async Task<int> ExecuteNonQueryAsync(string query, CommandParameterCollection parameters)
