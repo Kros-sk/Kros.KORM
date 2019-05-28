@@ -7,7 +7,7 @@ namespace Kros.KORM.Query.Sql
 {
     internal class ParamEnumerator : IEnumerator<string>
     {
-        private string _sql;
+        private readonly string _sql;
         private string _current;
         private int _position = 0;
         private const string ParamPrefix = "@";
@@ -65,4 +65,3 @@ namespace Kros.KORM.Query.Sql
         }
     }
 }
-
