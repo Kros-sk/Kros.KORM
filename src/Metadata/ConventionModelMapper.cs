@@ -17,7 +17,7 @@ namespace Kros.KORM.Metadata
     /// <summary>
     /// Model mapper, which know define convention for name mapping.
     /// </summary>
-    /// <seealso cref="Kros.KORM.Metadata.IModelMapper" />
+    /// <seealso cref="IModelMapper" />
     public class ConventionModelMapper : IModelMapper
     {
         private const string ConventionalPrimaryKeyName = "ID";
