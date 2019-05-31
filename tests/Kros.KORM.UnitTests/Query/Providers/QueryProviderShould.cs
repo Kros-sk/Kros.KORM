@@ -276,6 +276,18 @@ END";
         }
 
         [Fact]
+        public async Task ExecuteNonQueryCommandParamsAsync()
+        {
+            using (SqlServerTestHelper helper = CreateHelper(CreateTable_TestTable))
+            {
+                var query = $"INSERT INTO {Table_TestTable} (Id, Number, Description) VALUES (@Id, @Number, @Description)";
+                QueryProvider provider = CreateQueryProvider(helper.Connection);
+                int result = await provider.ExecuteNonQueryAsync(query, 6, 666, "Sed ac lobortis magna.");
+                result.Should().Be(1); // Inserted 1 row.
+            }
+        }
+
+        [Fact]
         public async Task ExecuteNonQueryCommandAsync()
         {
             using (SqlServerTestHelper helper = CreateHelper(CreateTable_TestTable))
