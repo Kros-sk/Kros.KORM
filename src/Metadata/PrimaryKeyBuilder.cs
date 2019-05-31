@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Kros.Utils;
+using System;
 using System.Linq.Expressions;
 
 namespace Kros.KORM.Metadata
@@ -9,6 +10,20 @@ namespace Kros.KORM.Metadata
     /// <typeparam name="TEntity">The entity type being configured.</typeparam>
     public class PrimaryKeyBuilder<TEntity> where TEntity : class
     {
+        private readonly EntityTypeBuilder<TEntity> _entityTypeBuilder;
+        private readonly string _propertyName;
+
+        /// <summary>
+        /// Ctor.
+        /// </summary>
+        /// <param name="entityTypeBuilder">Entity type builder.</param>
+        /// <param name="propertyName">Name of property which represent primary key.</param>
+        internal PrimaryKeyBuilder(EntityTypeBuilder<TEntity> entityTypeBuilder, string propertyName)
+        {
+            _entityTypeBuilder = Check.NotNull(entityTypeBuilder, nameof(entityTypeBuilder));
+            _propertyName = Check.NotNullOrEmpty(propertyName, nameof(propertyName));
+        }
+
         /// <summary>
         /// Configures the corresponding primary key constraint name in the database.
         /// </summary>
