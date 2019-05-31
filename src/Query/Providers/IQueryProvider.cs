@@ -173,6 +173,7 @@ namespace Kros.KORM.Query
         /// A task that represents the asynchronous operation. The task result contains the
         /// numbers of affected rows.
         /// </returns>
+        /// <exception cref="ArgumentException">Number of parameters does not match.</exception>
         Task<int> ExecuteNonQueryAsync(string query, params object[] paramValues);
 
         /// <summary>
