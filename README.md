@@ -499,13 +499,14 @@ Kros.KORM supports SQL commands execution. There are three types of commands:
   
   // to work with command parameters you can use CommandParameterCollection
   var parameters = new CommandParameterCollection();
+  parameters.Add("@value", "value");
   parameters.Add("@id", 10);
   parameters.Add("@type", "DateTime");
   
-  _database.ExecuteNonQuery("UPDATE Column = Value WHERE Id = @id AND Type = @type", parameters);
+  _database.ExecuteNonQuery("UPDATE Column = @value WHERE Id = @id AND Type = @type", parameters);
   
   // or you can send them directly via params array
-  _database.ExecuteNonQuery("UPDATE Column = Value WHERE Id = @id AND Type = @type", 10, "DateTime");
+  _database.ExecuteNonQuery("UPDATE Column = @value WHERE Id = @id AND Type = @type", "value", 10, "DateTime");
   ```
 
 * ```ExecuteScalar``` for commands that return only one value (SELECT)
