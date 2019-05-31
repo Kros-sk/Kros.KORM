@@ -105,7 +105,7 @@ namespace Kros.KORM.Query
         private readonly Cache<string, TableSchema> _tableSchemas =
             new Cache<string, TableSchema>(StringComparer.OrdinalIgnoreCase);
         private MethodInfo _nonGenericMaterializeMethod = null;
-        private Lazy<TransactionHelper> _transactionHelper;
+        private readonly Lazy<TransactionHelper> _transactionHelper;
 
         #endregion
 
@@ -345,18 +345,29 @@ namespace Kros.KORM.Query
 
         /// <inheritdoc/>
         public async Task<int> ExecuteNonQueryAsync(string query)
-            => await ExecuteNonQueryAsync(query, new CommandParameterCollection());
+            => await ExecuteNonQueryAsync(query, (CommandParameterCollection)null);
 
         /// <inheritdoc/>
-        public Task<int> ExecuteNonQueryAsync(string query, params object[] parameters)
+        public Task<int> ExecuteNonQueryAsync(string query, params object[] paramValues)
         {
             var paramsCollection = new CommandParameterCollection();
             var tempParameters = new ParamEnumerator(query);
 
-            foreach (var parameter in parameters)
+            foreach (var parameter in paramValues)
             {
-                tempParameters.MoveNext();
-                paramsCollection.Add(tempParameters.Current, parameter);
+                if (tempParameters.MoveNext())
+                {
+                    paramsCollection.Add(tempParameters.Current, parameter);
+                }
+                else
+                {
+                    throw new ArgumentException(Resources.MoreParametersThanValues);
+                }
+            }
+
+            if (tempParameters.MoveNext())
+            {
+                throw new ArgumentException(Resources.MoreValuesThanParameters);
             }
 
             return ExecuteNonQueryAsync(query, paramsCollection);

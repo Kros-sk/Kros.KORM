@@ -168,12 +168,12 @@ namespace Kros.KORM.Query
         /// Asynchronously executes arbitrary query.
         /// </summary>
         /// <param name="query">Arbitrary SQL query. It should not be SELECT query.</param>
-        /// <param name="parameters">List of query parameters.</param>
+        /// <param name="paramValues">List of query parameters.</param>
         /// <returns>
         /// A task that represents the asynchronous operation. The task result contains the
         /// numbers of affected rows.
         /// </returns>
-        Task<int> ExecuteNonQueryAsync(string query, params object[] parameters);
+        Task<int> ExecuteNonQueryAsync(string query, params object[] paramValues);
 
         /// <summary>
         /// Asynchronously executes arbitrary query with parameters.

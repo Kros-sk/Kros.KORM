@@ -251,6 +251,24 @@ namespace Kros.KORM.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cannot execute query. There are more parameters than values in the query..
+        /// </summary>
+        internal static string MoreParametersThanValues {
+            get {
+                return ResourceManager.GetString("MoreParametersThanValues", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot execute query. There are more values than parameters in the query..
+        /// </summary>
+        internal static string MoreValuesThanParameters {
+            get {
+                return ResourceManager.GetString("MoreValuesThanParameters", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Property NestedTransaction.CommandTimeout is readonly..
         /// </summary>
         internal static string NestedTransactionCommandTimeoutIsReadonly {
