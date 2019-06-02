@@ -1,4 +1,5 @@
 ﻿using Kros.KORM.Helper;
+using Kros.KORM.Metadata.FluentConfiguration;
 using Kros.Utils;
 using System;
 using System.Collections.Generic;
@@ -26,10 +27,7 @@ namespace Kros.KORM.Metadata
         /// </returns>
         public EntityTypeBuilder<TEntity> HasTableName(string tableName)
         {
-            if (_tableName != null)
-            {
-                throw new InvalidOperationException("Nie nie toto nemôžeš.");
-            }
+            ExceptionHelper.CheckMultipleTimeCalls(() => _tableName != null);
 
             _tableName = Check.NotNullOrWhiteSpace(tableName, nameof(tableName));
 
@@ -45,10 +43,7 @@ namespace Kros.KORM.Metadata
         public virtual PrimaryKeyBuilder<TEntity> HasPrimaryKey<TProperty>(
             Expression<Func<TEntity, TProperty>> propertyExpression)
         {
-            if (_primaryKeyBuilder != null)
-            {
-                throw new InvalidOperationException("Nie nie toto nemôžeš.");
-            }
+            ExceptionHelper.CheckMultipleTimeCalls(() => _primaryKeyBuilder != null);
 
             _primaryKeyBuilder = new PrimaryKeyBuilder<TEntity>(this, PropertyName<TEntity>.GetPropertyName(propertyExpression));
 
@@ -66,10 +61,7 @@ namespace Kros.KORM.Metadata
         {
             string propertyName = PropertyName<TEntity>.GetPropertyName(propertyExpression);
 
-            if (_propertyBuilders.ContainsKey(propertyName))
-            {
-                throw new InvalidOperationException("Nie nie toto nemôžeš.");
-            }
+            ExceptionHelper.CheckMultipleTimeCalls(() => _propertyBuilders.ContainsKey(propertyName));
 
             var propertyBuilder = new PropertyBuilder<TEntity>(this, propertyName);
             _propertyBuilders.Add(propertyName, propertyBuilder);

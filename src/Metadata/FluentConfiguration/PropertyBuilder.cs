@@ -1,8 +1,10 @@
 ﻿using Kros.KORM.Converter;
 using Kros.KORM.Injection;
+using Kros.KORM.Metadata.FluentConfiguration;
 using Kros.Utils;
 using System;
 using System.Linq.Expressions;
+using Kros.Extensions;
 
 namespace Kros.KORM.Metadata
 {
@@ -37,10 +39,7 @@ namespace Kros.KORM.Metadata
         /// <param name="columnName">Column name.</param>
         public PropertyBuilder<TEntity> HasColumnName(string columnName)
         {
-            if (_columnName != null)
-            {
-                throw new InvalidOperationException("Nie nie toto nemôžeš.");
-            }
+            ExceptionHelper.CheckMultipleTimeCalls(() => _columnName != null);
             CheckNoMapOrInjector();
 
             _columnName = Check.NotNullOrWhiteSpace(columnName, nameof(columnName));
@@ -53,10 +52,7 @@ namespace Kros.KORM.Metadata
         /// </summary>
         public PropertyBuilder<TEntity> NoMap()
         {
-            if (_noMap)
-            {
-                throw new InvalidOperationException("Nie nie toto nemôžeš.");
-            }
+            ExceptionHelper.CheckMultipleTimeCalls(() => _noMap);
             _noMap = true;
 
             return this;
@@ -75,10 +71,7 @@ namespace Kros.KORM.Metadata
         /// <param name="converter">Converter instance.</param>
         public PropertyBuilder<TEntity> UseConverter(IConverter converter)
         {
-            if (_converter != null)
-            {
-                throw new InvalidOperationException("Nie nie toto nemôžeš.");
-            }
+            ExceptionHelper.CheckMultipleTimeCalls(() => _converter != null);
             CheckNoMapOrInjector();
 
             _converter = Check.NotNull(converter, nameof(converter));
@@ -94,12 +87,9 @@ namespace Kros.KORM.Metadata
         {
             if (!string.IsNullOrEmpty(_columnName) || _columnName != null)
             {
-                throw new InvalidOperationException("Nie nie toto nemôžeš.");
+                throw new InvalidOperationException(Properties.Resources.CannotCallMethod.Format(nameof(InjectValue))));
             }
-            if (_injector != null)
-            {
-                throw new InvalidOperationException("Nie nie toto nemôžeš.");
-            }
+            ExceptionHelper.CheckMultipleTimeCalls(() => _injector != null);
 
             _injector = new InjectionConfiguration<TEntity>();
             _injector.FillProperty(_propertyName, injector);
@@ -121,7 +111,8 @@ namespace Kros.KORM.Metadata
         {
             if (_noMap || _injector != null)
             {
-                throw new InvalidOperationException("Nie nie toto nemôžeš. ale ináč.");
+                throw new InvalidOperationException(
+                    Properties.Resources.CannotConfigureAnythingElse.Format(nameof(NoMap), nameof(InjectValue)));
             }
         }
     }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Kros.KORM.Metadata.FluentConfiguration;
+using System;
 using System.Collections.Generic;
 
 namespace Kros.KORM.Metadata
@@ -18,10 +19,7 @@ namespace Kros.KORM.Metadata
         public EntityTypeBuilder<TEntity> Entity<TEntity>() where TEntity : class
         {
             var entityType = typeof(TEntity);
-            if (_entityBuilders.ContainsKey(entityType))
-            {
-                throw new InvalidOperationException("Nie nie toto nemôžeš.");
-            }
+            ExceptionHelper.CheckMultipleTimeCalls(() => _entityBuilders.ContainsKey(entityType));
 
             var entityBuilder = new EntityTypeBuilder<TEntity>();
             _entityBuilders[entityType] = entityBuilder;

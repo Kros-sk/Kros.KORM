@@ -1,4 +1,5 @@
-﻿using Kros.Utils;
+﻿using Kros.KORM.Metadata.FluentConfiguration;
+using Kros.Utils;
 using System;
 using System.Linq.Expressions;
 
@@ -32,10 +33,7 @@ namespace Kros.KORM.Metadata
         /// <param name="constraintName">Primary key contstraint name.</param>
         public PrimaryKeyBuilder<TEntity> WithName(string constraintName)
         {
-            if (_constraintName != null)
-            {
-                throw new InvalidOperationException("Nie nie toto nemôžeš.");
-            }
+            ExceptionHelper.CheckMultipleTimeCalls(() => _constraintName != null);
 
             _constraintName = Check.NotNullOrWhiteSpace(constraintName, nameof(constraintName));
 
@@ -49,10 +47,7 @@ namespace Kros.KORM.Metadata
         public PrimaryKeyBuilder<TEntity> AutoIncrement(
             AutoIncrementMethodType autoIncrementMethodType = AutoIncrementMethodType.Identity)
         {
-            if (_autoIncrementMethodType != null)
-            {
-                throw new InvalidOperationException("Nie nie toto nemôžeš.");
-            }
+            ExceptionHelper.CheckMultipleTimeCalls(() => _autoIncrementMethodType != null);
 
             _autoIncrementMethodType = autoIncrementMethodType;
 

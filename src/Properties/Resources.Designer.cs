@@ -70,6 +70,33 @@ namespace Kros.KORM.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Can&apos;t call &apos;{0}&apos; if you configured column name or converter..
+        /// </summary>
+        internal static string CannotCallMethod {
+            get {
+                return ResourceManager.GetString("CannotCallMethod", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Can&apos;t call multiple time method &apos;{0}&apos;..
+        /// </summary>
+        internal static string CannotCallMultipleTime {
+            get {
+                return ResourceManager.GetString("CannotCallMultipleTime", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You cannot configure anything else if you are call &apos;{0}&apos; or &apos;{1}&apos;.
+        /// </summary>
+        internal static string CannotConfigureAnythingElse {
+            get {
+                return ResourceManager.GetString("CannotConfigureAnythingElse", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Can&apos;t materialize source value type &apos;{0}&apos; to destination type &apos;{1}&apos; without defined converter..
         /// </summary>
         internal static string CannotMaterializeSourceValue {
