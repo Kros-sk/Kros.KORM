@@ -12,6 +12,8 @@ namespace Kros.KORM.Metadata
     {
         private readonly EntityTypeBuilder<TEntity> _entityTypeBuilder;
         private readonly string _propertyName;
+        private string _constraintName;
+        private AutoIncrementMethodType? _autoIncrementMethodType;
 
         /// <summary>
         /// Ctor.
@@ -28,7 +30,17 @@ namespace Kros.KORM.Metadata
         /// Configures the corresponding primary key constraint name in the database.
         /// </summary>
         /// <param name="constraintName">Primary key contstraint name.</param>
-        public PrimaryKeyBuilder<TEntity> WithName(string constraintName) => this;
+        public PrimaryKeyBuilder<TEntity> WithName(string constraintName)
+        {
+            if (_constraintName != null)
+            {
+                throw new InvalidOperationException("Nie nie toto nemôžeš.");
+            }
+
+            _constraintName = Check.NotNullOrWhiteSpace(constraintName, nameof(constraintName));
+
+            return this;
+        }
 
         /// <summary>
         /// Configure autoincrement for primary key.
@@ -36,7 +48,16 @@ namespace Kros.KORM.Metadata
         /// <param name="autoIncrementMethodType">Autoincrement method type.</param>
         public PrimaryKeyBuilder<TEntity> AutoIncrement(
             AutoIncrementMethodType autoIncrementMethodType = AutoIncrementMethodType.Identity)
-            => this;
+        {
+            if (_autoIncrementMethodType != null)
+            {
+                throw new InvalidOperationException("Nie nie toto nemôžeš.");
+            }
+
+            _autoIncrementMethodType = autoIncrementMethodType;
+
+            return this;
+        }
 
         /// <summary>
         /// Returns an object that can be used to configure a property of the entity type.
@@ -45,6 +66,7 @@ namespace Kros.KORM.Metadata
         /// <param name="propertyExpression">A lambda expression representing the property to be configured.</param>
         /// <returns>An object that can be used to configure the property.</returns>
         public virtual PropertyBuilder<TEntity> Property<TProperty>(
-            Expression<Func<TEntity, TProperty>> propertyExpression) => null;
+            Expression<Func<TEntity, TProperty>> propertyExpression)
+            => _entityTypeBuilder.Property(propertyExpression);
     }
 }
