@@ -19,13 +19,7 @@ namespace Kros.KORM.Injection
 
         #endregion
 
-        /// <summary>
-        /// Fill model property with injector.
-        /// </summary>
-        /// <typeparam name="TValue">Property type.</typeparam>
-        /// <param name="modelProperty">Expression for defined property for injection.</param>
-        /// <param name="injector">Function which is used for injection value to property.</param>
-        /// <returns>Configurator, for next configurations.</returns>
+        /// <inheritdoc />
         public IInjectionConfigurator<TModel> FillProperty<TValue>(
             Expression<Func<TModel, TValue>> modelProperty,
             Func<TValue> injector)
@@ -33,6 +27,14 @@ namespace Kros.KORM.Injection
             MemberExpression memberExpression = (MemberExpression)modelProperty.Body;
             var propertyName = memberExpression.Member.Name;
 
+            return FillProperty(propertyName, injector);
+        }
+
+        /// <inheritdoc />
+        public IInjectionConfigurator<TModel> FillProperty<TValue>(
+            string propertyName,
+            Func<TValue> injector)
+        {
             Func<object> function = () => injector() as object;
             _injectors[propertyName] = function;
 

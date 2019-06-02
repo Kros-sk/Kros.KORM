@@ -19,6 +19,17 @@ namespace Kros.KORM.UnitTests.Injection
         }
 
         [Fact]
+        public void ReturnConfiguredValueWhenPropertyNameIsUsed()
+        {
+            var configurator = new InjectionConfiguration<Foo>();
+
+            configurator.FillProperty("Value", () => "lorem");
+
+            var foo = new Foo() { Id = 1 };
+            configurator.GetValue("Value").Should().Be("lorem");
+        }
+
+        [Fact]
         public void ThrowExceptionIfPropertyIsNotConfigured()
         {
             var configurator = new InjectionConfiguration<Foo>();
@@ -35,6 +46,16 @@ namespace Kros.KORM.UnitTests.Injection
             var configurator = new InjectionConfiguration<Foo>();
 
             configurator.FillProperty(p => p.Value, () => "lorem");
+
+            configurator.IsInjectable("Value").Should().BeTrue();
+        }
+
+        [Fact]
+        public void HaveConfiguredPropertyWhenPropertyNameIsUsed()
+        {
+            var configurator = new InjectionConfiguration<Foo>();
+
+            configurator.FillProperty("Value", () => "lorem");
 
             configurator.IsInjectable("Value").Should().BeTrue();
         }

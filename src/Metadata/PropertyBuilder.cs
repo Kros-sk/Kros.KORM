@@ -1,4 +1,6 @@
-﻿using Kros.Utils;
+﻿using Kros.KORM.Converter;
+using Kros.KORM.Injection;
+using Kros.Utils;
 using System;
 using System.Linq.Expressions;
 
@@ -13,6 +15,10 @@ namespace Kros.KORM.Metadata
     {
         private readonly EntityTypeBuilder<TEntity> _entityTypeBuilder;
         private readonly string _propertyName;
+        private string _columnName;
+        private bool _noMap = false;
+        private IConverter _converter;
+        private InjectionConfiguration<TEntity> _injector;
 
         /// <summary>
         /// Ctor.
@@ -29,24 +35,77 @@ namespace Kros.KORM.Metadata
         /// Configures the corresponding column name in the database for the property.
         /// </summary>
         /// <param name="columnName">Column name.</param>
-        public PropertyBuilder<TEntity> HasColumnName(string columnName) => this;
+        public PropertyBuilder<TEntity> HasColumnName(string columnName)
+        {
+            if (_columnName != null)
+            {
+                throw new InvalidOperationException("Nie nie toto nemôžeš.");
+            }
+            CheckNoMapOrInjector();
+
+            _columnName = Check.NotNullOrWhiteSpace(columnName, nameof(columnName));
+
+            return this;
+        }
 
         /// <summary>
         /// Configures that the property should not be mapped to a column.
         /// </summary>
-        public PropertyBuilder<TEntity> NoMap() => this;
+        public PropertyBuilder<TEntity> NoMap()
+        {
+            if (_noMap)
+            {
+                throw new InvalidOperationException("Nie nie toto nemôžeš.");
+            }
+            _noMap = true;
+
+            return this;
+        }
 
         /// <summary>
         /// Configure converter for property value.
         /// </summary>
         /// <typeparam name="TConverter">Converter type.</typeparam>
-        public PropertyBuilder<TEntity> UseConverter<TConverter>() => this;
+        public PropertyBuilder<TEntity> UseConverter<TConverter>() where TConverter : IConverter, new()
+            => UseConverter(new TConverter());
+
+        /// <summary>
+        /// Configure converter for property value.
+        /// </summary>
+        /// <param name="converter">Converter instance.</param>
+        public PropertyBuilder<TEntity> UseConverter(IConverter converter)
+        {
+            if (_converter != null)
+            {
+                throw new InvalidOperationException("Nie nie toto nemôžeš.");
+            }
+            CheckNoMapOrInjector();
+
+            _converter = Check.NotNull(converter, nameof(converter));
+
+            return this;
+        }
 
         /// <summary>
         /// Configure injector delegate for injecting values to property.
         /// </summary>
         /// <param name="injector">Delegate for injecting values to property.</param>
-        public PropertyBuilder<TEntity> InjectValue<TProperty>(Func<TProperty> injector) => this;
+        public PropertyBuilder<TEntity> InjectValue<TProperty>(Func<TProperty> injector)
+        {
+            if (!string.IsNullOrEmpty(_columnName) || _columnName != null)
+            {
+                throw new InvalidOperationException("Nie nie toto nemôžeš.");
+            }
+            if (_injector != null)
+            {
+                throw new InvalidOperationException("Nie nie toto nemôžeš.");
+            }
+
+            _injector = new InjectionConfiguration<TEntity>();
+            _injector.FillProperty(_propertyName, injector);
+
+            return this;
+        }
 
         /// <summary>
         /// Returns an object that can be used to configure a property of the entity type.
@@ -57,5 +116,13 @@ namespace Kros.KORM.Metadata
         public virtual PropertyBuilder<TEntity> Property<TProperty>(
             Expression<Func<TEntity, TProperty>> propertyExpression)
             => _entityTypeBuilder.Property(propertyExpression);
+
+        private void CheckNoMapOrInjector()
+        {
+            if (_noMap || _injector != null)
+            {
+                throw new InvalidOperationException("Nie nie toto nemôžeš. ale ináč.");
+            }
+        }
     }
 }

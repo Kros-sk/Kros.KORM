@@ -44,7 +44,7 @@ namespace Kros.KORM.Metadata
         /// <typeparam name="TProperty">Propery type</typeparam>
         /// <param name="propertyExpression">A lambda expression representing the property to be configured.</param>
         /// <returns>An object that can be used to configure the property.</returns>
-        public virtual PropertyBuilder<TEntity, TProperty> Property<TProperty>(
+        public virtual PropertyBuilder<TEntity> Property<TProperty>(
             Expression<Func<TEntity, TProperty>> propertyExpression) => null;
     }
 }
