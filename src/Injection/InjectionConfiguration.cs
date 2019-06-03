@@ -14,7 +14,7 @@ namespace Kros.KORM.Injection
     {
         #region Private fields
 
-        private Dictionary<string, Func<object>> _injectors =
+        private readonly Dictionary<string, Func<object>> _injectors =
             new Dictionary<string, Func<object>>(StringComparer.InvariantCultureIgnoreCase);
 
         #endregion

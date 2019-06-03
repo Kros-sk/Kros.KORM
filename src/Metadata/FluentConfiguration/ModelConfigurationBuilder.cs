@@ -26,5 +26,17 @@ namespace Kros.KORM.Metadata
 
             return entityBuilder;
         }
+
+        /// <summary>
+        /// Build model configuration.
+        /// </summary>
+        /// <param name="modelMapper">Model mapper.</param>
+        internal void Build(IModelMapperInternal modelMapper)
+        {
+            foreach (var entityBuilder in _entityBuilders.Values)
+            {
+                entityBuilder.Build(modelMapper);
+            }
+        }
     }
 }

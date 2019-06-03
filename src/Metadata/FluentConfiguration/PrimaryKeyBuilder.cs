@@ -13,7 +13,6 @@ namespace Kros.KORM.Metadata
     {
         private readonly EntityTypeBuilder<TEntity> _entityTypeBuilder;
         private readonly string _propertyName;
-        private string _constraintName;
         private AutoIncrementMethodType? _autoIncrementMethodType;
 
         /// <summary>
@@ -25,19 +24,6 @@ namespace Kros.KORM.Metadata
         {
             _entityTypeBuilder = Check.NotNull(entityTypeBuilder, nameof(entityTypeBuilder));
             _propertyName = Check.NotNullOrEmpty(propertyName, nameof(propertyName));
-        }
-
-        /// <summary>
-        /// Configures the corresponding primary key constraint name in the database.
-        /// </summary>
-        /// <param name="constraintName">Primary key contstraint name.</param>
-        public PrimaryKeyBuilder<TEntity> WithName(string constraintName)
-        {
-            ExceptionHelper.CheckMultipleTimeCalls(() => _constraintName != null);
-
-            _constraintName = Check.NotNullOrWhiteSpace(constraintName, nameof(constraintName));
-
-            return this;
         }
 
         /// <summary>
@@ -63,5 +49,11 @@ namespace Kros.KORM.Metadata
         public virtual PropertyBuilder<TEntity> Property<TProperty>(
             Expression<Func<TEntity, TProperty>> propertyExpression)
             => _entityTypeBuilder.Property(propertyExpression);
+
+        internal void Build(IModelMapperInternal modelMapper)
+        {
+            modelMapper.SetPrimaryKey<TEntity>(_propertyName,
+                _autoIncrementMethodType != null ? _autoIncrementMethodType.Value : AutoIncrementMethodType.None);
+        }
     }
 }

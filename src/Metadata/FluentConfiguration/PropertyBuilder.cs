@@ -20,7 +20,7 @@ namespace Kros.KORM.Metadata
         private string _columnName;
         private bool _noMap = false;
         private IConverter _converter;
-        private InjectionConfiguration<TEntity> _injector;
+        private bool _wasInjectorSetup = false;
 
         /// <summary>
         /// Ctor.
@@ -87,12 +87,12 @@ namespace Kros.KORM.Metadata
         {
             if (!string.IsNullOrEmpty(_columnName) || _columnName != null)
             {
-                throw new InvalidOperationException(Properties.Resources.CannotCallMethod.Format(nameof(InjectValue))));
+                throw new InvalidOperationException(Properties.Resources.CannotCallMethod.Format(nameof(InjectValue)));
             }
-            ExceptionHelper.CheckMultipleTimeCalls(() => _injector != null);
+            ExceptionHelper.CheckMultipleTimeCalls(() => _wasInjectorSetup);
 
-            _injector = new InjectionConfiguration<TEntity>();
-            _injector.FillProperty(_propertyName, injector);
+            _wasInjectorSetup = true;
+            _entityTypeBuilder.Injector.FillProperty(_propertyName, injector);
 
             return this;
         }
@@ -107,9 +107,25 @@ namespace Kros.KORM.Metadata
             Expression<Func<TEntity, TProperty>> propertyExpression)
             => _entityTypeBuilder.Property(propertyExpression);
 
+        internal void Build(IModelMapperInternal modelMapper)
+        {
+            if (_columnName.IsNullOrWhiteSpace())
+            {
+                modelMapper.SetColumnName<TEntity>(_propertyName, _columnName);
+            }
+            if (_noMap)
+            {
+                modelMapper.SetNoMap<TEntity>(_propertyName);
+            }
+            if (_converter != null)
+            {
+                modelMapper.SetConverter<TEntity>(_propertyName, _converter);
+            }
+        }
+
         private void CheckNoMapOrInjector()
         {
-            if (_noMap || _injector != null)
+            if (_noMap || _wasInjectorSetup)
             {
                 throw new InvalidOperationException(
                     Properties.Resources.CannotConfigureAnythingElse.Format(nameof(NoMap), nameof(InjectValue)));

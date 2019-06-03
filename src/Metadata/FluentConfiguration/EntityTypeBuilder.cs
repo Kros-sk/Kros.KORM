@@ -1,4 +1,6 @@
-﻿using Kros.KORM.Helper;
+﻿using Kros.Extensions;
+using Kros.KORM.Helper;
+using Kros.KORM.Injection;
 using Kros.KORM.Metadata.FluentConfiguration;
 using Kros.Utils;
 using System;
@@ -11,12 +13,14 @@ namespace Kros.KORM.Metadata
     /// Provide a simple fluent API for building mapping definition between <typeparamref name="TEntity"/> and database table.
     /// </summary>
     /// <typeparam name="TEntity">The entity type being configured.</typeparam>
-    public class EntityTypeBuilder<TEntity>: EntityTypeBuilderInternal where TEntity : class
+    public class EntityTypeBuilder<TEntity> : EntityTypeBuilderInternal where TEntity : class
     {
         private string _tableName;
         private PrimaryKeyBuilder<TEntity> _primaryKeyBuilder;
         private readonly Dictionary<string, PropertyBuilder<TEntity>> _propertyBuilders
             = new Dictionary<string, PropertyBuilder<TEntity>>();
+        private Lazy<InjectionConfiguration<TEntity>> _injector =
+            new Lazy<InjectionConfiguration<TEntity>>(() => new InjectionConfiguration<TEntity>());
 
         /// <summary>
         /// Configures the corresponding table name in the database for the <typeparamref name="TEntity"/>.
@@ -60,13 +64,42 @@ namespace Kros.KORM.Metadata
             Expression<Func<TEntity, TProperty>> propertyExpression)
         {
             string propertyName = PropertyName<TEntity>.GetPropertyName(propertyExpression);
+            PropertyBuilder<TEntity> propertyBuilder;
 
-            ExceptionHelper.CheckMultipleTimeCalls(() => _propertyBuilders.ContainsKey(propertyName));
-
-            var propertyBuilder = new PropertyBuilder<TEntity>(this, propertyName);
-            _propertyBuilders.Add(propertyName, propertyBuilder);
+            if (_propertyBuilders.ContainsKey(propertyName))
+            {
+                propertyBuilder = _propertyBuilders[propertyName];
+            }
+            else
+            {
+                propertyBuilder = new PropertyBuilder<TEntity>(this, propertyName);
+                _propertyBuilders.Add(propertyName, propertyBuilder);
+            }
 
             return propertyBuilder;
+        }
+
+        internal InjectionConfiguration<TEntity> Injector => _injector.Value;
+
+        internal override void Build(IModelMapperInternal modelMapper)
+        {
+            if (!_tableName.IsNullOrWhiteSpace())
+            {
+                modelMapper.SetTableName<TEntity>(_tableName);
+            }
+            if (_primaryKeyBuilder != null)
+            {
+                _primaryKeyBuilder.Build(modelMapper);
+            }
+            if (_injector.IsValueCreated)
+            {
+                modelMapper.SetInjector<TEntity>(_injector.Value);
+            }
+
+            foreach (var propertyBuilder in _propertyBuilders.Values)
+            {
+                propertyBuilder.Build(modelMapper);
+            }
         }
     }
 }
