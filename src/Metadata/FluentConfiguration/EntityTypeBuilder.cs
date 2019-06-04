@@ -13,7 +13,7 @@ namespace Kros.KORM.Metadata
     /// Provide a simple fluent API for building mapping definition between <typeparamref name="TEntity"/> and database table.
     /// </summary>
     /// <typeparam name="TEntity">The entity type being configured.</typeparam>
-    public class EntityTypeBuilder<TEntity> : EntityTypeBuilderInternal where TEntity : class
+    public class EntityTypeBuilder<TEntity> : EntityTypeBuilderBase where TEntity : class
     {
         private string _tableName;
         private PrimaryKeyBuilder<TEntity> _primaryKeyBuilder;
@@ -57,7 +57,7 @@ namespace Kros.KORM.Metadata
         /// <summary>
         /// Returns an object that can be used to configure a property of the entity type.
         /// </summary>
-        /// <typeparam name="TProperty">Propery type</typeparam>
+        /// <typeparam name="TProperty">Propery type.</typeparam>
         /// <param name="propertyExpression">A lambda expression representing the property to be configured.</param>
         /// <returns>An object that can be used to configure the property.</returns>
         public virtual PropertyBuilder<TEntity> Property<TProperty>(

@@ -6,7 +6,7 @@ namespace Kros.KORM.Metadata
     /// <summary>
     /// Provide a simple fluent API for building mapping definition between entity and database table.
     /// </summary>
-    public abstract class EntityTypeBuilderInternal
+    public abstract class EntityTypeBuilderBase
     {
         /// <summary>
         /// Build entity configuration.

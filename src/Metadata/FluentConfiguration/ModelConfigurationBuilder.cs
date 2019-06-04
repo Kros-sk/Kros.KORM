@@ -9,7 +9,7 @@ namespace Kros.KORM.Metadata
     /// </summary>
     public class ModelConfigurationBuilder
     {
-        private Dictionary<Type, EntityTypeBuilderInternal> _entityBuilders = new Dictionary<Type, EntityTypeBuilderInternal>();
+        private Dictionary<Type, EntityTypeBuilderBase> _entityBuilders = new Dictionary<Type, EntityTypeBuilderBase>();
 
         /// <summary>
         /// Returns an object that can be used to configure of a given entity type.

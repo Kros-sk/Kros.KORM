@@ -43,7 +43,7 @@ namespace Kros.KORM.Metadata
         /// <summary>
         /// Returns an object that can be used to configure a property of the entity type.
         /// </summary>
-        /// <typeparam name="TProperty">Propery type</typeparam>
+        /// <typeparam name="TProperty">Propery type.</typeparam>
         /// <param name="propertyExpression">A lambda expression representing the property to be configured.</param>
         /// <returns>An object that can be used to configure the property.</returns>
         public virtual PropertyBuilder<TEntity> Property<TProperty>(
