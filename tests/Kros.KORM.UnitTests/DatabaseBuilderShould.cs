@@ -11,6 +11,7 @@ using System.Linq;
 using System.Data;
 using Kros.KORM.Query;
 using System;
+using Kros.KORM.Metadata;
 
 namespace Kros.KORM.UnitTests
 {
@@ -23,6 +24,13 @@ namespace Kros.KORM.UnitTests
             public int Id { get; set; }
 
             public int Value { get; set; }
+        }
+
+        private class Bar
+        {
+            public int RowId { get; set; }
+
+            public int Age { get; set; }
         }
 
         #endregion
@@ -176,6 +184,21 @@ $@"CREATE TABLE [dbo].[Foo] (
             build.Should().Throw<InvalidOperationException>();
         }
 
+        [Fact]
+        public void UseDatabaseConfigurationForBuildingModel()
+        {
+            var database = Database
+               .Builder
+               .UseConnection(
+                   new ConnectionStringSettings("KORM", ServerHelper.Connection.ConnectionString, "System.Data.SqlClient"))
+               .UseDatabaseConfiguration<DatabaseConfiguration>()
+               .Build();
+
+            database.Query<Bar>()
+                .FirstOrDefault(b => b.RowId == 1)
+                .Age.Should().Be(11);
+        }
+
         private static void DatabaseShouldNotBeNull(IDatabase database)
         {
             database.Should().NotBeNull();
@@ -188,6 +211,20 @@ $@"CREATE TABLE [dbo].[Foo] (
             database.Query<Foo>()
                 .FirstOrDefault(f => f.Id == 1)
                 .Value.Should().Be(11);
+        }
+
+        public class DatabaseConfiguration: DatabaseConfigurationBase
+        {
+            public override void OnModelCreating(ModelConfigurationBuilder modelBuilder)
+            {
+                base.OnModelCreating(modelBuilder);
+
+                modelBuilder.Entity<Bar>()
+                    .HasTableName("Foo")
+                    .HasPrimaryKey(p => p.RowId)
+                    .Property(p => p.RowId).HasColumnName("Id")
+                    .Property(p => p.Age).HasColumnName("Value");
+            }
         }
     }
 }

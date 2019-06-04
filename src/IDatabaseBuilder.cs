@@ -49,6 +49,20 @@ namespace Kros.KORM
         IDatabaseBuilder UseModelFactory(IModelFactory modelFactory);
 
         /// <summary>
+        /// Use database configuration.
+        /// </summary>
+        /// <typeparam name="TConfiguration">Configuration type.</typeparam>
+        /// <returns>Database builder.</returns>
+        IDatabaseBuilder UseDatabaseConfiguration<TConfiguration>() where TConfiguration : DatabaseConfigurationBase, new();
+
+        /// <summary>
+        /// Use database configuration.
+        /// </summary>
+        /// <param name="databaseConfiguration">Instance of database configuration.</param>
+        /// <returns>Database builder.</returns>
+        IDatabaseBuilder UseDatabaseConfiguration(DatabaseConfigurationBase databaseConfiguration);
+
+        /// <summary>
         /// Build <see cref="IDatabase"/>.
         /// </summary>
         /// <returns>KORM database access.</returns>

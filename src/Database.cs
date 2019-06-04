@@ -303,6 +303,7 @@ namespace Kros.KORM
             private ConnectionStringSettings _connectionString;
             private DbConnection _connection;
             private IModelFactory _modelFactory;
+            private DatabaseConfigurationBase _databaseConfiguration;
 
             public IDatabaseBuilder UseConnection(ConnectionStringSettings connectionString)
             {
@@ -341,6 +342,18 @@ namespace Kros.KORM
             public IDatabaseBuilder UseModelFactory(IModelFactory modelFactory)
             {
                 _modelFactory = Check.NotNull(modelFactory, nameof(modelFactory));
+
+                return this;
+            }
+
+            public IDatabaseBuilder UseDatabaseConfiguration<TConfiguration>()
+                where TConfiguration : DatabaseConfigurationBase, new()
+                => UseDatabaseConfiguration(new TConfiguration());
+
+
+            public IDatabaseBuilder UseDatabaseConfiguration(DatabaseConfigurationBase databaseConfiguration)
+            {
+                _databaseConfiguration = Check.NotNull(databaseConfiguration, nameof(databaseConfiguration));
 
                 return this;
             }
@@ -411,7 +424,18 @@ namespace Kros.KORM
                 database._databaseMapper = GetDatabaseMapper();
             }
 
-            private IDatabaseMapper GetDatabaseMapper() => Database.DatabaseMapper;
+            private IDatabaseMapper GetDatabaseMapper()
+            {
+                if (_databaseConfiguration != null)
+                {
+                    var modelBuilder = new ModelConfigurationBuilder();
+                    _databaseConfiguration.OnModelCreating(modelBuilder);
+
+                    modelBuilder.Build(DefaultModelMapper as ConventionModelMapper);
+                }
+
+                return Database.DatabaseMapper;
+            }
         }
 
         #endregion
