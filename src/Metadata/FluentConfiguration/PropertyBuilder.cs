@@ -85,7 +85,7 @@ namespace Kros.KORM.Metadata
         /// <param name="injector">Delegate for injecting values to property.</param>
         public PropertyBuilder<TEntity> InjectValue<TProperty>(Func<TProperty> injector)
         {
-            if (!string.IsNullOrEmpty(_columnName) || _columnName != null)
+            if (!string.IsNullOrEmpty(_columnName) || _converter != null)
             {
                 throw new InvalidOperationException(Properties.Resources.CannotCallMethod.Format(nameof(InjectValue)));
             }
@@ -109,7 +109,7 @@ namespace Kros.KORM.Metadata
 
         internal void Build(IModelMapperInternal modelMapper)
         {
-            if (_columnName.IsNullOrWhiteSpace())
+            if (!_columnName.IsNullOrWhiteSpace())
             {
                 modelMapper.SetColumnName<TEntity>(_propertyName, _columnName);
             }

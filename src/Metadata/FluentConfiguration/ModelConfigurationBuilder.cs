@@ -9,7 +9,7 @@ namespace Kros.KORM.Metadata
     /// </summary>
     public class ModelConfigurationBuilder
     {
-        private Dictionary<Type, EntityTypeBuilderInternal> _entityBuilders;
+        private Dictionary<Type, EntityTypeBuilderInternal> _entityBuilders = new Dictionary<Type, EntityTypeBuilderInternal>();
 
         /// <summary>
         /// Returns an object that can be used to configure of a given entity type.
@@ -19,10 +19,17 @@ namespace Kros.KORM.Metadata
         public EntityTypeBuilder<TEntity> Entity<TEntity>() where TEntity : class
         {
             var entityType = typeof(TEntity);
-            ExceptionHelper.CheckMultipleTimeCalls(() => _entityBuilders.ContainsKey(entityType));
+            EntityTypeBuilder<TEntity> entityBuilder;
 
-            var entityBuilder = new EntityTypeBuilder<TEntity>();
-            _entityBuilders[entityType] = entityBuilder;
+            if (_entityBuilders.ContainsKey(entityType))
+            {
+                entityBuilder = _entityBuilders[entityType] as EntityTypeBuilder<TEntity>;
+            }
+            else
+            {
+                entityBuilder = new EntityTypeBuilder<TEntity>();
+                _entityBuilders[entityType] = entityBuilder;
+            }
 
             return entityBuilder;
         }
