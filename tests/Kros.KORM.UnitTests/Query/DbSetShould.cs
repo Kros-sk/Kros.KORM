@@ -388,6 +388,11 @@ namespace Kros.KORM.UnitTests
                 throw new NotImplementedException();
             }
 
+            public Task<int> ExecuteNonQueryAsync(string query, params object[] parameters)
+            {
+                throw new NotImplementedException();
+            }
+
             public Task<int> ExecuteNonQueryAsync(string query, CommandParameterCollection parameters)
             {
                 throw new NotImplementedException();

@@ -189,6 +189,12 @@
   <data name="MissongMethodInModelBuilder" xml:space="preserve">
     <value>ModelBuilder instance ({0}) does not have method {1}({2}).</value>
   </data>
+  <data name="MoreParametersThanValues" xml:space="preserve">
+    <value>Cannot execute query. There are more parameters than values in the query.</value>
+  </data>
+  <data name="MoreValuesThanParameters" xml:space="preserve">
+    <value>Cannot execute query. There are more values than parameters in the query.</value>
+  </data>
   <data name="NestedTransactionCommandTimeoutIsReadonly" xml:space="preserve">
     <value>Property NestedTransaction.CommandTimeout is readonly.</value>
   </data>
