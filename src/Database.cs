@@ -350,7 +350,6 @@ namespace Kros.KORM
                 where TConfiguration : DatabaseConfigurationBase, new()
                 => UseDatabaseConfiguration(new TConfiguration());
 
-
             public IDatabaseBuilder UseDatabaseConfiguration(DatabaseConfigurationBase databaseConfiguration)
             {
                 _databaseConfiguration = Check.NotNull(databaseConfiguration, nameof(databaseConfiguration));

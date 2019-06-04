@@ -13,7 +13,6 @@ namespace Kros.KORM
         /// <param name="modelBuilder">Model builder.</param>
         public virtual void OnModelCreating(ModelConfigurationBuilder modelBuilder)
         {
-
         }
     }
 }

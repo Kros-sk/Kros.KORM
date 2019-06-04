@@ -1,7 +1,4 @@
-﻿
-using System;
-
-namespace Kros.KORM.Metadata
+﻿namespace Kros.KORM.Metadata
 {
     /// <summary>
     /// Provide a simple fluent API for building mapping definition between entity and database table.

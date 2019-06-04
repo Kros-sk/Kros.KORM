@@ -1,5 +1,4 @@
-﻿
-using Kros.KORM.Converter;
+﻿using Kros.KORM.Converter;
 using Kros.KORM.Exceptions;
 using Kros.KORM.Helper;
 using Kros.KORM.Injection;

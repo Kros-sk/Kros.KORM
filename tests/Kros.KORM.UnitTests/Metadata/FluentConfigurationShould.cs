@@ -181,7 +181,6 @@ namespace Kros.KORM.UnitTests.Metadata
                 .WithMessage("Can't call multiple time method 'HasTableName'.");
         }
 
-
         [Fact]
         public void ThrowExceptionIfTrySetPrimaryKeySecondTime()
         {
@@ -376,7 +375,6 @@ namespace Kros.KORM.UnitTests.Metadata
                     actualColumnInfo.Converter.Should().BeOfType(columnInfo.Converter.GetType());
                 }
             }
-
         }
 
         public class Foo
