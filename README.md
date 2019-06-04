@@ -222,6 +222,41 @@ For dynamic mapping you can use method [SetColumnName<TModel, TValue>](https://k
 Database.DefaultModelMapper.SetColumnName<Person, string>(p => p.Name, "FirstName");
 ```
 
+### Configure model mapping by fluent api
+
+Configuration by DataAnotation attributes is OK in many scenarios. However, there are scenarios where we want to have a model
+definition and mapping it to a database separate.
+For example, if you want to have entities in domain layer and mapping in infrastructure layer.
+
+For these scenarios you can devivate database configuration from `DatabaseConfigurationBase`.
+
+```CSharp
+public class DatabaseConfiguration: DatabaseConfigurationBase
+{
+    public override void OnModelCreating(ModelConfigurationBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Foo>()
+            .HasTableName("FooTable")
+            .HasPrimaryKey(f => f.Id)
+                .AutoIncrement(AutoIncrementMethodType.Custom)
+            .Property(f => f.FirstName).HasColumnName("Name")
+            .Property(f => f.LastName).NoMap()
+            .Property(f => f.Addresses).UseConverter<AddressConverter>()
+            .Property(f => f.EmailService).InjectValue(() => new EmailService());
+    }
+}
+```
+
+And use `IDatabaseBuilder` for creating KORM instance.
+
+```CSharp
+var database = Database
+    .Builder
+    .UseConnection(connection)
+    .UseDatabaseConfiguration<DatabaseConfiguration>()
+    .Build();
+```
+
 ### Converters
 
 Data type of column in database and data type of property in your POCO class may differ. Some of these differences are automatically solved by Kros.KORM, for example `double` in database is converted to `int` in your model, same as `int` in database to `enum` in model, etc.
