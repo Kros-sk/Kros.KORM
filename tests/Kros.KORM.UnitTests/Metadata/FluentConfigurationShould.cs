@@ -393,7 +393,7 @@ namespace Kros.KORM.UnitTests.Metadata
             public string LastName { get; set; }
         }
 
-        public class AddressesConverter : IConverter
+        public class AddressConverter : IConverter
         {
             public object Convert(object value)
             {
