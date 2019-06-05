@@ -29,7 +29,7 @@ namespace Kros.KORM.UnitTests.Metadata
 
             modelBuilder.Build(modelMapper);
 
-            var tableInfo = modelMapper.GetTableInfo<Foo>();
+            TableInfo tableInfo = modelMapper.GetTableInfo<Foo>();
 
             var columns = new List<ColumnInfo>() {
                 new ColumnInfo()
@@ -41,7 +41,7 @@ namespace Kros.KORM.UnitTests.Metadata
                 new ColumnInfo() { Name = "COL_ADDRESSES", Converter = new AddressConverter() },
                 new ColumnInfo() { Name = "Name" }
             };
-            var tableInfoExpected = CreateExpectedTableInfo(columns, "FooTable");
+            TableInfo tableInfoExpected = CreateExpectedTableInfo(columns, "FooTable");
 
             AreSame(tableInfo, tableInfoExpected);
             modelMapper.GetInjector<Foo>().IsInjectable("DateTime")
@@ -62,7 +62,7 @@ namespace Kros.KORM.UnitTests.Metadata
 
             modelBuilder.Build(modelMapper);
 
-            var tableInfo = modelMapper.GetTableInfo<Foo>();
+            TableInfo tableInfo = modelMapper.GetTableInfo<Foo>();
 
             var columns = new List<ColumnInfo>() {
                 new ColumnInfo()
@@ -76,7 +76,7 @@ namespace Kros.KORM.UnitTests.Metadata
                 new ColumnInfo() { Name = "NoMapped" },
                 new ColumnInfo() { Name = "DateTime" }
             };
-            var tableInfoExpected = CreateExpectedTableInfo(columns, "FooTable");
+            TableInfo tableInfoExpected = CreateExpectedTableInfo(columns, "FooTable");
 
             AreSame(tableInfo, tableInfoExpected);
         }
@@ -104,7 +104,7 @@ namespace Kros.KORM.UnitTests.Metadata
 
             modelBuilder.Build(modelMapper);
 
-            var tableInfo = modelMapper.GetTableInfo<Foo>();
+            TableInfo tableInfo = modelMapper.GetTableInfo<Foo>();
 
             var columns = new List<ColumnInfo>() {
                 new ColumnInfo()
@@ -116,11 +116,11 @@ namespace Kros.KORM.UnitTests.Metadata
                 new ColumnInfo() { Name = "COL_ADDRESSES", Converter = new AddressConverter() },
                 new ColumnInfo() { Name = "Name" }
             };
-            var tableInfoFooExpected = CreateExpectedTableInfo(columns, "FooTable");
+            TableInfo tableInfoFooExpected = CreateExpectedTableInfo(columns, "FooTable");
 
             AreSame(tableInfo, tableInfoFooExpected);
 
-            var tableInfoBar = modelMapper.GetTableInfo<Bar>();
+            TableInfo tableInfoBar = modelMapper.GetTableInfo<Bar>();
 
             columns = new List<ColumnInfo>() {
                 new ColumnInfo()
@@ -132,7 +132,7 @@ namespace Kros.KORM.UnitTests.Metadata
                 new ColumnInfo() { Name = "GivenName" },
                 new ColumnInfo() { Name = "LastName" }
             };
-            var tableInfoBarExpected = CreateExpectedTableInfo(columns, "Bar");
+            TableInfo tableInfoBarExpected = CreateExpectedTableInfo(columns, "Bar");
 
             AreSame(tableInfoBar, tableInfoBarExpected);
         }
@@ -148,7 +148,7 @@ namespace Kros.KORM.UnitTests.Metadata
 
             modelBuilder.Build(modelMapper);
 
-            var tableInfo = modelMapper.GetTableInfo<Foo>();
+            TableInfo tableInfo = modelMapper.GetTableInfo<Foo>();
 
             var columns = new List<ColumnInfo>() {
                 new ColumnInfo()
@@ -162,7 +162,7 @@ namespace Kros.KORM.UnitTests.Metadata
                 new ColumnInfo() { Name = "NoMapped" },
                 new ColumnInfo() { Name = "DateTime" }
             };
-            var tableInfoExpected = CreateExpectedTableInfo(columns, "Foo");
+            TableInfo tableInfoExpected = CreateExpectedTableInfo(columns, "Foo");
 
             AreSame(tableInfo, tableInfoExpected);
         }
@@ -352,8 +352,10 @@ namespace Kros.KORM.UnitTests.Metadata
 
         private static TableInfo CreateExpectedTableInfo(List<ColumnInfo> columns, string tableName)
         {
-            var tableInfoExpected = new TableInfo(columns, Enumerable.Empty<PropertyInfo>(), null);
-            tableInfoExpected.Name = tableName;
+            var tableInfoExpected = new TableInfo(columns, Enumerable.Empty<PropertyInfo>(), null)
+            {
+                Name = tableName
+            };
 
             return tableInfoExpected;
         }
@@ -364,9 +366,9 @@ namespace Kros.KORM.UnitTests.Metadata
             actual.HasIdentityPrimaryKey.Should().Be(expected.HasIdentityPrimaryKey);
             actual.Columns.Should().HaveCount(expected.Columns.Count());
 
-            foreach (var columnInfo in expected.Columns)
+            foreach (ColumnInfo columnInfo in expected.Columns)
             {
-                var actualColumnInfo = actual.GetColumnInfo(columnInfo.Name);
+                ColumnInfo actualColumnInfo = actual.GetColumnInfo(columnInfo.Name);
                 actualColumnInfo.Should().NotBeNull();
                 actualColumnInfo.Name.Should().Be(columnInfo.Name);
                 actualColumnInfo.IsPrimaryKey.Should().Be(columnInfo.IsPrimaryKey);
@@ -395,28 +397,16 @@ namespace Kros.KORM.UnitTests.Metadata
 
         public class AddressConverter : IConverter
         {
-            public object Convert(object value)
-            {
-                throw new NotImplementedException();
-            }
+            public object Convert(object value) => throw new NotImplementedException();
 
-            public object ConvertBack(object value)
-            {
-                throw new NotImplementedException();
-            }
+            public object ConvertBack(object value) => throw new NotImplementedException();
         }
 
         public class UpperCaseConverter : IConverter
         {
-            public object Convert(object value)
-            {
-                throw new NotImplementedException();
-            }
+            public object Convert(object value) => throw new NotImplementedException();
 
-            public object ConvertBack(object value)
-            {
-                throw new NotImplementedException();
-            }
+            public object ConvertBack(object value) => throw new NotImplementedException();
         }
     }
 }
