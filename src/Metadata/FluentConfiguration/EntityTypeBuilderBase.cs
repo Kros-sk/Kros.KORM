@@ -6,7 +6,7 @@
     public abstract class EntityTypeBuilderBase
     {
         /// <summary>
-        /// Build entity configuration.
+        /// Builds entity configuration.
         /// </summary>
         /// <param name="modelMapper">Model mappper.</param>
         internal abstract void Build(IModelMapperInternal modelMapper);
