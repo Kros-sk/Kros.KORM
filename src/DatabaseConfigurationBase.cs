@@ -3,7 +3,7 @@
 namespace Kros.KORM
 {
     /// <summary>
-    /// Class which you can derived if you want configurate database.
+    /// Base class, can be derived to configure database.
     /// </summary>
     public abstract class DatabaseConfigurationBase
     {
