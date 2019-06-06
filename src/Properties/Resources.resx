@@ -120,6 +120,17 @@
   <data name="BinaryOperatorIsNotSupported" xml:space="preserve">
     <value>The binary operator '{0}' is not supported.</value>
   </data>
+  <data name="CannotCallMethod" xml:space="preserve">
+    <value>Can't call '{0}' if you configured column name or converter.</value>
+    <comment>0 - method name</comment>
+  </data>
+  <data name="CannotCallMultipleTime" xml:space="preserve">
+    <value>Can't call multiple time method '{0}'.</value>
+    <comment>0 - method name</comment>
+  </data>
+  <data name="CannotConfigureAnythingElse" xml:space="preserve">
+    <value>You cannot configure anything else if you are call '{0}' or '{1}'</value>
+  </data>
   <data name="CannotMaterializeSourceValue" xml:space="preserve">
     <value>Can't materialize source value type '{0}' to destination type '{1}' without defined converter.</value>
   </data>
@@ -237,5 +248,11 @@
   </data>
   <data name="UnaryOperatorIsNotSupported" xml:space="preserve">
     <value>The unary operator '{0}' is not supported.</value>
+  </data>
+  <data name="UseConnectionCanBeCallOnlyOne" xml:space="preserve">
+    <value>Method '{0}' can be call only one time.</value>
+  </data>
+  <data name="UseConnectionMustBeCall" xml:space="preserve">
+    <value>Method '{0}' must be call before '{1}'</value>
   </data>
 </root>

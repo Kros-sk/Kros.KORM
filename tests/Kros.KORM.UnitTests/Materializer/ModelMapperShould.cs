@@ -1,6 +1,7 @@
 ﻿using FluentAssertions;
 using Kros.KORM.Converter;
 using Kros.KORM.Exceptions;
+using Kros.KORM.Injection;
 using Kros.KORM.Materializer;
 using Kros.KORM.Metadata;
 using Kros.KORM.Metadata.Attribute;
@@ -47,6 +48,13 @@ namespace Kros.KORM.UnitTests.Metadata
         private class SinglePrivateKey
         {
             [Key]
+            public int RecordId { get; set; }
+            public int Id { get; set; }
+            public string Data { get; set; }
+        }
+
+        private class FluentPrivateKey
+        {
             public int RecordId { get; set; }
             public int Id { get; set; }
             public string Data { get; set; }
@@ -197,6 +205,22 @@ namespace Kros.KORM.UnitTests.Metadata
         }
 
         [Fact]
+        public void UseNamesFromConfigurationMapWhenPropertyNameIsUsed()
+        {
+            var modelMapper = new ConventionModelMapper();
+            ((IModelMapperInternal)modelMapper).SetColumnName<Foo>("PropertyString", "Address");
+            ((IModelMapperInternal)modelMapper).SetColumnName<Foo>("PropertyDouble", "Salary");
+
+            var tableInfo = modelMapper.GetTableInfo<Foo>();
+
+            var address = tableInfo.GetColumnInfoByPropertyName(nameof(Foo.PropertyString));
+            var salary = tableInfo.GetColumnInfoByPropertyName(nameof(Foo.PropertyDouble));
+
+            address.Name.Should().Be("Address");
+            salary.Name.Should().Be("Salary");
+        }
+
+        [Fact]
         public void UseConventionForGettingTableNameWhenAliasDoesNotExist()
         {
             var modelMapper = new ConventionModelMapper();
@@ -204,6 +228,17 @@ namespace Kros.KORM.UnitTests.Metadata
             var tableInfo = modelMapper.GetTableInfo<Foo>();
 
             tableInfo.Name.Should().Be("Foo");
+        }
+
+        [Fact]
+        public void UseSetsTableName()
+        {
+            var modelMapper = new ConventionModelMapper();
+            (modelMapper as IModelMapperInternal).SetTableName<Foo>("Foo2");
+
+            var tableInfo = modelMapper.GetTableInfo<Foo>();
+
+            tableInfo.Name.Should().Be("Foo2");
         }
 
         [Fact]
@@ -231,6 +266,20 @@ namespace Kros.KORM.UnitTests.Metadata
             key.Should().HaveCount(1, pkMessage);
             key[0].Name.Should().Be("RecordId");
             key[0].IsPrimaryKey.Should().BeTrue();
+        }
+
+        [Fact]
+        public void GetTableInfoWithPrimaryKeyFluentDefinition()
+        {
+            var modelMapper = new ConventionModelMapper();
+            ((IModelMapperInternal)modelMapper).SetPrimaryKey<FluentPrivateKey>("RecordId", AutoIncrementMethodType.Identity);
+
+            var tableInfo = modelMapper.GetTableInfo<FluentPrivateKey>();
+            tableInfo.PrimaryKey
+                .Should()
+                .HaveCount(1)
+                .And
+                .ContainSingle((c) => c.Name == "RecordId" && c.AutoIncrementMethodType == AutoIncrementMethodType.Identity);
         }
 
         [Fact]
@@ -328,25 +377,46 @@ namespace Kros.KORM.UnitTests.Metadata
         }
 
         [Fact]
+        public void GetTableInfoWithColumnConverterSetByConfiguration()
+        {
+            var modelMapper = new ConventionModelMapper();
+            ((IModelMapperInternal)modelMapper).SetConverter<Foo>("LastName", new TestConverter());
+            var tableInfo = modelMapper.GetTableInfo<Foo>();
+
+            var columnWithConverter = tableInfo.Columns.Single(c => c.Name == "LastName");
+
+            columnWithConverter.Converter.Should().BeOfType<TestConverter>();
+        }
+
+        [Fact]
         public void GetTableInfoWithoutReadOnlyProperty()
         {
             var modelMapper = new ConventionModelMapper();
 
             var tableInfo = modelMapper.GetTableInfo<Foo>();
 
-            var columns = tableInfo.Columns.ToList();
-
             tableInfo.GetColumnInfo("ReadOnlyProperty").Should().BeNull();
         }
 
         [Fact]
-        public void GetTableInfoWithoutNoMappAttribute()
+        public void GetTableInfoWithoutNoMapAttribute()
         {
             var modelMapper = new ConventionModelMapper();
 
             var tableInfo = modelMapper.GetTableInfo<Foo>();
 
             tableInfo.GetColumnInfo("Ignore").Should().BeNull();
+        }
+
+        [Fact]
+        public void GetTableInfoWithoutNoMap()
+        {
+            var modelMapper = new ConventionModelMapper();
+            ((IModelMapperInternal)modelMapper).SetNoMap<Foo>("LastName");
+
+            var tableInfo = modelMapper.GetTableInfo<Foo>();
+
+            tableInfo.GetColumnInfo("LastName").Should().BeNull();
         }
 
         [Fact]
@@ -416,7 +486,7 @@ namespace Kros.KORM.UnitTests.Metadata
         {
             var modelMapper = new ConventionModelMapper();
 
-            var tableInfo = modelMapper.GetTableInfo<AliasedModel>();
+            TableInfo tableInfo = modelMapper.GetTableInfo<AliasedModel>();
             tableInfo.OnAfterMaterialize.Name.Should().Be("OnAfterMaterialize");
         }
 
@@ -428,6 +498,18 @@ namespace Kros.KORM.UnitTests.Metadata
             var configurator = modelMapper.InjectionConfigurator<Foo>()
                 .FillProperty(p => p.PropertyString, () => "lorem")
                 .FillProperty(p => p.PropertyDouble, () => 1);
+
+            modelMapper.GetInjector<Foo>().Should().Be(configurator);
+        }
+
+        [Fact]
+        public void KnowConfigureInjectionExternal()
+        {
+            var modelMapper = new ConventionModelMapper();
+            var configurator = new InjectionConfiguration<Foo>()
+                .FillProperty(p => p.PropertyDouble, () => 1);
+
+            ((IModelMapperInternal)modelMapper).SetInjector<Foo>((IInjector)configurator);
 
             modelMapper.GetInjector<Foo>().Should().Be(configurator);
         }

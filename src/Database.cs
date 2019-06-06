@@ -18,14 +18,14 @@ namespace Kros.KORM
     /// <para>
     /// For executing query and materializing models see:
     /// <para >
-    /// <see cref="Kros.KORM.IDatabase" />
+    /// <see cref="IDatabase" />
     /// </para>
     /// <para>
-    /// <see cref="Kros.KORM.Query.IQuery{T}" />
+    /// <see cref="KORM.Query.IQuery{T}" />
     /// </para>
     /// </para>
     /// </summary>
-    /// <seealso cref="Kros.KORM.Materializer.IModelBuilder" />
+    /// <seealso cref="IModelBuilder" />
     public class Database : IDatabase
     {
         #region Static
@@ -56,6 +56,11 @@ namespace Kros.KORM
         /// </summary>
         public static Action<string> Log { get; set; }
 
+        /// <summary>
+        /// Builder for creating <see cref="IDatabase"/> instance.
+        /// </summary>
+        public static IDatabaseBuilder Builder => new DatabaseBuilder();
+
         #endregion
 
         #region Private fields
@@ -79,6 +84,8 @@ namespace Kros.KORM
             DatabaseMapper = new DatabaseMapper(DefaultModelMapper);
             DefaultModelFactory = new DynamicMethodModelFactory(DatabaseMapper);
         }
+
+        private Database() { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Database"/> class.
@@ -287,6 +294,150 @@ namespace Kros.KORM
             using (var idGenerator = _queryProvider.CreateIdGenerator("DummyTableName", 1))
             {
                 idGenerator.InitDatabaseForIdGenerator();
+            }
+        }
+
+        #endregion
+
+        #region IDatabaseBuilder
+
+        private class DatabaseBuilder : IDatabaseBuilder
+        {
+            private IQueryProviderFactory _queryProviderFactory;
+            private ConnectionStringSettings _connectionString;
+            private DbConnection _connection;
+            private IModelFactory _modelFactory;
+            private DatabaseConfigurationBase _databaseConfiguration;
+
+            public IDatabaseBuilder UseConnection(ConnectionStringSettings connectionString)
+            {
+                CheckDuplicateSettingForConnection();
+                _connectionString = Check.NotNull(connectionString, nameof(connectionString));
+
+                return this;
+            }
+
+            public IDatabaseBuilder UseConnection(string connectionString, string adoClientName)
+            {
+                CheckDuplicateSettingForConnection();
+                _connectionString = new ConnectionStringSettings(
+                    "KORM",
+                    Check.NotNullOrWhiteSpace(connectionString, nameof(connectionString)),
+                    Check.NotNullOrWhiteSpace(adoClientName, nameof(adoClientName)));
+
+                return this;
+            }
+
+            public IDatabaseBuilder UseConnection(DbConnection connection)
+            {
+                CheckDuplicateSettingForConnection();
+                _connection = Check.NotNull(connection, nameof(connection));
+
+                return this;
+            }
+
+            public IDatabaseBuilder UseQueryProviderFactory(IQueryProviderFactory queryProviderFactory)
+            {
+                _queryProviderFactory = Check.NotNull(queryProviderFactory, nameof(queryProviderFactory));
+
+                return this;
+            }
+
+            public IDatabaseBuilder UseModelFactory(IModelFactory modelFactory)
+            {
+                _modelFactory = Check.NotNull(modelFactory, nameof(modelFactory));
+
+                return this;
+            }
+
+            public IDatabaseBuilder UseDatabaseConfiguration<TConfiguration>()
+                where TConfiguration : DatabaseConfigurationBase, new()
+                => UseDatabaseConfiguration(new TConfiguration());
+
+            public IDatabaseBuilder UseDatabaseConfiguration(DatabaseConfigurationBase databaseConfiguration)
+            {
+                _databaseConfiguration = Check.NotNull(databaseConfiguration, nameof(databaseConfiguration));
+
+                return this;
+            }
+
+            public IDatabase Build()
+            {
+                CheckIfConnectionIsSet();
+
+                var database = new Database();
+
+                SetDatabaseMapper(database);
+                SetModelBuilder(database);
+                SetQueryProvider(database);
+
+                return database;
+            }
+
+            private void CheckDuplicateSettingForConnection()
+            {
+                if (_connectionString != null || _connection != null)
+                {
+                    throw new InvalidOperationException(
+                        string.Format(Properties.Resources.UseConnectionCanBeCallOnlyOne, nameof(UseConnection)));
+                }
+            }
+
+            private void CheckIfConnectionIsSet()
+            {
+                if (_connectionString is null && _connection is null)
+                {
+                    throw new InvalidOperationException(
+                        string.Format(Properties.Resources.UseConnectionMustBeCall, nameof(UseConnection), nameof(Build)));
+                }
+            }
+
+            private void SetModelBuilder(Database database)
+            {
+                if (_modelFactory != null)
+                {
+                    database._modelBuilder = new ModelBuilder(_modelFactory);
+                }
+                else
+                {
+                    database._modelBuilder = new ModelBuilder(new DynamicMethodModelFactory(GetDatabaseMapper()));
+                }
+            }
+
+            private void SetQueryProvider(Database database)
+            {
+                if (_connectionString != null)
+                {
+                    var factory = _queryProviderFactory != null
+                        ? _queryProviderFactory
+                        : QueryProviderFactories.GetFactory(_connectionString.ProviderName);
+                    database._queryProvider = factory.Create(_connectionString, database.ModelBuilder, GetDatabaseMapper());
+                }
+                else
+                {
+                    var factory = _queryProviderFactory != null
+                        ? _queryProviderFactory
+                        : QueryProviderFactories.GetFactory(_connection);
+                    database._queryProvider = factory.Create(_connection, database.ModelBuilder, GetDatabaseMapper());
+                }
+            }
+
+            private void SetDatabaseMapper(Database database)
+            {
+                database._databaseMapper = GetDatabaseMapper();
+            }
+
+            private IDatabaseMapper GetDatabaseMapper()
+            {
+                if (_databaseConfiguration != null)
+                {
+                    var modelBuilder = new ModelConfigurationBuilder();
+                    _databaseConfiguration.OnModelCreating(modelBuilder);
+
+                    modelBuilder.Build(DefaultModelMapper as ConventionModelMapper);
+                }
+
+                return Database.DatabaseMapper;
             }
         }
 
