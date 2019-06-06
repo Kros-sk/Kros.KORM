@@ -16,7 +16,7 @@ namespace Kros.KORM.Metadata
         void SetTableName<TEntity>(string tableName) where TEntity: class;
 
         /// <summary>
-        /// Set column name for specific property.
+        /// Sets column name for specific property.
         /// </summary>
         /// <typeparam name="TEntity">Entity type.</typeparam>
         /// <param name="propertyName">Property name.</param>
