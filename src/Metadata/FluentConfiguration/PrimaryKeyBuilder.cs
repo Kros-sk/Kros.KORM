@@ -27,7 +27,7 @@ namespace Kros.KORM.Metadata
         }
 
         /// <summary>
-        /// Configure autoincrement for primary key.
+        /// Configures autoincrement for primary key.
         /// </summary>
         /// <param name="autoIncrementMethodType">Autoincrement method type.</param>
         public PrimaryKeyBuilder<TEntity> AutoIncrement(
