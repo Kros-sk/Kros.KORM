@@ -6,7 +6,7 @@ using System.Data.Common;
 namespace Kros.KORM
 {
     /// <summary>
-    /// Interface which describe builder for creating <see cref="IDatabase"/>.
+    /// Interface describes builder for creating <see cref="IDatabase"/>.
     /// </summary>
     public interface IDatabaseBuilder
     {
