@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace Kros.KORM.Metadata
 {
     /// <summary>
-    /// Provide a simple fluent API for building mapping definition between CLR entities and database objects.
+    /// Provides a simple fluent API for building mapping definition between CLR entities and database objects.
     /// </summary>
     public class ModelConfigurationBuilder
     {
