@@ -9,7 +9,7 @@ namespace Kros.KORM.Metadata
     internal interface IModelMapperInternal
     {
         /// <summary>
-        /// Set table name for <typeparamref name="TEntity"/>.
+        /// Sets table name for <typeparamref name="TEntity"/>.
         /// </summary>
         /// <typeparam name="TEntity">Entity type.</typeparam>
         /// <param name="tableName">Database table name.</param>
