@@ -35,7 +35,7 @@ namespace Kros.KORM.Metadata
         }
 
         /// <summary>
-        /// Build model configuration.
+        /// Builds model configuration.
         /// </summary>
         /// <param name="modelMapper">Model mapper.</param>
         internal void Build(IModelMapperInternal modelMapper)
