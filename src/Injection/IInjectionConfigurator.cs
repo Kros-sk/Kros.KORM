@@ -21,7 +21,7 @@ namespace Kros.KORM.Injection
             Func<TValue> injector);
 
         /// <summary>
-        /// Fill model property with injector.
+        /// Fills model property using injector.
         /// </summary>
         /// <typeparam name="TValue">Property type.</typeparam>
         /// <param name="propertyName">Property for injection.</param>
