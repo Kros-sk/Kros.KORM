@@ -46,7 +46,7 @@ namespace Kros.KORM.Metadata
         void SetInjector<TEntity>(IInjector injector) where TEntity : class;
 
         /// <summary>
-        /// Set primary key for entity <typeparamref name="TEntity"/>.
+        /// Sets primary key for entity <typeparamref name="TEntity"/>.
         /// </summary>
         /// <typeparam name="TEntity">Entity type.</typeparam>
         /// <param name="propertyName">Property name, which represent primary key.</param>
