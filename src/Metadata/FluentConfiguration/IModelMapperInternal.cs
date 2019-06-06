@@ -24,7 +24,7 @@ namespace Kros.KORM.Metadata
         void SetColumnName<TEntity>(string propertyName, string columnName) where TEntity : class;
 
         /// <summary>
-        /// Set no map flag for property <paramref name="propertyName"/>.
+        /// Sets no map flag for property <paramref name="propertyName"/>.
         /// </summary>
         /// <typeparam name="TEntity">Entity type.</typeparam>
         /// <param name="propertyName">Property name.</param>
