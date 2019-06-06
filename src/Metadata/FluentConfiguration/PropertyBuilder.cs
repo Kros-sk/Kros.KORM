@@ -9,7 +9,7 @@ using Kros.Extensions;
 namespace Kros.KORM.Metadata
 {
     /// <summary>
-    /// Provide a simple fluent API for building mapping definition between <typeparamref name="TEntity"/>
+    /// Provides a simple fluent API for building mapping definition between <typeparamref name="TEntity"/>
     /// property and database table column.
     /// </summary>
     /// <typeparam name="TEntity">The entity type being configured.</typeparam>
