@@ -10,7 +10,7 @@ using System.Linq.Expressions;
 namespace Kros.KORM.Metadata
 {
     /// <summary>
-    /// Provide a simple fluent API for building mapping definition between <typeparamref name="TEntity"/> and database table.
+    /// Provides a simple fluent API for building mapping definition between <typeparamref name="TEntity"/> and database table.
     /// </summary>
     /// <typeparam name="TEntity">The entity type being configured.</typeparam>
     public class EntityTypeBuilder<TEntity> : EntityTypeBuilderBase where TEntity : class
