@@ -39,7 +39,7 @@ namespace Kros.KORM.Metadata
         void SetConverter<TEntity>(string propertyName, IConverter converter) where TEntity : class;
 
         /// <summary>
-        /// Set injector for <typeparamref name="TEntity"/>.
+        /// Sets injector for <typeparamref name="TEntity"/>.
         /// </summary>
         /// <typeparam name="TEntity">Entity type.</typeparam>
         /// <param name="injector">Injector.</param>
