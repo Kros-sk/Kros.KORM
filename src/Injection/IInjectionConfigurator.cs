@@ -4,7 +4,7 @@ using System.Linq.Expressions;
 namespace Kros.KORM.Injection
 {
     /// <summary>
-    /// Interface, which describe configurator, for configurate model property injection.
+    /// Interface describes configurator that configures model property injection.
     /// </summary>
     /// <typeparam name="TModel">Model type.</typeparam>
     public interface IInjectionConfigurator<TModel>
