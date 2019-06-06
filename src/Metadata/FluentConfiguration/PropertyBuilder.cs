@@ -59,7 +59,7 @@ namespace Kros.KORM.Metadata
         }
 
         /// <summary>
-        /// Configure converter for property value.
+        /// Configures converter for property value.
         /// </summary>
         /// <typeparam name="TConverter">Converter type.</typeparam>
         public PropertyBuilder<TEntity> UseConverter<TConverter>() where TConverter : IConverter, new()
