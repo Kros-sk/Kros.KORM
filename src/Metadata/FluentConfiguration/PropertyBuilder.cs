@@ -26,7 +26,7 @@ namespace Kros.KORM.Metadata
         /// Ctor.
         /// </summary>
         /// <param name="entityTypeBuilder">Entity type builder.</param>
-        /// <param name="propertyName">Name of property which represent primary key.</param>
+        /// <param name="propertyName">Name of property which represents primary key.</param>
         internal PropertyBuilder(EntityTypeBuilder<TEntity> entityTypeBuilder, string propertyName)
         {
             _entityTypeBuilder = Check.NotNull(entityTypeBuilder, nameof(entityTypeBuilder));
