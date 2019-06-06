@@ -31,7 +31,7 @@ namespace Kros.KORM.Metadata
         void SetNoMap<TEntity>(string propertyName) where TEntity : class;
 
         /// <summary>
-        /// Set converter for specific property.
+        /// Sets converter for specific property.
         /// </summary>
         /// <typeparam name="TEntity">Entity type.</typeparam>
         /// <param name="propertyName">Property name.</param>
