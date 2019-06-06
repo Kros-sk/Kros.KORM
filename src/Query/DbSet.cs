@@ -1,4 +1,5 @@
-﻿using Kros.KORM.CommandGenerator;
+﻿using Kros.Caching;
+using Kros.KORM.CommandGenerator;
 using Kros.KORM.Data;
 using Kros.KORM.Exceptions;
 using Kros.KORM.Metadata;
@@ -10,6 +11,8 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Linq;
+using System.Reflection;
+using System.Reflection.Emit;
 using System.Threading.Tasks;
 
 namespace Kros.KORM.Query
@@ -22,13 +25,15 @@ namespace Kros.KORM.Query
     {
         #region Private fields
 
-        private ICommandGenerator<T> _commandGenerator;
-        private IQueryProvider _provider;
-        private IQueryBase<T> _query;
-        private HashSet<T> _addedItems = new HashSet<T>();
-        private HashSet<T> _editedItems = new HashSet<T>();
-        private HashSet<T> _deletedItems = new HashSet<T>();
+        private readonly ICommandGenerator<T> _commandGenerator;
+        private readonly IQueryProvider _provider;
+        private readonly IQueryBase<T> _query;
+        private readonly HashSet<T> _addedItems = new HashSet<T>();
+        private readonly HashSet<T> _editedItems = new HashSet<T>();
+        private readonly HashSet<T> _deletedItems = new HashSet<T>();
         private readonly TableInfo _tableInfo;
+        private readonly ICache<int, Delegate> _delegatesCache = new Cache<int, Delegate>();
+        private delegate void SetIdentityPrimaryKeyDelegate(T item, object id);
 
         #endregion
 
@@ -296,7 +301,8 @@ namespace Kros.KORM.Query
                         if (hasIdentity)
                         {
                             var id = await ExecuteScalarAsync(command, useAsync);
-                            _tableInfo.IdentityPrimaryKey.SetValue(item, id);
+                            SetIdentityPrimaryKeyDelegate invokeDelegate = GetDelegate(item, _tableInfo.IdentityPrimaryKey);
+                            invokeDelegate(item, id);
                         }
                         else
                         {
@@ -466,6 +472,36 @@ namespace Kros.KORM.Query
                     }
                 }
             }
+        }
+
+        private SetIdentityPrimaryKeyDelegate GetDelegate(T item, ColumnInfo columnInfo)
+        {
+            var key = $"{columnInfo.Name}-{typeof(T).FullName}".GetHashCode();
+
+            return _delegatesCache.Get(key, () => CreateDelegate(columnInfo)) as SetIdentityPrimaryKeyDelegate;
+        }
+
+        private SetIdentityPrimaryKeyDelegate CreateDelegate(ColumnInfo columnInfo)
+        {
+            var dynamicMethodArgs = new Type[] { typeof(T), typeof(object) };
+            var dynamicMethod = new DynamicMethod("IdentityPrimaryKey_SetValue", typeof(void), dynamicMethodArgs);
+            ILGenerator ilGenerator = dynamicMethod.GetILGenerator();
+
+            ilGenerator.Emit(OpCodes.Ldarg_0);
+            ilGenerator.Emit(OpCodes.Ldarg_1);
+
+            if (columnInfo.PropertyInfo.PropertyType.IsValueType)
+            {
+                ilGenerator.Emit(OpCodes.Unbox_Any, columnInfo.PropertyInfo.PropertyType);
+            }
+
+            MethodInfo fnGetIdentity = typeof(T).GetProperty(
+                columnInfo.Name, BindingFlags.Public | BindingFlags.Instance).GetSetMethod();
+
+            ilGenerator.Emit(OpCodes.Callvirt, fnGetIdentity);
+            ilGenerator.Emit(OpCodes.Ret);
+
+            return dynamicMethod.CreateDelegate(typeof(SetIdentityPrimaryKeyDelegate)) as SetIdentityPrimaryKeyDelegate;
         }
 
         #endregion
