@@ -80,7 +80,7 @@ namespace Kros.KORM.Metadata
         }
 
         /// <summary>
-        /// Configure injector delegate for injecting values to property.
+        /// Configures injector delegate for injecting values to property.
         /// </summary>
         /// <param name="injector">Delegate for injecting values to property.</param>
         public PropertyBuilder<TEntity> InjectValue<TProperty>(Func<TProperty> injector)
