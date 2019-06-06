@@ -6,7 +6,7 @@ using System.Linq.Expressions;
 namespace Kros.KORM.Metadata
 {
     /// <summary>
-    /// Provide a simple fluent API for definition primary key.
+    /// Provides a simple fluent API for definition primary key.
     /// </summary>
     /// <typeparam name="TEntity">The entity type being configured.</typeparam>
     public class PrimaryKeyBuilder<TEntity> where TEntity : class
