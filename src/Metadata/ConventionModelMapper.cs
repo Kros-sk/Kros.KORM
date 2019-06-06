@@ -21,13 +21,16 @@ namespace Kros.KORM.Metadata
     public class ConventionModelMapper : IModelMapper, IModelMapperInternal
     {
         private const string ConventionalPrimaryKeyName = "ID";
-        private static readonly string _onAfterMaterializeName = MethodName<IMaterialize>.GetName(p => p.OnAfterMaterialize(null));
-        private Dictionary<Type, Dictionary<string, string>> _columnMap = new Dictionary<Type, Dictionary<string, string>>();
-        private Dictionary<Type, Dictionary<string, IConverter>> _converters = new Dictionary<Type, Dictionary<string, IConverter>>();
-        private Dictionary<Type, string> _tableMap = new Dictionary<Type, string>();
-        private Dictionary<Type, (string propertyName, AutoIncrementMethodType methodType)> _keys
+        private static readonly string _onAfterMaterializeName =
+            MethodName<IMaterialize>.GetName(p => p.OnAfterMaterialize(null));
+        private readonly Dictionary<Type, Dictionary<string, string>> _columnMap =
+            new Dictionary<Type, Dictionary<string, string>>();
+        private readonly Dictionary<Type, Dictionary<string, IConverter>> _converters =
+            new Dictionary<Type, Dictionary<string, IConverter>>();
+        private readonly Dictionary<Type, string> _tableMap = new Dictionary<Type, string>();
+        private readonly Dictionary<Type, (string propertyName, AutoIncrementMethodType methodType)> _keys
             = new Dictionary<Type, (string, AutoIncrementMethodType)>();
-        private HashSet<string> _noMap = new HashSet<string>();
+        private readonly HashSet<string> _noMap = new HashSet<string>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ConventionModelMapper"/> class.
@@ -195,7 +198,7 @@ namespace Kros.KORM.Metadata
             }
             else
             {
-                foreach (var key in MapPrimaryKey(tableInfo))
+                foreach (ColumnInfo key in MapPrimaryKey(tableInfo))
                 {
                     key.IsPrimaryKey = true;
                 }

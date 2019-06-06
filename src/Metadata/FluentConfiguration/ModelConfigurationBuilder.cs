@@ -9,7 +9,7 @@ namespace Kros.KORM.Metadata
     /// </summary>
     public class ModelConfigurationBuilder
     {
-        private Dictionary<Type, EntityTypeBuilderBase> _entityBuilders = new Dictionary<Type, EntityTypeBuilderBase>();
+        private readonly Dictionary<Type, EntityTypeBuilderBase> _entityBuilders = new Dictionary<Type, EntityTypeBuilderBase>();
 
         /// <summary>
         /// Returns an object that can be used to configure of a given entity type.
@@ -18,14 +18,10 @@ namespace Kros.KORM.Metadata
         /// <returns>An object that can be used to configure of a given entity type.</returns>
         public EntityTypeBuilder<TEntity> Entity<TEntity>() where TEntity : class
         {
-            var entityType = typeof(TEntity);
-            EntityTypeBuilder<TEntity> entityBuilder;
+            Type entityType = typeof(TEntity);
 
-            if (_entityBuilders.ContainsKey(entityType))
-            {
-                entityBuilder = _entityBuilders[entityType] as EntityTypeBuilder<TEntity>;
-            }
-            else
+            if (!(_entityBuilders.TryGetValue(entityType, out EntityTypeBuilderBase eb)
+                && eb is EntityTypeBuilder<TEntity> entityBuilder))
             {
                 entityBuilder = new EntityTypeBuilder<TEntity>();
                 _entityBuilders[entityType] = entityBuilder;
@@ -40,7 +36,7 @@ namespace Kros.KORM.Metadata
         /// <param name="modelMapper">Model mapper.</param>
         internal void Build(IModelMapperInternal modelMapper)
         {
-            foreach (var entityBuilder in _entityBuilders.Values)
+            foreach (EntityTypeBuilderBase entityBuilder in _entityBuilders.Values)
             {
                 entityBuilder.Build(modelMapper);
             }

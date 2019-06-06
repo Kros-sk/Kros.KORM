@@ -50,10 +50,9 @@ namespace Kros.KORM.Metadata
             Expression<Func<TEntity, TProperty>> propertyExpression)
             => _entityTypeBuilder.Property(propertyExpression);
 
-        internal void Build(IModelMapperInternal modelMapper)
-        {
-            modelMapper.SetPrimaryKey<TEntity>(_propertyName,
+        internal void Build(IModelMapperInternal modelMapper) =>
+            modelMapper.SetPrimaryKey<TEntity>(
+                _propertyName,
                 _autoIncrementMethodType != null ? _autoIncrementMethodType.Value : AutoIncrementMethodType.None);
-        }
     }
 }

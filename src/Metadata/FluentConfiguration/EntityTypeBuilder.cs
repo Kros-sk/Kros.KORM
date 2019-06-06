@@ -19,7 +19,7 @@ namespace Kros.KORM.Metadata
         private PrimaryKeyBuilder<TEntity> _primaryKeyBuilder;
         private readonly Dictionary<string, PropertyBuilder<TEntity>> _propertyBuilders
             = new Dictionary<string, PropertyBuilder<TEntity>>();
-        private Lazy<InjectionConfiguration<TEntity>> _injector =
+        private readonly Lazy<InjectionConfiguration<TEntity>> _injector =
             new Lazy<InjectionConfiguration<TEntity>>(() => new InjectionConfiguration<TEntity>());
 
         /// <summary>
@@ -64,13 +64,8 @@ namespace Kros.KORM.Metadata
             Expression<Func<TEntity, TProperty>> propertyExpression)
         {
             string propertyName = PropertyName<TEntity>.GetPropertyName(propertyExpression);
-            PropertyBuilder<TEntity> propertyBuilder;
 
-            if (_propertyBuilders.ContainsKey(propertyName))
-            {
-                propertyBuilder = _propertyBuilders[propertyName];
-            }
-            else
+            if (!_propertyBuilders.TryGetValue(propertyName, out PropertyBuilder<TEntity> propertyBuilder))
             {
                 propertyBuilder = new PropertyBuilder<TEntity>(this, propertyName);
                 _propertyBuilders.Add(propertyName, propertyBuilder);
@@ -96,7 +91,7 @@ namespace Kros.KORM.Metadata
                 modelMapper.SetInjector<TEntity>(_injector.Value);
             }
 
-            foreach (var propertyBuilder in _propertyBuilders.Values)
+            foreach (PropertyBuilder<TEntity> propertyBuilder in _propertyBuilders.Values)
             {
                 propertyBuilder.Build(modelMapper);
             }

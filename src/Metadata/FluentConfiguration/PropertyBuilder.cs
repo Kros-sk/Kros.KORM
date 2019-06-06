@@ -1,5 +1,4 @@
 ﻿using Kros.KORM.Converter;
-using Kros.KORM.Injection;
 using Kros.KORM.Metadata.FluentConfiguration;
 using Kros.Utils;
 using System;
