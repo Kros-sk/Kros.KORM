@@ -164,6 +164,37 @@ namespace Kros.KORM.UnitTests.CommandGenerator
             action.Should().Throw<KORM.Exceptions.MissingPrimaryKeyException>();
         }
 
+        [Fact]
+        public void UseConverter()
+        {
+            var idColumn = new ColumnInfo()
+            {
+                Name = nameof(ConverterDto.Id),
+                PropertyInfo = GetPropertyInfo<ConverterDto>(nameof(ConverterDto.Id))
+            };
+            var nameColumn = new ColumnInfo()
+            {
+                Name = nameof(ConverterDto.Name),
+                PropertyInfo = GetPropertyInfo<ConverterDto>(nameof(ConverterDto.Name)),
+                Converter = new NullToStringConverter()
+            };
+            var tableInfo = new TableInfo(new[] { idColumn, nameColumn }, new List<PropertyInfo>(), null)
+            {
+                Name = nameof(ConverterDto)
+            };
+
+            KORM.Query.IQueryProvider queryProvider = Substitute.For<KORM.Query.IQueryProvider>();
+            IDatabaseMapper mapper = Substitute.For<IDatabaseMapper>();
+            mapper.GetTableInfo<ConverterDto>().Returns(tableInfo);
+            var query = new Query<ConverterDto>(mapper, queryProvider);
+
+            var generator = new CommandGenerator<ConverterDto>(tableInfo, queryProvider, query);
+            var dto = new ConverterDto() { Id = 1, Name = null };
+            var convertedValue = generator.GetColumnValue(nameColumn, dto);
+
+            convertedValue.Should().Be("NULL");
+        }
+
         #endregion
 
         #region Test Classes and Methods
@@ -274,6 +305,20 @@ namespace Kros.KORM.UnitTests.CommandGenerator
         }
 
         private PropertyInfo GetPropertyInfo<T>(string propertyName) => typeof(T).GetProperty(propertyName);
+
+        private class ConverterDto
+        {
+            public int Id { get; set; }
+
+            [Converter(typeof(NullToStringConverter))]
+            public string Name { get; set; }
+        }
+
+        private class NullToStringConverter : IConverter
+        {
+            public object Convert(object value) => value;
+            public object ConvertBack(object value) => value is null ? "NULL" : value;
+        }
 
         private class Foo
         {

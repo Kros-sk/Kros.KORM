@@ -30,7 +30,7 @@ namespace Kros.KORM.Converter
             {
                 return _guidToStringConverter;
             }
-            else if (columnInfo.PropertyInfo.PropertyType != dbType)
+            else if ((dbType != null) && (columnInfo.PropertyInfo.PropertyType != dbType))
             {
                 Type type = Nullable.GetUnderlyingType(columnInfo.PropertyInfo.PropertyType);
                 if (type != null && type == dbType)
