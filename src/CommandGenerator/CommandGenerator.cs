@@ -31,12 +31,12 @@ namespace Kros.KORM.CommandGenerator
 
         #region Private Fields
 
-        private TableInfo _tableInfo;
-        private KORM.Query.IQueryProvider _provider;
-        private IQueryBase<T> _query;
+        private readonly TableInfo _tableInfo;
+        private readonly Query.IQueryProvider _provider;
+        private readonly IQueryBase<T> _query;
         private List<ColumnInfo> _columnsInfo = null;
         private int _maxParametersForDeleteCommandsInPart = DEFAULT_MAX_PARAMETERS_FOR_DELETE_COMMANDS_IN_PART;
-        private Lazy<string> _outputStatement;
+        private readonly Lazy<string> _outputStatement;
 
         #endregion
 
@@ -47,14 +47,8 @@ namespace Kros.KORM.CommandGenerator
         /// </summary>
         public int MaxParametersForDeleteCommandsInPart
         {
-            get
-            {
-                return _maxParametersForDeleteCommandsInPart;
-            }
-            set
-            {
-                _maxParametersForDeleteCommandsInPart = value < 1 ? 1 : value;
-            }
+            get => _maxParametersForDeleteCommandsInPart;
+            set => _maxParametersForDeleteCommandsInPart = value < 1 ? 1 : value;
         }
 
         #endregion
@@ -89,8 +83,8 @@ namespace Kros.KORM.CommandGenerator
         /// <returns>Insert command.</returns>
         public DbCommand GetInsertCommand()
         {
-            var columns = GetQueryColumnsForInsert();
-            var cmd = _provider.GetCommandForCurrentTransaction();
+            IEnumerable<ColumnInfo> columns = GetQueryColumnsForInsert();
+            DbCommand cmd = _provider.GetCommandForCurrentTransaction();
             AddParametersToCommand(cmd, columns);
             cmd.CommandText = GetInsertCommandText(columns);
 
@@ -111,8 +105,8 @@ namespace Kros.KORM.CommandGenerator
         {
             CheckPrimaryKeyExist(string.Format(Resources.MethodNotSupportedWhenNoPrimaryKey, nameof(GetUpdateCommand)));
 
-            var columns = GetQueryColumns();
-            var cmd = _provider.GetCommandForCurrentTransaction();
+            IEnumerable<ColumnInfo> columns = GetQueryColumns();
+            DbCommand cmd = _provider.GetCommandForCurrentTransaction();
             AddParametersToCommand(cmd, columns.Where(x => !x.IsPrimaryKey));
             AddParametersToCommand(cmd, columns.Where(x => x.IsPrimaryKey));
             cmd.CommandText = GetUpdateCommandText(columns);
@@ -128,8 +122,8 @@ namespace Kros.KORM.CommandGenerator
         {
             CheckPrimaryKeyExist(string.Format(Resources.MethodNotSupportedWhenNoPrimaryKey, nameof(GetDeleteCommand)));
 
-            var columns = _tableInfo.PrimaryKey;
-            var cmd = _provider.GetCommandForCurrentTransaction();
+            IEnumerable<ColumnInfo> columns = _tableInfo.PrimaryKey;
+            DbCommand cmd = _provider.GetCommandForCurrentTransaction();
             AddParametersToCommand(cmd, columns);
             cmd.CommandText = GetDeleteCommandText(columns);
             return cmd;
@@ -153,10 +147,10 @@ namespace Kros.KORM.CommandGenerator
                     _tableInfo.Name);
             }
 
-            List<DbCommand> retVal = new List<DbCommand>();
+            var retVal = new List<DbCommand>();
             ColumnInfo colInfo = _tableInfo.PrimaryKey.First();
             DbCommand cmd = null;
-            StringBuilder deleteQueryText = new StringBuilder();
+            var deleteQueryText = new StringBuilder();
             int iterationCount = 0;
 
             foreach (T item in items)
@@ -204,7 +198,7 @@ namespace Kros.KORM.CommandGenerator
             Check.NotNull(command, nameof(command));
             Check.NotNull(item, nameof(item));
 
-            foreach (ColumnInfo colInfo in this.GetQueryColumns())
+            foreach (ColumnInfo colInfo in GetQueryColumns())
             {
                 string paramName = $"@{colInfo.Name}";
                 if (command.Parameters.Contains(paramName))
@@ -254,7 +248,7 @@ namespace Kros.KORM.CommandGenerator
 
                 foreach (var column in columns)
                 {
-                    var columnInfo = _tableInfo.Columns.Where(p => p.Name == column.Trim()).FirstOrDefault();
+                    ColumnInfo columnInfo = _tableInfo.Columns.Where(p => p.Name == column.Trim()).FirstOrDefault();
 
                     if (columnInfo != null)
                     {
@@ -270,7 +264,7 @@ namespace Kros.KORM.CommandGenerator
         {
             foreach (ColumnInfo colInfo in columns)
             {
-                var par = cmd.CreateParameter();
+                DbParameter par = cmd.CreateParameter();
                 par.ParameterName = $"@{colInfo.Name}";
                 _provider.SetParameterDbType(par, _tableInfo.Name, colInfo.Name);
                 cmd.Parameters.Add(par);
@@ -281,13 +275,10 @@ namespace Kros.KORM.CommandGenerator
         public object GetColumnValue(ColumnInfo columnInfo, T item)
         {
             var value = columnInfo.PropertyInfo.GetValue(item, null);
-            if (value != null)
+            IConverter converter = ConverterHelper.GetConverter(columnInfo, value?.GetType());
+            if (converter != null)
             {
-                var converter = ConverterHelper.GetConverter(columnInfo, value.GetType());
-                if (converter != null)
-                {
-                    value = converter.ConvertBack(value);
-                }
+                value = converter.ConvertBack(value);
             }
 
             return value;
@@ -298,7 +289,7 @@ namespace Kros.KORM.CommandGenerator
             var paramNames = new StringBuilder();
             var paramValues = new StringBuilder();
 
-            foreach (var column in columns)
+            foreach (ColumnInfo column in columns)
             {
                 if (paramNames.Length > 0)
                 {
@@ -329,7 +320,7 @@ namespace Kros.KORM.CommandGenerator
         {
             var paramSetPart = new StringBuilder();
 
-            foreach (var column in columns.Where(p => !p.IsPrimaryKey))
+            foreach (ColumnInfo column in columns.Where(p => !p.IsPrimaryKey))
             {
                 if (paramSetPart.Length > 0)
                 {
@@ -340,7 +331,7 @@ namespace Kros.KORM.CommandGenerator
 
             var paramWherePart = new StringBuilder();
 
-            foreach (var col in _tableInfo.PrimaryKey)
+            foreach (ColumnInfo col in _tableInfo.PrimaryKey)
             {
                 if (paramWherePart.Length > 0)
                 {

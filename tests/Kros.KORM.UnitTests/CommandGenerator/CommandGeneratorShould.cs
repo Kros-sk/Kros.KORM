@@ -101,7 +101,7 @@ namespace Kros.KORM.UnitTests.CommandGenerator
         [Fact]
         public void FillCommandWithCorrectArguments()
         {
-            Foo item = new Foo
+            var item = new Foo
             {
                 Id = 336,
                 Plat = 1500,
@@ -111,10 +111,10 @@ namespace Kros.KORM.UnitTests.CommandGenerator
                 PropertyEnumConv = TestEnum.Value2
             };
 
-            var provider = Substitute.For<KORM.Query.IQueryProvider>();
+            KORM.Query.IQueryProvider provider = Substitute.For<KORM.Query.IQueryProvider>();
             provider.GetCommandForCurrentTransaction().Returns(new SqlCommand());
 
-            var query = CreateFooQuery();
+            IQuery<Foo> query = CreateFooQuery();
             query.Select(p => new { p.Id, p.Plat, p.KrstneMeno, p.PropertyGuid, p.PropertyEnum, p.PropertyEnumConv });
 
             var generator = new CommandGenerator<Foo>(GetFooTableInfo(), provider, query);
@@ -132,10 +132,10 @@ namespace Kros.KORM.UnitTests.CommandGenerator
         [Fact]
         public void ThrowMissingPrimaryKeyExceptionWhenGetUpdateCommand()
         {
-            var provider = Substitute.For<KORM.Query.IQueryProvider>();
+            KORM.Query.IQueryProvider provider = Substitute.For<KORM.Query.IQueryProvider>();
             provider.GetCommandForCurrentTransaction().Returns(new SqlCommand());
 
-            var query = CreateFooQuery();
+            IQuery<Foo> query = CreateFooQuery();
             query.Select(p => new { p.Plat, p.KrstneMeno, p.PropertyGuid, p.PropertyEnum, p.PropertyEnumConv });
 
             var generator = new CommandGenerator<Foo>(GetFooTableInfo(false), provider, query);
@@ -150,10 +150,10 @@ namespace Kros.KORM.UnitTests.CommandGenerator
         [Fact]
         public void ThrowMissingPrimaryKeyExceptionWhenGetDeleteCommand()
         {
-            var provider = Substitute.For<KORM.Query.IQueryProvider>();
+            KORM.Query.IQueryProvider provider = Substitute.For<KORM.Query.IQueryProvider>();
             provider.GetCommandForCurrentTransaction().Returns(new SqlCommand());
 
-            var query = CreateFooQuery();
+            IQuery<Foo> query = CreateFooQuery();
             query.Select(p => new { p.Plat, p.KrstneMeno, p.PropertyGuid, p.PropertyEnum, p.PropertyEnumConv });
 
             var generator = new CommandGenerator<Foo>(GetFooTableInfo(false), provider, query);
@@ -164,13 +164,44 @@ namespace Kros.KORM.UnitTests.CommandGenerator
             action.Should().Throw<KORM.Exceptions.MissingPrimaryKeyException>();
         }
 
+        [Fact]
+        public void UseConverter()
+        {
+            var idColumn = new ColumnInfo()
+            {
+                Name = nameof(ConverterDto.Id),
+                PropertyInfo = GetPropertyInfo<ConverterDto>(nameof(ConverterDto.Id))
+            };
+            var nameColumn = new ColumnInfo()
+            {
+                Name = nameof(ConverterDto.Name),
+                PropertyInfo = GetPropertyInfo<ConverterDto>(nameof(ConverterDto.Name)),
+                Converter = new NullToStringConverter()
+            };
+            var tableInfo = new TableInfo(new[] { idColumn, nameColumn }, new List<PropertyInfo>(), null)
+            {
+                Name = nameof(ConverterDto)
+            };
+
+            KORM.Query.IQueryProvider queryProvider = Substitute.For<KORM.Query.IQueryProvider>();
+            IDatabaseMapper mapper = Substitute.For<IDatabaseMapper>();
+            mapper.GetTableInfo<ConverterDto>().Returns(tableInfo);
+            var query = new Query<ConverterDto>(mapper, queryProvider);
+
+            var generator = new CommandGenerator<ConverterDto>(tableInfo, queryProvider, query);
+            var dto = new ConverterDto() { Id = 1, Name = null };
+            var convertedValue = generator.GetColumnValue(nameColumn, dto);
+
+            convertedValue.Should().Be("NULL");
+        }
+
         #endregion
 
         #region Test Classes and Methods
 
         private List<T> GetParameterValues<T>(DbParameterCollection parameters)
         {
-            List<T> result = new List<T>();
+            var result = new List<T>();
 
             foreach (DbParameter prm in parameters)
             {
@@ -182,17 +213,17 @@ namespace Kros.KORM.UnitTests.CommandGenerator
 
         private CommandGenerator<Foo> GetFooGenerator()
         {
-            var provider = Substitute.For<KORM.Query.IQueryProvider>();
+            KORM.Query.IQueryProvider provider = Substitute.For<KORM.Query.IQueryProvider>();
             provider.GetCommandForCurrentTransaction().Returns(a => { return new SqlCommand(); });
 
-            var query = CreateFooQuery();
+            IQuery<Foo> query = CreateFooQuery();
             query.Select(p => new { p.Id, p.Plat });
             return new CommandGenerator<Foo>(GetFooTableInfo(), provider, query);
         }
 
         private IQuery<Foo> CreateFooQuery()
         {
-            Query<Foo> query = new Query<Foo>(
+            var query = new Query<Foo>(
                 new DatabaseMapper(new ConventionModelMapper()),
                 new SqlServerQueryProvider(
                     new SqlConnection(),
@@ -203,10 +234,7 @@ namespace Kros.KORM.UnitTests.CommandGenerator
             return query;
         }
 
-        private TableInfo GetFooTableInfo()
-        {
-            return GetFooTableInfo(true);
-        }
+        private TableInfo GetFooTableInfo() => GetFooTableInfo(true);
 
         private TableInfo GetFooTableInfo(bool withIdRow)
         {
@@ -232,17 +260,17 @@ namespace Kros.KORM.UnitTests.CommandGenerator
 
         private CommandGenerator<FooIdentity> GetFooIdentityGenerator()
         {
-            var provider = Substitute.For<KORM.Query.IQueryProvider>();
+            KORM.Query.IQueryProvider provider = Substitute.For<KORM.Query.IQueryProvider>();
             provider.GetCommandForCurrentTransaction().Returns(a => { return new SqlCommand(); });
 
-            var query = CreateFooIdentityQuery();
+            IQuery<FooIdentity> query = CreateFooIdentityQuery();
             query.Select(p => new { p.Id, p.Plat });
             return new CommandGenerator<FooIdentity>(GetFooIdentityTableInfo(), provider, query);
         }
 
         private IQuery<FooIdentity> CreateFooIdentityQuery()
         {
-            Query<FooIdentity> query = new Query<FooIdentity>(
+            var query = new Query<FooIdentity>(
                 new DatabaseMapper(new ConventionModelMapper()),
                 new SqlServerQueryProvider(
                     new SqlConnection(),
@@ -266,7 +294,7 @@ namespace Kros.KORM.UnitTests.CommandGenerator
 
         private List<Foo> GetFooList(int itemsCount)
         {
-            List<Foo> retVal = new List<Foo>();
+            var retVal = new List<Foo>();
 
             for (int i = 0; i < itemsCount; i++)
             {
@@ -276,9 +304,20 @@ namespace Kros.KORM.UnitTests.CommandGenerator
             return retVal;
         }
 
-        private PropertyInfo GetPropertyInfo<T>(string propertyName)
+        private PropertyInfo GetPropertyInfo<T>(string propertyName) => typeof(T).GetProperty(propertyName);
+
+        private class ConverterDto
         {
-            return typeof(T).GetProperty(propertyName);
+            public int Id { get; set; }
+
+            [Converter(typeof(NullToStringConverter))]
+            public string Name { get; set; }
+        }
+
+        private class NullToStringConverter : IConverter
+        {
+            public object Convert(object value) => value;
+            public object ConvertBack(object value) => value is null ? "NULL" : value;
         }
 
         private class Foo

@@ -30,16 +30,16 @@ namespace Kros.KORM.Converter
             {
                 return _guidToStringConverter;
             }
-            else if (columnInfo.PropertyInfo.PropertyType != dbType)
+            else if ((dbType != null) && (columnInfo.PropertyInfo.PropertyType != dbType))
             {
-                var type = Nullable.GetUnderlyingType(columnInfo.PropertyInfo.PropertyType);
+                Type type = Nullable.GetUnderlyingType(columnInfo.PropertyInfo.PropertyType);
                 if (type != null && type == dbType)
                 {
                     return null;
                 }
                 else
                 {
-                    return new TypeConverter(type != null ? type : columnInfo.PropertyInfo.PropertyType, dbType);
+                    return new TypeConverter(type ?? columnInfo.PropertyInfo.PropertyType, dbType);
                 }
             }
 
