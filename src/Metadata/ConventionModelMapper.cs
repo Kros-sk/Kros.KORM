@@ -111,7 +111,7 @@ namespace Kros.KORM.Metadata
 
         #region Injection
 
-        private Dictionary<Type, IInjector> _injectors = new Dictionary<Type, IInjector>();
+        private readonly Dictionary<Type, IInjector> _injectors = new Dictionary<Type, IInjector>();
 
         /// <summary>
         /// Get property injection configuration for model T.
@@ -121,11 +121,12 @@ namespace Kros.KORM.Metadata
         /// </example>
         public IInjectionConfigurator<T> InjectionConfigurator<T>()
         {
-            var injector = new InjectionConfiguration<T>();
-
-            _injectors[typeof(T)] = injector;
-
-            return injector;
+            if (!_injectors.TryGetValue(typeof(T), out IInjector injector))
+            {
+                injector = new InjectionConfiguration<T>();
+                _injectors.Add(typeof(T), injector);
+            }
+            return (IInjectionConfigurator<T>)injector;
         }
 
         /// <summary>
@@ -133,10 +134,7 @@ namespace Kros.KORM.Metadata
         /// </summary>
         /// <typeparam name="T">Model type.</typeparam>
         /// <returns>Service property injector.</returns>
-        public IInjector GetInjector<T>()
-        {
-            return GetInjector(typeof(T));
-        }
+        public IInjector GetInjector<T>() => GetInjector(typeof(T));
 
         private IInjector GetInjector(Type modelType)
         {
@@ -166,9 +164,9 @@ namespace Kros.KORM.Metadata
 
         private TableInfo CreateTableInfo(Type modelType)
         {
-            var injector = GetInjector(modelType);
-            var properties = GetModelProperties(modelType).
-                Where(p =>
+            IInjector injector = GetInjector(modelType);
+            IEnumerable<PropertyInfo> properties = GetModelProperties(modelType)
+                .Where(p =>
                 {
                     return p.CanWrite
                         && !_noMap.Contains(GetPropertyKey(modelType, p.Name))
@@ -176,8 +174,8 @@ namespace Kros.KORM.Metadata
                         && !injector.IsInjectable(p.Name);
                 });
 
-            var columns = properties.Select(p => CreateColumnInfo(p, modelType));
-            var onAfterMaterialize = GetOnAfterMaterializeInfo(modelType);
+            IEnumerable<ColumnInfo> columns = properties.Select(p => CreateColumnInfo(p, modelType));
+            MethodInfo onAfterMaterialize = GetOnAfterMaterializeInfo(modelType);
             var tableInfo = new TableInfo(columns, GetModelProperties(modelType), onAfterMaterialize);
 
             tableInfo.Name = GetTableName(tableInfo, modelType);
@@ -192,7 +190,7 @@ namespace Kros.KORM.Metadata
             if (_keys.ContainsKey(modelType))
             {
                 (string propertyName, AutoIncrementMethodType methodType) = _keys[modelType];
-                var columnInfo = tableInfo.GetColumnInfoByPropertyName(propertyName);
+                ColumnInfo columnInfo = tableInfo.GetColumnInfoByPropertyName(propertyName);
                 columnInfo.IsPrimaryKey = true;
                 columnInfo.AutoIncrementMethodType = methodType;
             }
@@ -245,9 +243,7 @@ namespace Kros.KORM.Metadata
 
         private ColumnInfo CreateColumnInfo(PropertyInfo propertyInfo, Type modelType)
         {
-            var columnInfo = new ColumnInfo();
-
-            columnInfo.PropertyInfo = propertyInfo;
+            var columnInfo = new ColumnInfo { PropertyInfo = propertyInfo };
             columnInfo.Name = GetColumnName(columnInfo, modelType);
 
             SetConverter(propertyInfo, columnInfo, modelType);
@@ -310,7 +306,7 @@ namespace Kros.KORM.Metadata
             ColumnInfo pkByConvention = null;
             var pkByAttributes = new List<(ColumnInfo Column, KeyAttribute Attribute)>();
 
-            foreach (var column in tableInfo.Columns)
+            foreach (ColumnInfo column in tableInfo.Columns)
             {
                 var attributes = column.PropertyInfo.GetCustomAttributes(typeof(KeyAttribute), true);
                 if (attributes.Length == 1)
@@ -377,10 +373,7 @@ namespace Kros.KORM.Metadata
 
         #region IModelMapperInternal
 
-        void IModelMapperInternal.SetTableName<TEntity>(string tableName)
-        {
-            _tableMap[typeof(TEntity)] = tableName;
-        }
+        void IModelMapperInternal.SetTableName<TEntity>(string tableName) => _tableMap[typeof(TEntity)] = tableName;
 
         void IModelMapperInternal.SetColumnName<TEntity>(string propertyName, string columnName)
         {
@@ -393,9 +386,7 @@ namespace Kros.KORM.Metadata
         }
 
         void IModelMapperInternal.SetNoMap<TEntity>(string propertyName)
-        {
-            _noMap.Add(GetPropertyKey(typeof(TEntity), propertyName));
-        }
+            => _noMap.Add(GetPropertyKey(typeof(TEntity), propertyName));
 
         void IModelMapperInternal.SetConverter<TEntity>(string propertyName, IConverter converter)
         {
@@ -406,15 +397,10 @@ namespace Kros.KORM.Metadata
             _converters[typeof(TEntity)][propertyName] = converter;
         }
 
-        void IModelMapperInternal.SetInjector<TEntity>(IInjector injector)
-        {
-            _injectors[typeof(TEntity)] = injector;
-        }
+        void IModelMapperInternal.SetInjector<TEntity>(IInjector injector) => _injectors[typeof(TEntity)] = injector;
 
         void IModelMapperInternal.SetPrimaryKey<TEntity>(string propertyName, AutoIncrementMethodType autoIncrementType)
-        {
-            _keys[typeof(TEntity)] = (propertyName, autoIncrementType);
-        }
+            => _keys[typeof(TEntity)] = (propertyName, autoIncrementType);
 
         #endregion
     }
