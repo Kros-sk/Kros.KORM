@@ -21,8 +21,7 @@ namespace Kros.KORM.Metadata
     public class ConventionModelMapper : IModelMapper, IModelMapperInternal
     {
         private const string ConventionalPrimaryKeyName = "ID";
-        private static readonly string _onAfterMaterializeName =
-            MethodName<IMaterialize>.GetName(p => p.OnAfterMaterialize(null));
+        private static readonly string _onAfterMaterializeName = nameof(IMaterialize.OnAfterMaterialize);
         private readonly Dictionary<Type, Dictionary<string, string>> _columnMap =
             new Dictionary<Type, Dictionary<string, string>>();
         private readonly Dictionary<Type, Dictionary<string, IConverter>> _converters =
