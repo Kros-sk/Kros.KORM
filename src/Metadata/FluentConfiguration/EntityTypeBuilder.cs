@@ -1,7 +1,6 @@
 ﻿using Kros.Extensions;
 using Kros.KORM.Helper;
 using Kros.KORM.Injection;
-using Kros.KORM.Metadata.FluentConfiguration;
 using Kros.Utils;
 using System;
 using System.Collections.Generic;
@@ -13,14 +12,14 @@ namespace Kros.KORM.Metadata
     /// Provides a simple fluent API for building mapping definition between <typeparamref name="TEntity"/> and database table.
     /// </summary>
     /// <typeparam name="TEntity">The entity type being configured.</typeparam>
-    public class EntityTypeBuilder<TEntity> : EntityTypeBuilderBase where TEntity : class
+    public class EntityTypeBuilder<TEntity>
+        : EntityTypeBuilderBase, IEntityTypeBuilder<TEntity>, IPrimaryKeyBuilder<TEntity> where TEntity : class
     {
         private string _tableName;
-        private PrimaryKeyBuilder<TEntity> _primaryKeyBuilder;
+        private string _primaryKeyPropertyName;
+        private AutoIncrementMethodType _autoIncrementType = AutoIncrementMethodType.None;
         private readonly Dictionary<string, PropertyBuilder<TEntity>> _propertyBuilders
-            = new Dictionary<string, PropertyBuilder<TEntity>>();
-        private readonly Lazy<InjectionConfiguration<TEntity>> _injector =
-            new Lazy<InjectionConfiguration<TEntity>>(() => new InjectionConfiguration<TEntity>());
+            = new Dictionary<string, PropertyBuilder<TEntity>>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// Configures the corresponding table name in the database for the <typeparamref name="TEntity"/>.
@@ -29,12 +28,9 @@ namespace Kros.KORM.Metadata
         /// <returns>
         /// Provider for next fluent entity type definition.
         /// </returns>
-        public EntityTypeBuilder<TEntity> HasTableName(string tableName)
+        INamedEntityTypeBuilder<TEntity> IEntityTypeBuilder<TEntity>.HasTableName(string tableName)
         {
-            ExceptionHelper.CheckMultipleTimeCalls(() => _tableName != null);
-
             _tableName = Check.NotNullOrWhiteSpace(tableName, nameof(tableName));
-
             return this;
         }
 
@@ -44,14 +40,18 @@ namespace Kros.KORM.Metadata
         /// <typeparam name="TProperty">Property type.</typeparam>
         /// <param name="propertyExpression">A lambda expression representing the primary key property.</param>
         /// <returns>An object that can be used to configure primary key.</returns>
-        public virtual PrimaryKeyBuilder<TEntity> HasPrimaryKey<TProperty>(
+        IPrimaryKeyBuilder<TEntity> INamedEntityTypeBuilder<TEntity>.HasPrimaryKey<TProperty>(
             Expression<Func<TEntity, TProperty>> propertyExpression)
         {
-            ExceptionHelper.CheckMultipleTimeCalls(() => _primaryKeyBuilder != null);
+            Check.NotNull(propertyExpression, nameof(propertyExpression));
+            _primaryKeyPropertyName = PropertyName<TEntity>.GetPropertyName(propertyExpression);
+            return this;
+        }
 
-            _primaryKeyBuilder = new PrimaryKeyBuilder<TEntity>(this, PropertyName<TEntity>.GetPropertyName(propertyExpression));
-
-            return _primaryKeyBuilder;
+        IEntityPropertyBuilder<TEntity> IPrimaryKeyBuilder<TEntity>.AutoIncrement(AutoIncrementMethodType autoIncrementType)
+        {
+            _autoIncrementType = autoIncrementType;
+            return this;
         }
 
         /// <summary>
@@ -60,21 +60,24 @@ namespace Kros.KORM.Metadata
         /// <typeparam name="TProperty">Propery type.</typeparam>
         /// <param name="propertyExpression">A lambda expression representing the property to be configured.</param>
         /// <returns>An object that can be used to configure the property.</returns>
-        public virtual PropertyBuilder<TEntity> Property<TProperty>(
+        IPropertyBuilder<TEntity> IEntityPropertyBuilder<TEntity>.Property<TProperty>(
             Expression<Func<TEntity, TProperty>> propertyExpression)
         {
+            Check.NotNull(propertyExpression, nameof(propertyExpression));
             string propertyName = PropertyName<TEntity>.GetPropertyName(propertyExpression);
-
-            if (!_propertyBuilders.TryGetValue(propertyName, out PropertyBuilder<TEntity> propertyBuilder))
+            if (_propertyBuilders.ContainsKey(propertyName))
             {
-                propertyBuilder = new PropertyBuilder<TEntity>(this, propertyName);
-                _propertyBuilders.Add(propertyName, propertyBuilder);
+                throw new InvalidOperationException(string.Format("Property \"{0}\" was already configured.", propertyName));
             }
 
+            var propertyBuilder = new PropertyBuilder<TEntity>(this, propertyName);
+            _propertyBuilders.Add(propertyName, propertyBuilder);
             return propertyBuilder;
         }
 
-        internal InjectionConfiguration<TEntity> Injector => _injector.Value;
+        IPropertyBuilder<TEntity> IPrimaryKeyBuilder<TEntity>.Property<TProperty>(
+            Expression<Func<TEntity, TProperty>> propertyExpression)
+            => ((IEntityPropertyBuilder<TEntity>)this).Property(propertyExpression);
 
         internal override void Build(IModelMapperInternal modelMapper)
         {
@@ -82,18 +85,37 @@ namespace Kros.KORM.Metadata
             {
                 modelMapper.SetTableName<TEntity>(_tableName);
             }
-            if (_primaryKeyBuilder != null)
+            if (!_primaryKeyPropertyName.IsNullOrWhiteSpace())
             {
-                _primaryKeyBuilder.Build(modelMapper);
-            }
-            if (_injector.IsValueCreated)
-            {
-                modelMapper.SetInjector<TEntity>(_injector.Value);
+                modelMapper.SetPrimaryKey<TEntity>(_primaryKeyPropertyName, _autoIncrementType);
             }
 
+            var injectionConfig = new Lazy<InjectionConfiguration<TEntity>>(() => new InjectionConfiguration<TEntity>());
             foreach (PropertyBuilder<TEntity> propertyBuilder in _propertyBuilders.Values)
             {
-                propertyBuilder.Build(modelMapper);
+                if (propertyBuilder.IsMapped)
+                {
+                    if (!propertyBuilder.ColumnName.IsNullOrWhiteSpace())
+                    {
+                        modelMapper.SetColumnName<TEntity>(propertyBuilder.PropertyName, propertyBuilder.ColumnName);
+                    }
+                    if (propertyBuilder.Converter != null)
+                    {
+                        modelMapper.SetConverter<TEntity>(propertyBuilder.PropertyName, propertyBuilder.Converter);
+                    }
+                    if (propertyBuilder.Injector != null)
+                    {
+                        injectionConfig.Value.FillProperty(propertyBuilder.PropertyName, propertyBuilder.Injector);
+                    }
+                }
+                else
+                {
+                    modelMapper.SetNoMap<TEntity>(propertyBuilder.PropertyName);
+                }
+            }
+            if (injectionConfig.IsValueCreated)
+            {
+                modelMapper.SetInjector<TEntity>(injectionConfig.Value);
             }
         }
     }
