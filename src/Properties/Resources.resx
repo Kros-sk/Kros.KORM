@@ -207,6 +207,10 @@
   <data name="NonGenericQueryNotSupported" xml:space="preserve">
     <value>Creating a non generic query is not supported.</value>
   </data>
+  <data name="NullAndTrimStringConverter_InvalidArguments" xml:space="preserve">
+    <value>At least one of arguments {0} and {1} must be true, otherwise the use of this converter makes no sense.</value>
+    <comment>0, 1 - argument names</comment>
+  </data>
   <data name="ParameterDataTypeNotSet" xml:space="preserve">
     <value>Data type of the parameter must be set, when its value is NULL. Parameter name: {0}.</value>
   </data>

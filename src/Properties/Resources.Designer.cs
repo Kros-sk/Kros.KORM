@@ -332,6 +332,15 @@ namespace Kros.KORM.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to At least one of arguments {0} and {1} must be true, otherwise the use of this converter makes no sense..
+        /// </summary>
+        internal static string NullAndTrimStringConverter_InvalidArguments {
+            get {
+                return ResourceManager.GetString("NullAndTrimStringConverter_InvalidArguments", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Data type of the parameter must be set, when its value is NULL. Parameter name: {0}..
         /// </summary>
         internal static string ParameterDataTypeNotSet {
