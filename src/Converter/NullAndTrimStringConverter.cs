@@ -6,7 +6,8 @@ namespace Kros.KORM.Converter
     /// <summary>
     /// <para>
     /// Converter for string values. Based on settings, it can convert <see langword="null"/> and <see cref="DBNull.Value"/>
-    /// values to empty string and trim string value.
+    /// values to empty string and trim string value. Values are converted in boht directions - when saving to database
+    /// and also when returning from database.
     /// </para>
     /// <para>
     /// The converter cannot be directly instantiated. Instead of that, there are predefined static instances
@@ -82,13 +83,13 @@ namespace Kros.KORM.Converter
 
         private object ConvertValue(object value)
         {
-            if ((value is null) || (value == DBNull.Value))
+            if (ConvertNullValue && ((value is null) || (value == DBNull.Value)))
             {
-                return ConvertNullValue ? string.Empty : value;
+                return string.Empty;
             }
-            if (value is string strValue)
+            if (TrimStringValue && (value is string strValue))
             {
-                return TrimStringValue ? strValue.Trim() : strValue;
+                return strValue.Trim();
             }
             return value;
         }
