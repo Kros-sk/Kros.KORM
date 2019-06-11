@@ -10,9 +10,10 @@ namespace Kros.KORM.Metadata
     /// property and database table column.
     /// </summary>
     /// <typeparam name="TEntity">The entity type being configured.</typeparam>
-    public class PropertyBuilder<TEntity> : IPropertyBuilder<TEntity> where TEntity : class
+    public class PropertyBuilder<TEntity>
+        : IPropertyBuilder<TEntity>, INamedPropertyBuilder<TEntity> where TEntity : class
     {
-        private readonly IEntityPropertyBuilder<TEntity> _entityTypeBuilder;
+        private readonly IEntityTypePropertyBuilder<TEntity> _entityTypeBuilder;
         private bool _isMapped = true;
         private string _columnName;
         private IConverter _converter;
@@ -23,7 +24,7 @@ namespace Kros.KORM.Metadata
         /// </summary>
         /// <param name="entityTypeBuilder">Entity type builder.</param>
         /// <param name="propertyName">Name of property which represents primary key.</param>
-        internal PropertyBuilder(IEntityPropertyBuilder<TEntity> entityTypeBuilder, string propertyName)
+        internal PropertyBuilder(IEntityTypePropertyBuilder<TEntity> entityTypeBuilder, string propertyName)
         {
             _entityTypeBuilder = Check.NotNull(entityTypeBuilder, nameof(entityTypeBuilder));
             PropertyName = Check.NotNullOrEmpty(propertyName, nameof(propertyName));
@@ -38,7 +39,7 @@ namespace Kros.KORM.Metadata
         /// <summary>
         /// Configures that the property should not be mapped to a column.
         /// </summary>
-        IEntityPropertyBuilder<TEntity> IPropertyBuilder<TEntity>.NoMap()
+        IEntityTypePropertyBuilder<TEntity> IPropertyBuilder<TEntity>.NoMap()
         {
             _isMapped = false;
             return _entityTypeBuilder;
@@ -58,10 +59,10 @@ namespace Kros.KORM.Metadata
             Expression<Func<TEntity, TProperty>> propertyExpression)
             => _entityTypeBuilder.Property(propertyExpression);
 
-        IEntityPropertyBuilder<TEntity> IMappedPropertyBuilder<TEntity>.UseConverter<TConverter>()
+        IEntityTypePropertyBuilder<TEntity> IMappedPropertyBuilder<TEntity>.UseConverter<TConverter>()
             => ((IMappedPropertyBuilder<TEntity>)this).UseConverter(new TConverter());
 
-        IEntityPropertyBuilder<TEntity> IMappedPropertyBuilder<TEntity>.UseConverter(IConverter converter)
+        IEntityTypePropertyBuilder<TEntity> IMappedPropertyBuilder<TEntity>.UseConverter(IConverter converter)
         {
             _converter = Check.NotNull(converter, nameof(converter));
             return _entityTypeBuilder;
@@ -71,7 +72,7 @@ namespace Kros.KORM.Metadata
         /// Configures injector delegate for injecting values to property.
         /// </summary>
         /// <param name="injector">Delegate for injecting values to property.</param>
-        IEntityPropertyBuilder<TEntity> IMappedPropertyBuilder<TEntity>.InjectValue(Func<object> injector)
+        IEntityTypePropertyBuilder<TEntity> IMappedPropertyBuilder<TEntity>.InjectValue(Func<object> injector)
         {
             _injector = Check.NotNull(injector, nameof(injector));
             return _entityTypeBuilder;

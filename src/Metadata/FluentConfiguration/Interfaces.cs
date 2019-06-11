@@ -11,27 +11,27 @@ namespace Kros.KORM.Metadata
     }
 
     public interface INamedEntityTypeBuilder<TEntity>
-        : IEntityPropertyBuilder<TEntity> where TEntity : class
+        : IEntityTypePropertyBuilder<TEntity> where TEntity : class
     {
         IPrimaryKeyBuilder<TEntity> HasPrimaryKey<TProperty>(Expression<Func<TEntity, TProperty>> propertyExpression);
     }
 
-    public interface IEntityPropertyBuilder<TEntity> where TEntity : class
+    public interface IEntityTypePropertyBuilder<TEntity> where TEntity : class
     {
         IPropertyBuilder<TEntity> Property<TProperty>(Expression<Func<TEntity, TProperty>> propertyExpression);
     }
 
-    public interface IPrimaryKeyBuilder<TEntity> where TEntity : class
+    public interface IPrimaryKeyBuilder<TEntity>
+        : IEntityTypePropertyBuilder<TEntity> where TEntity : class
     {
-        IEntityPropertyBuilder<TEntity> AutoIncrement(
+        IEntityTypePropertyBuilder<TEntity> AutoIncrement(
             AutoIncrementMethodType autoIncrementType = AutoIncrementMethodType.Identity);
-        IPropertyBuilder<TEntity> Property<TProperty>(Expression<Func<TEntity, TProperty>> propertyExpression);
     }
 
     public interface IPropertyBuilder<TEntity>
-        : INamedPropertyBuilder<TEntity> where TEntity : class
+        : IMappedPropertyBuilder<TEntity> where TEntity : class
     {
-        IEntityPropertyBuilder<TEntity> NoMap();
+        IEntityTypePropertyBuilder<TEntity> NoMap();
         INamedPropertyBuilder<TEntity> HasColumnName(string columnName);
     }
 
@@ -43,8 +43,8 @@ namespace Kros.KORM.Metadata
 
     public interface IMappedPropertyBuilder<TEntity> where TEntity : class
     {
-        IEntityPropertyBuilder<TEntity> UseConverter<TCoverter>() where TCoverter : IConverter, new();
-        IEntityPropertyBuilder<TEntity> UseConverter(IConverter converter);
-        IEntityPropertyBuilder<TEntity> InjectValue(Func<object> injector);
+        IEntityTypePropertyBuilder<TEntity> UseConverter<TCoverter>() where TCoverter : IConverter, new();
+        IEntityTypePropertyBuilder<TEntity> UseConverter(IConverter converter);
+        IEntityTypePropertyBuilder<TEntity> InjectValue(Func<object> injector);
     }
 }

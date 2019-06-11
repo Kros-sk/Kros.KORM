@@ -48,7 +48,7 @@ namespace Kros.KORM.Metadata
             return this;
         }
 
-        IEntityPropertyBuilder<TEntity> IPrimaryKeyBuilder<TEntity>.AutoIncrement(AutoIncrementMethodType autoIncrementType)
+        IEntityTypePropertyBuilder<TEntity> IPrimaryKeyBuilder<TEntity>.AutoIncrement(AutoIncrementMethodType autoIncrementType)
         {
             _autoIncrementType = autoIncrementType;
             return this;
@@ -60,7 +60,7 @@ namespace Kros.KORM.Metadata
         /// <typeparam name="TProperty">Propery type.</typeparam>
         /// <param name="propertyExpression">A lambda expression representing the property to be configured.</param>
         /// <returns>An object that can be used to configure the property.</returns>
-        IPropertyBuilder<TEntity> IEntityPropertyBuilder<TEntity>.Property<TProperty>(
+        IPropertyBuilder<TEntity> IEntityTypePropertyBuilder<TEntity>.Property<TProperty>(
             Expression<Func<TEntity, TProperty>> propertyExpression)
         {
             Check.NotNull(propertyExpression, nameof(propertyExpression));
@@ -74,10 +74,6 @@ namespace Kros.KORM.Metadata
             _propertyBuilders.Add(propertyName, propertyBuilder);
             return propertyBuilder;
         }
-
-        IPropertyBuilder<TEntity> IPrimaryKeyBuilder<TEntity>.Property<TProperty>(
-            Expression<Func<TEntity, TProperty>> propertyExpression)
-            => ((IEntityPropertyBuilder<TEntity>)this).Property(propertyExpression);
 
         internal override void Build(IModelMapperInternal modelMapper)
         {
