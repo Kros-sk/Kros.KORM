@@ -366,12 +366,36 @@ namespace Kros.KORM.Metadata
         void IModelMapperInternal.SetTableName<TEntity>(string tableName) => Entity<TEntity>().TableName = tableName;
 
         void IModelMapperInternal.SetColumnName<TEntity>(string propertyName, string columnName)
-            => Entity<TEntity>().ColumnMap.Add(propertyName, columnName);
+        {
+            Check.NotNullOrWhiteSpace(propertyName, nameof(propertyName));
+            Check.NotNullOrWhiteSpace(columnName, nameof(columnName));
+            EntityMapper entity = Entity<TEntity>();
+            if (entity.ColumnMap.TryGetValue(propertyName, out string currentMapping))
+            {
+                // RES:
+                throw new InvalidOperationException(
+                    string.Format("Trying to set column mapping {0} for property {1}. Column mapping is already set as {2}.",
+                    columnName, propertyName, currentMapping));
+            }
+            entity.ColumnMap.Add(propertyName, columnName);
+        }
 
         void IModelMapperInternal.SetNoMap<TEntity>(string propertyName) => Entity<TEntity>().NoMap.Add(propertyName);
 
         void IModelMapperInternal.SetConverter<TEntity>(string propertyName, IConverter converter)
-            => Entity<TEntity>().Converters.Add(propertyName, converter);
+        {
+            Check.NotNullOrWhiteSpace(propertyName, nameof(propertyName));
+            Check.NotNull(converter, nameof(converter));
+            EntityMapper entity = Entity<TEntity>();
+            if (entity.Converters.TryGetValue(propertyName, out IConverter currentConverter))
+            {
+                // RES:
+                throw new InvalidOperationException(
+                    string.Format("Trying to set converter {0} for property {1}. Converter is already set as {2}.",
+                    converter.GetType().FullName, propertyName, currentConverter.GetType().FullName));
+            }
+            entity.Converters.Add(propertyName, converter);
+        }
 
         void IModelMapperInternal.SetInjector<TEntity>(IInjector injector) => Entity<TEntity>().Injector = injector;
 
