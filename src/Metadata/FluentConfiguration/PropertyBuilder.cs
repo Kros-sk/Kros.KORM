@@ -10,13 +10,14 @@ namespace Kros.KORM.Metadata
     /// property and database table column.
     /// </summary>
     /// <typeparam name="TEntity">The entity type being configured.</typeparam>
-    public class PropertyBuilder<TEntity>
+    internal class PropertyBuilder<TEntity>
         : IPropertyBuilder<TEntity>, INamedPropertyBuilder<TEntity> where TEntity : class
     {
         private readonly IEntityTypePropertyBuilder<TEntity> _entityTypeBuilder;
         private bool _isMapped = true;
         private string _columnName;
         private IConverter _converter;
+        private bool _ignoreConverter = false;
         private Func<object> _injector;
 
         /// <summary>
@@ -34,6 +35,7 @@ namespace Kros.KORM.Metadata
         internal bool IsMapped => _isMapped;
         internal string ColumnName => _columnName;
         internal IConverter Converter => _converter;
+        internal bool IgnoreConverter => _ignoreConverter;
         internal Func<object> Injector => _injector;
 
         /// <summary>
@@ -65,6 +67,12 @@ namespace Kros.KORM.Metadata
         IEntityTypePropertyBuilder<TEntity> IMappedPropertyBuilder<TEntity>.UseConverter(IConverter converter)
         {
             _converter = Check.NotNull(converter, nameof(converter));
+            return _entityTypeBuilder;
+        }
+
+        IEntityTypePropertyBuilder<TEntity> IMappedPropertyBuilder<TEntity>.IgnoreConverter()
+        {
+            _ignoreConverter = true;
             return _entityTypeBuilder;
         }
 

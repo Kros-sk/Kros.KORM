@@ -176,7 +176,8 @@ namespace Kros.KORM.UnitTests.Metadata
             modelBuilder.Entity<ConvertersEntity>()
                 .UseConverterForProperties<int>(new IntConverter())
                 .UseConverterForProperties<string, StringConverter1>()
-                .Property(p => p.StringPropWithOwnConverter).UseConverter<StringConverter2>();
+                .Property(p => p.StringPropWithOwnConverter).UseConverter<StringConverter2>()
+                .Property(p => p.StringPropWithoutConverter).IgnoreConverter();
 
             modelBuilder.Build(modelMapper);
 
@@ -200,6 +201,9 @@ namespace Kros.KORM.UnitTests.Metadata
 
             ColumnInfo stringPropWithOwnConverter = tableInfo.GetColumnInfo(nameof(ConvertersEntity.StringPropWithOwnConverter));
             stringPropWithOwnConverter.Converter.Should().BeOfType<StringConverter2>();
+
+            ColumnInfo stringPropWithoutConverter = tableInfo.GetColumnInfo(nameof(ConvertersEntity.StringPropWithoutConverter));
+            stringPropWithoutConverter.Converter.Should().BeNull();
 
             tableInfo.GetColumnInfo(nameof(ConvertersEntity.BoolProp)).Converter.Should().BeNull();
             tableInfo.GetColumnInfo(nameof(ConvertersEntity.DateTimeProp)).Converter.Should().BeNull();
@@ -243,6 +247,7 @@ namespace Kros.KORM.UnitTests.Metadata
             public string StringProp3 { get; set; }
             public string StringProp4 { get; set; }
             public string StringPropWithOwnConverter { get; set; }
+            public string StringPropWithoutConverter { get; set; }
             public bool BoolProp { get; set; }
             public DateTime DateTimeProp { get; set; }
         }

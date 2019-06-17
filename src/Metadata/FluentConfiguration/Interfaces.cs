@@ -52,6 +52,7 @@ namespace Kros.KORM.Metadata
     {
         IEntityTypePropertyBuilder<TEntity> UseConverter<TCoverter>() where TCoverter : IConverter, new();
         IEntityTypePropertyBuilder<TEntity> UseConverter(IConverter converter);
+        IEntityTypePropertyBuilder<TEntity> IgnoreConverter();
         IEntityTypePropertyBuilder<TEntity> InjectValue(Func<object> injector);
     }
 }

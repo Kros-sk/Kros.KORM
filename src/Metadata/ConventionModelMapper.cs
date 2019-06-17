@@ -235,7 +235,7 @@ namespace Kros.KORM.Metadata
                 if (entity.Converters.TryGetValue(columnInfo.PropertyInfo.Name, out IConverter converter)
                     || entity.PropertyConverters.TryGetValue(propertyInfo.PropertyType, out converter))
                 {
-                    columnInfo.Converter = converter;
+                    columnInfo.Converter = converter == NoConverter.Instance ? null : converter;
                 }
             }
             if (columnInfo.Converter is null)
