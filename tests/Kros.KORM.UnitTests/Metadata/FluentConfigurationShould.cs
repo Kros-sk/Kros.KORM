@@ -167,6 +167,44 @@ namespace Kros.KORM.UnitTests.Metadata
             AreSame(tableInfo, tableInfoExpected);
         }
 
+        [Fact]
+        public void UseConverterForAllPropertiesOfSpecifiedType()
+        {
+            var modelBuilder = new ModelConfigurationBuilder();
+            var modelMapper = new ConventionModelMapper();
+
+            modelBuilder.Entity<ConvertersEntity>()
+                .UseConverterForProperties<int>(new IntConverter())
+                .UseConverterForProperties<string, StringConverter1>()
+                .Property(p => p.StringPropWithOwnConverter).UseConverter<StringConverter2>();
+
+            modelBuilder.Build(modelMapper);
+
+            TableInfo tableInfo = modelMapper.GetTableInfo<ConvertersEntity>();
+
+            ColumnInfo intProp1 = tableInfo.GetColumnInfo(nameof(ConvertersEntity.IntProp1));
+            ColumnInfo intProp2 = tableInfo.GetColumnInfo(nameof(ConvertersEntity.IntProp1));
+            intProp1.Converter
+                .Should().BeOfType<IntConverter>()
+                .And.Be(intProp2.Converter);
+
+            ColumnInfo stringProp1 = tableInfo.GetColumnInfo(nameof(ConvertersEntity.StringProp1));
+            ColumnInfo stringProp2 = tableInfo.GetColumnInfo(nameof(ConvertersEntity.StringProp2));
+            ColumnInfo stringProp3 = tableInfo.GetColumnInfo(nameof(ConvertersEntity.StringProp3));
+            ColumnInfo stringProp4 = tableInfo.GetColumnInfo(nameof(ConvertersEntity.StringProp4));
+            stringProp1.Converter
+                .Should().BeOfType<StringConverter1>()
+                .And.Be(stringProp2.Converter)
+                .And.Be(stringProp3.Converter)
+                .And.Be(stringProp4.Converter);
+
+            ColumnInfo stringPropWithOwnConverter = tableInfo.GetColumnInfo(nameof(ConvertersEntity.StringPropWithOwnConverter));
+            stringPropWithOwnConverter.Converter.Should().BeOfType<StringConverter2>();
+
+            tableInfo.GetColumnInfo(nameof(ConvertersEntity.BoolProp)).Converter.Should().BeNull();
+            tableInfo.GetColumnInfo(nameof(ConvertersEntity.DateTimeProp)).Converter.Should().BeNull();
+        }
+
         private static TableInfo CreateExpectedTableInfo(List<ColumnInfo> columns, string tableName)
         {
             var tableInfoExpected = new TableInfo(columns, Enumerable.Empty<PropertyInfo>(), null)
@@ -196,7 +234,38 @@ namespace Kros.KORM.UnitTests.Metadata
             }
         }
 
-        public class Foo
+        private class ConvertersEntity
+        {
+            public int IntProp1 { get; set; }
+            public int IntProp2 { get; set; }
+            public string StringProp1 { get; set; }
+            public string StringProp2 { get; set; }
+            public string StringProp3 { get; set; }
+            public string StringProp4 { get; set; }
+            public string StringPropWithOwnConverter { get; set; }
+            public bool BoolProp { get; set; }
+            public DateTime DateTimeProp { get; set; }
+        }
+
+        private class StringConverter1 : IConverter
+        {
+            public object Convert(object value) => throw new NotImplementedException();
+            public object ConvertBack(object value) => throw new NotImplementedException();
+        }
+
+        private class StringConverter2 : IConverter
+        {
+            public object Convert(object value) => throw new NotImplementedException();
+            public object ConvertBack(object value) => throw new NotImplementedException();
+        }
+
+        private class IntConverter : IConverter
+        {
+            public object Convert(object value) => throw new NotImplementedException();
+            public object ConvertBack(object value) => throw new NotImplementedException();
+        }
+
+        private class Foo
         {
             public int FooId { get; set; }
             public string Addresses { get; set; }
@@ -205,24 +274,22 @@ namespace Kros.KORM.UnitTests.Metadata
             public string FirstName { get; set; }
         }
 
-        public class Bar
+        private class Bar
         {
             public int Id { get; set; }
             public string FirstName { get; set; }
             public string LastName { get; set; }
         }
 
-        public class AddressConverter : IConverter
+        private class AddressConverter : IConverter
         {
             public object Convert(object value) => throw new NotImplementedException();
-
             public object ConvertBack(object value) => throw new NotImplementedException();
         }
 
-        public class UpperCaseConverter : IConverter
+        private class UpperCaseConverter : IConverter
         {
             public object Convert(object value) => throw new NotImplementedException();
-
             public object ConvertBack(object value) => throw new NotImplementedException();
         }
     }

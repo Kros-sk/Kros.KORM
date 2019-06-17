@@ -29,6 +29,7 @@ namespace Kros.KORM.Metadata
             public Dictionary<string, IConverter> Converters { get; } = new Dictionary<string, IConverter>(StringComparer.OrdinalIgnoreCase);
             public HashSet<string> NoMap { get; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             public IInjector Injector { get; set; } = null;
+            public Dictionary<Type, IConverter> PropertyConverters { get; } = new Dictionary<Type, IConverter>();
         }
     }
 }

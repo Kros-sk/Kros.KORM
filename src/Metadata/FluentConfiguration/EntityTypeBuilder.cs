@@ -1,4 +1,5 @@
 ﻿using Kros.Extensions;
+using Kros.KORM.Converter;
 using Kros.KORM.Helper;
 using Kros.KORM.Injection;
 using Kros.Utils;
@@ -18,6 +19,7 @@ namespace Kros.KORM.Metadata
         private string _tableName;
         private string _primaryKeyPropertyName;
         private AutoIncrementMethodType _autoIncrementType = AutoIncrementMethodType.None;
+        private readonly Dictionary<Type, IConverter> _propertyConverters = new Dictionary<Type, IConverter>();
         private readonly Dictionary<string, PropertyBuilder<TEntity>> _propertyBuilders
             = new Dictionary<string, PropertyBuilder<TEntity>>(StringComparer.OrdinalIgnoreCase);
 
@@ -48,11 +50,26 @@ namespace Kros.KORM.Metadata
             return this;
         }
 
-        IEntityTypePropertyBuilder<TEntity> IPrimaryKeyBuilder<TEntity>.AutoIncrement(AutoIncrementMethodType autoIncrementType)
+        IEntityTypeConvertersBuilder<TEntity> IPrimaryKeyBuilder<TEntity>.AutoIncrement(AutoIncrementMethodType autoIncrementType)
         {
             _autoIncrementType = autoIncrementType;
             return this;
         }
+
+        IEntityTypeConvertersBuilder<TEntity> IEntityTypeConvertersBuilder<TEntity>.UseConverterForProperties<TProperty>(IConverter converter)
+        {
+            Check.NotNull(converter, nameof(converter));
+            Type propertyType = typeof(TProperty);
+            if (_propertyConverters.TryGetValue(propertyType, out IConverter currentConverter))
+            {
+                ThrowHelper.ConverterForTypeAlreadyConfigured(propertyType, converter, currentConverter);
+            }
+            _propertyConverters.Add(propertyType, converter);
+            return this;
+        }
+
+        IEntityTypeConvertersBuilder<TEntity> IEntityTypeConvertersBuilder<TEntity>.UseConverterForProperties<TProperty, TConverter>()
+            => ((IEntityTypeConvertersBuilder<TEntity>)this).UseConverterForProperties<TProperty>(new TConverter());
 
         /// <summary>
         /// Returns an object that can be used to configure a property of the entity type.
@@ -67,7 +84,7 @@ namespace Kros.KORM.Metadata
             string propertyName = PropertyName<TEntity>.GetPropertyName(propertyExpression);
             if (_propertyBuilders.ContainsKey(propertyName))
             {
-                throw new InvalidOperationException(string.Format("Property \"{0}\" was already configured.", propertyName));
+                ThrowHelper.PropertyAlreadyConfigured(propertyName);
             }
 
             var propertyBuilder = new PropertyBuilder<TEntity>(this, propertyName);
@@ -84,6 +101,10 @@ namespace Kros.KORM.Metadata
             if (!_primaryKeyPropertyName.IsNullOrWhiteSpace())
             {
                 modelMapper.SetPrimaryKey<TEntity>(_primaryKeyPropertyName, _autoIncrementType);
+            }
+            foreach (KeyValuePair<Type, IConverter> item in _propertyConverters)
+            {
+                modelMapper.SetConverterForProperties<TEntity>(item.Key, item.Value);
             }
 
             var injectionConfig = new Lazy<InjectionConfiguration<TEntity>>(() => new InjectionConfiguration<TEntity>());

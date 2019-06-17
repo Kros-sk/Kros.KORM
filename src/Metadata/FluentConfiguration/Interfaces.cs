@@ -11,9 +11,16 @@ namespace Kros.KORM.Metadata
     }
 
     public interface INamedEntityTypeBuilder<TEntity>
-        : IEntityTypePropertyBuilder<TEntity> where TEntity : class
+        : IEntityTypeConvertersBuilder<TEntity> where TEntity : class
     {
         IPrimaryKeyBuilder<TEntity> HasPrimaryKey<TProperty>(Expression<Func<TEntity, TProperty>> propertyExpression);
+    }
+
+    public interface IEntityTypeConvertersBuilder<TEntity>
+        : IEntityTypePropertyBuilder<TEntity> where TEntity : class
+    {
+        IEntityTypeConvertersBuilder<TEntity> UseConverterForProperties<TProperty>(IConverter converter);
+        IEntityTypeConvertersBuilder<TEntity> UseConverterForProperties<TProperty, TConverter>() where TConverter : IConverter, new();
     }
 
     public interface IEntityTypePropertyBuilder<TEntity> where TEntity : class
@@ -24,7 +31,7 @@ namespace Kros.KORM.Metadata
     public interface IPrimaryKeyBuilder<TEntity>
         : IEntityTypePropertyBuilder<TEntity> where TEntity : class
     {
-        IEntityTypePropertyBuilder<TEntity> AutoIncrement(
+        IEntityTypeConvertersBuilder<TEntity> AutoIncrement(
             AutoIncrementMethodType autoIncrementType = AutoIncrementMethodType.Identity);
     }
 
