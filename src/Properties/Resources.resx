@@ -247,6 +247,28 @@
   <data name="ThisCallOfTakeMethodIsNotSupported" xml:space="preserve">
     <value>This call of Take() method is not supported.</value>
   </data>
+  <data name="ThrowHelper_ColumnMappingAlreadyConfigured" xml:space="preserve">
+    <value>Trying to set column mapping "{0}" for property "{1}". Column mapping is already set as "{2}".</value>
+    <comment>0 - column name
+1 - property name
+2 - column name</comment>
+  </data>
+  <data name="ThrowHelper_ConverterAlreadyConfigured" xml:space="preserve">
+    <value>Trying to set converter "{0}" for property "{1}". Converter is already set as "{2}".</value>
+    <comment>0 - converter full name
+1 - property name
+2 - converter full name</comment>
+  </data>
+  <data name="ThrowHelper_ConverterForTypeAlreadyConfigured" xml:space="preserve">
+    <value>Trying to set converter "{0}" for properties of type "{1}". Converter is already set as "{2}".</value>
+    <comment>0 - converter full name
+1 - property type name
+2 - converter full name</comment>
+  </data>
+  <data name="ThrowHelper_PropertyAlreadyConfigured" xml:space="preserve">
+    <value>Property "{0}" was already configured.</value>
+    <comment>0 - property name</comment>
+  </data>
   <data name="TypeMustBeEnumType" xml:space="preserve">
     <value>Type must be Enum type.</value>
   </data>
