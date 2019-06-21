@@ -10,6 +10,7 @@ namespace Kros.KORM.Metadata
         private class DummyInjector : IInjector
         {
             public static IInjector Default { get; } = new DummyInjector();
+            private DummyInjector() { }
             public object GetValue(string propertyName) => throw new NotImplementedException();
             public bool IsInjectable(string propertyName) => false;
         }

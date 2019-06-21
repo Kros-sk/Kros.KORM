@@ -167,6 +167,15 @@ namespace Kros.KORM.UnitTests.Metadata
             AreSame(tableInfo, tableInfoExpected);
         }
 
+
+        public class Users
+        {
+            public int Id { get; set; }
+            public string FirstName { get; set; }
+            public string LastName { get; set; }
+            public string FullName => FirstName + " " + LastName;
+        }
+
         [Fact]
         public void UseConverterForAllPropertiesOfSpecifiedType()
         {
