@@ -31,6 +31,7 @@ To contribute with new topics/information or make changes, see [contributing](ht
 * [Linq to Kros.KORM](#linq-to-kroskorm)
 * [DataAnnotation attributes](#dataannotation-attributes)
 * [Convention model mapper](#convention-model-mapper)
+* [Configure model mapping by fluent api](#Configure-model-mapping-by-fluent-api)
 * [Converters](#converters)
 * [OnAfterMaterialize](#onaftermaterialize)
 * [Property injection](#property-injection)
