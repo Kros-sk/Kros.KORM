@@ -167,15 +167,6 @@ namespace Kros.KORM.UnitTests.Metadata
             AreSame(tableInfo, tableInfoExpected);
         }
 
-
-        public class Users
-        {
-            public int Id { get; set; }
-            public string FirstName { get; set; }
-            public string LastName { get; set; }
-            public string FullName => FirstName + " " + LastName;
-        }
-
         [Fact]
         public void UseConverterForAllPropertiesOfSpecifiedType()
         {
@@ -216,6 +207,19 @@ namespace Kros.KORM.UnitTests.Metadata
 
             tableInfo.GetColumnInfo(nameof(ConvertersEntity.BoolProp)).Converter.Should().BeNull();
             tableInfo.GetColumnInfo(nameof(ConvertersEntity.DateTimeProp)).Converter.Should().BeNull();
+        }
+
+        [Fact]
+        public void ThrowExceptionWhenMappingTheTheSamePropertyMoreThanOnce()
+        {
+            Action builderAction = () =>
+            {
+                var modelBuilder = new ModelConfigurationBuilder();
+                modelBuilder.Entity<ConvertersEntity>()
+                    .Property(p => p.StringProp1).UseConverter<StringConverter2>()
+                    .Property(p => p.StringProp1).IgnoreConverter();
+            };
+            builderAction.Should().Throw<InvalidOperationException>();
         }
 
         private static TableInfo CreateExpectedTableInfo(List<ColumnInfo> columns, string tableName)
