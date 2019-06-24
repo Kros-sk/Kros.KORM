@@ -2,7 +2,7 @@
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;netcoreapp2.1;net46</TargetFrameworks>
     <Company>KROS a.s.</Company>
-    <Version>4.0.0-alfa2</Version>
+    <Version>4.0.0-alfa3</Version>
     <Authors>KROS a.s.</Authors>
     <Title>Kros.KORM</Title>
     <Description>KORM is fast, easy to use, micro .NET Standard ORM tool. (Kros Object Relation Mapper)</Description>
