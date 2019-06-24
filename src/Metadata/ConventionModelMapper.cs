@@ -369,7 +369,7 @@ namespace Kros.KORM.Metadata
             EntityMapper entity = GetEntity<TEntity>();
             if (entity.ColumnMap.TryGetValue(propertyName, out string currentMapping))
             {
-                ThrowHelper.ColumnMappingAlreadyConfigured(propertyName, columnName, currentMapping);
+                ThrowHelper.ColumnMappingAlreadyConfigured<TEntity>(propertyName, columnName, currentMapping);
             }
             entity.ColumnMap.Add(propertyName, columnName);
         }
@@ -383,7 +383,7 @@ namespace Kros.KORM.Metadata
             EntityMapper entity = GetEntity<TEntity>();
             if (entity.Converters.TryGetValue(propertyName, out IConverter currentConverter))
             {
-                ThrowHelper.ConverterAlreadyConfigured(propertyName, converter, currentConverter);
+                ThrowHelper.ConverterAlreadyConfigured<TEntity>(propertyName, converter, currentConverter);
             }
             entity.Converters.Add(propertyName, converter);
         }
@@ -394,7 +394,7 @@ namespace Kros.KORM.Metadata
             EntityMapper entity = GetEntity<TEntity>();
             if (entity.PropertyConverters.TryGetValue(propertyType, out IConverter currentConverter))
             {
-                ThrowHelper.ConverterForTypeAlreadyConfigured(propertyType, converter, currentConverter);
+                ThrowHelper.ConverterForTypeAlreadyConfigured<TEntity>(propertyType, converter, currentConverter);
             }
             entity.PropertyConverters.Add(propertyType, converter);
         }

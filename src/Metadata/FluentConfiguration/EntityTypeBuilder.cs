@@ -45,7 +45,7 @@ namespace Kros.KORM.Metadata
             Type propertyType = typeof(TProperty);
             if (_propertyConverters.TryGetValue(propertyType, out IConverter currentConverter))
             {
-                ThrowHelper.ConverterForTypeAlreadyConfigured(propertyType, converter, currentConverter);
+                ThrowHelper.ConverterForTypeAlreadyConfigured<TEntity>(propertyType, converter, currentConverter);
             }
             _propertyConverters.Add(propertyType, converter);
             return this;
@@ -61,7 +61,7 @@ namespace Kros.KORM.Metadata
             string propertyName = PropertyName<TEntity>.GetPropertyName(propertyExpression);
             if (_propertyBuilders.ContainsKey(propertyName))
             {
-                ThrowHelper.PropertyAlreadyConfigured(propertyName);
+                ThrowHelper.PropertyAlreadyConfigured<TEntity>(propertyName);
             }
 
             var propertyBuilder = new PropertyBuilder<TEntity>(this, propertyName);
