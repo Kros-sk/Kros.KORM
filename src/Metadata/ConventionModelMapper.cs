@@ -18,19 +18,11 @@ namespace Kros.KORM.Metadata
     /// Model mapper, which know define convention for name mapping.
     /// </summary>
     /// <seealso cref="IModelMapper" />
-    public class ConventionModelMapper : IModelMapper, IModelMapperInternal
+    public partial class ConventionModelMapper : IModelMapper, IModelMapperInternal
     {
         private const string ConventionalPrimaryKeyName = "ID";
-        private static readonly string _onAfterMaterializeName =
-            MethodName<IMaterialize>.GetName(p => p.OnAfterMaterialize(null));
-        private readonly Dictionary<Type, Dictionary<string, string>> _columnMap =
-            new Dictionary<Type, Dictionary<string, string>>();
-        private readonly Dictionary<Type, Dictionary<string, IConverter>> _converters =
-            new Dictionary<Type, Dictionary<string, IConverter>>();
-        private readonly Dictionary<Type, string> _tableMap = new Dictionary<Type, string>();
-        private readonly Dictionary<Type, (string propertyName, AutoIncrementMethodType methodType)> _keys
-            = new Dictionary<Type, (string, AutoIncrementMethodType)>();
-        private readonly HashSet<string> _noMap = new HashSet<string>();
+
+        private readonly Dictionary<Type, EntityMapper> _entities = new Dictionary<Type, EntityMapper>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ConventionModelMapper"/> class.
@@ -111,8 +103,6 @@ namespace Kros.KORM.Metadata
 
         #region Injection
 
-        private Dictionary<Type, IInjector> _injectors = new Dictionary<Type, IInjector>();
-
         /// <summary>
         /// Get property injection configuration for model T.
         /// </summary>
@@ -121,11 +111,12 @@ namespace Kros.KORM.Metadata
         /// </example>
         public IInjectionConfigurator<T> InjectionConfigurator<T>()
         {
-            var injector = new InjectionConfiguration<T>();
-
-            _injectors[typeof(T)] = injector;
-
-            return injector;
+            EntityMapper entity = GetEntity<T>();
+            if (entity.Injector is null)
+            {
+                entity.Injector = new InjectionConfiguration<T>();
+            }
+            return (IInjectionConfigurator<T>)entity.Injector;
         }
 
         /// <summary>
@@ -133,31 +124,18 @@ namespace Kros.KORM.Metadata
         /// </summary>
         /// <typeparam name="T">Model type.</typeparam>
         /// <returns>Service property injector.</returns>
-        public IInjector GetInjector<T>()
-        {
-            return GetInjector(typeof(T));
-        }
+        public IInjector GetInjector<T>() => GetInjector(typeof(T));
 
         private IInjector GetInjector(Type modelType)
         {
-            if (_injectors.ContainsKey(modelType))
+            if (_entities.TryGetValue(modelType, out EntityMapper entity))
             {
-                return _injectors[modelType];
+                return entity.Injector ?? DummyInjector.Default;
             }
             else
             {
                 return DummyInjector.Default;
             }
-        }
-
-        private class DummyInjector : IInjector
-        {
-            public static IInjector Default { get; } = new DummyInjector();
-
-            public object GetValue(string propertyName) =>
-                throw new NotImplementedException();
-
-            public bool IsInjectable(string propertyName) => false;
         }
 
         #endregion
@@ -166,19 +144,22 @@ namespace Kros.KORM.Metadata
 
         private TableInfo CreateTableInfo(Type modelType)
         {
-            var injector = GetInjector(modelType);
-            var properties = GetModelProperties(modelType).
-                Where(p =>
+            _entities.TryGetValue(modelType, out EntityMapper entity);
+            IInjector injector = GetInjector(modelType);
+
+            PropertyInfo[] allModelProperties = modelType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            IEnumerable<PropertyInfo> columnProperties = allModelProperties
+                .Where(p =>
                 {
                     return p.CanWrite
-                        && !_noMap.Contains(GetPropertyKey(modelType, p.Name))
+                        && ((entity is null) || !entity.NoMap.Contains(p.Name))
                         && (p.GetCustomAttributes(typeof(NoMapAttribute), true).Length == 0)
                         && !injector.IsInjectable(p.Name);
                 });
 
-            var columns = properties.Select(p => CreateColumnInfo(p, modelType));
-            var onAfterMaterialize = GetOnAfterMaterializeInfo(modelType);
-            var tableInfo = new TableInfo(columns, GetModelProperties(modelType), onAfterMaterialize);
+            IEnumerable<ColumnInfo> columns = columnProperties.Select(p => CreateColumnInfo(p, modelType));
+            MethodInfo onAfterMaterialize = GetOnAfterMaterializeInfo(modelType);
+            var tableInfo = new TableInfo(columns, allModelProperties, onAfterMaterialize);
 
             tableInfo.Name = GetTableName(tableInfo, modelType);
 
@@ -189,12 +170,11 @@ namespace Kros.KORM.Metadata
 
         private void SetPrimaryKey(TableInfo tableInfo, Type modelType)
         {
-            if (_keys.ContainsKey(modelType))
+            if (_entities.TryGetValue(modelType, out EntityMapper entity) && (entity.PrimaryKeyPropertyName != null))
             {
-                (string propertyName, AutoIncrementMethodType methodType) = _keys[modelType];
-                var columnInfo = tableInfo.GetColumnInfoByPropertyName(propertyName);
+                ColumnInfo columnInfo = tableInfo.GetColumnInfoByPropertyName(entity.PrimaryKeyPropertyName);
                 columnInfo.IsPrimaryKey = true;
-                columnInfo.AutoIncrementMethodType = methodType;
+                columnInfo.AutoIncrementMethodType = entity.PrimaryKeyAutoIncrementType;
             }
             else
             {
@@ -205,22 +185,13 @@ namespace Kros.KORM.Metadata
             }
         }
 
-        private static string GetPropertyKey(Type modelType, string propertyName)
-            => $"{modelType.FullName}-{propertyName}";
-
-        private static PropertyInfo[] GetModelProperties(Type modelType) =>
-            modelType.GetProperties(BindingFlags.Public |
-                BindingFlags.GetProperty |
-                BindingFlags.SetProperty |
-                BindingFlags.Instance);
-
         private MethodInfo GetOnAfterMaterializeInfo(Type modelType)
         {
             MethodInfo onAfterMaterialize = null;
 
             if (typeof(IMaterialize).IsAssignableFrom(modelType))
             {
-                onAfterMaterialize = typeof(IMaterialize).GetMethod(_onAfterMaterializeName);
+                onAfterMaterialize = typeof(IMaterialize).GetMethod(nameof(IMaterialize.OnAfterMaterialize));
             }
 
             return onAfterMaterialize;
@@ -228,11 +199,15 @@ namespace Kros.KORM.Metadata
 
         private string GetTableName(TableInfo tableInfo, Type modelType)
         {
-            var name = GetName(modelType);
+            string name;
 
-            if (_tableMap.ContainsKey(modelType))
+            if (_entities.TryGetValue(modelType, out EntityMapper entity) && (entity.TableName != null))
             {
-                name = _tableMap[modelType];
+                name = entity.TableName;
+            }
+            else
+            {
+                name = GetName(modelType);
             }
 
             if (string.IsNullOrWhiteSpace(name))
@@ -245,9 +220,7 @@ namespace Kros.KORM.Metadata
 
         private ColumnInfo CreateColumnInfo(PropertyInfo propertyInfo, Type modelType)
         {
-            var columnInfo = new ColumnInfo();
-
-            columnInfo.PropertyInfo = propertyInfo;
+            var columnInfo = new ColumnInfo { PropertyInfo = propertyInfo };
             columnInfo.Name = GetColumnName(columnInfo, modelType);
 
             SetConverter(propertyInfo, columnInfo, modelType);
@@ -257,34 +230,33 @@ namespace Kros.KORM.Metadata
 
         private void SetConverter(PropertyInfo propertyInfo, ColumnInfo columnInfo, Type modelType)
         {
-            IConverter converter = GetConverter(propertyInfo);
-
-            if (_converters.ContainsKey(modelType) && _converters[modelType].ContainsKey(columnInfo.PropertyInfo.Name))
+            if (_entities.TryGetValue(modelType, out EntityMapper entity))
             {
-                converter = _converters[modelType][columnInfo.PropertyInfo.Name];
+                if (entity.Converters.TryGetValue(columnInfo.PropertyInfo.Name, out IConverter converter)
+                    || entity.PropertyConverters.TryGetValue(propertyInfo.PropertyType, out converter))
+                {
+                    columnInfo.Converter = converter == NoConverter.Instance ? null : converter;
+                }
             }
-
-            columnInfo.Converter = converter;
+            if (columnInfo.Converter is null)
+            {
+                columnInfo.Converter = GetConverterFromAttribute(propertyInfo);
+            }
         }
 
         private string GetColumnName(ColumnInfo columnInfo, Type modelType)
         {
+            if (_entities.TryGetValue(modelType, out EntityMapper entity)
+                && entity.ColumnMap.TryGetValue(columnInfo.PropertyInfo.Name, out string columnName))
+            {
+                return columnName;
+            }
+
             var name = GetName(columnInfo.PropertyInfo);
-
-            if (_columnMap.ContainsKey(modelType) && _columnMap[modelType].ContainsKey(columnInfo.PropertyInfo.Name))
-            {
-                name = _columnMap[modelType][columnInfo.PropertyInfo.Name];
-            }
-
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                name = MapColumnName(columnInfo, modelType);
-            }
-
-            return name;
+            return string.IsNullOrWhiteSpace(name) ? MapColumnName(columnInfo, modelType) : name;
         }
 
-        private IConverter GetConverter(PropertyInfo propertyInfo)
+        private IConverter GetConverterFromAttribute(PropertyInfo propertyInfo)
         {
             var attributes = propertyInfo.GetCustomAttributes(typeof(ConverterAttribute), true);
             if (attributes.Length == 1)
@@ -310,7 +282,7 @@ namespace Kros.KORM.Metadata
             ColumnInfo pkByConvention = null;
             var pkByAttributes = new List<(ColumnInfo Column, KeyAttribute Attribute)>();
 
-            foreach (var column in tableInfo.Columns)
+            foreach (ColumnInfo column in tableInfo.Columns)
             {
                 var attributes = column.PropertyInfo.GetCustomAttributes(typeof(KeyAttribute), true);
                 if (attributes.Length == 1)
@@ -377,43 +349,63 @@ namespace Kros.KORM.Metadata
 
         #region IModelMapperInternal
 
-        void IModelMapperInternal.SetTableName<TEntity>(string tableName)
+        private EntityMapper GetEntity<TEntity>()
         {
-            _tableMap[typeof(TEntity)] = tableName;
+            Type entityType = typeof(TEntity);
+            if (!_entities.TryGetValue(entityType, out EntityMapper entity))
+            {
+                entity = new EntityMapper(entityType);
+                _entities.Add(entityType, entity);
+            }
+            return entity;
         }
+
+        void IModelMapperInternal.SetTableName<TEntity>(string tableName) => GetEntity<TEntity>().TableName = tableName;
 
         void IModelMapperInternal.SetColumnName<TEntity>(string propertyName, string columnName)
         {
-            if (!_columnMap.ContainsKey(typeof(TEntity)))
+            Check.NotNullOrWhiteSpace(propertyName, nameof(propertyName));
+            Check.NotNullOrWhiteSpace(columnName, nameof(columnName));
+            EntityMapper entity = GetEntity<TEntity>();
+            if (entity.ColumnMap.TryGetValue(propertyName, out string currentMapping))
             {
-                _columnMap[typeof(TEntity)] = new Dictionary<string, string>(StringComparer.CurrentCultureIgnoreCase);
+                ThrowHelper.ColumnMappingAlreadyConfigured<TEntity>(propertyName, columnName, currentMapping);
             }
-
-            _columnMap[typeof(TEntity)][propertyName] = columnName;
+            entity.ColumnMap.Add(propertyName, columnName);
         }
 
-        void IModelMapperInternal.SetNoMap<TEntity>(string propertyName)
-        {
-            _noMap.Add(GetPropertyKey(typeof(TEntity), propertyName));
-        }
+        void IModelMapperInternal.SetNoMap<TEntity>(string propertyName) => GetEntity<TEntity>().NoMap.Add(propertyName);
 
         void IModelMapperInternal.SetConverter<TEntity>(string propertyName, IConverter converter)
         {
-            if (!_converters.ContainsKey(typeof(TEntity)))
+            Check.NotNullOrWhiteSpace(propertyName, nameof(propertyName));
+            Check.NotNull(converter, nameof(converter));
+            EntityMapper entity = GetEntity<TEntity>();
+            if (entity.Converters.TryGetValue(propertyName, out IConverter currentConverter))
             {
-                _converters[typeof(TEntity)] = new Dictionary<string, IConverter>(StringComparer.CurrentCultureIgnoreCase);
+                ThrowHelper.ConverterAlreadyConfigured<TEntity>(propertyName, converter, currentConverter);
             }
-            _converters[typeof(TEntity)][propertyName] = converter;
+            entity.Converters.Add(propertyName, converter);
         }
 
-        void IModelMapperInternal.SetInjector<TEntity>(IInjector injector)
+        void IModelMapperInternal.SetConverterForProperties<TEntity>(Type propertyType, IConverter converter)
         {
-            _injectors[typeof(TEntity)] = injector;
+            Check.NotNull(converter, nameof(converter));
+            EntityMapper entity = GetEntity<TEntity>();
+            if (entity.PropertyConverters.TryGetValue(propertyType, out IConverter currentConverter))
+            {
+                ThrowHelper.ConverterForTypeAlreadyConfigured<TEntity>(propertyType, converter, currentConverter);
+            }
+            entity.PropertyConverters.Add(propertyType, converter);
         }
+
+        void IModelMapperInternal.SetInjector<TEntity>(IInjector injector) => GetEntity<TEntity>().Injector = injector;
 
         void IModelMapperInternal.SetPrimaryKey<TEntity>(string propertyName, AutoIncrementMethodType autoIncrementType)
         {
-            _keys[typeof(TEntity)] = (propertyName, autoIncrementType);
+            EntityMapper entity = GetEntity<TEntity>();
+            entity.PrimaryKeyPropertyName = propertyName;
+            entity.PrimaryKeyAutoIncrementType = autoIncrementType;
         }
 
         #endregion

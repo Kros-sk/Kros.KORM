@@ -1,5 +1,4 @@
-﻿using Kros.KORM.Metadata.FluentConfiguration;
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace Kros.KORM.Metadata
@@ -16,7 +15,7 @@ namespace Kros.KORM.Metadata
         /// </summary>
         /// <typeparam name="TEntity">Entity type.</typeparam>
         /// <returns>An object that can be used to configure of a given entity type.</returns>
-        public EntityTypeBuilder<TEntity> Entity<TEntity>() where TEntity : class
+        public IEntityTypeBuilder<TEntity> Entity<TEntity>() where TEntity : class
         {
             Type entityType = typeof(TEntity);
 

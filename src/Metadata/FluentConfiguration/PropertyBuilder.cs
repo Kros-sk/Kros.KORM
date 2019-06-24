@@ -1,134 +1,68 @@
 ﻿using Kros.KORM.Converter;
-using Kros.KORM.Metadata.FluentConfiguration;
 using Kros.Utils;
 using System;
 using System.Linq.Expressions;
-using Kros.Extensions;
 
 namespace Kros.KORM.Metadata
 {
-    /// <summary>
-    /// Provides a simple fluent API for building mapping definition between <typeparamref name="TEntity"/>
-    /// property and database table column.
-    /// </summary>
-    /// <typeparam name="TEntity">The entity type being configured.</typeparam>
-    public class PropertyBuilder<TEntity> where TEntity : class
+    internal class PropertyBuilder<TEntity>
+        : IPropertyBuilder<TEntity>, INamedPropertyBuilder<TEntity> where TEntity : class
     {
-        private readonly EntityTypeBuilder<TEntity> _entityTypeBuilder;
-        private readonly string _propertyName;
+        private readonly IEntityTypePropertyBuilder<TEntity> _entityTypeBuilder;
+        private bool _isMapped = true;
         private string _columnName;
-        private bool _noMap = false;
         private IConverter _converter;
-        private bool _wasInjectorSetup = false;
+        private bool _ignoreConverter = false;
+        private Func<object> _injector;
 
-        /// <summary>
-        /// Ctor.
-        /// </summary>
-        /// <param name="entityTypeBuilder">Entity type builder.</param>
-        /// <param name="propertyName">Name of property which represents primary key.</param>
-        internal PropertyBuilder(EntityTypeBuilder<TEntity> entityTypeBuilder, string propertyName)
+        internal PropertyBuilder(IEntityTypePropertyBuilder<TEntity> entityTypeBuilder, string propertyName)
         {
             _entityTypeBuilder = Check.NotNull(entityTypeBuilder, nameof(entityTypeBuilder));
-            _propertyName = Check.NotNullOrEmpty(propertyName, nameof(propertyName));
+            PropertyName = Check.NotNullOrEmpty(propertyName, nameof(propertyName));
         }
 
-        /// <summary>
-        /// Configures the corresponding column name in the database for the property.
-        /// </summary>
-        /// <param name="columnName">Column name.</param>
-        public PropertyBuilder<TEntity> HasColumnName(string columnName)
-        {
-            ExceptionHelper.CheckMultipleTimeCalls(() => _columnName != null);
-            CheckNoMapOrInjector();
+        internal string PropertyName { get; }
+        internal bool IsMapped => _isMapped;
+        internal string ColumnName => _columnName;
+        internal IConverter Converter => _converter;
+        internal bool IgnoreConverter => _ignoreConverter;
+        internal Func<object> Injector => _injector;
 
+        IEntityTypePropertyBuilder<TEntity> IPropertyBuilder<TEntity>.NoMap()
+        {
+            _isMapped = false;
+            return _entityTypeBuilder;
+        }
+
+        INamedPropertyBuilder<TEntity> IPropertyBuilder<TEntity>.HasColumnName(string columnName)
+        {
             _columnName = Check.NotNullOrWhiteSpace(columnName, nameof(columnName));
-
             return this;
         }
 
-        /// <summary>
-        /// Configures that the property should not be mapped to a column.
-        /// </summary>
-        public PropertyBuilder<TEntity> NoMap()
-        {
-            ExceptionHelper.CheckMultipleTimeCalls(() => _noMap);
-            _noMap = true;
-
-            return this;
-        }
-
-        /// <summary>
-        /// Configures converter for property value.
-        /// </summary>
-        /// <typeparam name="TConverter">Converter type.</typeparam>
-        public PropertyBuilder<TEntity> UseConverter<TConverter>() where TConverter : IConverter, new()
-            => UseConverter(new TConverter());
-
-        /// <summary>
-        /// Configures converter for property value.
-        /// </summary>
-        /// <param name="converter">Converter instance.</param>
-        public PropertyBuilder<TEntity> UseConverter(IConverter converter)
-        {
-            ExceptionHelper.CheckMultipleTimeCalls(() => _converter != null);
-            CheckNoMapOrInjector();
-
-            _converter = Check.NotNull(converter, nameof(converter));
-
-            return this;
-        }
-
-        /// <summary>
-        /// Configures injector delegate for injecting values to property.
-        /// </summary>
-        /// <param name="injector">Delegate for injecting values to property.</param>
-        public PropertyBuilder<TEntity> InjectValue<TProperty>(Func<TProperty> injector)
-        {
-            if (!string.IsNullOrEmpty(_columnName) || _converter != null)
-            {
-                throw new InvalidOperationException(Properties.Resources.CannotCallMethod.Format(nameof(InjectValue)));
-            }
-            ExceptionHelper.CheckMultipleTimeCalls(() => _wasInjectorSetup);
-
-            _wasInjectorSetup = true;
-            _entityTypeBuilder.Injector.FillProperty(_propertyName, injector);
-
-            return this;
-        }
-
-        /// <summary>
-        /// Returns an object that can be used to configure a property of the entity type.
-        /// </summary>
-        /// <typeparam name="TProperty">Propery type.</typeparam>
-        /// <param name="propertyExpression">A lambda expression representing the property to be configured.</param>
-        /// <returns>An object that can be used to configure the property.</returns>
-        public virtual PropertyBuilder<TEntity> Property<TProperty>(
+        IPropertyBuilder<TEntity> INamedPropertyBuilder<TEntity>.Property<TProperty>(
             Expression<Func<TEntity, TProperty>> propertyExpression)
             => _entityTypeBuilder.Property(propertyExpression);
 
-        internal void Build(IModelMapperInternal modelMapper)
+        IEntityTypePropertyBuilder<TEntity> IMappedPropertyBuilder<TEntity>.UseConverter<TConverter>()
+            => ((IMappedPropertyBuilder<TEntity>)this).UseConverter(new TConverter());
+
+        IEntityTypePropertyBuilder<TEntity> IMappedPropertyBuilder<TEntity>.UseConverter(IConverter converter)
         {
-            if (!_columnName.IsNullOrWhiteSpace())
-            {
-                modelMapper.SetColumnName<TEntity>(_propertyName, _columnName);
-            }
-            if (_noMap)
-            {
-                modelMapper.SetNoMap<TEntity>(_propertyName);
-            }
-            if (_converter != null)
-            {
-                modelMapper.SetConverter<TEntity>(_propertyName, _converter);
-            }
+            _converter = Check.NotNull(converter, nameof(converter));
+            return _entityTypeBuilder;
         }
 
-        private void CheckNoMapOrInjector()
+        IEntityTypePropertyBuilder<TEntity> IMappedPropertyBuilder<TEntity>.IgnoreConverter()
         {
-            if (_noMap || _wasInjectorSetup)
-            {
-                throw new InvalidOperationException(
-                    Properties.Resources.CannotConfigureAnythingElse.Format(nameof(NoMap), nameof(InjectValue)));
-            }
+            _ignoreConverter = true;
+            return _entityTypeBuilder;
+        }
+
+        IEntityTypePropertyBuilder<TEntity> IMappedPropertyBuilder<TEntity>.InjectValue(Func<object> injector)
+        {
+            _injector = Check.NotNull(injector, nameof(injector));
+            return _entityTypeBuilder;
         }
     }
 }

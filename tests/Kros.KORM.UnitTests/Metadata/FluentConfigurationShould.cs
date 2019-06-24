@@ -168,186 +168,58 @@ namespace Kros.KORM.UnitTests.Metadata
         }
 
         [Fact]
-        public void ThrowExceptionIfTrySetTableNameSecondTime()
+        public void UseConverterForAllPropertiesOfSpecifiedType()
         {
             var modelBuilder = new ModelConfigurationBuilder();
-            modelBuilder.Entity<Foo>()
-                .HasTableName("FooTable");
+            var modelMapper = new ConventionModelMapper();
 
-            Action action = () => modelBuilder.Entity<Foo>().HasTableName("FooTable");
+            modelBuilder.Entity<ConvertersEntity>()
+                .UseConverterForProperties<int>(new IntConverter())
+                .UseConverterForProperties<string, StringConverter1>()
+                .Property(p => p.StringPropWithOwnConverter).UseConverter<StringConverter2>()
+                .Property(p => p.StringPropWithoutConverter).IgnoreConverter();
 
-            action.Should()
-                .Throw<InvalidOperationException>()
-                .WithMessage("Can't call multiple time method 'HasTableName'.");
+            modelBuilder.Build(modelMapper);
+
+            TableInfo tableInfo = modelMapper.GetTableInfo<ConvertersEntity>();
+
+            ColumnInfo intProp1 = tableInfo.GetColumnInfo(nameof(ConvertersEntity.IntProp1));
+            ColumnInfo intProp2 = tableInfo.GetColumnInfo(nameof(ConvertersEntity.IntProp1));
+            intProp1.Converter
+                .Should().BeOfType<IntConverter>()
+                .And.Be(intProp2.Converter);
+
+            ColumnInfo stringProp1 = tableInfo.GetColumnInfo(nameof(ConvertersEntity.StringProp1));
+            ColumnInfo stringProp2 = tableInfo.GetColumnInfo(nameof(ConvertersEntity.StringProp2));
+            ColumnInfo stringProp3 = tableInfo.GetColumnInfo(nameof(ConvertersEntity.StringProp3));
+            ColumnInfo stringProp4 = tableInfo.GetColumnInfo(nameof(ConvertersEntity.StringProp4));
+            stringProp1.Converter
+                .Should().BeOfType<StringConverter1>()
+                .And.Be(stringProp2.Converter)
+                .And.Be(stringProp3.Converter)
+                .And.Be(stringProp4.Converter);
+
+            ColumnInfo stringPropWithOwnConverter = tableInfo.GetColumnInfo(nameof(ConvertersEntity.StringPropWithOwnConverter));
+            stringPropWithOwnConverter.Converter.Should().BeOfType<StringConverter2>();
+
+            ColumnInfo stringPropWithoutConverter = tableInfo.GetColumnInfo(nameof(ConvertersEntity.StringPropWithoutConverter));
+            stringPropWithoutConverter.Converter.Should().BeNull();
+
+            tableInfo.GetColumnInfo(nameof(ConvertersEntity.BoolProp)).Converter.Should().BeNull();
+            tableInfo.GetColumnInfo(nameof(ConvertersEntity.DateTimeProp)).Converter.Should().BeNull();
         }
 
         [Fact]
-        public void ThrowExceptionIfTrySetPrimaryKeySecondTime()
+        public void ThrowExceptionWhenMappingTheTheSamePropertyMoreThanOnce()
         {
-            var modelBuilder = new ModelConfigurationBuilder();
-            modelBuilder.Entity<Foo>()
-                .HasPrimaryKey(p => p.FooId);
-
-            Action action = () => modelBuilder.Entity<Foo>().HasPrimaryKey(p => p.FooId);
-
-            action.Should()
-                .Throw<InvalidOperationException>()
-                .WithMessage("Can't call multiple time method 'HasPrimaryKey'.");
-        }
-
-        [Fact]
-        public void ThrowExceptionIfTrySetAutoIncrementSecondTime()
-        {
-            var modelBuilder = new ModelConfigurationBuilder();
-            PrimaryKeyBuilder<Foo> primaryKey =
-                modelBuilder.Entity<Foo>()
-                    .HasPrimaryKey(p => p.FooId).AutoIncrement();
-
-            Action action = () => primaryKey.AutoIncrement();
-
-            action.Should()
-                .Throw<InvalidOperationException>()
-                .WithMessage("Can't call multiple time method 'AutoIncrement'.");
-        }
-
-        [Fact]
-        public void ThrowExceptionIfTrySetColumnNameSecondTime()
-        {
-            var modelBuilder = new ModelConfigurationBuilder();
-            PropertyBuilder<Foo> property =
-                modelBuilder.Entity<Foo>()
-                    .Property(p => p.FirstName).HasColumnName("Name");
-
-            Action action = () => property.HasColumnName("Name1");
-
-            action.Should()
-                .Throw<InvalidOperationException>()
-                .WithMessage("Can't call multiple time method 'HasColumnName'.");
-        }
-
-        [Fact]
-        public void ThrowExceptionIfTrySetNoMapSecondTime()
-        {
-            var modelBuilder = new ModelConfigurationBuilder();
-            PropertyBuilder<Foo> property =
-                modelBuilder.Entity<Foo>()
-                    .Property(p => p.FirstName).NoMap();
-
-            Action action = () => property.NoMap();
-
-            action.Should()
-                .Throw<InvalidOperationException>()
-                .WithMessage("Can't call multiple time method 'NoMap'.");
-        }
-
-        [Fact]
-        public void ThrowExceptionIfTrySetConverterSecondTime()
-        {
-            var modelBuilder = new ModelConfigurationBuilder();
-            PropertyBuilder<Foo> property =
-                modelBuilder.Entity<Foo>()
-                    .Property(p => p.Addresses).UseConverter<AddressConverter>();
-
-            Action action = () => property.UseConverter(new AddressConverter());
-
-            action.Should()
-                .Throw<InvalidOperationException>()
-                .WithMessage("Can't call multiple time method 'UseConverter'.");
-        }
-
-        [Fact]
-        public void ThrowExceptionIfTrySetInjectorSecondTime()
-        {
-            var modelBuilder = new ModelConfigurationBuilder();
-            PropertyBuilder<Foo> property =
-                modelBuilder.Entity<Foo>()
-                    .Property(p => p.DateTime).InjectValue(() => DateTime.Now);
-
-            Action action = () => property.InjectValue(() => DateTime.Now);
-
-            action.Should()
-                .Throw<InvalidOperationException>()
-                .WithMessage("Can't call multiple time method 'InjectValue'.");
-        }
-
-        [Fact]
-        public void ThrowExceptionIfTrySetInjectorWhenColumnNameWasSet()
-        {
-            var modelBuilder = new ModelConfigurationBuilder();
-            PropertyBuilder<Foo> property =
-                modelBuilder.Entity<Foo>()
-                    .Property(p => p.DateTime).HasColumnName("Date");
-
-            Action action = () => property.InjectValue(() => DateTime.Now);
-
-            action.Should()
-                .Throw<InvalidOperationException>()
-                .WithMessage("Can't call 'InjectValue' if you configured column name or converter.");
-        }
-
-        [Fact]
-        public void ThrowExceptionIfTrySetInjectorWhenConverterSet()
-        {
-            var modelBuilder = new ModelConfigurationBuilder();
-            PropertyBuilder<Foo> property =
-                modelBuilder.Entity<Foo>()
-                    .Property(p => p.Addresses).UseConverter<AddressConverter>();
-
-            Action action = () => property.InjectValue(() => string.Empty);
-
-            action.Should()
-                .Throw<InvalidOperationException>()
-                .WithMessage("Can't call 'InjectValue' if you configured column name or converter.");
-        }
-
-        [Fact]
-        public void ThrowExceptionIfTrySetAnythingElseAfterNoMap()
-        {
-            var modelBuilder = new ModelConfigurationBuilder();
-            PropertyBuilder<Foo> property =
-                modelBuilder.Entity<Foo>()
-                    .Property(p => p.Addresses).NoMap();
-
-            Action action = () => property.HasColumnName("Col1");
-
-            action.Should()
-                .Throw<InvalidOperationException>()
-                .WithMessage("You cannot configure anything else if you are call*");
-
-            action = () => property.UseConverter<AddressConverter>();
-
-            action.Should()
-                .Throw<InvalidOperationException>()
-                .WithMessage("You cannot configure anything else if you are call*");
-
-            action.Should()
-                .Throw<InvalidOperationException>()
-                .WithMessage("You cannot configure anything else if you are call*");
-        }
-
-        [Fact]
-        public void ThrowExceptionIfTrySetAnythingElseAfterInjector()
-        {
-            var modelBuilder = new ModelConfigurationBuilder();
-            PropertyBuilder<Foo> property =
-                modelBuilder.Entity<Foo>()
-                    .Property(p => p.Addresses).InjectValue(() => string.Empty);
-
-            Action action = () => property.HasColumnName("Col1");
-
-            action.Should()
-                .Throw<InvalidOperationException>()
-                .WithMessage("You cannot configure anything else if you are call*");
-
-            action = () => property.UseConverter<AddressConverter>();
-
-            action.Should()
-                .Throw<InvalidOperationException>()
-                .WithMessage("You cannot configure anything else if you are call*");
-
-            action.Should()
-                .Throw<InvalidOperationException>()
-                .WithMessage("You cannot configure anything else if you are call*");
+            Action builderAction = () =>
+            {
+                var modelBuilder = new ModelConfigurationBuilder();
+                modelBuilder.Entity<ConvertersEntity>()
+                    .Property(p => p.StringProp1).UseConverter<StringConverter2>()
+                    .Property(p => p.StringProp1).IgnoreConverter();
+            };
+            builderAction.Should().Throw<InvalidOperationException>();
         }
 
         private static TableInfo CreateExpectedTableInfo(List<ColumnInfo> columns, string tableName)
@@ -379,7 +251,39 @@ namespace Kros.KORM.UnitTests.Metadata
             }
         }
 
-        public class Foo
+        private class ConvertersEntity
+        {
+            public int IntProp1 { get; set; }
+            public int IntProp2 { get; set; }
+            public string StringProp1 { get; set; }
+            public string StringProp2 { get; set; }
+            public string StringProp3 { get; set; }
+            public string StringProp4 { get; set; }
+            public string StringPropWithOwnConverter { get; set; }
+            public string StringPropWithoutConverter { get; set; }
+            public bool BoolProp { get; set; }
+            public DateTime DateTimeProp { get; set; }
+        }
+
+        private class StringConverter1 : IConverter
+        {
+            public object Convert(object value) => throw new NotImplementedException();
+            public object ConvertBack(object value) => throw new NotImplementedException();
+        }
+
+        private class StringConverter2 : IConverter
+        {
+            public object Convert(object value) => throw new NotImplementedException();
+            public object ConvertBack(object value) => throw new NotImplementedException();
+        }
+
+        private class IntConverter : IConverter
+        {
+            public object Convert(object value) => throw new NotImplementedException();
+            public object ConvertBack(object value) => throw new NotImplementedException();
+        }
+
+        private class Foo
         {
             public int FooId { get; set; }
             public string Addresses { get; set; }
@@ -388,24 +292,22 @@ namespace Kros.KORM.UnitTests.Metadata
             public string FirstName { get; set; }
         }
 
-        public class Bar
+        private class Bar
         {
             public int Id { get; set; }
             public string FirstName { get; set; }
             public string LastName { get; set; }
         }
 
-        public class AddressConverter : IConverter
+        private class AddressConverter : IConverter
         {
             public object Convert(object value) => throw new NotImplementedException();
-
             public object ConvertBack(object value) => throw new NotImplementedException();
         }
 
-        public class UpperCaseConverter : IConverter
+        private class UpperCaseConverter : IConverter
         {
             public object Convert(object value) => throw new NotImplementedException();
-
             public object ConvertBack(object value) => throw new NotImplementedException();
         }
     }

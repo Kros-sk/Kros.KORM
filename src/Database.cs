@@ -291,7 +291,7 @@ namespace Kros.KORM
         /// <inheritdoc/>
         public void InitDatabaseForIdGenerator()
         {
-            using (var idGenerator = _queryProvider.CreateIdGenerator("DummyTableName", 1))
+            using (Kros.Data.IIdGenerator idGenerator = _queryProvider.CreateIdGenerator("DummyTableName", 1))
             {
                 idGenerator.InitDatabaseForIdGenerator();
             }
@@ -367,6 +367,7 @@ namespace Kros.KORM
 
                 var database = new Database();
 
+                BuildModelMapper();
                 SetDatabaseMapper(database);
                 SetModelBuilder(database);
                 SetQueryProvider(database);
@@ -400,44 +401,35 @@ namespace Kros.KORM
                 }
                 else
                 {
-                    database._modelBuilder = new ModelBuilder(new DynamicMethodModelFactory(GetDatabaseMapper()));
+                    database._modelBuilder = new ModelBuilder(new DynamicMethodModelFactory(Database.DatabaseMapper));
                 }
             }
 
             private void SetQueryProvider(Database database)
             {
+                IQueryProviderFactory factory;
                 if (_connectionString != null)
                 {
-                    var factory = _queryProviderFactory != null
-                        ? _queryProviderFactory
-                        : QueryProviderFactories.GetFactory(_connectionString.ProviderName);
-                    database._queryProvider = factory.Create(_connectionString, database.ModelBuilder, GetDatabaseMapper());
+                    factory = _queryProviderFactory ?? QueryProviderFactories.GetFactory(_connectionString.ProviderName);
+                    database._queryProvider = factory.Create(_connectionString, database.ModelBuilder, Database.DatabaseMapper);
                 }
                 else
                 {
-                    var factory = _queryProviderFactory != null
-                        ? _queryProviderFactory
-                        : QueryProviderFactories.GetFactory(_connection);
-                    database._queryProvider = factory.Create(_connection, database.ModelBuilder, GetDatabaseMapper());
+                    factory = _queryProviderFactory ?? QueryProviderFactories.GetFactory(_connection);
+                    database._queryProvider = factory.Create(_connection, database.ModelBuilder, Database.DatabaseMapper);
                 }
             }
 
-            private void SetDatabaseMapper(Database database)
-            {
-                database._databaseMapper = GetDatabaseMapper();
-            }
+            private void SetDatabaseMapper(Database database) => database._databaseMapper = Database.DatabaseMapper;
 
-            private IDatabaseMapper GetDatabaseMapper()
+            private void BuildModelMapper()
             {
                 if (_databaseConfiguration != null)
                 {
                     var modelBuilder = new ModelConfigurationBuilder();
                     _databaseConfiguration.OnModelCreating(modelBuilder);
-
                     modelBuilder.Build(DefaultModelMapper as ConventionModelMapper);
                 }
-
-                return Database.DatabaseMapper;
             }
         }
 
@@ -461,10 +453,7 @@ namespace Kros.KORM
             }
         }
 
-        public void Dispose()
-        {
-            Dispose(true);
-        }
+        public void Dispose() => Dispose(true);
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         #endregion

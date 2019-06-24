@@ -31,6 +31,7 @@ To contribute with new topics/information or make changes, see [contributing](ht
 * [Linq to Kros.KORM](#linq-to-kroskorm)
 * [DataAnnotation attributes](#dataannotation-attributes)
 * [Convention model mapper](#convention-model-mapper)
+* [Configure model mapping by fluent api](#Configure-model-mapping-by-fluent-api)
 * [Converters](#converters)
 * [OnAfterMaterialize](#onaftermaterialize)
 * [Property injection](#property-injection)
@@ -224,38 +225,53 @@ Database.DefaultModelMapper.SetColumnName<Person, string>(p => p.Name, "FirstNam
 
 ### Configure model mapping by fluent api
 
-Configuration by DataAnotation attributes is OK in many scenarios. However, there are scenarios where we want to have a model
+Configuration by data annotation attributes is OK in many scenarios. However, there are scenarios where we want to have a model
 definition and mapping it to a database separate.
 For example, if you want to have entities in domain layer and mapping in infrastructure layer.
 
-For these scenarios you can devivate database configuration from `DatabaseConfigurationBase`.
+For these scenarios you can derive database configuration from `DatabaseConfigurationBase`.
 
-```CSharp
-public class DatabaseConfiguration: DatabaseConfigurationBase
+```c#
+public class User
+{
+    public int Id { get; set; }
+    public string Title { get; set; }
+    public string FirstName { get; set; }
+    public string LastName { get; set; }
+    public string FullName => FirstName + " " + LastName;
+    public Address Address { get; set; }
+    public IEmailService EmailService { get; set; }
+}
+
+public class DatabaseConfiguration : DatabaseConfigurationBase
 {
     public override void OnModelCreating(ModelConfigurationBuilder modelBuilder)
     {
-        modelBuilder.Entity<Foo>()
-            .HasTableName("FooTable")
-            .HasPrimaryKey(f => f.Id)
-                .AutoIncrement(AutoIncrementMethodType.Custom)
-            .Property(f => f.FirstName).HasColumnName("Name")
-            .Property(f => f.LastName).NoMap()
-            .Property(f => f.Addresses).UseConverter<AddressConverter>()
-            .Property(f => f.EmailService).InjectValue(() => new EmailService());
+        modelBuilder.Entity<User>()
+            .HasTableName("Users")
+            .HasPrimaryKey(entity => entity.Id).AutoIncrement(AutoIncrementMethodType.Custom)
+            .UseConverterForProperties<string, NullToEmptyStringConverter>()
+            .Property(entity => entity.Title).IgnoreConverter()
+            .Property(entity => entity.FirstName).HasColumnName("Name")
+            .Property(entity => entity.FullName).NoMap()
+            .Property(entity => entity.Addresses).UseConverter<AddressConverter>()
+            .Property(entity => entity.EmailService).InjectValue(() => new EmailService());
     }
 }
 ```
 
 And use `IDatabaseBuilder` for creating KORM instance.
 
-```CSharp
+```c#
 var database = Database
     .Builder
     .UseConnection(connection)
     .UseDatabaseConfiguration<DatabaseConfiguration>()
     .Build();
 ```
+
+If converter is used for property type (`UseConverterForProperties`) and also for specific property of that type (`UseConverter`),
+the latter one has precedence.
 
 ### Converters
 
@@ -286,14 +302,12 @@ public class AddressesConverter : IConverter
 
     public object ConvertBack(object value)
     {
-        var addresses = string.Join("#", (value as List<string>));
-
-        return addresses;
+        return  string.Join("#", (value as List<string>));
     }
 }
 ```
 
-And now you can set this converter for your property.
+And now you can set this converter for your property using attribute or [fluent configuration](#Configure-model-mapping-by-fluent-api).
 
 ```c#
 [Converter(typeof(AddressesConverter))]
@@ -531,15 +545,15 @@ Kros.KORM supports SQL commands execution. There are three types of commands:
 
   ```c#
   private Database _database = new Database(new SqlConnection("connection string"));
-  
+
   // to work with command parameters you can use CommandParameterCollection
   var parameters = new CommandParameterCollection();
   parameters.Add("@value", "value");
   parameters.Add("@id", 10);
   parameters.Add("@type", "DateTime");
-  
+
   _database.ExecuteNonQuery("UPDATE Column = @value WHERE Id = @id AND Type = @type", parameters);
-  
+
   // or you can send them directly via params array
   _database.ExecuteNonQuery("UPDATE Column = @value WHERE Id = @id AND Type = @type", "value", 10, "DateTime");
   ```

@@ -449,6 +449,42 @@ namespace Kros.KORM.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Trying to set column mapping &quot;{0}&quot; for property &quot;{1}&quot; of entity &quot;{2}&quot;. Column mapping is already set as &quot;{3}&quot;..
+        /// </summary>
+        internal static string ThrowHelper_ColumnMappingAlreadyConfigured {
+            get {
+                return ResourceManager.GetString("ThrowHelper_ColumnMappingAlreadyConfigured", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Trying to set converter &quot;{0}&quot; for property &quot;{1}&quot; of entity &quot;{2}&quot;. Converter is already set as &quot;{3}&quot;..
+        /// </summary>
+        internal static string ThrowHelper_ConverterAlreadyConfigured {
+            get {
+                return ResourceManager.GetString("ThrowHelper_ConverterAlreadyConfigured", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Trying to set converter &quot;{0}&quot; for properties of type &quot;{1}&quot; of entity &quot;{2}&quot;. Converter is already set as &quot;{3}&quot;..
+        /// </summary>
+        internal static string ThrowHelper_ConverterForTypeAlreadyConfigured {
+            get {
+                return ResourceManager.GetString("ThrowHelper_ConverterForTypeAlreadyConfigured", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Property &quot;{0}&quot; of entity &quot;{1}&quot; was already configured..
+        /// </summary>
+        internal static string ThrowHelper_PropertyAlreadyConfigured {
+            get {
+                return ResourceManager.GetString("ThrowHelper_PropertyAlreadyConfigured", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Type must be Enum type..
         /// </summary>
         internal static string TypeMustBeEnumType {
