@@ -165,7 +165,7 @@ namespace Kros.KORM.Metadata
         /// <summary>
         /// Configures injector delegate for injecting values to property.
         /// </summary>
-        /// <param name="injector">>Delegate for injecting values to property.</param>
+        /// <param name="injector">Delegate for injecting values to property.</param>
         /// <returns>Entity builder for configuring another properties.</returns>
         IEntityTypePropertyBuilder<TEntity> InjectValue(Func<object> injector);
     }
