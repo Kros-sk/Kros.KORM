@@ -126,7 +126,7 @@ $@"CREATE TABLE [dbo].[Foo] (
             DatabaseShouldNotBeNull(database);
 
             database.Query<Foo>().FirstOrDefault(f => f.Id == 1);
-            queryProviderFactory.Received().Create(ServerHelper.Connection, database.ModelBuilder, Database.DatabaseMapper);
+            queryProviderFactory.Received().Create(ServerHelper.Connection, database.ModelBuilder, Arg.Any<DatabaseMapper>());
         }
 
         [Fact]
@@ -143,7 +143,7 @@ $@"CREATE TABLE [dbo].[Foo] (
             DatabaseShouldNotBeNull(database);
 
             database.Query<Foo>().FirstOrDefault(f => f.Id == 1);
-            queryProviderFactory.Received().Create(Arg.Any<ConnectionStringSettings>(), database.ModelBuilder, Database.DatabaseMapper);
+            queryProviderFactory.Received().Create(Arg.Any<ConnectionStringSettings>(), database.ModelBuilder, Arg.Any<DatabaseMapper>());
         }
 
         [Fact]
@@ -197,6 +197,56 @@ $@"CREATE TABLE [dbo].[Foo] (
             database.Query<Bar>()
                 .FirstOrDefault(b => b.RowId == 1)
                 .Age.Should().Be(11);
+        }
+
+        [Fact]
+        public void BuildInstanceMoreTimes()
+        {
+            var builder = Database
+                .Builder
+                .UseConnection(ServerHelper.Connection)
+                .UseDatabaseConfiguration<DatabaseConfiguration>();
+
+            IDatabase database = builder.Build();
+            database.Query<Bar>()
+                .FirstOrDefault(b => b.RowId == 1)
+                .Age.Should().Be(11);
+
+            IDatabase database2 = builder.Build();
+            database2.Query<Bar>()
+                .FirstOrDefault(b => b.RowId == 1)
+                .Age.Should().Be(11);
+        }
+
+        [Fact]
+        public void ThrowExceptionWhenTryConfigureAfterBuild()
+        {
+            IDatabaseBuilder builder = Database
+                .Builder
+                .UseConnection(ServerHelper.Connection);
+
+            builder.Build();
+
+            IModelFactory modelFactory = Substitute.For<IModelFactory>();
+            IQueryProviderFactory queryProviderFactory = Substitute.For<IQueryProviderFactory>();
+
+            void ShouldThrowException(Action action)
+            {
+                action
+                    .Should()
+                    .Throw<InvalidOperationException>(
+                    "The configuration is not allowed if the Build method has already been called.");
+            }
+
+            ShouldThrowException(() => builder.UseConnection(ServerHelper.Connection));
+            ShouldThrowException(() => builder.UseConnection(
+                new ConnectionStringSettings("KORM", ServerHelper.Connection.ConnectionString, "System.Data.SqlClient")));
+            ShouldThrowException(() => builder.UseConnection(
+                ServerHelper.Connection.ConnectionString, "System.Data.SqlClient"));
+            ShouldThrowException(() => builder.UseDatabaseConfiguration<DatabaseConfiguration>());
+            ShouldThrowException(() => builder.UseDatabaseConfiguration(new DatabaseConfiguration()));
+            ShouldThrowException(() => builder.UseModelFactory(modelFactory));
+            ShouldThrowException(() => builder.UseQueryProviderFactory(queryProviderFactory));
         }
 
         private static void DatabaseShouldNotBeNull(IDatabase database)

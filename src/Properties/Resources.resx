@@ -146,6 +146,9 @@
   <data name="CompositePrimaryKeyMustHaveSameNameInAllColumns" xml:space="preserve">
     <value>Primary key of the model is composite. The name of the key must be the same for all its columns.</value>
   </data>
+  <data name="ConfigurationIsNotAllowed" xml:space="preserve">
+    <value>The configuration is not allowed if the Build method has already been called.</value>
+  </data>
   <data name="ConstantIsNotSupported" xml:space="preserve">
     <value>The constant for '{0}' is not supported.</value>
   </data>
