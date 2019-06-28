@@ -20,7 +20,7 @@ namespace Kros.KORM
             private readonly Lazy<ConventionModelMapper> _conventionModelMapper;
             private Lazy<DatabaseMapper> _databaseMapper;
             private Lazy<IQueryProvider> _queryProvider;
-            private Lazy<ModelBuilder> _modelBuilder;
+            private readonly Lazy<ModelBuilder> _modelBuilder;
             private bool _wasBuildCall = false;
 
             public DatabaseBuilder()
