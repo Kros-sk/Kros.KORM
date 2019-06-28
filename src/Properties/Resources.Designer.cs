@@ -142,6 +142,15 @@ namespace Kros.KORM.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The configuration is not allowed if the Build method has already been called..
+        /// </summary>
+        internal static string ConfigurationIsNotAllowed {
+            get {
+                return ResourceManager.GetString("ConfigurationIsNotAllowed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The constant for &apos;{0}&apos; is not supported..
         /// </summary>
         internal static string ConstantIsNotSupported {
