@@ -17,7 +17,7 @@ namespace Kros.KORM
             private DbConnection _connection;
             private IModelFactory _modelFactory;
             private DatabaseConfigurationBase _databaseConfiguration;
-            private Lazy<ConventionModelMapper> _conventionModelMapper;
+            private readonly Lazy<ConventionModelMapper> _conventionModelMapper;
             private Lazy<DatabaseMapper> _databaseMapper;
             private Lazy<IQueryProvider> _queryProvider;
             private Lazy<ModelBuilder> _modelBuilder;
