@@ -1,4 +1,4 @@
-﻿using Kros.KORM.Materializer;
+using Kros.KORM.Materializer;
 using Kros.KORM.Metadata;
 using Kros.KORM.Query;
 using Kros.Utils;
@@ -19,7 +19,6 @@ namespace Kros.KORM
             private DatabaseConfigurationBase _databaseConfiguration;
             private readonly Lazy<ConventionModelMapper> _conventionModelMapper;
             private readonly Lazy<DatabaseMapper> _databaseMapper;
-            private readonly Lazy<IQueryProvider> _queryProvider;
             private readonly Lazy<ModelBuilder> _modelBuilder;
             private bool _wasBuildCall = false;
 
@@ -27,7 +26,6 @@ namespace Kros.KORM
             {
                 _conventionModelMapper = new Lazy<ConventionModelMapper>(CreateModelMapper);
                 _databaseMapper = new Lazy<DatabaseMapper>(() => new DatabaseMapper(_conventionModelMapper.Value));
-                _queryProvider = new Lazy<IQueryProvider>(CreateQueryProvider);
                 _modelBuilder = new Lazy<ModelBuilder>(CreateModelBuilder);
             }
 
@@ -175,7 +173,7 @@ namespace Kros.KORM
 
             private void SetModelBuilder(Database database) => database._modelBuilder = _modelBuilder.Value;
 
-            private void SetQueryProvider(Database database) => database._queryProvider = _queryProvider.Value;
+            private void SetQueryProvider(Database database) => database._queryProvider = CreateQueryProvider();
 
             private void SetDatabaseMapper(Database database) => database._databaseMapper = _databaseMapper.Value;
         }
