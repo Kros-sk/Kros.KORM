@@ -1,4 +1,5 @@
 ﻿using Kros.KORM.Converter;
+using Kros.KORM.Data;
 using System;
 using System.Linq.Expressions;
 
@@ -161,6 +162,8 @@ namespace Kros.KORM.Metadata
         /// </summary>
         /// <returns>Entity builder for configuring another properties.</returns>
         IEntityTypePropertyBuilder<TEntity> IgnoreConverter();
+
+        IEntityTypePropertyBuilder<TEntity> UseValueGenerator(IValueGenerator generator);
 
         /// <summary>
         /// Configures injector delegate for injecting values to property.

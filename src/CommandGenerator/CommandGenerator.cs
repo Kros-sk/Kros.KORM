@@ -267,6 +267,11 @@ namespace Kros.KORM.CommandGenerator
         /// <inheritdoc/>
         public object GetColumnValue(ColumnInfo columnInfo, T item)
         {
+            if (columnInfo.ValueGenerator != null)
+            {
+                return columnInfo.ValueGenerator.GetValue();
+            }
+
             var value = columnInfo.PropertyInfo.GetValue(item, null);
             IConverter converter = ConverterHelper.GetConverter(columnInfo, value?.GetType());
             if (converter != null)

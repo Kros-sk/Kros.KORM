@@ -1,5 +1,6 @@
 ﻿using FluentAssertions;
 using Kros.KORM.Converter;
+using Kros.KORM.Data;
 using Kros.KORM.Metadata;
 using System;
 using System.Collections.Generic;
@@ -17,36 +18,38 @@ namespace Kros.KORM.UnitTests.Metadata
             var modelBuilder = new ModelConfigurationBuilder();
             var modelMapper = new ConventionModelMapper();
 
-            modelBuilder.Entity<Foo>()
-                .HasTableName("FooTable")
-                .HasPrimaryKey(f => f.FooId).AutoIncrement(AutoIncrementMethodType.Custom)
-                .Property(p => p.Addresses)
-                    .HasColumnName("COL_ADDRESSES")
+            modelBuilder.Entity<BuilderTestEntity>()
+                .HasTableName("BuilderTest")
+                .HasPrimaryKey(f => f.Id).AutoIncrement(AutoIncrementMethodType.Custom)
+                .Property(p => p.Address)
+                    .HasColumnName("COL_ADDRESS")
                     .UseConverter<AddressConverter>()
                 .Property(p => p.NoMapped).NoMap()
                 .Property(p => p.FirstName).HasColumnName("Name")
-                .Property(p => p.DateTime).InjectValue(() => DateTime.Now);
+                .Property(p => p.DateTime).InjectValue(() => DateTime.Now)
+                .Property(p => p.GeneratedValue).UseValueGenerator(new AutoIncrementValueGenerator());
 
             modelBuilder.Build(modelMapper);
 
-            TableInfo tableInfo = modelMapper.GetTableInfo<Foo>();
+            TableInfo tableInfo = modelMapper.GetTableInfo<BuilderTestEntity>();
 
             var columns = new List<ColumnInfo>() {
                 new ColumnInfo()
                 {
-                    Name = "FooId",
+                    Name = "Id",
                     IsPrimaryKey = true,
                     AutoIncrementMethodType = AutoIncrementMethodType.Custom
                 },
-                new ColumnInfo() { Name = "COL_ADDRESSES", Converter = new AddressConverter() },
-                new ColumnInfo() { Name = "Name" }
+                new ColumnInfo() { Name = "COL_ADDRESS", Converter = new AddressConverter() },
+                new ColumnInfo() { Name = "Name" },
+                new ColumnInfo() { Name = "GeneratedValue", ValueGenerator = new AutoIncrementValueGenerator() }
             };
-            TableInfo tableInfoExpected = CreateExpectedTableInfo(columns, "FooTable");
+            TableInfo tableInfoExpected = CreateExpectedTableInfo(columns, "BuilderTest");
 
             AreSame(tableInfo, tableInfoExpected);
-            modelMapper.GetInjector<Foo>().IsInjectable("DateTime")
+            modelMapper.GetInjector<BuilderTestEntity>().IsInjectable("DateTime")
                 .Should()
-                .BeTrue();
+                .BeTrue("DateTime property has injector.");
         }
 
         [Fact]
@@ -252,7 +255,21 @@ namespace Kros.KORM.UnitTests.Metadata
                 {
                     actualColumnInfo.Converter.Should().BeOfType(columnInfo.Converter.GetType());
                 }
+                if (columnInfo.ValueGenerator != null)
+                {
+                    actualColumnInfo.ValueGenerator.Should().BeOfType(columnInfo.ValueGenerator.GetType());
+                }
             }
+        }
+
+        private class BuilderTestEntity
+        {
+            public int Id { get; set; }
+            public string Address { get; set; }
+            public string NoMapped { get; set; }
+            public DateTime DateTime { get; set; }
+            public string FirstName { get; set; }
+            public int GeneratedValue { get; set; }
         }
 
         private class ConvertersEntity
@@ -313,6 +330,13 @@ namespace Kros.KORM.UnitTests.Metadata
         {
             public object Convert(object value) => throw new NotImplementedException();
             public object ConvertBack(object value) => throw new NotImplementedException();
+        }
+
+        private class AutoIncrementValueGenerator : IValueGenerator<int>
+        {
+            public int GetValue() => 123;
+
+            object IValueGenerator.GetValue() => GetValue();
         }
     }
 }

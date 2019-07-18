@@ -1,4 +1,5 @@
 ﻿using Kros.KORM.Converter;
+using Kros.KORM.Data;
 using Kros.Utils;
 using System;
 using System.Linq.Expressions;
@@ -13,6 +14,7 @@ namespace Kros.KORM.Metadata
         private string _columnName;
         private IConverter _converter;
         private bool _ignoreConverter = false;
+        private IValueGenerator _valueGenerator;
         private Func<object> _injector;
 
         internal PropertyBuilder(IEntityTypePropertyBuilder<TEntity> entityTypeBuilder, string propertyName)
@@ -26,6 +28,7 @@ namespace Kros.KORM.Metadata
         internal string ColumnName => _columnName;
         internal IConverter Converter => _converter;
         internal bool IgnoreConverter => _ignoreConverter;
+        internal IValueGenerator ValueGenerator => _valueGenerator;
         internal Func<object> Injector => _injector;
 
         IEntityTypePropertyBuilder<TEntity> IPropertyBuilder<TEntity>.NoMap()
@@ -56,6 +59,12 @@ namespace Kros.KORM.Metadata
         IEntityTypePropertyBuilder<TEntity> IMappedPropertyBuilder<TEntity>.IgnoreConverter()
         {
             _ignoreConverter = true;
+            return _entityTypeBuilder;
+        }
+
+        IEntityTypePropertyBuilder<TEntity> IMappedPropertyBuilder<TEntity>.UseValueGenerator(IValueGenerator generator)
+        {
+            _valueGenerator = generator;
             return _entityTypeBuilder;
         }
 

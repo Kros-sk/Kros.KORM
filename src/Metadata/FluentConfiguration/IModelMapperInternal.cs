@@ -1,4 +1,5 @@
 ﻿using Kros.KORM.Converter;
+using Kros.KORM.Data;
 using Kros.KORM.Injection;
 using System;
 
@@ -46,6 +47,8 @@ namespace Kros.KORM.Metadata
         /// <param name="propertyType">Type of properties.</param>
         /// <param name="converter">Converter.</param>
         void SetConverterForProperties<TEntity>(Type propertyType, IConverter converter) where TEntity : class;
+
+        void SetValueGenerator<TEntity>(string propertyName, IValueGenerator valueGenerator) where TEntity : class;
 
         /// <summary>
         /// Sets injector for <typeparamref name="TEntity"/>.
