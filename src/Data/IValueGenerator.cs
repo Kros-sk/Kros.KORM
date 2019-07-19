@@ -2,8 +2,14 @@
 
 namespace Kros.KORM.Data
 {
+    /// <summary>
+    /// Interface for column value generator.
+    /// </summary>
     public interface IValueGenerator
     {
+        /// <summary>
+        /// Gets value.
+        /// </summary>
         object GetValue();
     }
 
@@ -12,10 +18,10 @@ namespace Kros.KORM.Data
         T GetValue();
     }
 
-    public class CurrentTimeValueGenerator : IValueGenerator<DateTimeOffset>
-    {
-        public DateTimeOffset GetValue() => DateTimeOffset.UtcNow;
+    //public class CurrentTimeValueGenerator : IValueGenerator<DateTimeOffset>
+    //{
+    //    public DateTimeOffset GetValue() => DateTimeOffset.UtcNow;
 
-        object IValueGenerator.GetValue() => GetValue();
-    }
+    //    object IValueGenerator.GetValue() => GetValue();
+    //}
 }

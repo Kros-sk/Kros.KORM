@@ -419,9 +419,7 @@ namespace Kros.KORM.Metadata
             EntityMapper entity = GetEntity<TEntity>();
             if (entity.ValueGenerators.TryGetValue(propertyName, out IValueGenerator currentValueGenerator))
             {
-                // RES:
-                throw new Exception("Lorem ipsum");
-                //ThrowHelper.ConverterAlreadyConfigured<TEntity>(propertyName, converter, currentConverter);
+                ThrowHelper.ValueGeneratorAlreadyConfigured<TEntity>(propertyName, valueGenerator, currentValueGenerator);
             }
             entity.ValueGenerators.Add(propertyName, valueGenerator);
         }

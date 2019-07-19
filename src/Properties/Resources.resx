@@ -291,6 +291,13 @@
     <comment>0 - property name
 1 - entity type name</comment>
   </data>
+  <data name="ThrowHelper_ValueGeneratorAlreadyConfigured" xml:space="preserve">
+    <value>Trying to set value generator "{0}" for property "{1}" of entity "{2}". Value generator is already set as "{3}".</value>
+    <comment>0 - value generator full name
+1 - property type name
+2 - entity type name
+3 - value generator full name</comment>
+  </data>
   <data name="TypeMustBeEnumType" xml:space="preserve">
     <value>Type must be Enum type.</value>
   </data>

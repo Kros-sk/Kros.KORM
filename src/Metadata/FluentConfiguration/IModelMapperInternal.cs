@@ -48,6 +48,12 @@ namespace Kros.KORM.Metadata
         /// <param name="converter">Converter.</param>
         void SetConverterForProperties<TEntity>(Type propertyType, IConverter converter) where TEntity : class;
 
+        /// <summary>
+        /// Sets value generator <paramref name="valueGenerator"/> for specific property <paramref name="propertyName"/>.
+        /// </summary>
+        /// <typeparam name="TEntity">Entity type.</typeparam>
+        /// <param name="propertyName">Property name.</param>
+        /// <param name="valueGenerator">Value generator.</param>
         void SetValueGenerator<TEntity>(string propertyName, IValueGenerator valueGenerator) where TEntity : class;
 
         /// <summary>

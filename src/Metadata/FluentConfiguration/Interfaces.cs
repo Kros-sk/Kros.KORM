@@ -163,6 +163,11 @@ namespace Kros.KORM.Metadata
         /// <returns>Entity builder for configuring another properties.</returns>
         IEntityTypePropertyBuilder<TEntity> IgnoreConverter();
 
+        /// <summary>
+        /// Configures <paramref name="generator"/> for the property.
+        /// </summary>
+        /// <param name="generator">Value generator to be used for current property.</param>
+        /// <returns>Entity builder for configuring another properties.</returns>
         IEntityTypePropertyBuilder<TEntity> UseValueGenerator(IValueGenerator generator);
 
         /// <summary>
