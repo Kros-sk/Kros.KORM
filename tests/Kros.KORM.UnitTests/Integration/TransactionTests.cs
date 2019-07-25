@@ -356,7 +356,7 @@ $@" CREATE PROCEDURE [dbo].[WaitForTwoSeconds] AS
 
         private void ExplicitTransactionCommit(TestDatabase database)
         {
-            using (var korm = new Database(database.ConnectionString, SqlServerDataHelper.ClientId))
+            using (var korm = new Database(database.ConnectionString))
             using (var transaction = korm.BeginTransaction())
             {
                 var dbSet = korm.Query<Invoice>().AsDbSet();
@@ -380,7 +380,7 @@ $@" CREATE PROCEDURE [dbo].[WaitForTwoSeconds] AS
 
         private void ExplicitTransactionRollback(TestDatabase database)
         {
-            using (var korm = new Database(database.ConnectionString, SqlServerDataHelper.ClientId))
+            using (var korm = new Database(database.ConnectionString))
             using (var transaction = korm.BeginTransaction())
             {
                 var dbSet = korm.Query<Invoice>().AsDbSet();
@@ -405,7 +405,7 @@ $@" CREATE PROCEDURE [dbo].[WaitForTwoSeconds] AS
 
         private void ExplicitTransactionRollbackAfterBulkInsert(TestDatabase database)
         {
-            using (var korm = new Database(database.ConnectionString, SqlServerDataHelper.ClientId))
+            using (var korm = new Database(database.ConnectionString))
             using (var transaction = korm.BeginTransaction())
             {
                 var dbSet = korm.Query<Invoice>().AsDbSet();
@@ -430,7 +430,7 @@ $@" CREATE PROCEDURE [dbo].[WaitForTwoSeconds] AS
 
         private void ExplicitTransactionCommitAfterBulkInsert(TestDatabase database)
         {
-            using (var korm = new Database(database.ConnectionString, SqlServerDataHelper.ClientId))
+            using (var korm = new Database(database.ConnectionString))
             using (var transaction = korm.BeginTransaction())
             {
                 var dbSet = korm.Query<Invoice>().AsDbSet();
@@ -448,7 +448,7 @@ $@" CREATE PROCEDURE [dbo].[WaitForTwoSeconds] AS
         public void ExplicitTransactionShould_ThrowCommandTimeoutExceptionWhenIsSetTooSmall()
         {
             using (var database = CreateAndInitDatabase(CreateProcedure_WaitForTwoSeconds))
-            using (var korm = new Database(database.ConnectionString, SqlServerDataHelper.ClientId))
+            using (var korm = new Database(database.ConnectionString))
             using (var transaction = korm.BeginTransaction())
             {
                 transaction.CommandTimeout = 1;
@@ -464,7 +464,7 @@ $@" CREATE PROCEDURE [dbo].[WaitForTwoSeconds] AS
         public void ExplicitTransactionShould_ThrowInvalidOperationExceptionWhenCommandTimeoutSetForNestedTransaction()
         {
             using (var database = CreateAndInitDatabase(CreateProcedure_WaitForTwoSeconds))
-            using (var korm = new Database(database.ConnectionString, SqlServerDataHelper.ClientId))
+            using (var korm = new Database(database.ConnectionString))
             using (var mainTransaction = korm.BeginTransaction())
             {
                 using (var nestedTransaction = korm.BeginTransaction())
@@ -481,7 +481,7 @@ $@" CREATE PROCEDURE [dbo].[WaitForTwoSeconds] AS
         public void ExplicitTransactionShould_NotThrowCommandTimeoutExceptionWhenIsSetSufficient()
         {
             using (var database = CreateAndInitDatabase(CreateProcedure_WaitForTwoSeconds))
-            using (var korm = new Database(database.ConnectionString, SqlServerDataHelper.ClientId))
+            using (var korm = new Database(database.ConnectionString))
             using (var transaction = korm.BeginTransaction())
             {
                 transaction.CommandTimeout = 3;
@@ -520,7 +520,7 @@ $@" CREATE PROCEDURE [dbo].[WaitForTwoSeconds] AS
 
         private void DatabaseShouldContainInvoices(string connectionString, IEnumerable<Invoice> expected)
         {
-            using (var korm = new Database(connectionString, SqlServerDataHelper.ClientId))
+            using (var korm = new Database(connectionString))
             {
                 DatabaseShouldContainInvoices(korm, expected);
             }

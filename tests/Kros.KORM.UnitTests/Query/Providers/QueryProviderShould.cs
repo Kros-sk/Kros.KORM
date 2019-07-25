@@ -1,7 +1,6 @@
 ﻿using FluentAssertions;
 using Kros.Data.BulkActions;
 using Kros.Data.Schema;
-using Kros.Data.SqlServer;
 using Kros.KORM.Helper;
 using Kros.KORM.Materializer;
 using Kros.KORM.Query;
@@ -11,7 +10,6 @@ using Kros.UnitTests;
 using NSubstitute;
 using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;
@@ -54,7 +52,7 @@ namespace Kros.KORM.UnitTests.Query.Providers
 
             private TestQueryProvider(DbConnection internalConnection, bool isInternalConnection)
                 : base(
-                      new ConnectionStringSettings("QueryProviderTest", "QueryProviderTestConnectionString", "QueryProviderTest"),
+                      KormConnectionSettings.Parse(Helpers.AddProviderToConnectionString("QueryProviderTestConnectionString", "QueryProviderTest")),
                       Substitute.For<ISqlExpressionVisitorFactory>(),
                       new ModelBuilder(Database.DefaultModelFactory),
                       Substitute.For<ILogger>())
@@ -511,7 +509,7 @@ END";
 
         private static SqlServerQueryProvider CreateQueryProvider(string connectionString)
             => new SqlServerQueryProvider(
-                new ConnectionStringSettings("Default", connectionString, SqlServerDataHelper.ClientId),
+                KormConnectionSettings.Parse(connectionString),
                 Substitute.For<ISqlExpressionVisitorFactory>(),
                 new ModelBuilder(Database.DefaultModelFactory),
                 Substitute.For<ILogger>());

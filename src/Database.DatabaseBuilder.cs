@@ -1,9 +1,8 @@
-using Kros.KORM.Materializer;
+﻿using Kros.KORM.Materializer;
 using Kros.KORM.Metadata;
 using Kros.KORM.Query;
 using Kros.Utils;
 using System;
-using System.Configuration;
 using System.Data.Common;
 
 namespace Kros.KORM
@@ -13,7 +12,7 @@ namespace Kros.KORM
         private class DatabaseBuilder : IDatabaseBuilder
         {
             private IQueryProviderFactory _queryProviderFactory;
-            private ConnectionStringSettings _connectionString;
+            private KormConnectionSettings _connectionString;
             private DbConnection _connection;
             private IModelFactory _modelFactory;
             private DatabaseConfigurationBase _databaseConfiguration;
@@ -46,7 +45,7 @@ namespace Kros.KORM
                 IQueryProviderFactory factory;
                 if (_connectionString != null)
                 {
-                    factory = _queryProviderFactory ?? QueryProviderFactories.GetFactory(_connectionString.ProviderName);
+                    factory = _queryProviderFactory ?? QueryProviderFactories.GetFactory(_connectionString.KormProvider);
                     return factory.Create(_connectionString, _modelBuilder.Value, _databaseMapper.Value);
                 }
                 else
@@ -69,7 +68,7 @@ namespace Kros.KORM
                 return modelMapper;
             }
 
-            public IDatabaseBuilder UseConnection(ConnectionStringSettings connectionString)
+            public IDatabaseBuilder UseConnection(KormConnectionSettings connectionString)
             {
                 CheckDuplicateSettingForConnection();
                 CheckMultipleConfiguration();
@@ -79,15 +78,13 @@ namespace Kros.KORM
                 return this;
             }
 
-            public IDatabaseBuilder UseConnection(string connectionString, string adoClientName)
+            public IDatabaseBuilder UseConnection(string connectionString)
             {
                 CheckDuplicateSettingForConnection();
                 CheckMultipleConfiguration();
+                Check.NotNullOrWhiteSpace(connectionString, nameof(connectionString));
 
-                _connectionString = new ConnectionStringSettings(
-                    "KORM",
-                    Check.NotNullOrWhiteSpace(connectionString, nameof(connectionString)),
-                    Check.NotNullOrWhiteSpace(adoClientName, nameof(adoClientName)));
+                _connectionString = KormConnectionSettings.Parse(connectionString);
 
                 return this;
             }

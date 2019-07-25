@@ -1,6 +1,5 @@
 ﻿using Kros.KORM.Materializer;
 using Kros.KORM.Query;
-using System.Configuration;
 using System.Data.Common;
 
 namespace Kros.KORM
@@ -15,15 +14,7 @@ namespace Kros.KORM
         /// </summary>
         /// <param name="connectionString">Connection string settings.</param>
         /// <returns>Database builder.</returns>
-        IDatabaseBuilder UseConnection(ConnectionStringSettings connectionString);
-
-        /// <summary>
-        /// Use <paramref name="connectionString"/> which instance of <see cref="IDatabase"/> will use for accessing to database.
-        /// </summary>
-        /// <param name="connectionString">Connection string settings.</param>
-        /// <param name="adoClientName">Ado client name. (System.Data.SqlClient/System.Data.OleDb)</param>
-        /// <returns>Database builder.</returns>
-        IDatabaseBuilder UseConnection(string connectionString, string adoClientName);
+        IDatabaseBuilder UseConnection(KormConnectionSettings connectionString);
 
         /// <summary>
         /// Use <paramref name="connection"/> which instance of <see cref="IDatabase"/> will use for accessing to database.

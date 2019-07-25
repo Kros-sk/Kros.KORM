@@ -3,7 +3,6 @@ using Kros.Data.SqlServer;
 using Kros.KORM.Materializer;
 using Kros.KORM.Metadata;
 using Kros.KORM.Query;
-using System.Configuration;
 using System.Data.SqlClient;
 using Xunit;
 
@@ -37,7 +36,7 @@ namespace Kros.KORM.UnitTests.Query
         public void CreateOleDbProviderBySettings()
         {
             var factory = CreateFactory();
-            var connectionString = new ConnectionStringSettings("Default", "", "System.Data.OleDb");
+            var connectionString = KormConnectionSettings.Parse(Helpers.AddProviderToConnectionString("", "System.Data.OleDb"));
             var provider = factory.Create(connectionString, CreateModelBuilder(), DatabaseMapper);
 
             provider.Should().NotBeNull();
@@ -47,7 +46,7 @@ namespace Kros.KORM.UnitTests.Query
         public void CreateSqlProviderBySettings()
         {
             var factory = CreateFactory();
-            var connectionString = new ConnectionStringSettings("Default", "", SqlServerDataHelper.ClientId);
+            var connectionString = KormConnectionSettings.Parse(Helpers.AddProviderToConnectionString("", SqlServerDataHelper.ClientId));
 
             var provider = factory.Create(connectionString, CreateModelBuilder(), DatabaseMapper);
 
@@ -58,7 +57,7 @@ namespace Kros.KORM.UnitTests.Query
         public void CreateSqlProviderBySettingsCaseInsensitive()
         {
             var factory = CreateFactory();
-            var connectionString = new ConnectionStringSettings("Default", "", SqlServerDataHelper.ClientId);
+            var connectionString = KormConnectionSettings.Parse(Helpers.AddProviderToConnectionString("", SqlServerDataHelper.ClientId));
 
             var provider = factory.Create(connectionString, CreateModelBuilder(), DatabaseMapper);
 
