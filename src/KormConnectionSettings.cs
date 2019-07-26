@@ -64,13 +64,9 @@ namespace Kros.KORM
             {
                 ConnectionString = connectionString
             };
-            string kormProvider = GetKormProvider(cnstrBuilder);
-            bool autoMigrate = GetKormAutoMigrate(cnstrBuilder);
-            connectionString = cnstrBuilder.ConnectionString; // Previous methods remove keys, so we want clean connection string.
-
-            ConnectionString = connectionString;
-            KormProvider = kormProvider;
-            AutoMigrate = autoMigrate;
+            KormProvider = GetKormProvider(cnstrBuilder);
+            AutoMigrate = GetKormAutoMigrate(cnstrBuilder);
+            ConnectionString = cnstrBuilder.ConnectionString; // Previous methods remove keys, so we want clean connection string.
         }
 
         /// <summary>
