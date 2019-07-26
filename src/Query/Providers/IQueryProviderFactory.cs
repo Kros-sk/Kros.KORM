@@ -1,11 +1,6 @@
 ﻿using Kros.KORM.Materializer;
-using System;
-using System.Collections.Generic;
-using System.Data.Common;
-using System.Linq;
-using System.Text;
-using System.Configuration;
 using Kros.KORM.Metadata;
+using System.Data.Common;
 
 namespace Kros.KORM.Query
 {
@@ -34,6 +29,6 @@ namespace Kros.KORM.Query
         /// <returns>
         ///  Instance of IQueryProvider.
         /// </returns>
-        IQueryProvider Create(ConnectionStringSettings connectionString, IModelBuilder modelBuilder, IDatabaseMapper databaseMapper);
+        IQueryProvider Create(KormConnectionSettings connectionString, IModelBuilder modelBuilder, IDatabaseMapper databaseMapper);
     }
 }

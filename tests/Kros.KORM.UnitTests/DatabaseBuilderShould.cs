@@ -1,17 +1,15 @@
 ﻿using FluentAssertions;
 using Kros.KORM.Materializer;
+using Kros.KORM.Metadata;
+using Kros.KORM.Query;
 using Kros.KORM.UnitTests.Integration;
 using Kros.UnitTests;
 using NSubstitute;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Data.SqlClient;
-using Xunit;
-using System.Linq;
-using System.Data;
-using Kros.KORM.Query;
 using System;
-using Kros.KORM.Metadata;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using Xunit;
 
 namespace Kros.KORM.UnitTests
 {
@@ -51,20 +49,18 @@ $@"CREATE TABLE [dbo].[Foo] (
 
         protected override IEnumerable<string> DatabaseInitScripts
         {
-            get
-            {
+            get {
                 yield return CreateTable_FooTable;
                 yield return InsertIntoFooScript;
             }
         }
 
         [Fact]
-        public void BuildInstanceWithConnectionStringSettings()
+        public void BuildInstanceWithKormConnectionSettings()
         {
             var database = Database
                 .Builder
-                .UseConnection(
-                    new ConnectionStringSettings("KORM", ServerHelper.Connection.ConnectionString, "System.Data.SqlClient"))
+                .UseConnection(ServerHelper.Connection.ConnectionString)
                 .Build();
 
             DatabaseShouldNotBeNull(database);
@@ -76,7 +72,7 @@ $@"CREATE TABLE [dbo].[Foo] (
         {
             var database = Database
                 .Builder
-                .UseConnection(ServerHelper.Connection.ConnectionString, "System.Data.SqlClient")
+                .UseConnection(ServerHelper.Connection.ConnectionString)
                 .Build();
 
             DatabaseShouldNotBeNull(database);
@@ -130,20 +126,20 @@ $@"CREATE TABLE [dbo].[Foo] (
         }
 
         [Fact]
-        public void BuildInstanceWithConnectionStringSettingsAndCustomQueryProviderFactory()
+        public void BuildInstanceWithKormConnectionSettingsAndCustomQueryProviderFactory()
         {
             var queryProviderFactory = Substitute.For<IQueryProviderFactory>();
 
             var database = Database
                 .Builder
-                .UseConnection(ServerHelper.Connection.ConnectionString, "System.Data.SqlClient")
+                .UseConnection(ServerHelper.Connection.ConnectionString)
                 .UseQueryProviderFactory(queryProviderFactory)
                 .Build();
 
             DatabaseShouldNotBeNull(database);
 
             database.Query<Foo>().FirstOrDefault(f => f.Id == 1);
-            queryProviderFactory.Received().Create(Arg.Any<ConnectionStringSettings>(), database.ModelBuilder, Arg.Any<DatabaseMapper>());
+            queryProviderFactory.Received().Create(Arg.Any<KormConnectionSettings>(), database.ModelBuilder, Arg.Any<DatabaseMapper>());
         }
 
         [Fact]
@@ -151,24 +147,8 @@ $@"CREATE TABLE [dbo].[Foo] (
         {
             Action build = () => Database
                 .Builder
-                .UseConnection(ServerHelper.Connection.ConnectionString, "System.Data.SqlClient")
+                .UseConnection(ServerHelper.Connection.ConnectionString)
                 .UseConnection(ServerHelper.Connection)
-                .Build();
-
-            build.Should().Throw<InvalidOperationException>();
-
-            build = () => Database
-                .Builder
-                .UseConnection(new ConnectionStringSettings(ServerHelper.Connection.ConnectionString, "System.Data.SqlClient"))
-                .UseConnection(ServerHelper.Connection)
-                .Build();
-
-            build.Should().Throw<InvalidOperationException>();
-
-            build = () => Database
-                .Builder
-                .UseConnection(new ConnectionStringSettings(ServerHelper.Connection.ConnectionString, "System.Data.SqlClient"))
-                .UseConnection(ServerHelper.Connection.ConnectionString, "System.Data.SqlClient")
                 .Build();
 
             build.Should().Throw<InvalidOperationException>();
@@ -189,8 +169,7 @@ $@"CREATE TABLE [dbo].[Foo] (
         {
             var database = Database
                .Builder
-               .UseConnection(
-                   new ConnectionStringSettings("KORM", ServerHelper.Connection.ConnectionString, "System.Data.SqlClient"))
+               .UseConnection(ServerHelper.Connection.ConnectionString)
                .UseDatabaseConfiguration<DatabaseConfiguration>()
                .Build();
 
@@ -239,10 +218,7 @@ $@"CREATE TABLE [dbo].[Foo] (
             }
 
             ShouldThrowException(() => builder.UseConnection(ServerHelper.Connection));
-            ShouldThrowException(() => builder.UseConnection(
-                new ConnectionStringSettings("KORM", ServerHelper.Connection.ConnectionString, "System.Data.SqlClient")));
-            ShouldThrowException(() => builder.UseConnection(
-                ServerHelper.Connection.ConnectionString, "System.Data.SqlClient"));
+            ShouldThrowException(() => builder.UseConnection(ServerHelper.Connection.ConnectionString));
             ShouldThrowException(() => builder.UseDatabaseConfiguration<DatabaseConfiguration>());
             ShouldThrowException(() => builder.UseDatabaseConfiguration(new DatabaseConfiguration()));
             ShouldThrowException(() => builder.UseModelFactory(modelFactory));
@@ -263,7 +239,7 @@ $@"CREATE TABLE [dbo].[Foo] (
                 .Value.Should().Be(11);
         }
 
-        public class DatabaseConfiguration: DatabaseConfigurationBase
+        public class DatabaseConfiguration : DatabaseConfigurationBase
         {
             public override void OnModelCreating(ModelConfigurationBuilder modelBuilder)
             {

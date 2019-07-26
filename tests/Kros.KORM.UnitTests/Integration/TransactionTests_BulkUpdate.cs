@@ -1,5 +1,4 @@
 ﻿using FluentAssertions;
-using Kros.Data.SqlServer;
 using Kros.KORM.Query;
 using Kros.KORM.UnitTests.Base;
 using System;
@@ -213,7 +212,7 @@ namespace Kros.KORM.UnitTests.Integration
             Action<IDbConnection, IDbTransaction, string> action,
             Action<IDbSet<Invoice>, Action<IDbConnection, IDbTransaction, string>> dbSetAction)
         {
-            using (var korm = new Database(database.ConnectionString, SqlServerDataHelper.ClientId))
+            using (var korm = new Database(database.ConnectionString))
             using (var transaction = korm.BeginTransaction())
             {
                 var dbSet = korm.Query<Invoice>().AsDbSet();
@@ -265,7 +264,7 @@ namespace Kros.KORM.UnitTests.Integration
             Action<IDbSet<Invoice>, Action<IDbConnection, IDbTransaction, string>> dbSetAction,
             TestDatabase database)
         {
-            using (var korm = new Database(database.ConnectionString, SqlServerDataHelper.ClientId))
+            using (var korm = new Database(database.ConnectionString))
             using (var transaction = korm.BeginTransaction())
             {
                 var dbSet = korm.Query<Invoice>().AsDbSet();

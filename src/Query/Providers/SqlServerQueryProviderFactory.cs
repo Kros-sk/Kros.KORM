@@ -3,7 +3,6 @@ using Kros.KORM.Helper;
 using Kros.KORM.Materializer;
 using Kros.KORM.Metadata;
 using Kros.KORM.Query.Providers;
-using System.Configuration;
 using System.Data.Common;
 using System.Data.SqlClient;
 
@@ -37,7 +36,7 @@ namespace Kros.KORM.Query
         /// Instance of <see cref="SqlServerQueryProvider"/>.
         /// </returns>
         public IQueryProvider Create(
-            ConnectionStringSettings connectionString,
+            KormConnectionSettings connectionString,
             IModelBuilder modelBuilder,
             IDatabaseMapper databaseMapper)
             => new SqlServerQueryProvider(

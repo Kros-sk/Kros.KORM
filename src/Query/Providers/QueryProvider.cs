@@ -12,7 +12,6 @@ using Kros.Utils;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;
@@ -100,7 +99,7 @@ namespace Kros.KORM.Query
         private readonly ILogger _logger;
         private readonly ISqlExpressionVisitorFactory _sqlGeneratorFactory;
         private readonly IModelBuilder _modelBuilder;
-        private readonly ConnectionStringSettings _connectionSettings = null;
+        private readonly KormConnectionSettings _connectionSettings = null;
         private DbConnection _connection = null;
         private readonly Cache<string, TableSchema> _tableSchemas =
             new Cache<string, TableSchema>(StringComparer.OrdinalIgnoreCase);
@@ -119,7 +118,7 @@ namespace Kros.KORM.Query
         /// <param name="modelBuilder">The model builder.</param>
         /// <param name="logger">The logger.</param>
         public QueryProvider(
-            ConnectionStringSettings connectionSettings,
+            KormConnectionSettings connectionSettings,
             ISqlExpressionVisitorFactory sqlGeneratorFactory,
             IModelBuilder modelBuilder,
             ILogger logger)
@@ -602,7 +601,7 @@ namespace Kros.KORM.Query
 
         /// <summary>
         /// Connection string na databázu, ktorý bol zadaný pri vytvorení inštancie triedy
-        /// (<see cref="QueryProvider.QueryProvider(ConnectionStringSettings, ISqlExpressionVisitorFactory, IModelBuilder, ILogger)"/>).
+        /// (<see cref="QueryProvider(KormConnectionSettings, ISqlExpressionVisitorFactory, IModelBuilder, ILogger)"/>).
         /// Ak bola trieda vytvorená konkrétnou inštanciou spojenia, vráti <see langword="null"/>.
         /// </summary>
         protected string ConnectionString { get => _connectionSettings?.ConnectionString; }
@@ -620,8 +619,7 @@ namespace Kros.KORM.Query
         /// </summary>
         protected DbConnection Connection
         {
-            get
-            {
+            get {
                 if (_connection == null)
                 {
                     _connection = DbProviderFactory.CreateConnection();

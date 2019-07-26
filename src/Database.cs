@@ -6,7 +6,6 @@ using Kros.KORM.Query;
 using Kros.Utils;
 using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Data;
 using System.Data.Common;
 using System.Threading.Tasks;
@@ -90,9 +89,9 @@ namespace Kros.KORM
         /// <summary>
         /// Initializes a new instance of the <see cref="Database"/> class.
         /// </summary>
-        /// <param name="connectionString">The active connection.</param>
-        public Database(ConnectionStringSettings connectionString)
-            : this(connectionString, QueryProviderFactories.GetFactory(connectionString.ProviderName))
+        /// <param name="connectionString">Connection string settings.</param>
+        public Database(KormConnectionSettings connectionString)
+            : this(connectionString, QueryProviderFactories.GetFactory(connectionString.KormProvider))
         {
         }
 
@@ -100,9 +99,8 @@ namespace Kros.KORM
         /// Initializes a new instance of the <see cref="Database" /> class.
         /// </summary>
         /// <param name="connectionString">Connection string.</param>
-        /// <param name="adoClientName">Ado client name. (System.Data.SqlClient/System.Data.OleDb)</param>
-        public Database(string connectionString, string adoClientName)
-            : this(new ConnectionStringSettings("KORM", connectionString, adoClientName))
+        public Database(string connectionString)
+            : this(new KormConnectionSettings(connectionString))
         {
         }
 
@@ -111,7 +109,7 @@ namespace Kros.KORM
         /// </summary>
         /// <param name="connectionString">The connection string settings.</param>
         /// <param name="queryProviderFactory">The query provider factory, which know create query provider.</param>
-        public Database(ConnectionStringSettings connectionString, IQueryProviderFactory queryProviderFactory)
+        public Database(KormConnectionSettings connectionString, IQueryProviderFactory queryProviderFactory)
         {
             Check.NotNull(connectionString, nameof(connectionString));
             Check.NotNull(queryProviderFactory, nameof(queryProviderFactory));

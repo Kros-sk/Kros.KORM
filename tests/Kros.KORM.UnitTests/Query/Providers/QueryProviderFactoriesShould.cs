@@ -8,7 +8,6 @@ using Kros.KORM.Query;
 using Kros.KORM.Query.Providers;
 using Kros.KORM.Query.Sql;
 using System;
-using System.Configuration;
 using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;
@@ -62,7 +61,8 @@ namespace Kros.KORM.UnitTests.Query.Providers
 
         public class CustomQueryProvider : QueryProvider
         {
-            public CustomQueryProvider(ConnectionStringSettings connectionString,
+            public CustomQueryProvider(
+                KormConnectionSettings connectionString,
                 ISqlExpressionVisitorFactory sqlGeneratorFactory,
                 IModelBuilder modelBuilder,
                 ILogger logger)
@@ -101,7 +101,7 @@ namespace Kros.KORM.UnitTests.Query.Providers
                     connection, new SqlServerSqlExpressionVisitorFactory(databaseMapper), modelBuilder, new Logger());
 
             public IQueryProvider Create(
-                ConnectionStringSettings connectionString,
+                KormConnectionSettings connectionString,
                 IModelBuilder modelBuilder,
                 IDatabaseMapper databaseMapper)
                 => new CustomQueryProvider(

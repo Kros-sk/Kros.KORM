@@ -2,7 +2,7 @@
 
 namespace Kros.KORM.UnitTests
 {
-    internal class ConfigurationHelper
+    internal static class Helpers
     {
         private static IConfigurationRoot _config;
 
@@ -18,5 +18,8 @@ namespace Kros.KORM.UnitTests
 
             return _config;
         }
+
+        public static string AddProviderToConnectionString(string connectionString, string kormProvider)
+            => $"{connectionString};{KormConnectionSettings.KormProviderKey}={kormProvider}";
     }
 }
