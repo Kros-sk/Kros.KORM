@@ -89,10 +89,10 @@ namespace Kros.KORM
 
         /// <summary>
         /// Returns full connection string.
-        /// Adds to <see cref="ConnectionString"/> KORM keys if the values are different from default.
+        /// Adds to <see cref="ConnectionString"/> KORM keys if the values are different from defaults.
         /// </summary>
         /// <returns>Connection string.</returns>
-        public override string ToString()
+        public string GetFullConnectionString()
         {
             string autoMigrateValue = AutoMigrate == DefaultAutoMigrate
                 ? string.Empty
@@ -102,5 +102,11 @@ namespace Kros.KORM
                 : $";{KormProviderKey}='{KormProvider}'";
             return $"{ConnectionString}{autoMigrateValue}{kormProviderValue}";
         }
+
+        /// <summary>
+        /// Returns the value of <see cref="GetFullConnectionString"/>.
+        /// </summary>
+        /// <returns>Full connection string.</returns>
+        public override string ToString() => GetFullConnectionString();
     }
 }
