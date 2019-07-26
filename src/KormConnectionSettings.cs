@@ -8,8 +8,8 @@ namespace Kros.KORM
     /// </summary>
     public class KormConnectionSettings
     {
-        private const string DefaultProviderName = Kros.Data.SqlServer.SqlServerDataHelper.ClientId;
-        private const bool DefaultAutoMigrate = false;
+        internal const string DefaultProviderName = Kros.Data.SqlServer.SqlServerDataHelper.ClientId;
+        internal const bool DefaultAutoMigrate = false;
 
         /// <summary>
         /// Key for connection string for setting KORM database provider. If the provider is not set in connection string,
@@ -86,5 +86,21 @@ namespace Kros.KORM
         /// If the key was not present in the connection string, default value <see langword="false"/> will be used.
         /// </summary>
         public bool AutoMigrate { get; }
+
+        /// <summary>
+        /// Returns full connection string.
+        /// Adds to <see cref="ConnectionString"/> KORM keys if the values are different from default.
+        /// </summary>
+        /// <returns>Connection string.</returns>
+        public override string ToString()
+        {
+            string autoMigrateValue = AutoMigrate == DefaultAutoMigrate
+                ? string.Empty
+                : $";{KormAutoMigrateKey}={AutoMigrate}";
+            string kormProviderValue = DefaultProviderName.Equals(KormProvider, System.StringComparison.OrdinalIgnoreCase)
+                ? string.Empty
+                : $";{KormProviderKey}='{KormProvider}'";
+            return $"{ConnectionString}{autoMigrateValue}{kormProviderValue}";
+        }
     }
 }
