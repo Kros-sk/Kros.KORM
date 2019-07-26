@@ -84,7 +84,7 @@ namespace Kros.KORM
                 CheckMultipleConfiguration();
                 Check.NotNullOrWhiteSpace(connectionString, nameof(connectionString));
 
-                _connectionString = KormConnectionSettings.Parse(connectionString);
+                _connectionString = new KormConnectionSettings(connectionString);
 
                 return this;
             }

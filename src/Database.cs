@@ -100,7 +100,7 @@ namespace Kros.KORM
         /// </summary>
         /// <param name="connectionString">Connection string.</param>
         public Database(string connectionString)
-            : this(KormConnectionSettings.Parse(connectionString))
+            : this(new KormConnectionSettings(connectionString))
         {
         }
 

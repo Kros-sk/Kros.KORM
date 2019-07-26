@@ -23,27 +23,6 @@ namespace Kros.KORM
         /// </summary>
         public const string KormAutoMigrateKey = "KormAutoMigrate";
 
-        /// <summary>
-        /// Parses input <paramref name="connectionString"/> string. Values of KORM keys are removed from connection string
-        /// and set to appropriate properties. Missing KORM keys are set to default values.
-        /// </summary>
-        /// <param name="connectionString">Input connection string.</param>
-        /// <returns>Initialized <see cref="KormConnectionSettings"/> instance.</returns>
-        public static KormConnectionSettings Parse(string connectionString)
-        {
-            Check.NotNullOrWhiteSpace(connectionString, nameof(connectionString));
-
-            var cnstrBuilder = new DbConnectionStringBuilder
-            {
-                ConnectionString = connectionString
-            };
-            string kormProvider = GetKormProvider(cnstrBuilder);
-            bool autoMigrate = GetKormAutoMigrate(cnstrBuilder);
-            connectionString = cnstrBuilder.ConnectionString; // Previous methods remove keys, so we want clean connection string.
-
-            return new KormConnectionSettings(connectionString, kormProvider, autoMigrate);
-        }
-
         private static string GetKormProvider(DbConnectionStringBuilder cnstrBuilder)
         {
             if (cnstrBuilder.TryGetValue(KormProviderKey, out object cnstrProviderName))
@@ -71,8 +50,24 @@ namespace Kros.KORM
             return DefaultAutoMigrate;
         }
 
-        private KormConnectionSettings(string connectionString, string kormProvider, bool autoMigrate)
+        /// <summary>
+        /// Parses input <paramref name="connectionString"/> string. Values of KORM keys are removed from connection string
+        /// and set to appropriate properties. Missing KORM keys are set to default values. If KORM provider is not set
+        /// in connection string, Microsoft SQL Server will be used.
+        /// </summary>
+        /// <param name="connectionString">Input connection string.</param>
+        public KormConnectionSettings(string connectionString)
         {
+            Check.NotNullOrWhiteSpace(connectionString, nameof(connectionString));
+
+            var cnstrBuilder = new DbConnectionStringBuilder
+            {
+                ConnectionString = connectionString
+            };
+            string kormProvider = GetKormProvider(cnstrBuilder);
+            bool autoMigrate = GetKormAutoMigrate(cnstrBuilder);
+            connectionString = cnstrBuilder.ConnectionString; // Previous methods remove keys, so we want clean connection string.
+
             ConnectionString = connectionString;
             KormProvider = kormProvider;
             AutoMigrate = autoMigrate;
