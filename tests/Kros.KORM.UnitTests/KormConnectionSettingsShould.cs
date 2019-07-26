@@ -25,7 +25,7 @@ namespace Kros.KORM.UnitTests
         public void BuildConnectionString(string inputCnstr, string outputCnstr)
         {
             var settings = new KormConnectionSettings(inputCnstr);
-            settings.ToString().Should().Be(outputCnstr);
+            settings.GetFullConnectionString().Should().Be(outputCnstr);
         }
     }
 }
