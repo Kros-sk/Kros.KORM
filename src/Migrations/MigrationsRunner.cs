@@ -15,22 +15,48 @@ namespace Kros.KORM.Migrations
     /// <summary>
     /// Runner for execution database migrations.
     /// </summary>
-    public class MigrationsRunner : IMigrationsRunner
+    public class MigrationsRunner : IMigrationsRunner, IDisposable
     {
-        private readonly IDatabase _database;
+        private IDatabase _database;
+        private readonly string _connectionString;
+        private readonly bool _disposeOfDatabase;
         private readonly MigrationOptions _migrationOptions;
 
         /// <summary>
-        /// Ctor.
+        /// Initializes new instance of <see cref="MigrationsRunner"/> with specified settings.
         /// </summary>
-        /// <param name="database">Database connection.</param>
+        /// <param name="database">Database connection. As the database is passed from outside, it <b>is not disposed of</b>,
+        /// when the runner is disposed. It is the caller's responsibility to dispose of the database.</param>
         /// <param name="migrationOptions">Migration options</param>
-        public MigrationsRunner(
-            IDatabase database,
-            MigrationOptions migrationOptions)
+        public MigrationsRunner(IDatabase database, MigrationOptions migrationOptions)
         {
             _database = Check.NotNull(database, nameof(database));
             _migrationOptions = Check.NotNull(migrationOptions, nameof(migrationOptions));
+            _disposeOfDatabase = false;
+        }
+
+        /// <summary>
+        /// Initializes new instance of <see cref="MigrationsRunner"/> with specified settings.
+        /// </summary>
+        /// <param name="connectionString">Database connection string.</param>
+        /// <param name="migrationOptions">Migration options.</param>
+        public MigrationsRunner(string connectionString, MigrationOptions migrationOptions)
+        {
+            _connectionString = Check.NotNullOrWhiteSpace(connectionString, nameof(connectionString));
+            _migrationOptions = Check.NotNull(migrationOptions, nameof(migrationOptions));
+            _disposeOfDatabase = true;
+        }
+
+        private IDatabase Db
+        {
+            get
+            {
+                if (_database is null)
+                {
+                    _database = new Database(_connectionString);
+                }
+                return _database;
+            }
         }
 
         /// <inheritdoc />
@@ -51,7 +77,7 @@ namespace Kros.KORM.Migrations
         {
             foreach (var scriptInfo in migrationScripts)
             {
-                using (var transaction = _database.BeginTransaction())
+                using (var transaction = Db.BeginTransaction())
                 {
                     var script = await scriptInfo.GetScriptAsync();
 
@@ -72,7 +98,7 @@ namespace Kros.KORM.Migrations
         {
             const string sql = "INSERT INTO [" + Migration.TableName + "] VALUES (@Id, @Name, @Info, @Updated)";
 
-            await _database.ExecuteNonQueryAsync(
+            await Db.ExecuteNonQueryAsync(
                 sql,
                 new CommandParameterCollection()
                 {
@@ -103,12 +129,12 @@ namespace Kros.KORM.Migrations
 
             foreach (string line in lines.Where(p => p.Length > 0))
             {
-                await _database.ExecuteNonQueryAsync(line);
+                await Db.ExecuteNonQueryAsync(line);
             }
         }
 
         private Migration GetLastMigrationInfo()
-            => _database.Query<Migration>()
+            => Db.Query<Migration>()
             .OrderByDescending(p => p.MigrationId)
             .FirstOrDefault();
 
@@ -117,7 +143,7 @@ namespace Kros.KORM.Migrations
             var sql = $"IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = '{Migration.TableName}' AND type = 'U')" +
                 Environment.NewLine + await GetResourceContent("Kros.KORM.Resources.MigrationsHistoryTableScript.sql");
 
-            await _database.ExecuteNonQueryAsync(sql);
+            await Db.ExecuteNonQueryAsync(sql);
         }
 
         private static async Task<string> GetResourceContent(string resourceFile)
@@ -127,6 +153,16 @@ namespace Kros.KORM.Migrations
             using (var reader = new StreamReader(resourceStream, Encoding.UTF8))
             {
                 return await reader.ReadToEndAsync();
+            }
+        }
+
+        /// <inheritdoc/>
+        public void Dispose()
+        {
+            if (_disposeOfDatabase)
+            {
+                _database?.Dispose();
+                _database = null;
             }
         }
     }

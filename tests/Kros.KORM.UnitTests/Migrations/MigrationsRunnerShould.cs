@@ -3,6 +3,7 @@ using Kros.Data;
 using Kros.KORM.Migrations;
 using Kros.KORM.UnitTests.Integration;
 using Kros.UnitTests;
+using NSubstitute;
 using System;
 using System.Data.SqlClient;
 using System.Reflection;
@@ -13,7 +14,6 @@ namespace Kros.KORM.UnitTests.Migrations
 {
     public class MigrationsRunnerShould : SqlServerDatabaseTestBase
     {
-
         #region Sql Scripts
 
         private readonly static string CreateTable_MigrationHistory =
@@ -45,15 +45,25 @@ INSERT INTO __KormMigrationsHistory VALUES (20190301001, 'InitDatabase', 'FromUn
 
         #endregion
 
-        protected override string BaseConnectionString
-            => IntegrationTestConfig.ConnectionString;
+        protected override string BaseConnectionString => IntegrationTestConfig.ConnectionString;
+
+        [Fact]
+        public void NotDisposeOfExternalDatabase()
+        {
+            IDatabase database = Substitute.For<IDatabase>();
+            var runner = new MigrationsRunner(database, new MigrationOptions());
+
+            runner.Dispose();
+
+            database.DidNotReceive().Dispose();
+        }
 
         [Fact]
         public async Task ExecuteInitialMigration()
         {
-            using (var helper = CreateHelper(nameof(ExecuteInitialMigration)))
+            using (var runner = CreateMigrationsRunner(nameof(ExecuteInitialMigration)))
             {
-                await helper.Runner.MigrateAsync();
+                await runner.MigrateAsync();
 
                 TableShouldExist("__KormMigrationsHistory");
                 TableShouldExist("People");
@@ -65,11 +75,11 @@ INSERT INTO __KormMigrationsHistory VALUES (20190301001, 'InitDatabase', 'FromUn
         [Fact]
         public async Task MigrateToLastVersion()
         {
-            using (var helper = CreateHelper(nameof(MigrateToLastVersion)))
+            using (var runner = CreateMigrationsRunner(nameof(MigrateToLastVersion)))
             {
                 InitDatabase();
 
-                await helper.Runner.MigrateAsync();
+                await runner.MigrateAsync();
 
                 TableShouldExist("People");
                 TableShouldExist("Projects");
@@ -124,33 +134,14 @@ INSERT INTO __KormMigrationsHistory VALUES (20190301001, 'InitDatabase', 'FromUn
             });
         }
 
-        private Helper CreateHelper(string folderName)
+        private MigrationsRunner CreateMigrationsRunner(string folderName)
         {
-            return new Helper(new Database(ServerHelper.Connection), folderName);
-        }
+            var options = new MigrationOptions();
+            options.AddAssemblyScriptsProvider(
+                Assembly.GetExecutingAssembly(),
+                $"Kros.KORM.UnitTests.Resources.ScriptsForRunner.{folderName}");
 
-        private class Helper : IDisposable
-        {
-            private readonly IDatabase _database;
-
-            public Helper(Database database, string folderName)
-            {
-                _database = database;
-                var options = new MigrationOptions();
-
-                options.AddAssemblyScriptsProvider(
-                    Assembly.GetExecutingAssembly(),
-                    $"Kros.KORM.UnitTests.Resources.ScriptsForRunner.{folderName}");
-
-                Runner = new MigrationsRunner(_database, options);
-            }
-
-            public MigrationsRunner Runner { get; }
-
-            public void Dispose()
-            {
-                _database.Dispose();
-            }
+            return new MigrationsRunner(ServerHelper.Connection.ConnectionString, options);
         }
     }
 }
