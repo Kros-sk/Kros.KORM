@@ -1,25 +1,49 @@
-﻿using Kros.Utils;
-using System;
-using System.IO;
-using System.Reflection;
-using System.Linq;
-using Kros.KORM.Migrations.Providers;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Text.RegularExpressions;
-using System.Text;
+﻿using Kros.KORM.Migrations.Providers;
 using Kros.KORM.Query;
+using Kros.Utils;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace Kros.KORM.Migrations
 {
     /// <summary>
     /// Runner for execution database migrations.
     /// </summary>
-    public class MigrationsRunner : IMigrationsRunner, IDisposable
+    public class MigrationsRunner : IMigrationsRunner
     {
-        private IDatabase _database;
+        #region Nested Types
+
+        private class DatabaseHelper : IDisposable
+        {
+            private readonly bool _disposeOfDatabase;
+
+            public DatabaseHelper(IDatabase database, bool disposeOfDatabase)
+            {
+                Database = database;
+                _disposeOfDatabase = disposeOfDatabase;
+            }
+
+            public IDatabase Database { get; }
+
+            public void Dispose()
+            {
+                if (_disposeOfDatabase)
+                {
+                    Database.Dispose();
+                }
+            }
+        }
+
+        #endregion
+
+        private readonly IDatabase _database;
         private readonly string _connectionString;
-        private readonly bool _disposeOfDatabase;
         private readonly MigrationOptions _migrationOptions;
 
         /// <summary>
@@ -32,7 +56,6 @@ namespace Kros.KORM.Migrations
         {
             _database = Check.NotNull(database, nameof(database));
             _migrationOptions = Check.NotNull(migrationOptions, nameof(migrationOptions));
-            _disposeOfDatabase = false;
         }
 
         /// <summary>
@@ -44,45 +67,40 @@ namespace Kros.KORM.Migrations
         {
             _connectionString = Check.NotNullOrWhiteSpace(connectionString, nameof(connectionString));
             _migrationOptions = Check.NotNull(migrationOptions, nameof(migrationOptions));
-            _disposeOfDatabase = true;
-        }
-
-        private IDatabase Db
-        {
-            get
-            {
-                if (_database is null)
-                {
-                    _database = new Database(_connectionString);
-                }
-                return _database;
-            }
         }
 
         /// <inheritdoc />
         public async Task MigrateAsync()
         {
-            await InitMigrationsHistoryTable();
-
-            var lastMigration = GetLastMigrationInfo() ?? Migration.None;
-            var migrationScripts = GetMigrationScriptsToExecute(lastMigration).ToList();
-
-            if (migrationScripts.Any())
+            using (DatabaseHelper helper = CreateDatabaseHelper())
             {
-                await ExecuteMigrationScripts(migrationScripts);
+                await InitMigrationsHistoryTable(helper.Database);
+
+                Migration lastMigration = GetLastMigrationInfo(helper.Database) ?? Migration.None;
+                var migrationScripts = GetMigrationScriptsToExecute(lastMigration).ToList();
+
+                if (migrationScripts.Any())
+                {
+                    await ExecuteMigrationScripts(helper.Database, migrationScripts);
+                }
             }
         }
 
-        private async Task ExecuteMigrationScripts(IEnumerable<ScriptInfo> migrationScripts)
+        private DatabaseHelper CreateDatabaseHelper()
+            => _database is null
+                ? new DatabaseHelper(new Database(_connectionString), true)
+                : new DatabaseHelper(_database, false);
+
+        private async Task ExecuteMigrationScripts(IDatabase database, IEnumerable<ScriptInfo> migrationScripts)
         {
-            foreach (var scriptInfo in migrationScripts)
+            foreach (ScriptInfo scriptInfo in migrationScripts)
             {
-                using (var transaction = Db.BeginTransaction())
+                using (Data.ITransaction transaction = database.BeginTransaction())
                 {
                     var script = await scriptInfo.GetScriptAsync();
 
-                    await ExecuteMigrationScript(script);
-                    await AddNewMigrationInfo(scriptInfo);
+                    await ExecuteMigrationScript(database, script);
+                    await AddNewMigrationInfo(database, scriptInfo);
 
                     transaction.Commit();
                 }
@@ -94,11 +112,11 @@ namespace Kros.KORM.Migrations
             .OrderBy(p => p.Id)
             .Where(p => p.Id > lastMigration.MigrationId);
 
-        private async Task AddNewMigrationInfo(ScriptInfo scriptInfo)
+        private async Task AddNewMigrationInfo(IDatabase database, ScriptInfo scriptInfo)
         {
             const string sql = "INSERT INTO [" + Migration.TableName + "] VALUES (@Id, @Name, @Info, @Updated)";
 
-            await Db.ExecuteNonQueryAsync(
+            await database.ExecuteNonQueryAsync(
                 sql,
                 new CommandParameterCollection()
                 {
@@ -113,8 +131,7 @@ namespace Kros.KORM.Migrations
 
         private static Regex ScriptLinesRegex
         {
-            get
-            {
+            get {
                 if (_scriptLinesRegex is null)
                 {
                     _scriptLinesRegex = new Regex("^GO", RegexOptions.IgnoreCase | RegexOptions.Multiline);
@@ -123,46 +140,36 @@ namespace Kros.KORM.Migrations
             }
         }
 
-        private async Task ExecuteMigrationScript(string script)
+        private async Task ExecuteMigrationScript(IDatabase database, string script)
         {
             string[] lines = ScriptLinesRegex.Split(script);
 
             foreach (string line in lines.Where(p => p.Length > 0))
             {
-                await Db.ExecuteNonQueryAsync(line);
+                await database.ExecuteNonQueryAsync(line);
             }
         }
 
-        private Migration GetLastMigrationInfo()
-            => Db.Query<Migration>()
+        private Migration GetLastMigrationInfo(IDatabase database)
+            => database.Query<Migration>()
             .OrderByDescending(p => p.MigrationId)
             .FirstOrDefault();
 
-        private async Task InitMigrationsHistoryTable()
+        private async Task InitMigrationsHistoryTable(IDatabase database)
         {
             var sql = $"IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = '{Migration.TableName}' AND type = 'U')" +
                 Environment.NewLine + await GetResourceContent("Kros.KORM.Resources.MigrationsHistoryTableScript.sql");
 
-            await Db.ExecuteNonQueryAsync(sql);
+            await database.ExecuteNonQueryAsync(sql);
         }
 
         private static async Task<string> GetResourceContent(string resourceFile)
         {
             var assembly = Assembly.GetExecutingAssembly();
-            var resourceStream = assembly.GetManifestResourceStream(resourceFile);
+            Stream resourceStream = assembly.GetManifestResourceStream(resourceFile);
             using (var reader = new StreamReader(resourceStream, Encoding.UTF8))
             {
                 return await reader.ReadToEndAsync();
-            }
-        }
-
-        /// <inheritdoc/>
-        public void Dispose()
-        {
-            if (_disposeOfDatabase)
-            {
-                _database?.Dispose();
-                _database = null;
             }
         }
     }

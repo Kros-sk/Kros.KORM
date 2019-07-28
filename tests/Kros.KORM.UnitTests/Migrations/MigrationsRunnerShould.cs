@@ -48,46 +48,31 @@ INSERT INTO __KormMigrationsHistory VALUES (20190301001, 'InitDatabase', 'FromUn
         protected override string BaseConnectionString => IntegrationTestConfig.ConnectionString;
 
         [Fact]
-        public void NotDisposeOfExternalDatabase()
-        {
-            IDatabase database = Substitute.For<IDatabase>();
-            var runner = new MigrationsRunner(database, new MigrationOptions());
-
-            runner.Dispose();
-
-            database.DidNotReceive().Dispose();
-        }
-
-        [Fact]
         public async Task ExecuteInitialMigration()
         {
-            using (var runner = CreateMigrationsRunner(nameof(ExecuteInitialMigration)))
-            {
-                await runner.MigrateAsync();
+            var runner = CreateMigrationsRunner(nameof(ExecuteInitialMigration));
+            await runner.MigrateAsync();
 
-                TableShouldExist("__KormMigrationsHistory");
-                TableShouldExist("People");
+            TableShouldExist("__KormMigrationsHistory");
+            TableShouldExist("People");
 
-                DatabaseVersionShouldBe(20190301001);
-            }
+            DatabaseVersionShouldBe(20190301001);
         }
 
         [Fact]
         public async Task MigrateToLastVersion()
         {
-            using (var runner = CreateMigrationsRunner(nameof(MigrateToLastVersion)))
-            {
-                InitDatabase();
+            var runner = CreateMigrationsRunner(nameof(MigrateToLastVersion));
+            InitDatabase();
 
-                await runner.MigrateAsync();
+            await runner.MigrateAsync();
 
-                TableShouldExist("People");
-                TableShouldExist("Projects");
-                TableShouldExist("ProjectDetails");
-                TableShouldExist("Contacts");
+            TableShouldExist("People");
+            TableShouldExist("Projects");
+            TableShouldExist("ProjectDetails");
+            TableShouldExist("Contacts");
 
-                DatabaseVersionShouldBe(20190301003);
-            }
+            DatabaseVersionShouldBe(20190301003);
         }
 
         private void InitDatabase()
