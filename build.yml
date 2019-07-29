@@ -5,6 +5,12 @@ trigger:
 
 pool: Default
 
+resources:
+  repositories:
+    - repository: templates
+      type: git
+      name: DevShared/Templates
+
 variables:
   - group: Nuget
   - name: buildConfiguration
@@ -13,6 +19,8 @@ variables:
     value: 'Kros.KORM'
 
 steps:
+  - template: steps/delete-nupkgs.yml@templates
+
   - task: DotNetCoreCLI@2
     displayName: 'Nuget restore'
     inputs:
