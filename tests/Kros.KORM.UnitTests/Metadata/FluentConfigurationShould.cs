@@ -129,7 +129,7 @@ namespace Kros.KORM.UnitTests.Metadata
                     IsPrimaryKey = true,
                     AutoIncrementMethodType = AutoIncrementMethodType.None
                 },
-                new ColumnInfo() { Name = "GivenName" },
+                new ColumnInfo() { Name = "GivenName", Converter = new UpperCaseConverter() },
                 new ColumnInfo() { Name = "LastName" }
             };
             TableInfo tableInfoBarExpected = CreateExpectedTableInfo(columns, "Bar");
@@ -244,7 +244,11 @@ namespace Kros.KORM.UnitTests.Metadata
                 actualColumnInfo.Should().NotBeNull();
                 actualColumnInfo.Name.Should().Be(columnInfo.Name);
                 actualColumnInfo.IsPrimaryKey.Should().Be(columnInfo.IsPrimaryKey);
-                if (columnInfo.Converter != null)
+                if (columnInfo.Converter is null)
+                {
+                    actualColumnInfo.Converter.Should().BeNull();
+                }
+                else
                 {
                     actualColumnInfo.Converter.Should().BeOfType(columnInfo.Converter.GetType());
                 }
