@@ -2,6 +2,7 @@
 using Kros.KORM.Data;
 using Kros.KORM.Materializer;
 using Kros.KORM.Metadata;
+using Kros.KORM.Properties;
 using Kros.KORM.Query;
 using Kros.Utils;
 using System;
@@ -100,7 +101,7 @@ namespace Kros.KORM
         /// </summary>
         /// <param name="connectionString">Connection string.</param>
         public Database(string connectionString)
-            : this(new KormConnectionSettings(connectionString))
+            : this(new KormConnectionSettings() { ConnectionString = connectionString })
         {
         }
 
@@ -113,6 +114,8 @@ namespace Kros.KORM
         {
             Check.NotNull(connectionString, nameof(connectionString));
             Check.NotNull(queryProviderFactory, nameof(queryProviderFactory));
+            Check.NotNullOrWhiteSpace(connectionString.ConnectionString, nameof(connectionString), Resources.Error_ConnectionStringNotSet);
+            Check.NotNullOrWhiteSpace(connectionString.KormProvider, nameof(connectionString), Resources.Error_KormProviderNotSet);
 
             _databaseMapper = DatabaseMapper;
             _modelBuilder = new ModelBuilder(Database.DefaultModelFactory);

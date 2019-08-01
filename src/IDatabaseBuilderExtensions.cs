@@ -12,6 +12,6 @@
         /// <param name="connectionString">Connection string.</param>
         /// <returns>Database builder.</returns>
         public static IDatabaseBuilder UseConnection(this IDatabaseBuilder builder, string connectionString)
-            => builder.UseConnection(new KormConnectionSettings(connectionString));
+            => builder.UseConnection(new KormConnectionSettings() { ConnectionString = connectionString });
     }
 }

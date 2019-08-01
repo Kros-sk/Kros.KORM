@@ -78,17 +78,6 @@ namespace Kros.KORM
                 return this;
             }
 
-            public IDatabaseBuilder UseConnection(string connectionString)
-            {
-                CheckDuplicateSettingForConnection();
-                CheckMultipleConfiguration();
-                Check.NotNullOrWhiteSpace(connectionString, nameof(connectionString));
-
-                _connectionString = new KormConnectionSettings(connectionString);
-
-                return this;
-            }
-
             public IDatabaseBuilder UseConnection(DbConnection connection)
             {
                 CheckDuplicateSettingForConnection();

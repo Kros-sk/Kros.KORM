@@ -36,7 +36,7 @@ namespace Kros.KORM.UnitTests.Query
         public void CreateOleDbProviderBySettings()
         {
             var factory = CreateFactory();
-            var connectionString = new KormConnectionSettings(Helpers.AddProviderToConnectionString("", "System.Data.OleDb"));
+            var connectionString = new KormConnectionSettings() { ConnectionString = "", KormProvider = "System.Data.OleDb" };
             var provider = factory.Create(connectionString, CreateModelBuilder(), DatabaseMapper);
 
             provider.Should().NotBeNull();
@@ -46,7 +46,7 @@ namespace Kros.KORM.UnitTests.Query
         public void CreateSqlProviderBySettings()
         {
             var factory = CreateFactory();
-            var connectionString = new KormConnectionSettings(Helpers.AddProviderToConnectionString("", SqlServerDataHelper.ClientId));
+            var connectionString = new KormConnectionSettings() { ConnectionString = "", KormProvider = SqlServerDataHelper.ClientId };
 
             var provider = factory.Create(connectionString, CreateModelBuilder(), DatabaseMapper);
 
@@ -57,7 +57,7 @@ namespace Kros.KORM.UnitTests.Query
         public void CreateSqlProviderBySettingsCaseInsensitive()
         {
             var factory = CreateFactory();
-            var connectionString = new KormConnectionSettings(Helpers.AddProviderToConnectionString("", SqlServerDataHelper.ClientId));
+            var connectionString = new KormConnectionSettings() { ConnectionString = "", KormProvider = SqlServerDataHelper.ClientId };
 
             var provider = factory.Create(connectionString, CreateModelBuilder(), DatabaseMapper);
 

@@ -155,6 +155,12 @@
   <data name="ConverterTypeIsNotIConverter" xml:space="preserve">
     <value>Converter type must implement implement IConverter interface.</value>
   </data>
+  <data name="Error_ConnectionStringNotSet" xml:space="preserve">
+    <value>Connection string is not set.</value>
+  </data>
+  <data name="Error_KormProviderNotSet" xml:space="preserve">
+    <value>KORM provider is not set.</value>
+  </data>
   <data name="ExistingItemCannotBeAdded" xml:space="preserve">
     <value>Cannot add item (hash code = {0}). This item already exists in collection {1}.</value>
   </data>

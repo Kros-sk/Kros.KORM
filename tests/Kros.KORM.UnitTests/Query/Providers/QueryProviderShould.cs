@@ -52,7 +52,7 @@ namespace Kros.KORM.UnitTests.Query.Providers
 
             private TestQueryProvider(DbConnection internalConnection, bool isInternalConnection)
                 : base(
-                      new KormConnectionSettings(Helpers.AddProviderToConnectionString("QueryProviderTestConnectionString", "QueryProviderTest")),
+                      new KormConnectionSettings() { ConnectionString = "QueryProviderTestConnectionString", KormProvider = "QueryProviderTest" },
                       Substitute.For<ISqlExpressionVisitorFactory>(),
                       new ModelBuilder(Database.DefaultModelFactory),
                       Substitute.For<ILogger>())
@@ -509,7 +509,7 @@ END";
 
         private static SqlServerQueryProvider CreateQueryProvider(string connectionString)
             => new SqlServerQueryProvider(
-                new KormConnectionSettings(connectionString),
+                new KormConnectionSettings() { ConnectionString = connectionString },
                 Substitute.For<ISqlExpressionVisitorFactory>(),
                 new ModelBuilder(Database.DefaultModelFactory),
                 Substitute.For<ILogger>());
