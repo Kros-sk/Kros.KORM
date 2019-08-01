@@ -28,6 +28,7 @@ namespace Kros.KORM.Query
         private HashSet<T> _addedItems = new HashSet<T>();
         private HashSet<T> _editedItems = new HashSet<T>();
         private HashSet<T> _deletedItems = new HashSet<T>();
+        private HashSet<object> _deletedItemsIds = new HashSet<object>();
         private readonly TableInfo _tableInfo;
 
         #endregion
@@ -95,6 +96,12 @@ namespace Kros.KORM.Query
             _deletedItems.Add(entity);
         }
 
+        /// <inheritdoc />
+        public void Delete(object id)
+        {
+            _deletedItemsIds.Add(id);
+        }
+
         /// <summary>
         /// Adds the items to the context underlying the set in the Added state such that it will be inserted
         /// into the database when CommitChanges is called.
@@ -104,7 +111,7 @@ namespace Kros.KORM.Query
         {
             foreach (var entity in entities)
             {
-                this.Add(entity);
+                Add(entity);
             }
         }
 
@@ -116,7 +123,7 @@ namespace Kros.KORM.Query
         {
             foreach (var entity in entities)
             {
-                this.Edit(entity);
+                Edit(entity);
             }
         }
 
@@ -128,7 +135,16 @@ namespace Kros.KORM.Query
         {
             foreach (var entity in entities)
             {
-                this.Delete(entity);
+                Delete(entity);
+            }
+        }
+
+        /// <inheritdoc />
+        public void Delete(IEnumerable ids)
+        {
+            foreach (object id in ids)
+            {
+                Delete(id);
             }
         }
 
@@ -140,6 +156,7 @@ namespace Kros.KORM.Query
             _addedItems.Clear();
             _editedItems.Clear();
             _deletedItems.Clear();
+            _deletedItemsIds.Clear();
         }
 
         /// <inheritdoc />
@@ -248,6 +265,7 @@ namespace Kros.KORM.Query
                 await CommitChangesAddedItemsAsync(_addedItems, useAsync);
                 await CommitChangesEditedItemsAsync(_editedItems, useAsync);
                 await CommitChangesDeletedItemsAsync(_deletedItems, useAsync);
+                await CommitChangesDeletedItemsByIdAsync(_deletedItemsIds, useAsync);
 
                 Clear();
             });
@@ -396,6 +414,24 @@ namespace Kros.KORM.Query
             }
         }
 
+        private async Task CommitChangesDeletedItemsByIdAsync(HashSet<object> ids, bool useAsync)
+        {
+            if (ids?.Count > 0)
+            {
+                foreach (DbCommand command in _commandGenerator.GetDeleteCommands(ids))
+                {
+                    try
+                    {
+                        await ExecuteNonQueryAsync(command, useAsync);
+                    }
+                    finally
+                    {
+                        command.Dispose();
+                    }
+                }
+            }
+        }
+
         private void CheckItemInCollection(T entity, HashSet<T> collection, string message, string collectionName)
         {
             if (collection.Contains(entity))
@@ -485,7 +521,7 @@ namespace Kros.KORM.Query
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return this.GetEnumerator();
+            return GetEnumerator();
         }
 
         #endregion

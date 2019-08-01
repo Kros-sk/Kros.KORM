@@ -5,6 +5,7 @@ using Kros.KORM.Query;
 using Kros.KORM.Query.Expressions;
 using Kros.Utils;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
@@ -129,14 +130,8 @@ namespace Kros.KORM.CommandGenerator
             return cmd;
         }
 
-        /// <summary>
-        /// Gets the automatically generated DbCommands object required to perform deletions on the database.
-        /// </summary>
-        /// <param name="items">Type class of model collection.</param>
-        /// <exception cref="Exceptions.MissingPrimaryKeyException">Table does not have primary key.</exception>
-        /// <exception cref="Exceptions.CompositePrimaryKeyException">Table has composite primary key.</exception>
-        /// <returns>Delete command collection.</returns>
-        public IEnumerable<DbCommand> GetDeleteCommands(IEnumerable<T> items)
+        /// <inheritdoc />
+        public IEnumerable<DbCommand> GetDeleteCommands(IEnumerable ids)
         {
             CheckPrimaryKeyExist(string.Format(Resources.MethodNotSupportedWhenNoPrimaryKey, nameof(GetDeleteCommands)));
 
@@ -153,7 +148,7 @@ namespace Kros.KORM.CommandGenerator
             var deleteQueryText = new StringBuilder();
             int iterationCount = 0;
 
-            foreach (T item in items)
+            foreach (object id in ids)
             {
                 if (iterationCount == 0)
                 {
@@ -164,7 +159,7 @@ namespace Kros.KORM.CommandGenerator
 
                 iterationCount++;
                 string paramterName = $"@P{iterationCount}";
-                AddDeleteCommandParameter(cmd, paramterName, GetColumnValue(colInfo, item));
+                AddDeleteCommandParameter(cmd, paramterName, id);
                 if (iterationCount > 1)
                 {
                     deleteQueryText.Append(",");

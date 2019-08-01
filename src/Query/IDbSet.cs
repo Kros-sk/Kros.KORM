@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Threading.Tasks;
@@ -49,6 +50,18 @@ namespace Kros.KORM.Query
         /// </summary>
         /// <param name="entities">The items to delete.</param>
         void Delete(IEnumerable<T> entities);
+
+        /// <summary>
+        /// Marks the item id as Deleted such the item with this id will be deleted from the database when CommitChanges is called.
+        /// </summary>
+        /// <param name="id">The item id to delete.</param>
+        void Delete(object id);
+
+        /// <summary>
+        /// Marks the items ids as Deleted such items with these ids it will be deleted from the database when CommitChanges is called.
+        /// </summary>
+        /// <param name="ids">The items ids to delete.</param>
+        void Delete(IEnumerable ids);
 
         /// <summary>
         /// Rolls back all pending changes.
