@@ -169,6 +169,24 @@ namespace Kros.KORM.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Connection string is not set..
+        /// </summary>
+        internal static string Error_ConnectionStringNotSet {
+            get {
+                return ResourceManager.GetString("Error_ConnectionStringNotSet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to KORM provider is not set..
+        /// </summary>
+        internal static string Error_KormProviderNotSet {
+            get {
+                return ResourceManager.GetString("Error_KormProviderNotSet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cannot add item (hash code = {0}). This item already exists in collection {1}..
         /// </summary>
         internal static string ExistingItemCannotBeAdded {

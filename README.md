@@ -438,6 +438,7 @@ For both of bulk operations you can provide data as an argument of method. The a
 Kros.KORM supports generating of primary keys for inserted records.
 
 Support two types of generating:
+
 1. Custom
 
 Primary key must be simple `Int32` column. Primary key property in POCO class must be decorated by `Key` attribute and its property `AutoIncrementMethodType` must be set to `Custom`.
@@ -452,13 +453,14 @@ Kros.KORM generates primary key for every inserted record, that does not have va
 2. Identity
 
 When you set  `AutoIncrementMethodType` to `Identity`, Kros.KORM use `MsSql Identity` for generating primary key and fill generated keys into entity.
+
 ```sql
 CREATE TABLE [dbo].[Users](
-	[Id] [bigint] IDENTITY(1,1) NOT NULL,
-	[FIrstName] [nvarchar](50) NULL,
- CONSTRAINT [PK_Users] PRIMARY KEY CLUSTERED
+    [Id] [bigint] IDENTITY(1,1) NOT NULL,
+    [FIrstName] [nvarchar](50) NULL,
+CONSTRAINT [PK_Users] PRIMARY KEY CLUSTERED
 (
-	[Id] ASC
+    [Id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 ```
@@ -720,28 +722,29 @@ public class CustomQueryProviderFactory : IQueryProviderFactory
 ```
 
 ### ASP.NET Core extensions
+
 For simple integration into ASP.NET Core projects, the [__Kros.KORM.Extensions.Asp__](https://www.nuget.org/packages/Kros.KORM.Extensions.Asp/) package was created.
 
 You can use the `AddKorm` extension method to register `IDatabase` to the DI container.
 
-```
+``` c#
 public void ConfigureServices(IServiceCollection services)
 {
     services.AddKorm(Configuration);
 }
 ```
 
-The configuration file *(typically `appsettings.json`)* must contain a section `ConnectionString`.
-```
-  "ConnectionString": {
-    "ProviderName": "System.Data.SqlClient",
-    "ConnectionString": "Server=servername\\instancename;Initial Catalog=database;Persist Security Info=False;"
+The configuration file *(typically `appsettings.json`)* must contain a section `ConnectionStrings`.
+
+``` json
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=servername\\instancename;Initial Catalog=database;Persist Security Info=False;"
   }
 ```
 
 If you need to initialize the database for [IIdGenerator](https://kros-sk.github.io/Kros.Libs.Documentation/api/Kros.Utils/Kros.Data.IIdGenerator.html) then you can call `InitDatabaseForIdGenerator`.
 
-```
+``` c#
 public void ConfigureServices(IServiceCollection services)
 {
     services.AddKorm(Configuration)

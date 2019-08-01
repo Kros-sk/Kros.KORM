@@ -18,8 +18,5 @@ namespace Kros.KORM.UnitTests
 
             return _config;
         }
-
-        public static string AddProviderToConnectionString(string connectionString, string kormProvider)
-            => $"{connectionString};{KormConnectionSettings.KormProviderKey}={kormProvider}";
     }
 }
