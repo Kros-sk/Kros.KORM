@@ -170,8 +170,15 @@
   <data name="ExistingItemCannotBeEdited" xml:space="preserve">
     <value>Cannot edit item (hash code = {0}). This item already exists in collection {1}.</value>
   </data>
+  <data name="ExistingItemIdCannotBeDeleted" xml:space="preserve">
+    <value>Cannot delete item with Id = '{0}'. This item with this Id already exists in collection.</value>
+  </data>
   <data name="ExpressionCanBeAppliedOnlyOnce" xml:space="preserve">
     <value>{0} can be applied only once.</value>
+  </data>
+  <data name="InvalidIdParameterType" xml:space="preserve">
+    <value>Invalid type of id parameter. Property which represent primary key is type of '{0}'.</value>
+    <comment>0 - type of property which represent primary key</comment>
   </data>
   <data name="InvalidPrimaryKeyForBulkUpdate" xml:space="preserve">
     <value>Table {0} has none, or composite primary key. Primary key must be one column only.</value>

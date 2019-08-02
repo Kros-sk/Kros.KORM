@@ -30,6 +30,7 @@ namespace Kros.KORM.Query
         private HashSet<T> _deletedItems = new HashSet<T>();
         private HashSet<object> _deletedItemsIds = new HashSet<object>();
         private readonly TableInfo _tableInfo;
+        private Lazy<Type> _primaryKeyPropertyType;
 
         #endregion
 
@@ -48,6 +49,7 @@ namespace Kros.KORM.Query
             _provider = Check.NotNull(provider, nameof(provider));
             _query = Check.NotNull(query, nameof(query));
             _tableInfo = Check.NotNull(tableInfo, nameof(tableInfo));
+            _primaryKeyPropertyType = new Lazy<Type>(GetPrimaryKeyType);
         }
 
         #endregion
@@ -99,7 +101,34 @@ namespace Kros.KORM.Query
         /// <inheritdoc />
         public void Delete(object id)
         {
+            if (_deletedItemsIds.Contains(id))
+            {
+                throw new AlreadyInCollectionException(string.Format(Resources.ExistingItemIdCannotBeDeleted, id));
+            }
+            if (_primaryKeyPropertyType.Value != id.GetType())
+            {
+                throw new ArgumentException(string.Format(Resources.InvalidIdParameterType, _primaryKeyPropertyType.Value.Name));
+            }
+
             _deletedItemsIds.Add(id);
+        }
+
+        private Type GetPrimaryKeyType()
+        {
+            if (_tableInfo.PrimaryKey.Count() == 0)
+            {
+                throw new Exceptions.MissingPrimaryKeyException(
+                    string.Format(Resources.MethodNotSupportedForCompositePrimaryKey, nameof(Delete)), _tableInfo.Name);
+            }
+
+            if (_tableInfo.PrimaryKey.Count() > 1)
+            {
+                throw new CompositePrimaryKeyException(
+                    string.Format(Resources.MethodNotSupportedForCompositePrimaryKey, nameof(Delete)),
+                    _tableInfo.Name);
+            }
+
+            return _tableInfo.PrimaryKey.First().PropertyInfo.PropertyType;
         }
 
         /// <summary>
@@ -140,7 +169,7 @@ namespace Kros.KORM.Query
         }
 
         /// <inheritdoc />
-        public void Delete(IEnumerable ids)
+        public void Delete(IEnumerable<object> ids)
         {
             foreach (object id in ids)
             {

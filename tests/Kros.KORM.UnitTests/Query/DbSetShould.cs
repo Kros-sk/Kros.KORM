@@ -263,6 +263,45 @@ namespace Kros.KORM.UnitTests
                 .WithMessage("*FakeProvider*Person*");
         }
 
+        [Theory]
+        [MemberData(nameof(GetDataForDeleteByIds))]
+        public void ThrowExceptionWhenTryDeleteByIdsWithIncorrectType(IEnumerable<object> ids, bool throwException)
+        {
+            var tableInfo = new TableInfo(new List<ColumnInfo>()
+            {
+                new ColumnInfo(){
+                    Name = "Id",
+                    IsPrimaryKey = true,
+                    PropertyInfo = typeof(Person).GetProperty(nameof(Person.Id))
+                }
+            }, new List<PropertyInfo>(), null);
+
+            var dbSet = new DbSet<Person>(Substitute.For<ICommandGenerator<Person>>(),
+                                         Substitute.For<IQueryProvider>(),
+                                         Substitute.For<IQuery<Person>>(),
+                                         tableInfo);
+
+            Action action = () => dbSet.Delete(ids);
+
+            if (throwException)
+            {
+                action.Should()
+                    .Throw<ArgumentException>()
+                    .WithMessage("*'Int32'*");
+            }
+            else
+            {
+                action.Should().NotThrow();
+            }
+        }
+
+        public static IEnumerable<object[]> GetDataForDeleteByIds()
+        {
+            yield return new object[] { new List<object>() { "1", 1 }, true };
+            yield return new object[] { new List<object>() { 1, 2, 3, true }, true };
+            yield return new object[] { new List<object>() { 1, 2, 3, 4 }, false};
+        }
+
         #endregion
 
         #region Test classes

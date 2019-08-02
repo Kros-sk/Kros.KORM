@@ -214,11 +214,29 @@ namespace Kros.KORM.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cannot delete item with Id = &apos;{0}&apos;. This item with this Id already exists in collection..
+        /// </summary>
+        internal static string ExistingItemIdCannotBeDeleted {
+            get {
+                return ResourceManager.GetString("ExistingItemIdCannotBeDeleted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0} can be applied only once..
         /// </summary>
         internal static string ExpressionCanBeAppliedOnlyOnce {
             get {
                 return ResourceManager.GetString("ExpressionCanBeAppliedOnlyOnce", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid type of id parameter. Property which represent primary key is type of &apos;{0}&apos;..
+        /// </summary>
+        internal static string InvalidIdParameterType {
+            get {
+                return ResourceManager.GetString("InvalidIdParameterType", resourceCulture);
             }
         }
         
