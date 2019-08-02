@@ -19,6 +19,7 @@ variables:
     value: 'Kros.KORM'
 
 steps:
+  - template: steps/agent-info.yml@templates
   - template: steps/delete-nupkgs.yml@templates
 
   - task: DotNetCoreCLI@2
