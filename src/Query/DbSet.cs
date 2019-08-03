@@ -168,15 +168,6 @@ namespace Kros.KORM.Query
             }
         }
 
-        /// <inheritdoc />
-        public void Delete(IEnumerable<object> ids)
-        {
-            foreach (object id in ids)
-            {
-                Delete(id);
-            }
-        }
-
         /// <summary>
         /// Clear Added, Edited and Deleted lists of items.
         /// </summary>

@@ -66,21 +66,6 @@ namespace Kros.KORM.Query
         void Delete(object id);
 
         /// <summary>
-        /// Marks the items ids as Deleted such items with these ids it will be deleted from the database when CommitChanges is called.
-        /// </summary>
-        /// <param name="ids">The items ids to delete.</param>
-        /// <exception cref="Exceptions.MissingPrimaryKeyException">
-        /// Delete method doesn't supported when entity doesn't have primary key.
-        /// </exception>
-        /// <exception cref="Exceptions.CompositePrimaryKeyException">
-        /// Delete method doesn't supported when entity has composite primary key.
-        /// </exception>
-        /// <exception cref="ArgumentException">
-        /// When type of <paramref name="id"/> is different from primary key property type.
-        /// </exception>
-        void Delete(IEnumerable<object> ids);
-
-        /// <summary>
         /// Rolls back all pending changes.
         /// </summary>
         void Clear();

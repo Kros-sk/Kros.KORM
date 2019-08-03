@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Kros.Data.SqlServer;
 using Kros.KORM.Converter;
 using Kros.KORM.Metadata;
@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
+using Newtonsoft.Json.Linq;
 
 namespace Kros.KORM.UnitTests.Integration
 {
@@ -130,7 +131,7 @@ $@"CREATE TABLE [dbo].[{Table_TestTable}] (
 
         private static readonly string InsertDataScript =
 $@"INSERT INTO {Table_TestTable} VALUES (1, 18, 'John', 'Smith', 'London', 'Lorem ipsum dolor sit amet 1.');
-INSERT INTO {Table_TestTable} VALUES (1, 22, 'Kilie', 'Bistrol', 'London', 'Lorem ipsum dolor sit amet 2.');";
+INSERT INTO {Table_TestTable} VALUES (2, 22, 'Kilie', 'Bistrol', 'London', 'Lorem ipsum dolor sit amet 2.');";
 
         private const string Table_LimitOffsetTest = "LimitOffsetTest";
 
@@ -294,6 +295,37 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
                 await dbSet.CommitChangesAsync();
 
                 korm.Query<Person>().Count().Should().Be(0);
+            }
+        }
+
+        [Fact]
+        public async Task DeleteDataByIdAsync()
+        {
+            using (var korm = CreateDatabase(CreateTable_TestTable, InsertDataScript))
+            {
+                var dbSet = korm.Query<Person>().AsDbSet();
+                dbSet.Delete(1);
+
+                await dbSet.CommitChangesAsync();
+
+                korm.Query<Person>()
+                    .Should()
+                    .NotContain(p => p.Id == 1);
+            }
+        }
+
+        [Fact]
+        public async Task DeleteDataByIdsAsync()
+        {
+            using (var korm = CreateDatabase(CreateTable_TestTable, InsertDataScript))
+            {
+                var dbSet = korm.Query<Person>().AsDbSet();
+                dbSet.Delete(1);
+                dbSet.Delete(2);
+
+                await dbSet.CommitChangesAsync();
+
+                korm.Query<Person>().Should().BeEmpty();
             }
         }
 
