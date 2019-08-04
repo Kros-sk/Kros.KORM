@@ -1,9 +1,11 @@
-﻿using FluentAssertions;
+﻿using Castle.DynamicProxy.Generators.Emitters.SimpleAST;
+using FluentAssertions;
 using Kros.KORM.Metadata;
 using Kros.KORM.Metadata.Attribute;
 using Kros.KORM.Query.Expressions;
 using Kros.KORM.Query.Sql;
 using System;
+using System.Linq.Expressions;
 using Xunit;
 
 namespace Kros.KORM.UnitTests.Query.Sql
@@ -107,6 +109,18 @@ namespace Kros.KORM.UnitTests.Query.Sql
             var queryInfo = generator.GenerateSql(expression);
 
             queryInfo.Query.Should().Be(@"SELECT LastName, Min(Age) FROM TPerson GROUP BY LastName");
+        }
+
+        [Fact]
+        public void GenerateWhereCondition()
+        {
+            DefaultQuerySqlGenerator generator = CreateQuerySqlGenerator();
+            Expression<Func<Person, bool>> where = (p) => p.Id == 1 && p.FirstName.StartsWith("M");
+
+            WhereExpression whereExpression = generator.GenerateWhereCondition(where);
+
+            whereExpression.Sql.Should().Be("((Id = @1) AND (Name LIKE @2 + '%'))");
+            whereExpression.Parameters.Should().BeEquivalentTo(new object[] { 1, "M" });
         }
 
         private static DefaultQuerySqlGenerator CreateQuerySqlGenerator()

@@ -330,7 +330,7 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
         }
 
         [Fact]
-        public async Task DeleteDataByConditionAsync()
+        public async Task DeleteDataByLinqConditionAsync()
         {
             using (var korm = CreateDatabase(CreateTable_TestTable, InsertDataScript))
             {
@@ -342,6 +342,22 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
                 korm.Query<Person>()
                     .Should()
                     .NotContain(p => p.Id == 1);
+            }
+        }
+
+        [Fact]
+        public async Task DeleteDataByConditionAsync()
+        {
+            using (var korm = CreateDatabase(CreateTable_TestTable, InsertDataScript))
+            {
+                var dbSet = korm.Query<Person>().AsDbSet();
+                dbSet.Delete("Id = @1", 2);
+
+                await dbSet.CommitChangesAsync();
+
+                korm.Query<Person>()
+                    .Should()
+                    .NotContain(p => p.Id == 2);
             }
         }
 
