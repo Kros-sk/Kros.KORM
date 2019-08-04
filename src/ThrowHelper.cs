@@ -63,4 +63,3 @@ namespace Kros.KORM
                     currentValueGenerator.GetType().FullName));
     }
 }
-}

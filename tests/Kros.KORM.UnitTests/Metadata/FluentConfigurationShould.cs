@@ -27,7 +27,7 @@ namespace Kros.KORM.UnitTests.Metadata
                 .Property(p => p.NoMapped).NoMap()
                 .Property(p => p.FirstName).HasColumnName("Name")
                 .Property(p => p.DateTime).InjectValue(() => DateTime.Now)
-                .Property(p => p.GeneratedValue).UseValueGenerator(new AutoIncrementValueGenerator());
+                .Property(p => p.GeneratedValue).UseValueGenerator(new AutoIncrementValueGenerator(new List<DbCommandType>() { DbCommandType.Insert }));
 
             modelBuilder.Build(modelMapper);
 
@@ -42,7 +42,7 @@ namespace Kros.KORM.UnitTests.Metadata
                 },
                 new ColumnInfo() { Name = "COL_ADDRESS", Converter = new AddressConverter() },
                 new ColumnInfo() { Name = "Name" },
-                new ColumnInfo() { Name = "GeneratedValue", ValueGenerator = new AutoIncrementValueGenerator() }
+                new ColumnInfo() { Name = "GeneratedValue", ValueGenerator = new AutoIncrementValueGenerator(new List<DbCommandType>() { DbCommandType.Insert }) }
             };
             TableInfo tableInfoExpected = CreateExpectedTableInfo(columns, "BuilderTest");
 
@@ -334,6 +334,13 @@ namespace Kros.KORM.UnitTests.Metadata
 
         private class AutoIncrementValueGenerator : IValueGenerator<int>
         {
+            public AutoIncrementValueGenerator(IEnumerable<DbCommandType> supportedCommandTypes)
+            {
+                SupportedCommandTypes = supportedCommandTypes;
+            }
+
+            public IEnumerable<DbCommandType> SupportedCommandTypes { get; }
+
             public int GetValue() => 123;
 
             object IValueGenerator.GetValue() => GetValue();

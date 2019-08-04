@@ -1,4 +1,6 @@
-﻿namespace Kros.KORM.Data
+﻿using System.Collections.Generic;
+
+namespace Kros.KORM.Data
 {
     /// <summary>
     /// Interface for extended value generator.
@@ -10,5 +12,10 @@
         /// </summary>
         /// <param name="database"></param>
         object GetValue(IDatabase database);
+
+        /// <summary>
+        /// Supported command types.
+        /// </summary>
+        IEnumerable<DbCommandType> SupportedCommandTypes { get; }
     }
 }

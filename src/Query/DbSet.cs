@@ -356,7 +356,7 @@ namespace Kros.KORM.Query
                     PrepareCommand(command);
                     foreach (T item in items)
                     {
-                        _commandGenerator.FillCommand(command, item);
+                        _commandGenerator.FillCommand(command, item, DbCommandType.Insert);
                         if (hasIdentity)
                         {
                             var id = await ExecuteScalarAsync(command, useAsync);
@@ -438,7 +438,7 @@ namespace Kros.KORM.Query
                     PrepareCommand(command);
                     foreach (T item in items)
                     {
-                        _commandGenerator.FillCommand(command, item);
+                        _commandGenerator.FillCommand(command, item, DbCommandType.Update);
                         await ExecuteNonQueryAsync(command, useAsync);
                     }
                 }
@@ -453,7 +453,7 @@ namespace Kros.KORM.Query
                 {
                     foreach (T item in items)
                     {
-                        _commandGenerator.FillCommand(command, item);
+                        _commandGenerator.FillCommand(command, item, DbCommandType.Delete);
                         await ExecuteNonQueryAsync(command, useAsync);
                     }
                 }

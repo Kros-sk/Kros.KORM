@@ -1,4 +1,5 @@
 ﻿using Kros.KORM.Converter;
+using Kros.KORM.Data;
 using Kros.KORM.Metadata;
 using Kros.KORM.Properties;
 using Kros.KORM.Query;
@@ -192,9 +193,10 @@ namespace Kros.KORM.CommandGenerator
         /// </summary>
         /// <param name="command">Command which parameters are filled.</param>
         /// <param name="item">Item, from which command is filled.</param>
+        /// <param name="commandType">Type of database command.</param>
         /// <exception cref="System.ArgumentNullException">Either <paramref name="command" /> or <paramref name="item" />
         /// is <see langword="null"/>.</exception>
-        public void FillCommand(DbCommand command, T item)
+        public void FillCommand(DbCommand command, T item, DbCommandType commandType)
         {
             Check.NotNull(command, nameof(command));
             Check.NotNull(item, nameof(item));
@@ -205,7 +207,7 @@ namespace Kros.KORM.CommandGenerator
                 if (command.Parameters.Contains(paramName))
                 {
                     DbParameter parameter = command.Parameters[paramName];
-                    var val = GetColumnValue(colInfo, item);
+                    object val = GetColumnValue(colInfo, item, commandType);
                     parameter.Value = val ?? System.DBNull.Value;
                 }
             }
@@ -265,14 +267,15 @@ namespace Kros.KORM.CommandGenerator
         }
 
         /// <inheritdoc/>
-        public object GetColumnValue(ColumnInfo columnInfo, T item)
+        public object GetColumnValue(ColumnInfo columnInfo, T item, DbCommandType commandType)
         {
-            if (columnInfo.ValueGenerator != null)
+            IValueGenerator valueGenerator = columnInfo.ValueGenerator;
+            if ((valueGenerator != null) && valueGenerator.SupportedCommandTypes.Contains(commandType))
             {
-                return columnInfo.ValueGenerator.GetValue();
+                return valueGenerator.GetValue();
             }
 
-            var value = columnInfo.PropertyInfo.GetValue(item, null);
+            object value = columnInfo.PropertyInfo.GetValue(item, null);
             IConverter converter = ConverterHelper.GetConverter(columnInfo, value?.GetType());
             if (converter != null)
             {

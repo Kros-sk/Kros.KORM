@@ -1,4 +1,5 @@
-﻿using Kros.KORM.Metadata;
+﻿using Kros.KORM.Data;
+using Kros.KORM.Metadata;
 using Kros.KORM.Query.Expressions;
 using System.Collections;
 using System.Collections.Generic;
@@ -54,9 +55,10 @@ namespace Kros.KORM.CommandGenerator
         /// </summary>
         /// <param name="command">Command which parameters are filled.</param>
         /// <param name="item">Item, from which command is filled.</param>
+        /// <param name="commandType">Type of database command.</param>
         /// <exception cref="System.ArgumentNullException">Either <paramref name="command" /> or <paramref name="item" />
         /// is <see langword="null"/>.</exception>
-        void FillCommand(DbCommand command, T item);
+        void FillCommand(DbCommand command, T item, DbCommandType commandType);
 
         /// <summary>
         /// Get columns for query.
@@ -68,9 +70,10 @@ namespace Kros.KORM.CommandGenerator
         /// </summary>
         /// <param name="columnInfo">The specific column.</param>
         /// <param name="item">The item whose value will be returned.</param>
+        /// <param name="commandType">Type of database command.</param>
         /// <returns>
         /// Value from the specific column.
         /// </returns>
-        object GetColumnValue(ColumnInfo columnInfo, T item);
+        object GetColumnValue(ColumnInfo columnInfo, T item, DbCommandType commandType);
     }
 }

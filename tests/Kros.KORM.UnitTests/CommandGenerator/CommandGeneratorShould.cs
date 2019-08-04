@@ -120,7 +120,7 @@ namespace Kros.KORM.UnitTests.CommandGenerator
 
             var generator = new CommandGenerator<Foo>(GetFooTableInfo(), provider, query);
             DbCommand insert = generator.GetInsertCommand();
-            generator.FillCommand(insert, item);
+            generator.FillCommand(insert, item, DbCommandType.Insert);
 
             insert.Parameters["@IdRow"].Value.Should().Be(336);
             insert.Parameters["@Salary"].Value.Should().Be((decimal)1500);
@@ -175,7 +175,7 @@ namespace Kros.KORM.UnitTests.CommandGenerator
             CommandGenerator<ConverterDto> commandGenerator = CreateCommandGenerator<ConverterDto>(tableInfo);
 
             var dto = new ConverterDto() { Id = 1, Name = null };
-            var convertedValue = commandGenerator.GetColumnValue(nameColumn, dto);
+            var convertedValue = commandGenerator.GetColumnValue(nameColumn, dto, DbCommandType.None);
 
             convertedValue.Should().Be("NULL");
         }
@@ -184,13 +184,16 @@ namespace Kros.KORM.UnitTests.CommandGenerator
         public void UseValueGenerator()
         {
             TableInfo tableInfo = CreateTableInfoFromDto<ConverterDto>();
-            tableInfo.Columns.Single(c => c.Name == nameof(ConverterDto.Id)).ValueGenerator = new AutoIncrementValueGenerator();
+
+            var x = new List<DbCommandType>() { DbCommandType.Insert };
+
+            tableInfo.Columns.Single(c => c.Name == nameof(ConverterDto.Id)).ValueGenerator = new AutoIncrementValueGenerator(x);
             ColumnInfo idColumn = tableInfo.Columns.Single(col => col.Name == nameof(ConverterDto.Id));
 
             CommandGenerator<ConverterDto> commandGenerator = CreateCommandGenerator<ConverterDto>(tableInfo);
 
             var dto = new ConverterDto() { Id = 1, Name = null };
-            var convertedValue = commandGenerator.GetColumnValue(idColumn, dto);
+            var convertedValue = commandGenerator.GetColumnValue(idColumn, dto, DbCommandType.None);
 
             convertedValue.Should().Be(AutoIncrementValueGenerator.GeneratedValue);
         }
@@ -421,7 +424,15 @@ namespace Kros.KORM.UnitTests.CommandGenerator
 
         private class AutoIncrementValueGenerator : IValueGenerator<int>
         {
+            public AutoIncrementValueGenerator(IEnumerable<DbCommandType> supportedCommandTypes)
+            {
+                SupportedCommandTypes = supportedCommandTypes;
+            }
+
             public const int GeneratedValue = 123;
+
+            public IEnumerable<DbCommandType> SupportedCommandTypes { get; }
+
             public int GetValue() => GeneratedValue;
             object IValueGenerator.GetValue() => GetValue();
         }
