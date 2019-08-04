@@ -329,6 +329,22 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
             }
         }
 
+        [Fact]
+        public async Task DeleteDataByConditionAsync()
+        {
+            using (var korm = CreateDatabase(CreateTable_TestTable, InsertDataScript))
+            {
+                var dbSet = korm.Query<Person>().AsDbSet();
+                dbSet.Delete(p=> p.Id == 1);
+
+                await dbSet.CommitChangesAsync();
+
+                korm.Query<Person>()
+                    .Should()
+                    .NotContain(p => p.Id == 1);
+            }
+        }
+
         private void DeleteDataCore()
         {
             using (var korm = CreateDatabase(CreateTable_TestTable, InsertDataScript))
@@ -340,7 +356,7 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
 
                 dbSet.CommitChanges();
 
-                korm.Query<Person>().Count().Should().Be(0);
+                korm.Query<Person>().Should().BeEmpty();
             }
         }
 

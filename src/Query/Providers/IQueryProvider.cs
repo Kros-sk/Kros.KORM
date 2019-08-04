@@ -2,6 +2,7 @@
 using Kros.Data.BulkActions;
 using Kros.KORM.Data;
 using Kros.KORM.Materializer;
+using Kros.KORM.Query.Sql;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -258,5 +259,7 @@ namespace Kros.KORM.Query
         /// <param name="batchSize">Size of inserting the batch.</param>
         /// <returns>The identifier generator.</returns>
         IIdGenerator CreateIdGenerator(string tableName, int batchSize);
+
+        ISqlExpressionVisitor GetExpressionVisitor();
     }
 }

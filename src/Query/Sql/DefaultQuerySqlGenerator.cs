@@ -70,6 +70,19 @@ namespace Kros.KORM.Query.Sql
             return new QueryInfo(SqlBuilder.ToString(), CreateQueryReader());
         }
 
+        /// <inheritdoc />
+        public WhereExpression GenerateWhereCondition(Expression whereExpression)
+        {
+            Check.NotNull(whereExpression, nameof(whereExpression));
+
+            LinqParameters = new Parameters();
+            LinqStringBuilder = new StringBuilder();
+
+            Visit(whereExpression);
+
+            return new WhereExpression(LinqStringBuilder.ToString(), LinqParameters.GetParams());
+        }
+
         /// <summary>
         /// List of ORDER BY parts for the query.
         /// </summary>

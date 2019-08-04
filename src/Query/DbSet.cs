@@ -3,6 +3,8 @@ using Kros.KORM.Data;
 using Kros.KORM.Exceptions;
 using Kros.KORM.Metadata;
 using Kros.KORM.Properties;
+using Kros.KORM.Query.Expressions;
+using Kros.KORM.Query.Sql;
 using Kros.Utils;
 using System;
 using System.Collections;
@@ -10,6 +12,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace Kros.KORM.Query
@@ -29,6 +32,7 @@ namespace Kros.KORM.Query
         private HashSet<T> _editedItems = new HashSet<T>();
         private HashSet<T> _deletedItems = new HashSet<T>();
         private HashSet<object> _deletedItemsIds = new HashSet<object>();
+        private List<WhereExpression> _deleteExpressions = new List<WhereExpression>();
         private readonly TableInfo _tableInfo;
         private Lazy<Type> _primaryKeyPropertyType;
 
@@ -43,7 +47,11 @@ namespace Kros.KORM.Query
         /// <param name="provider">Provider to executing commands.</param>
         /// <param name="query">Query.</param>
         /// <param name="tableInfo">Information about table from database.</param>
-        public DbSet(ICommandGenerator<T> commandGenerator, IQueryProvider provider, IQueryBase<T> query, TableInfo tableInfo)
+        public DbSet(
+            ICommandGenerator<T> commandGenerator,
+            IQueryProvider provider,
+            IQueryBase<T> query,
+            TableInfo tableInfo)
         {
             _commandGenerator = Check.NotNull(commandGenerator, nameof(commandGenerator));
             _provider = Check.NotNull(provider, nameof(provider));
@@ -113,6 +121,27 @@ namespace Kros.KORM.Query
             _deletedItemsIds.Add(id);
         }
 
+        /// <inheritdoc />
+        public void Delete(Expression<Func<T, bool>> condition)
+        {
+            Check.NotNull(condition, nameof(condition));
+
+            ISqlExpressionVisitor generator = _provider.GetExpressionVisitor();
+            WhereExpression where = generator.GenerateWhereCondition(condition.Body);
+
+            _deleteExpressions.Add(where);
+        }
+
+        /// <inheritdoc />
+        public void Delete(RawSqlString whereCondition, params object[] parameters)
+        {
+            Check.NotNull(whereCondition, nameof(whereCondition));
+
+            var where = new WhereExpression(whereCondition, parameters);
+
+            _deleteExpressions.Add(where);
+        }
+
         private Type GetPrimaryKeyType()
         {
             if (_tableInfo.PrimaryKey.Count() == 0)
@@ -177,6 +206,7 @@ namespace Kros.KORM.Query
             _editedItems.Clear();
             _deletedItems.Clear();
             _deletedItemsIds.Clear();
+            _deleteExpressions.Clear();
         }
 
         /// <inheritdoc />
@@ -286,6 +316,7 @@ namespace Kros.KORM.Query
                 await CommitChangesEditedItemsAsync(_editedItems, useAsync);
                 await CommitChangesDeletedItemsAsync(_deletedItems, useAsync);
                 await CommitChangesDeletedItemsByIdAsync(_deletedItemsIds, useAsync);
+                await CommitChangesDeletedByConditions(_deleteExpressions, useAsync);
 
                 Clear();
             });
@@ -451,6 +482,21 @@ namespace Kros.KORM.Query
                 }
             }
         }
+
+        private async Task CommitChangesDeletedByConditions(List<WhereExpression> expressions, bool useAsync)
+        {
+            if (expressions?.Count > 0)
+            {
+                foreach (WhereExpression expression in expressions)
+                {
+                    using (DbCommand command = _commandGenerator.GetDeleteCommand(expression))
+                    {
+                        await ExecuteNonQueryAsync(command, useAsync);
+                    }
+                }
+            }
+        }
+
 
         private void CheckItemInCollection(T entity, HashSet<T> collection, string message, string collectionName)
         {

@@ -295,6 +295,11 @@ namespace Kros.KORM.UnitTests.Query.Sql
                 throw new NotImplementedException();
             }
 
+            public ISqlExpressionVisitor GetExpressionVisitor()
+            {
+                throw new NotImplementedException();
+            }
+
             public void SetParameterDbType(DbParameter parameter, string tableName, string columnName)
             {
                 throw new NotImplementedException();

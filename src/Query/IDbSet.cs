@@ -1,6 +1,8 @@
-﻿using System;
+﻿using Kros.KORM.Query.Sql;
+using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace Kros.KORM.Query
@@ -64,6 +66,10 @@ namespace Kros.KORM.Query
         /// When type of <paramref name="id"/> is different from primary key property type.
         /// </exception>
         void Delete(object id);
+
+        void Delete(Expression<Func<T, bool>> condition);
+
+        void Delete(RawSqlString whereCondition, params object[] parameters);
 
         /// <summary>
         /// Rolls back all pending changes.

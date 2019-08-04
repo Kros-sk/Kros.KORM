@@ -3,6 +3,7 @@ using Kros.KORM.Metadata;
 using Kros.KORM.Properties;
 using Kros.KORM.Query;
 using Kros.KORM.Query.Expressions;
+using Kros.KORM.Query.Sql;
 using Kros.Utils;
 using System;
 using System.Collections;
@@ -127,6 +128,17 @@ namespace Kros.KORM.CommandGenerator
             DbCommand cmd = _provider.GetCommandForCurrentTransaction();
             AddParametersToCommand(cmd, columns);
             cmd.CommandText = GetDeleteCommandText(columns);
+            return cmd;
+        }
+
+        /// <inheritdoc />
+        public DbCommand GetDeleteCommand(WhereExpression whereExpression)
+        {
+            DbCommand cmd = _provider.GetCommandForCurrentTransaction();
+
+            cmd.CommandText = string.Format(DELETE_QUERY_BASE, _tableInfo.Name, whereExpression.Sql);
+            ParameterExtractingExpressionVisitor.ExtractParametersToCommand(cmd, whereExpression);
+
             return cmd;
         }
 

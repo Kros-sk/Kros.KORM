@@ -15,6 +15,8 @@ namespace Kros.KORM.Query.Sql
         /// <returns>SQL select command text.</returns>
         QueryInfo GenerateSql(Expression expression);
 
+        WhereExpression GenerateWhereCondition(Expression whereExpression);
+
         /// <summary>
         /// Visits the SQL.
         /// </summary>

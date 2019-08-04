@@ -6,6 +6,7 @@ using Kros.KORM.Data;
 using Kros.KORM.Exceptions;
 using Kros.KORM.Metadata;
 using Kros.KORM.Query;
+using Kros.KORM.Query.Sql;
 using NSubstitute;
 using System;
 using System.Collections.Generic;
@@ -445,6 +446,11 @@ namespace Kros.KORM.UnitTests
             }
 
             public Task<object> ExecuteScalarCommandAsync(DbCommand command)
+            {
+                throw new NotImplementedException();
+            }
+
+            public ISqlExpressionVisitor GetExpressionVisitor()
             {
                 throw new NotImplementedException();
             }

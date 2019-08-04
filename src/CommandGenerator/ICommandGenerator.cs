@@ -1,4 +1,5 @@
 ﻿using Kros.KORM.Metadata;
+using Kros.KORM.Query.Expressions;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data.Common;
@@ -40,6 +41,8 @@ namespace Kros.KORM.CommandGenerator
         /// <exception cref="Exceptions.CompositePrimaryKeyException">Table has composite primary key.</exception>
         /// <returns>Delete command collection.</returns>
         IEnumerable<DbCommand> GetDeleteCommands(IEnumerable ids);
+
+        DbCommand GetDeleteCommand(WhereExpression whereExpression);
 
         /// <summary>
         /// Fills command's parameters with values from <paramref name="item" />.
