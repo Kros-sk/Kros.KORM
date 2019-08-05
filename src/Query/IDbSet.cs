@@ -53,7 +53,8 @@ namespace Kros.KORM.Query
         void Delete(IEnumerable<T> entities);
 
         /// <summary>
-        /// Marks the item id as Deleted such the item with this id will be deleted from the database when CommitChanges is called.
+        /// Marks the item id as Deleted such the item with
+        /// this id will be deleted from the database when <see cref="CommitChanges"/> is called.
         /// </summary>
         /// <param name="id">The item id to delete.</param>
         /// <exception cref="Exceptions.MissingPrimaryKeyException">
@@ -67,8 +68,19 @@ namespace Kros.KORM.Query
         /// </exception>
         void Delete(object id);
 
+        /// <summary>
+        /// Delete items by condition.
+        /// These items will be deleted from the database when <see cref="CommitChanges"/> is called.
+        /// </summary>
+        /// <param name="condition">Delete condition.</param>
         void Delete(Expression<Func<T, bool>> condition);
 
+        /// <summary>
+        /// Delete items by condition.
+        /// These items will be deleted from the database when <see cref="CommitChanges"/> is called.
+        /// </summary>
+        /// <param name="whereCondition">Delete condition.</param>
+        /// <param name="parameters">Condition parameters.</param>
         void Delete(RawSqlString whereCondition, params object[] parameters);
 
         /// <summary>

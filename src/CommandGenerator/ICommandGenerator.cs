@@ -42,6 +42,11 @@ namespace Kros.KORM.CommandGenerator
         /// <returns>Delete command collection.</returns>
         IEnumerable<DbCommand> GetDeleteCommands(IEnumerable ids);
 
+        /// <summary>
+        /// Get delete command with specific condition.
+        /// </summary>
+        /// <param name="whereExpression">Where condition for DELETE statement.</param>
+        /// <returns>Delete command.</returns>
         DbCommand GetDeleteCommand(WhereExpression whereExpression);
 
         /// <summary>

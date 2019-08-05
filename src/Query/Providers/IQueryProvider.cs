@@ -260,6 +260,10 @@ namespace Kros.KORM.Query
         /// <returns>The identifier generator.</returns>
         IIdGenerator CreateIdGenerator(string tableName, int batchSize);
 
+        /// <summary>
+        /// Get expression visitor for generating sql.
+        /// </summary>
+        /// <returns><see cref="ISqlExpressionVisitor"/></returns>
         ISqlExpressionVisitor GetExpressionVisitor();
     }
 }
