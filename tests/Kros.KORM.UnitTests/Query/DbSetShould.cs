@@ -282,7 +282,13 @@ namespace Kros.KORM.UnitTests
                                          Substitute.For<IQuery<Person>>(),
                                          tableInfo);
 
-            Action action = () => dbSet.Delete(ids);
+            Action action = () =>
+            {
+                foreach (object id in ids)
+                {
+                    dbSet.Delete(id);
+                }
+            };
 
             if (throwException)
             {
@@ -300,7 +306,7 @@ namespace Kros.KORM.UnitTests
         {
             yield return new object[] { new List<object>() { "1", 1 }, true };
             yield return new object[] { new List<object>() { 1, 2, 3, true }, true };
-            yield return new object[] { new List<object>() { 1, 2, 3, 4 }, false};
+            yield return new object[] { new List<object>() { 1, 2, 3, 4 }, false };
         }
 
         #endregion

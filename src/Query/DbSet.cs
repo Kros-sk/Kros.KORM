@@ -133,11 +133,11 @@ namespace Kros.KORM.Query
         }
 
         /// <inheritdoc />
-        public void Delete(RawSqlString whereCondition, params object[] parameters)
+        public void Delete(RawSqlString condition, params object[] parameters)
         {
-            Check.NotNull(whereCondition, nameof(whereCondition));
+            Check.NotNull(condition, nameof(condition));
 
-            var where = new WhereExpression(whereCondition, parameters);
+            var where = new WhereExpression(condition, parameters);
 
             _deleteExpressions.Add(where);
         }
@@ -496,7 +496,6 @@ namespace Kros.KORM.Query
                 }
             }
         }
-
 
         private void CheckItemInCollection(T entity, HashSet<T> collection, string message, string collectionName)
         {

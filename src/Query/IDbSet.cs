@@ -79,9 +79,9 @@ namespace Kros.KORM.Query
         /// Delete items by condition.
         /// These items will be deleted from the database when <see cref="CommitChanges"/> is called.
         /// </summary>
-        /// <param name="whereCondition">Delete condition.</param>
+        /// <param name="condition">Delete condition.</param>
         /// <param name="parameters">Condition parameters.</param>
-        void Delete(RawSqlString whereCondition, params object[] parameters);
+        void Delete(RawSqlString condition, params object[] parameters);
 
         /// <summary>
         /// Rolls back all pending changes.
