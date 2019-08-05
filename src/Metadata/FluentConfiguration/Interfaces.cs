@@ -164,11 +164,25 @@ namespace Kros.KORM.Metadata
         IEntityTypePropertyBuilder<TEntity> IgnoreConverter();
 
         /// <summary>
-        /// Configures <paramref name="generator"/> for the property.
+        /// Configures <paramref name="generator"/> for the property used when an entity is added to the database.
         /// </summary>
         /// <param name="generator">Value generator to be used for current property.</param>
         /// <returns>Entity builder for configuring another properties.</returns>
-        IEntityTypePropertyBuilder<TEntity> UseValueGenerator(IValueGenerator generator);
+        IEntityTypePropertyBuilder<TEntity> UseValueGeneratorOnInsert(IValueGenerator generator);
+
+        /// <summary>
+        /// Configures <paramref name="generator"/> for the property used when an entity is updated to the database.
+        /// </summary>
+        /// <param name="generator">Value generator to be used for current property.</param>
+        /// <returns>Entity builder for configuring another properties.</returns>
+        IEntityTypePropertyBuilder<TEntity> UseValueGeneratorOnUpdate(IValueGenerator generator);
+
+        /// <summary>
+        /// Configures <paramref name="generator"/> for the property used when an entity is added or updated to the database.
+        /// </summary>
+        /// <param name="generator">Value generator to be used for current property.</param>
+        /// <returns>Entity builder for configuring another properties.</returns>
+        IEntityTypePropertyBuilder<TEntity> UseValueGeneratorOnInsertOrUpdate(IValueGenerator generator);
 
         /// <summary>
         /// Configures injector delegate for injecting values to property.

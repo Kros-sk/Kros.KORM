@@ -32,6 +32,11 @@ namespace Kros.KORM.Metadata
         public IConverter Converter { get; set; }
 
         /// <summary>
+        /// Gets or sets when value is generated for this column.
+        /// </summary>
+        public ValueGenerated ValueGenerated { get; set; }
+
+        /// <summary>
         /// Gets or sets value generator for this column.
         /// </summary>
         public IValueGenerator ValueGenerator { get; set; }

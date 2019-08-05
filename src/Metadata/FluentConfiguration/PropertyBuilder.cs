@@ -14,6 +14,7 @@ namespace Kros.KORM.Metadata
         private string _columnName;
         private IConverter _converter;
         private bool _ignoreConverter = false;
+        private ValueGenerated _valueGenerated;
         private IValueGenerator _valueGenerator;
         private Func<object> _injector;
 
@@ -28,6 +29,7 @@ namespace Kros.KORM.Metadata
         internal string ColumnName => _columnName;
         internal IConverter Converter => _converter;
         internal bool IgnoreConverter => _ignoreConverter;
+        internal ValueGenerated ValueGenerated => _valueGenerated;
         internal IValueGenerator ValueGenerator => _valueGenerator;
         internal Func<object> Injector => _injector;
 
@@ -62,10 +64,28 @@ namespace Kros.KORM.Metadata
             return _entityTypeBuilder;
         }
 
-        IEntityTypePropertyBuilder<TEntity> IMappedPropertyBuilder<TEntity>.UseValueGenerator(IValueGenerator generator)
+        IEntityTypePropertyBuilder<TEntity> IMappedPropertyBuilder<TEntity>.UseValueGeneratorOnInsert(IValueGenerator generator)
         {
-            _valueGenerator = generator;
+            SetValueGeneratorAndValueGenerated(generator, ValueGenerated.OnInsert);
             return _entityTypeBuilder;
+        }
+
+        IEntityTypePropertyBuilder<TEntity> IMappedPropertyBuilder<TEntity>.UseValueGeneratorOnUpdate(IValueGenerator generator)
+        {
+            SetValueGeneratorAndValueGenerated(generator, ValueGenerated.OnUpdate);
+            return _entityTypeBuilder;
+        }
+
+        IEntityTypePropertyBuilder<TEntity> IMappedPropertyBuilder<TEntity>.UseValueGeneratorOnInsertOrUpdate(IValueGenerator generator)
+        {
+            SetValueGeneratorAndValueGenerated(generator, ValueGenerated.OnInsertOrUpdate);
+            return _entityTypeBuilder;
+        }
+
+        private void SetValueGeneratorAndValueGenerated(IValueGenerator generator, ValueGenerated valueGenerated)
+        {
+            _valueGenerated = valueGenerated;
+            _valueGenerator = generator;
         }
 
         IEntityTypePropertyBuilder<TEntity> IMappedPropertyBuilder<TEntity>.InjectValue(Func<object> injector)

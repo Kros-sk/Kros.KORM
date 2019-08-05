@@ -12,10 +12,5 @@ namespace Kros.KORM.Data
         /// </summary>
         /// <param name="database"></param>
         object GetValue(IDatabase database);
-
-        /// <summary>
-        /// Supported command types.
-        /// </summary>
-        IEnumerable<DbCommandType> SupportedCommandTypes { get; }
     }
 }

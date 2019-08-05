@@ -45,7 +45,7 @@ namespace Kros.KORM.Data
 
         public virtual object GetValue(int i)
         {
-            return _generator.GetColumnValue(_columns[i], DataEnumerator.Current, DbCommandType.None);
+            return _generator.GetColumnValue(_columns[i], DataEnumerator.Current, ValueGenerated.Never);
         }
 
         public string GetString(int i) => (string)GetValue(i);

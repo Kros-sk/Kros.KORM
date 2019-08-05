@@ -103,7 +103,8 @@ namespace Kros.KORM.Metadata
                     }
                     if (propertyBuilder.ValueGenerator != null)
                     {
-                        modelMapper.SetValueGenerator<TEntity>(propertyBuilder.PropertyName, propertyBuilder.ValueGenerator);
+                        modelMapper.SetValueGenerator<TEntity>(
+                            propertyBuilder.PropertyName, propertyBuilder.ValueGenerator, propertyBuilder.ValueGenerated);
                     }
                     if (propertyBuilder.Injector != null)
                     {

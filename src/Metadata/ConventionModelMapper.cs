@@ -252,6 +252,7 @@ namespace Kros.KORM.Metadata
             {
                 if (entity.ValueGenerators.TryGetValue(columnInfo.PropertyInfo.Name, out IValueGenerator valueGenerator))
                 {
+                    columnInfo.ValueGenerated = entity.ValueGenerated;
                     columnInfo.ValueGenerator = valueGenerator;
                 }
             }
@@ -412,7 +413,7 @@ namespace Kros.KORM.Metadata
             entity.PropertyConverters.Add(propertyType, converter);
         }
 
-        void IModelMapperInternal.SetValueGenerator<TEntity>(string propertyName, IValueGenerator valueGenerator)
+        void IModelMapperInternal.SetValueGenerator<TEntity>(string propertyName, IValueGenerator valueGenerator, ValueGenerated valueGenerated)
         {
             Check.NotNullOrWhiteSpace(propertyName, nameof(propertyName));
             Check.NotNull(valueGenerator, nameof(valueGenerator));
@@ -422,6 +423,7 @@ namespace Kros.KORM.Metadata
                 ThrowHelper.ValueGeneratorAlreadyConfigured<TEntity>(propertyName, valueGenerator, currentValueGenerator);
             }
             entity.ValueGenerators.Add(propertyName, valueGenerator);
+            entity.ValueGenerated = valueGenerated;
         }
 
         void IModelMapperInternal.SetInjector<TEntity>(IInjector injector) => GetEntity<TEntity>().Injector = injector;
