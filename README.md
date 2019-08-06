@@ -225,8 +225,7 @@ Database.DefaultModelMapper.SetColumnName<Person, string>(p => p.Name, "FirstNam
 
 ### Configure model mapping by fluent api
 
-Configuration by data annotation attributes is OK in many scenarios. However, there are scenarios where we want to have a model
-definition and mapping it to a database separate.
+Configuration by data annotation attributes is OK in many scenarios. However, there are scenarios where we want to have a model definition and mapping it to a database separate.
 For example, if you want to have entities in domain layer and mapping in infrastructure layer.
 
 For these scenarios you can derive database configuration from `DatabaseConfigurationBase`.
@@ -255,7 +254,8 @@ public class DatabaseConfiguration : DatabaseConfigurationBase
             .Property(entity => entity.FirstName).HasColumnName("Name")
             .Property(entity => entity.FullName).NoMap()
             .Property(entity => entity.Addresses).UseConverter<AddressConverter>()
-            .Property(entity => entity.EmailService).InjectValue(() => new EmailService());
+            .Property(entity => entity.EmailService).InjectValue(() => new EmailService())
+            .Property(entity => entity.IsGenerated).UseValueGeneratorOnInsert(new RandomGenerator());
     }
 }
 ```
@@ -313,6 +313,46 @@ And now you can set this converter for your property using attribute or [fluent 
 [Converter(typeof(AddressesConverter))]
 public List<string> Addresses { get; set; }
 ```
+
+### Value generators
+
+Value generators are used to generate column values. KORM contains some predefined generators but you can create your own.
+
+For this purpose exists `IValueGenerator` interface which your class must implement.
+
+```c#
+public interface IValueGenerator
+{
+	object GetValue();
+}
+```
+
+For more complicated scenarios you can use `IValueGeneratorEx` which can provide `Database` object.
+
+```csharp
+public interface IValueGeneratorEx
+{    
+	object GetValue(IDatabase database);
+}
+```
+
+Here is an example of custom value generator:
+
+```c#
+private class AutoIncrementValueGenerator : IValueGenerator<int>
+{
+	public int GetValue() => 123;
+
+    object IValueGenerator.GetValue() => GetValue();
+}
+```
+
+For using value generators you can use these three methods in `DatabaseConfiguration`:
+
+- `.UseValueGeneratorOnInsert(new YourGenerator())` - values will be generated on insert to the database.
+
+- `.UseValueGeneratorOnUpdate(new YourGenerator())` - values will be generated on update to the database.
+- `.UseValueGeneratorOnInsertOrUpdate(new YourGenerator())`  - values will be generated on insert and update to the database.
 
 ### OnAfterMaterialize
 
