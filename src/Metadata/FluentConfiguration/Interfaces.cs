@@ -164,6 +164,16 @@ namespace Kros.KORM.Metadata
         IEntityTypePropertyBuilder<TEntity> IgnoreConverter();
 
         /// <summary>
+        /// Configures <typeparamref name="TValueGenerator"/> for the property used when an entity is added to the database.
+        /// <typeparamref name="TValueGenerator"/> is used on insert an entity to the database.
+        /// The instance of the value generator is created.
+        /// </summary>
+        /// <typeparam name="TValueGenerator">Type of value generator to be used for current property.</typeparam>
+        /// <returns>Entity builder for configuring another properties.</returns>
+        IEntityTypePropertyBuilder<TEntity> UseValueGeneratorOnInsert<TValueGenerator>()
+            where TValueGenerator : IValueGenerator, new();
+
+        /// <summary>
         /// Configures <paramref name="generator"/> for the property used when an entity is added to the database.
         /// </summary>
         /// <param name="generator">Value generator to be used for current property.</param>
@@ -171,11 +181,31 @@ namespace Kros.KORM.Metadata
         IEntityTypePropertyBuilder<TEntity> UseValueGeneratorOnInsert(IValueGenerator generator);
 
         /// <summary>
+        /// Configures <typeparamref name="TValueGenerator"/> for the property used when an entity is added to the database.
+        /// <typeparamref name="TValueGenerator"/> is used on update an entity to the database.
+        /// The instance of the value generator is created.
+        /// </summary>
+        /// <typeparam name="TValueGenerator">Type of value generator to be used for current property.</typeparam>
+        /// <returns>Entity builder for configuring another properties.</returns>
+        IEntityTypePropertyBuilder<TEntity> UseValueGeneratorOnUpdate<TValueGenerator>()
+            where TValueGenerator : IValueGenerator, new();
+
+        /// <summary>
         /// Configures <paramref name="generator"/> for the property used when an entity is updated to the database.
         /// </summary>
         /// <param name="generator">Value generator to be used for current property.</param>
         /// <returns>Entity builder for configuring another properties.</returns>
         IEntityTypePropertyBuilder<TEntity> UseValueGeneratorOnUpdate(IValueGenerator generator);
+
+        /// <summary>
+        /// Configures <typeparamref name="TValueGenerator"/> for the property used when an entity is added to the database.
+        /// <typeparamref name="TValueGenerator"/> is used on insert and update an entity to the database.
+        /// The instance of the value generator is created.
+        /// </summary>
+        /// <typeparam name="TValueGenerator">Type of value generator to be used for current property.</typeparam>
+        /// <returns>Entity builder for configuring another properties.</returns>
+        IEntityTypePropertyBuilder<TEntity> UseValueGeneratorOnInsertOrUpdate<TValueGenerator>()
+            where TValueGenerator : IValueGenerator, new();
 
         /// <summary>
         /// Configures <paramref name="generator"/> for the property used when an entity is added or updated to the database.

@@ -27,7 +27,7 @@ namespace Kros.KORM.UnitTests.Metadata
                 .Property(p => p.NoMapped).NoMap()
                 .Property(p => p.FirstName).HasColumnName("Name")
                 .Property(p => p.DateTime).InjectValue(() => DateTime.Now)
-                .Property(p => p.GeneratedValue).UseValueGeneratorOnInsert(new AutoIncrementValueGenerator());
+                .Property(p => p.GeneratedValue).UseValueGeneratorOnInsert<AutoIncrementValueGenerator>();
 
             modelBuilder.Build(modelMapper);
 

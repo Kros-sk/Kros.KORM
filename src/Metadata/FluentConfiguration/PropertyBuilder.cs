@@ -64,17 +64,26 @@ namespace Kros.KORM.Metadata
             return _entityTypeBuilder;
         }
 
+        IEntityTypePropertyBuilder<TEntity> IMappedPropertyBuilder<TEntity>.UseValueGeneratorOnInsert<TValueGenerator>()
+            => ((IMappedPropertyBuilder<TEntity>)this).UseValueGeneratorOnInsert(new TValueGenerator());
+
         IEntityTypePropertyBuilder<TEntity> IMappedPropertyBuilder<TEntity>.UseValueGeneratorOnInsert(IValueGenerator generator)
         {
             SetValueGeneratorAndValueGenerated(generator, ValueGenerated.OnInsert);
             return _entityTypeBuilder;
         }
 
+        IEntityTypePropertyBuilder<TEntity> IMappedPropertyBuilder<TEntity>.UseValueGeneratorOnUpdate<TValueGenerator>()
+            => ((IMappedPropertyBuilder<TEntity>)this).UseValueGeneratorOnUpdate(new TValueGenerator());
+
         IEntityTypePropertyBuilder<TEntity> IMappedPropertyBuilder<TEntity>.UseValueGeneratorOnUpdate(IValueGenerator generator)
         {
             SetValueGeneratorAndValueGenerated(generator, ValueGenerated.OnUpdate);
             return _entityTypeBuilder;
         }
+
+        IEntityTypePropertyBuilder<TEntity> IMappedPropertyBuilder<TEntity>.UseValueGeneratorOnInsertOrUpdate<TValueGenerator>()
+            => ((IMappedPropertyBuilder<TEntity>)this).UseValueGeneratorOnInsertOrUpdate(new TValueGenerator());
 
         IEntityTypePropertyBuilder<TEntity> IMappedPropertyBuilder<TEntity>.UseValueGeneratorOnInsertOrUpdate(IValueGenerator generator)
         {

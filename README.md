@@ -255,7 +255,7 @@ public class DatabaseConfiguration : DatabaseConfigurationBase
             .Property(entity => entity.FullName).NoMap()
             .Property(entity => entity.Addresses).UseConverter<AddressConverter>()
             .Property(entity => entity.EmailService).InjectValue(() => new EmailService())
-            .Property(entity => entity.IsGenerated).UseValueGeneratorOnInsert(new RandomGenerator());
+            .Property(entity => entity.IsGenerated).UseValueGeneratorOnInsert<RandomGenerator>();
     }
 }
 ```
@@ -349,10 +349,10 @@ private class AutoIncrementValueGenerator : IValueGenerator<int>
 
 For using value generators you can use these three methods in `DatabaseConfiguration`:
 
-- `.UseValueGeneratorOnInsert(new YourGenerator())` - values will be generated on insert to the database.
+- `.UseValueGeneratorOnInsert<YourGenerator>()` - values will be generated on insert to the database.
 
-- `.UseValueGeneratorOnUpdate(new YourGenerator())` - values will be generated on update to the database.
-- `.UseValueGeneratorOnInsertOrUpdate(new YourGenerator())`  - values will be generated on insert and update to the database.
+- `.UseValueGeneratorOnUpdate<YourGenerator>()` - values will be generated on update to the database.
+- `.UseValueGeneratorOnInsertOrUpdate<YourGenerator>()`  - values will be generated on insert and update to the database.
 
 ### OnAfterMaterialize
 
