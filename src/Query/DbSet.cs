@@ -5,6 +5,7 @@ using Kros.KORM.Metadata;
 using Kros.KORM.Properties;
 using Kros.KORM.Query.Expressions;
 using Kros.KORM.Query.Sql;
+using Kros.KORM.ValueGeneration;
 using Kros.Utils;
 using System;
 using System.Collections;

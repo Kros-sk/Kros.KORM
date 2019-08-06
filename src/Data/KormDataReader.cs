@@ -1,6 +1,7 @@
 ﻿using Kros.Data.BulkActions;
 using Kros.KORM.CommandGenerator;
 using Kros.KORM.Metadata;
+using Kros.KORM.ValueGeneration;
 using Kros.Utils;
 using System.Collections.Generic;
 using System.Linq;

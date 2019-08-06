@@ -1,11 +1,6 @@
 ﻿using Kros.KORM.Converter;
-using Kros.KORM.Data;
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
+using Kros.KORM.ValueGeneration;
 using System.Reflection;
-using System.Text;
 
 namespace Kros.KORM.Metadata
 {
