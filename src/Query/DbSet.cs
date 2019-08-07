@@ -109,13 +109,18 @@ namespace Kros.KORM.Query
         /// <inheritdoc />
         public void Delete(object id)
         {
+            Check.NotNull(id, nameof(id));
             if (_deletedItemsIds.Contains(id))
             {
                 throw new AlreadyInCollectionException(string.Format(Resources.ExistingItemIdCannotBeDeleted, id));
             }
             if (_primaryKeyPropertyType.Value != id.GetType())
             {
-                throw new ArgumentException(string.Format(Resources.InvalidIdParameterType, _primaryKeyPropertyType.Value.Name));
+                throw new ArgumentException(
+                    string.Format(
+                        Resources.InvalidPrimaryKeyValueType,
+                        _primaryKeyPropertyType.Value.FullName,
+                        id.GetType().FullName));
             }
 
             _deletedItemsIds.Add(id);
@@ -144,18 +149,8 @@ namespace Kros.KORM.Query
 
         private Type GetPrimaryKeyType()
         {
-            if (_tableInfo.PrimaryKey.Count() == 0)
-            {
-                throw new Exceptions.MissingPrimaryKeyException(
-                    string.Format(Resources.MethodNotSupportedForCompositePrimaryKey, nameof(Delete)), _tableInfo.Name);
-            }
-
-            if (_tableInfo.PrimaryKey.Count() > 1)
-            {
-                throw new CompositePrimaryKeyException(
-                    string.Format(Resources.MethodNotSupportedForCompositePrimaryKey, nameof(Delete)),
-                    _tableInfo.Name);
-            }
+            ThrowHelper.CheckAndThrowMethodNotSupportedWhenNoPrimaryKey(_tableInfo, nameof(Delete));
+            ThrowHelper.CheckAndThrowMethodNotSupportedForCompositePrimaryKey(_tableInfo, nameof(Delete));
 
             return _tableInfo.PrimaryKey.First().PropertyInfo.PropertyType;
         }
@@ -316,7 +311,7 @@ namespace Kros.KORM.Query
                 await CommitChangesEditedItemsAsync(_editedItems, useAsync);
                 await CommitChangesDeletedItemsAsync(_deletedItems, useAsync);
                 await CommitChangesDeletedItemsByIdAsync(_deletedItemsIds, useAsync);
-                await CommitChangesDeletedByConditions(_deleteExpressions, useAsync);
+                await CommitChangesDeletedByConditionsAsync(_deleteExpressions, useAsync);
 
                 Clear();
             });
@@ -436,7 +431,7 @@ namespace Kros.KORM.Query
 
         private async Task CommitChangesEditedItemsAsync(HashSet<T> items, bool useAsync)
         {
-            if (items?.Count > 0)
+            if (items.Count > 0)
             {
                 using (DbCommand command = _commandGenerator.GetUpdateCommand())
                 {
@@ -452,7 +447,7 @@ namespace Kros.KORM.Query
 
         private async Task CommitChangesDeletedItemsAsync(HashSet<T> items, bool useAsync)
         {
-            if (items?.Count > 0)
+            if (items.Count > 0)
             {
                 using (DbCommand command = _commandGenerator.GetDeleteCommand())
                 {
@@ -467,7 +462,7 @@ namespace Kros.KORM.Query
 
         private async Task CommitChangesDeletedItemsByIdAsync(HashSet<object> ids, bool useAsync)
         {
-            if (ids?.Count > 0)
+            if (ids.Count > 0)
             {
                 foreach (DbCommand command in _commandGenerator.GetDeleteCommands(ids))
                 {
@@ -483,9 +478,9 @@ namespace Kros.KORM.Query
             }
         }
 
-        private async Task CommitChangesDeletedByConditions(List<WhereExpression> expressions, bool useAsync)
+        private async Task CommitChangesDeletedByConditionsAsync(List<WhereExpression> expressions, bool useAsync)
         {
-            if (expressions?.Count > 0)
+            if (expressions.Count > 0)
             {
                 foreach (WhereExpression expression in expressions)
                 {

@@ -58,10 +58,10 @@ namespace Kros.KORM.Query
         /// </summary>
         /// <param name="id">The item id to delete.</param>
         /// <exception cref="Exceptions.MissingPrimaryKeyException">
-        /// Delete method doesn't supported when entity doesn't have primary key.
+        /// Delete method is not supported when entity doesn't have primary key.
         /// </exception>
         /// <exception cref="Exceptions.CompositePrimaryKeyException">
-        /// Delete method doesn't supported when entity has composite primary key.
+        /// Delete method is not supported when entity has composite primary key.
         /// </exception>
         /// <exception cref="ArgumentException">
         /// When type of <paramref name="id"/> is different from primary key property type.

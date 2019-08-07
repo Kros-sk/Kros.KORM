@@ -105,7 +105,7 @@ namespace Kros.KORM.CommandGenerator
         /// <returns>Update command.</returns>
         public DbCommand GetUpdateCommand()
         {
-            CheckPrimaryKeyExist(string.Format(Resources.MethodNotSupportedWhenNoPrimaryKey, nameof(GetUpdateCommand)));
+            ThrowHelper.CheckAndThrowMethodNotSupportedWhenNoPrimaryKey(_tableInfo);
 
             IEnumerable<ColumnInfo> columns = GetQueryColumns();
             DbCommand cmd = _provider.GetCommandForCurrentTransaction();
@@ -122,7 +122,7 @@ namespace Kros.KORM.CommandGenerator
         /// <returns>Delete command.</returns>
         public DbCommand GetDeleteCommand()
         {
-            CheckPrimaryKeyExist(string.Format(Resources.MethodNotSupportedWhenNoPrimaryKey, nameof(GetDeleteCommand)));
+            ThrowHelper.CheckAndThrowMethodNotSupportedWhenNoPrimaryKey(_tableInfo);
 
             IEnumerable<ColumnInfo> columns = _tableInfo.PrimaryKey;
             DbCommand cmd = _provider.GetCommandForCurrentTransaction();
@@ -145,14 +145,8 @@ namespace Kros.KORM.CommandGenerator
         /// <inheritdoc />
         public IEnumerable<DbCommand> GetDeleteCommands(IEnumerable ids)
         {
-            CheckPrimaryKeyExist(string.Format(Resources.MethodNotSupportedWhenNoPrimaryKey, nameof(GetDeleteCommands)));
-
-            if (_tableInfo.PrimaryKey.Count() > 1)
-            {
-                throw new Exceptions.CompositePrimaryKeyException(
-                    string.Format(Resources.MethodNotSupportedForCompositePrimaryKey, nameof(GetDeleteCommands)),
-                    _tableInfo.Name);
-            }
+            ThrowHelper.CheckAndThrowMethodNotSupportedWhenNoPrimaryKey(_tableInfo);
+            ThrowHelper.CheckAndThrowMethodNotSupportedForCompositePrimaryKey(_tableInfo);
 
             var retVal = new List<DbCommand>();
             ColumnInfo colInfo = _tableInfo.PrimaryKey.First();
@@ -214,14 +208,6 @@ namespace Kros.KORM.CommandGenerator
                     var val = GetColumnValue(colInfo, item);
                     parameter.Value = val ?? System.DBNull.Value;
                 }
-            }
-        }
-
-        private void CheckPrimaryKeyExist(string message)
-        {
-            if (_tableInfo.PrimaryKey.Count() == 0)
-            {
-                throw new Exceptions.MissingPrimaryKeyException(message, _tableInfo.Name);
             }
         }
 

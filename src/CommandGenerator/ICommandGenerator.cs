@@ -37,7 +37,7 @@ namespace Kros.KORM.CommandGenerator
         /// Gets the automatically generated DbCommands object required to perform deletions on the database.
         /// </summary>
         /// <param name="ids">Items ids to delete.</param>
-        /// <exception cref="Exceptions.MissingPrimaryKeyException">GetDeleteCommands doesn't supported when entity doesn't have primary key.</exception>
+        /// <exception cref="Exceptions.MissingPrimaryKeyException"><c>GetDeleteCommands</c> is not supported when entity doesn't have primary key.</exception>
         /// <exception cref="Exceptions.CompositePrimaryKeyException">Table has composite primary key.</exception>
         /// <returns>Delete command collection.</returns>
         IEnumerable<DbCommand> GetDeleteCommands(IEnumerable ids);

@@ -292,18 +292,6 @@ namespace Kros.KORM.UnitTests.CommandGenerator
             return new TableInfo(columns, new List<PropertyInfo>(), null) { Name = "FooIdentity" };
         }
 
-        private List<Foo> GetFooList(int itemsCount)
-        {
-            var retVal = new List<Foo>();
-
-            for (int i = 0; i < itemsCount; i++)
-            {
-                retVal.Add(new Foo() { Id = (i + 1) });
-            }
-
-            return retVal;
-        }
-
         private PropertyInfo GetPropertyInfo<T>(string propertyName) => typeof(T).GetProperty(propertyName);
 
         private class ConverterDto

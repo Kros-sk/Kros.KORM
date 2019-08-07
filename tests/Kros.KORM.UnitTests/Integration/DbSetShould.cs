@@ -3,16 +3,15 @@ using Kros.Data.SqlServer;
 using Kros.KORM.Converter;
 using Kros.KORM.Metadata;
 using Kros.KORM.Metadata.Attribute;
-using Kros.KORM.UnitTests.Properties;
 using Kros.KORM.Query;
 using Kros.KORM.UnitTests.Base;
+using Kros.KORM.UnitTests.Properties;
 using Nito.AsyncEx;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
-using Newtonsoft.Json.Linq;
 
 namespace Kros.KORM.UnitTests.Integration
 {
@@ -335,7 +334,23 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
             using (var korm = CreateDatabase(CreateTable_TestTable, InsertDataScript))
             {
                 var dbSet = korm.Query<Person>().AsDbSet();
-                dbSet.Delete(p=> p.Id == 1);
+                dbSet.Delete(p => p.Id == 1);
+
+                await dbSet.CommitChangesAsync();
+
+                korm.Query<Person>()
+                    .Should()
+                    .NotContain(p => p.Id == 1);
+            }
+        }
+
+        [Fact]
+        public async Task DeleteDataByComplexLinqConditionAsync()
+        {
+            using (var korm = CreateDatabase(CreateTable_TestTable, InsertDataScript))
+            {
+                var dbSet = korm.Query<Person>().AsDbSet();
+                dbSet.Delete(p => p.Age >= 18 && p.Age < 20);
 
                 await dbSet.CommitChangesAsync();
 

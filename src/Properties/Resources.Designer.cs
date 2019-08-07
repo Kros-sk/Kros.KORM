@@ -214,7 +214,7 @@ namespace Kros.KORM.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Cannot delete item with Id = &apos;{0}&apos;. This item with this Id already exists in collection..
+        ///   Looks up a localized string similar to Cannot delete item with Id &apos;{0}&apos;. Item with this Id is already marked for deleting..
         /// </summary>
         internal static string ExistingItemIdCannotBeDeleted {
             get {
@@ -232,20 +232,20 @@ namespace Kros.KORM.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid type of id parameter. Property which represent primary key is type of &apos;{0}&apos;..
-        /// </summary>
-        internal static string InvalidIdParameterType {
-            get {
-                return ResourceManager.GetString("InvalidIdParameterType", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Table {0} has none, or composite primary key. Primary key must be one column only..
         /// </summary>
         internal static string InvalidPrimaryKeyForBulkUpdate {
             get {
                 return ResourceManager.GetString("InvalidPrimaryKeyForBulkUpdate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid type of id value. Property which represents primary key is of type &apos;{0}&apos;, but the value&apos;s type is `{1}`..
+        /// </summary>
+        internal static string InvalidPrimaryKeyValueType {
+            get {
+                return ResourceManager.GetString("InvalidPrimaryKeyValueType", resourceCulture);
             }
         }
         

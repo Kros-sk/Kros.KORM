@@ -277,10 +277,11 @@ namespace Kros.KORM.UnitTests
                 }
             }, new List<PropertyInfo>(), null);
 
-            var dbSet = new DbSet<Person>(Substitute.For<ICommandGenerator<Person>>(),
-                                         Substitute.For<IQueryProvider>(),
-                                         Substitute.For<IQuery<Person>>(),
-                                         tableInfo);
+            var dbSet = new DbSet<Person>(
+                Substitute.For<ICommandGenerator<Person>>(),
+                Substitute.For<IQueryProvider>(),
+                Substitute.For<IQuery<Person>>(),
+                tableInfo);
 
             Action action = () =>
             {
@@ -294,7 +295,7 @@ namespace Kros.KORM.UnitTests
             {
                 action.Should()
                     .Throw<ArgumentException>()
-                    .WithMessage("*'Int32'*");
+                    .WithMessage("*System.Int32*");
             }
             else
             {
