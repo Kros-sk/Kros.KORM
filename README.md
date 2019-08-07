@@ -49,7 +49,7 @@ You can use Kros.KORM for creating queries and their materialization. Kros.KORM 
 
 #### Query for obtaining data
 
-```c#
+```CSharp
 var people = database.Query<Person>()
     .Select("p.Id", "FirstName", "LastName", "PostCode")
     .From("Person JOIN Address ON (Person.AddressId = Address.Id)")
@@ -69,7 +69,7 @@ Kros.KORM allows you to use Linq for creating queries. Basic queries are transla
 
 #### Example
 
-```c#
+```CSharp
 var people = database.Query<Person>()
     .From("Person JOIN Address ON (Person.AddressId = Address.Id)")
     .Where(p => p.LastName.EndsWith("ová"))
@@ -106,7 +106,7 @@ Translation is provided by implementation of [ISqlExpressionVisitor](https://kro
 
 Properties (not readonly or writeonly properties) are implicitly mapped to database fields with same name. When you want to map property to database field with different name use AliasAttribute. The same works for mapping POCO classes with database tables.
 
-```c#
+```CSharp
 [Alias("Workers")]
 private class Staff
 {
@@ -136,7 +136,7 @@ private void StaffExample()
 
 When you need to have read-write properties independent of the database use `NoMapAttribute`.
 
-```c#
+```CSharp
 [NoMap]
 public int Computed { get; set; }
 ```
@@ -147,7 +147,7 @@ If you have different conventions for naming properties in POCO classes and fiel
 
 #### Redefining mapping conventions example
 
-```c#
+```CSharp
 Database.DefaultModelMapper.MapColumnName = (colInfo, modelType) =>
 {
     return string.Format("COL_{0}", colInfo.PropertyInfo.Name.ToUpper());
@@ -179,7 +179,7 @@ Alternatively you can write your own implementation of [IModelMapper](https://kr
 
 ##### Custom model mapper
 
-```c#
+```CSharp
 Database.DefaultModelMapper = new CustomModelMapper();
 ```
 
@@ -187,7 +187,7 @@ If your POCO class is defined in external library, you can redefine mapper, so i
 
 ##### External class mapping example
 
-```c#
+```CSharp
 var externalPersonMap = new Dictionary<string, string>() {
     { nameOf(ExternalPerson.oId), "Id" },
     { nameOf(ExternalPerson.Name), "FirstName" },
@@ -219,7 +219,7 @@ using (var database = new Database(_connection))
 
 For dynamic mapping you can use method [SetColumnName<TModel, TValue>](https://kros-sk.github.io/Kros.Libs.Documentation/api/Kros.KORM.Metadata.IModelMapper.html#Kros_KORM_Metadata_IModelMapper_SetColumnName__2_System_Linq_Expressions_Expression_System_Func___0___1___System_String_)
 
-```c#
+```CSharp
 Database.DefaultModelMapper.SetColumnName<Person, string>(p => p.Name, "FirstName");
 ```
 
@@ -231,7 +231,7 @@ For example, if you want to have entities in domain layer and mapping in infrast
 
 For these scenarios you can derive database configuration from `DatabaseConfigurationBase`.
 
-```c#
+```CSharp
 public class User
 {
     public int Id { get; set; }
@@ -262,7 +262,7 @@ public class DatabaseConfiguration : DatabaseConfigurationBase
 
 And use `IDatabaseBuilder` for creating KORM instance.
 
-```c#
+```CSharp
 var database = Database
     .Builder
     .UseConnection(connection)
@@ -283,7 +283,7 @@ Imagine you store a list of addresses separated by some special character (for e
 
 Let's define a converter that can convert string to list of strings.
 
-```c#
+```CSharp
 public class AddressesConverter : IConverter
 {
     public object Convert(object value)
@@ -309,7 +309,7 @@ public class AddressesConverter : IConverter
 
 And now you can set this converter for your property using attribute or [fluent configuration](#Configure-model-mapping-by-fluent-api).
 
-```c#
+```CSharp
 [Converter(typeof(AddressesConverter))]
 public List<string> Addresses { get; set; }
 ```
@@ -322,7 +322,7 @@ You can do whatever you need in method ```OnAfterMaterialize```.
 
 For example, if you have three int columns for date in database (Year, Month and Day) but in your POCO class you have only one date property, you can solve it as follows:
 
-```c#
+```CSharp
 [NoMap]
 public DateTime Date { get; set; }
 
@@ -342,7 +342,7 @@ Sometimes you might need to inject some service to your model, for example calcu
 
 Let's have properties in model
 
-```c#
+```CSharp
 [NoMap]
 public ICalculationService CalculationService { get; set; }
 
@@ -352,7 +352,7 @@ public ILogger Logger { get; set; }
 
 And that is how you can configure them.
 
-```c#
+```CSharp
 Database.DefaultModelMapper
     .InjectionConfigurator<Person>()
         .FillProperty(p => p.CalculationService, () => new CalculationService())
@@ -367,7 +367,7 @@ By default `DynamicMethodModelFactory` is implemented, which uses dynamic method
 
 If you want to try some other implementation (for example based on reflexion) you can redefine property `Database.DefaultModelFactory`.
 
-```c#
+```CSharp
 Database.DefaultModelFactory = new ReflectionModelfactory();
 ```
 
@@ -377,7 +377,7 @@ You can use Kros.KORM also for editing, adding or deleting records from database
 
 Records to edit or delete are identified by the primary key. You can set primary key to your POCO class by using `Key` attribute.
 
-```c#
+```CSharp
 [Key()]
 public int Id { get; set; }
 
@@ -388,7 +388,7 @@ public string LastName { get; set; }
 
 #### Inserting records to database
 
-```c#
+```CSharp
 public void Insert()
 {
     using (var database = new Database(_connection))
@@ -405,7 +405,7 @@ public void Insert()
 
 Kros.KORM supports bulk inserting, which is one of its best features. You add records to DbSet standardly by method ```Add```, but for committing to database use method ```BulkInsert``` instead of ```CommitChanges```.
 
-```c#
+```CSharp
 var people = database.Query<Person>().AsDbSet();
 
 foreach (var person in dataForImport)
@@ -418,7 +418,7 @@ people.BulkInsert();
 
 Kros.KORM supports also bulk update of records, you can use ```BulkUpdate``` method.
 
-```c#
+```CSharp
 var people = database.Query<Person>().AsDbSet();
 
 foreach (var person in dataForUpdate)
@@ -443,7 +443,7 @@ Support two types of generating:
 
 Primary key must be simple `Int32` column. Primary key property in POCO class must be decorated by `Key` attribute and its property `AutoIncrementMethodType` must be set to `Custom`.
 
-```c#
+```CSharp
 [Key(autoIncrementMethodType: AutoIncrementMethodType.Custom)]
 public int Id { get; set; }
 ```
@@ -465,7 +465,7 @@ CONSTRAINT [PK_Users] PRIMARY KEY CLUSTERED
 ) ON [PRIMARY]
 ```
 
-```c#
+```CSharp
 [Key(autoIncrementMethodType: AutoIncrementMethodType.Identity)]
 public long Id { get; set; }
 ```
@@ -475,7 +475,7 @@ When you call `dbSet.CommitChanges()`, Kros.KORM fill generated keys into entity
 
 #### Editing records in database
 
-```c#
+```CSharp
 public void Edit()
 {
     using (var database = new Database(_connection))
@@ -493,9 +493,9 @@ public void Edit()
 }
 ```
 
-### Deleting records from database
+#### Deleting records from database
 
-```c#
+```CSharp
 public void Delete()
 {
     using (var database = new Database(_connection))
@@ -510,13 +510,30 @@ public void Delete()
 }
 ```
 
+##### Deleting records by Ids or condition
+
+```CSharp
+public void Delete()
+{
+    using (var database = new Database(_connection))
+    {
+        var people = database.Query<Person>().AsDbSet();
+
+        people.Delete(1);
+        people.Delete(p => p.ParentId == 10);
+
+        people.CommitChangesAsync();
+    }
+}
+```
+
 #### Explicit transactions
 
 By default, changes of a `DbSet` are committed to database in a transaction. If committing of one record fails, rollback of transaction is executed.
 
 Sometimes you might come to situation, when such implicit transaction would not meet your requirements. For example you need to commit changes to two tables as an atomic operation. When saving changes to first of tables is not successful, you want to discard changes to the other table. Solution of that task is easy with explicit transactions supported by Kros.KORM. See the documentation of [BeginTransaction](https://kros-sk.github.io/Kros.Libs.Documentation/api/Kros.KORM/Kros.KORM.IDatabase.html#Kros_KORM_IDatabase_BeginTransaction).
 
-```c#
+```CSharp
 using (var transaction = database.BeginTransaction())
 {
     var invoicesDbSet = database.Query<Invoice>().AsDbSet();
@@ -539,13 +556,27 @@ using (var transaction = database.BeginTransaction())
 }
 ```
 
+#### Simplify Adding, Deleting and Editing records
+
+For simplifying calling methods (`Add`, `Edit`, `Delete`) use extension methods from `IDatabaseExtensions` class.
+
+```CSharp
+await database.AddAsync(person);
+await database.DeleteAsync(person);
+await database.DeleteAsync<Person>(2);
+await database.DeleteAsync<Person>(p => p.Id == 2);
+await database.DeleteAsync<Person>("Id = @1", 2);
+await database.EditAsync(person);
+await database.EditAsync(person, "Id", "Age");
+```
+
 ### SQL commands executing
 
 Kros.KORM supports SQL commands execution. There are three types of commands:
 
 * ```ExecuteNonQuery``` for commands that do not return value (DELETE, UPDATE, ...)
 
-  ```c#
+  ```CSharp
   private Database _database = new Database(new SqlConnection("connection string"));
 
   // to work with command parameters you can use CommandParameterCollection
@@ -566,7 +597,7 @@ Kros.KORM supports SQL commands execution. There are three types of commands:
 
 #### Execution of stored procedure example
 
-```c#
+```CSharp
 public class Person
 {
     public int Id { get; set; }
@@ -606,7 +637,7 @@ If you want to execute time-consuming command, you will definitely appreciate `C
 
 Warning: You can set `CommandTimeout` only for main transaction, not for nested transactions. In that case CommandTimout of main transaction will be used.
 
-```c#
+```CSharp
 IEnumerable<Person> persons = null;
 
 using (var transaction = database.BeginTransaction(IsolationLevel.Chaos))
@@ -629,7 +660,7 @@ using (var transaction = database.BeginTransaction(IsolationLevel.Chaos))
 
 Kros.KORM offers the ability to log each generated and executed query. All you have to do is add this line to your source code.
 
-```c#
+```CSharp
 Database.Log = Console.WriteLine;
 ```
 
@@ -639,7 +670,7 @@ Kros.KORM uses its own [QueryProvider](https://kros-sk.github.io/Kros.Libs.Docum
 
 MsAccess is suported from version 2.4 in Kros.KORM.MsAccess library. If you need to work with MS Access database, you have to refer this library in your project and register [MsAccessQueryProviderFactory](https://kros-sk.github.io/Kros.Libs.Documentation/api/Kros.KORM.MsAccess/Kros.KORM.Query.MsAccess.MsAccessQueryProviderFactory.html).
 
-```c#
+```CSharp
 MsAccessQueryProviderFactory.Register();
 ```
 
@@ -647,7 +678,7 @@ Current version of Kros.KORM suports databases MS ACCESS and MS SQL.
 
 If you want to support a different database engine, you can implement your own [IQueryProvider](https://kros-sk.github.io/Kros.Libs.Documentation/api/Kros.KORM/Kros.KORM.Query.IQueryProvider.html). And register it in [QueryProviderFactories](https://kros-sk.github.io/Kros.Libs.Documentation/api/Kros.KORM/Kros.KORM.Query.QueryProviderFactories.html).
 
-```c#
+```CSharp
 public class CustomQueryProvider : QueryProvider
 {
     public CustomQueryProvider(ConnectionStringSettings connectionString,
