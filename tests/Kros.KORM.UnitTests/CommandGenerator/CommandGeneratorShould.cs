@@ -67,7 +67,7 @@ namespace Kros.KORM.UnitTests.CommandGenerator
         {
             const string expectedQuery = "DELETE FROM [Foo] WHERE [IdRow] IN (@P1,@P2,@P3,@P4,@P5,@P6,@P7,@P8,@P9,@P10,@P11,@P12,@P13,@P14,@P15)";
 
-            var result = GetFooGenerator().GetDeleteCommands(GetFooList(15)).ToList();
+            var result = GetFooGenerator().GetDeleteCommands(Enumerable.Range(1, 15)).ToList();
 
             result.Should().HaveCount(1);
             result[0].CommandText.Should().Be(expectedQuery);
@@ -86,7 +86,7 @@ namespace Kros.KORM.UnitTests.CommandGenerator
             CommandGenerator<Foo> generator = GetFooGenerator();
             generator.MaxParametersForDeleteCommandsInPart = 10;
 
-            var result = generator.GetDeleteCommands(GetFooList(25)).ToList();
+            var result = generator.GetDeleteCommands(Enumerable.Range(1, 25)).ToList();
 
             result.Should().HaveCount(3);
             result[0].CommandText.Should().Be(expectedQuery_0);
@@ -290,18 +290,6 @@ namespace Kros.KORM.UnitTests.CommandGenerator
             };
 
             return new TableInfo(columns, new List<PropertyInfo>(), null) { Name = "FooIdentity" };
-        }
-
-        private List<Foo> GetFooList(int itemsCount)
-        {
-            var retVal = new List<Foo>();
-
-            for (int i = 0; i < itemsCount; i++)
-            {
-                retVal.Add(new Foo() { Id = (i + 1) });
-            }
-
-            return retVal;
         }
 
         private PropertyInfo GetPropertyInfo<T>(string propertyName) => typeof(T).GetProperty(propertyName);

@@ -1,6 +1,9 @@
 ﻿using Kros.KORM.Converter;
+using Kros.KORM.Metadata;
 using Kros.KORM.Properties;
 using System;
+using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace Kros.KORM
 {
@@ -26,5 +29,27 @@ namespace Kros.KORM
             => throw new InvalidOperationException(
                 string.Format(Resources.ThrowHelper_ConverterForTypeAlreadyConfigured,
                     converter.GetType().FullName, propertyType.Name, typeof(TEntity).Name, currentConverter.GetType().FullName));
-    }
+
+        public static void CheckAndThrowMethodNotSupportedWhenNoPrimaryKey(
+            TableInfo tableInfo,
+            [CallerMemberName] string methodName = null)
+        {
+            if (!tableInfo.PrimaryKey.Any())
+            {
+                throw new Exceptions.MissingPrimaryKeyException(
+                    string.Format(Resources.MethodNotSupportedWhenNoPrimaryKey, methodName), tableInfo.Name);
+            }
+        }
+
+        public static void CheckAndThrowMethodNotSupportedForCompositePrimaryKey(
+            TableInfo tableInfo,
+            [CallerMemberName] string methodName = null)
+        {
+            if (tableInfo.PrimaryKey.Count() > 1)
+            {
+                throw new Exceptions.CompositePrimaryKeyException(
+                    string.Format(Resources.MethodNotSupportedForCompositePrimaryKey, methodName), tableInfo.Name);
+            }
+        }
+}
 }

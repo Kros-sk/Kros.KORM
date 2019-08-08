@@ -3,8 +3,10 @@ using Kros.KORM.Metadata;
 using Kros.KORM.Properties;
 using Kros.KORM.Query;
 using Kros.KORM.Query.Expressions;
+using Kros.KORM.Query.Sql;
 using Kros.Utils;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
@@ -103,7 +105,7 @@ namespace Kros.KORM.CommandGenerator
         /// <returns>Update command.</returns>
         public DbCommand GetUpdateCommand()
         {
-            CheckPrimaryKeyExist(string.Format(Resources.MethodNotSupportedWhenNoPrimaryKey, nameof(GetUpdateCommand)));
+            ThrowHelper.CheckAndThrowMethodNotSupportedWhenNoPrimaryKey(_tableInfo);
 
             IEnumerable<ColumnInfo> columns = GetQueryColumns();
             DbCommand cmd = _provider.GetCommandForCurrentTransaction();
@@ -120,7 +122,7 @@ namespace Kros.KORM.CommandGenerator
         /// <returns>Delete command.</returns>
         public DbCommand GetDeleteCommand()
         {
-            CheckPrimaryKeyExist(string.Format(Resources.MethodNotSupportedWhenNoPrimaryKey, nameof(GetDeleteCommand)));
+            ThrowHelper.CheckAndThrowMethodNotSupportedWhenNoPrimaryKey(_tableInfo);
 
             IEnumerable<ColumnInfo> columns = _tableInfo.PrimaryKey;
             DbCommand cmd = _provider.GetCommandForCurrentTransaction();
@@ -129,23 +131,22 @@ namespace Kros.KORM.CommandGenerator
             return cmd;
         }
 
-        /// <summary>
-        /// Gets the automatically generated DbCommands object required to perform deletions on the database.
-        /// </summary>
-        /// <param name="items">Type class of model collection.</param>
-        /// <exception cref="Exceptions.MissingPrimaryKeyException">Table does not have primary key.</exception>
-        /// <exception cref="Exceptions.CompositePrimaryKeyException">Table has composite primary key.</exception>
-        /// <returns>Delete command collection.</returns>
-        public IEnumerable<DbCommand> GetDeleteCommands(IEnumerable<T> items)
+        /// <inheritdoc />
+        public DbCommand GetDeleteCommand(WhereExpression whereExpression)
         {
-            CheckPrimaryKeyExist(string.Format(Resources.MethodNotSupportedWhenNoPrimaryKey, nameof(GetDeleteCommands)));
+            DbCommand cmd = _provider.GetCommandForCurrentTransaction();
 
-            if (_tableInfo.PrimaryKey.Count() > 1)
-            {
-                throw new Exceptions.CompositePrimaryKeyException(
-                    string.Format(Resources.MethodNotSupportedForCompositePrimaryKey, nameof(GetDeleteCommands)),
-                    _tableInfo.Name);
-            }
+            cmd.CommandText = string.Format(DELETE_QUERY_BASE, _tableInfo.Name, whereExpression.Sql);
+            ParameterExtractingExpressionVisitor.ExtractParametersToCommand(cmd, whereExpression);
+
+            return cmd;
+        }
+
+        /// <inheritdoc />
+        public IEnumerable<DbCommand> GetDeleteCommands(IEnumerable ids)
+        {
+            ThrowHelper.CheckAndThrowMethodNotSupportedWhenNoPrimaryKey(_tableInfo);
+            ThrowHelper.CheckAndThrowMethodNotSupportedForCompositePrimaryKey(_tableInfo);
 
             var retVal = new List<DbCommand>();
             ColumnInfo colInfo = _tableInfo.PrimaryKey.First();
@@ -153,7 +154,7 @@ namespace Kros.KORM.CommandGenerator
             var deleteQueryText = new StringBuilder();
             int iterationCount = 0;
 
-            foreach (T item in items)
+            foreach (object id in ids)
             {
                 if (iterationCount == 0)
                 {
@@ -164,7 +165,7 @@ namespace Kros.KORM.CommandGenerator
 
                 iterationCount++;
                 string paramterName = $"@P{iterationCount}";
-                AddDeleteCommandParameter(cmd, paramterName, GetColumnValue(colInfo, item));
+                AddDeleteCommandParameter(cmd, paramterName, id);
                 if (iterationCount > 1)
                 {
                     deleteQueryText.Append(",");
@@ -207,14 +208,6 @@ namespace Kros.KORM.CommandGenerator
                     var val = GetColumnValue(colInfo, item);
                     parameter.Value = val ?? System.DBNull.Value;
                 }
-            }
-        }
-
-        private void CheckPrimaryKeyExist(string message)
-        {
-            if (_tableInfo.PrimaryKey.Count() == 0)
-            {
-                throw new Exceptions.MissingPrimaryKeyException(message, _tableInfo.Name);
             }
         }
 

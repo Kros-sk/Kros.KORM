@@ -1,6 +1,8 @@
-﻿using System;
+﻿using Kros.KORM.Query.Sql;
+using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace Kros.KORM.Query
@@ -49,6 +51,37 @@ namespace Kros.KORM.Query
         /// </summary>
         /// <param name="entities">The items to delete.</param>
         void Delete(IEnumerable<T> entities);
+
+        /// <summary>
+        /// Marks the item id as Deleted such the item with
+        /// this id will be deleted from the database when <see cref="CommitChanges"/> is called.
+        /// </summary>
+        /// <param name="id">The item id to delete.</param>
+        /// <exception cref="Exceptions.MissingPrimaryKeyException">
+        /// Delete method is not supported when entity doesn't have primary key.
+        /// </exception>
+        /// <exception cref="Exceptions.CompositePrimaryKeyException">
+        /// Delete method is not supported when entity has composite primary key.
+        /// </exception>
+        /// <exception cref="ArgumentException">
+        /// When type of <paramref name="id"/> is different from primary key property type.
+        /// </exception>
+        void Delete(object id);
+
+        /// <summary>
+        /// Delete items by condition.
+        /// These items will be deleted from the database when <see cref="CommitChanges"/> is called.
+        /// </summary>
+        /// <param name="condition">Delete condition.</param>
+        void Delete(Expression<Func<T, bool>> condition);
+
+        /// <summary>
+        /// Delete items by condition.
+        /// These items will be deleted from the database when <see cref="CommitChanges"/> is called.
+        /// </summary>
+        /// <param name="condition">Delete condition.</param>
+        /// <param name="parameters">Condition parameters.</param>
+        void Delete(RawSqlString condition, params object[] parameters);
 
         /// <summary>
         /// Rolls back all pending changes.

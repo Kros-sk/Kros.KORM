@@ -16,6 +16,18 @@ namespace Kros.KORM.Query.Sql
         QueryInfo GenerateSql(Expression expression);
 
         /// <summary>
+        /// Generate the SQL WHERE condition from <paramref name="whereExpression"/>.
+        /// </summary>
+        /// <param name="whereExpression">Where condition written by LINQ expression.</param>
+        /// <returns>
+        /// <see cref="WhereExpression"/> which contains generated SQL WHERE condition and parameters.
+        /// </returns>
+        /// <remarks>
+        /// SQL WHERE condition is generated without WHERE keyword.
+        /// </remarks>
+        WhereExpression GenerateWhereCondition(Expression whereExpression);
+
+        /// <summary>
         /// Visits the SQL.
         /// </summary>
         /// <param name="sqlExpression">The SQL expression.</param>

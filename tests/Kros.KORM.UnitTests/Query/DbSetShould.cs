@@ -6,6 +6,7 @@ using Kros.KORM.Data;
 using Kros.KORM.Exceptions;
 using Kros.KORM.Metadata;
 using Kros.KORM.Query;
+using Kros.KORM.Query.Sql;
 using NSubstitute;
 using System;
 using System.Collections.Generic;
@@ -263,6 +264,52 @@ namespace Kros.KORM.UnitTests
                 .WithMessage("*FakeProvider*Person*");
         }
 
+        [Theory]
+        [MemberData(nameof(GetDataForDeleteByIds))]
+        public void ThrowExceptionWhenTryDeleteByIdsWithIncorrectType(IEnumerable<object> ids, bool throwException)
+        {
+            var tableInfo = new TableInfo(new List<ColumnInfo>()
+            {
+                new ColumnInfo(){
+                    Name = "Id",
+                    IsPrimaryKey = true,
+                    PropertyInfo = typeof(Person).GetProperty(nameof(Person.Id))
+                }
+            }, new List<PropertyInfo>(), null);
+
+            var dbSet = new DbSet<Person>(
+                Substitute.For<ICommandGenerator<Person>>(),
+                Substitute.For<IQueryProvider>(),
+                Substitute.For<IQuery<Person>>(),
+                tableInfo);
+
+            Action action = () =>
+            {
+                foreach (object id in ids)
+                {
+                    dbSet.Delete(id);
+                }
+            };
+
+            if (throwException)
+            {
+                action.Should()
+                    .Throw<ArgumentException>()
+                    .WithMessage("*System.Int32*");
+            }
+            else
+            {
+                action.Should().NotThrow();
+            }
+        }
+
+        public static IEnumerable<object[]> GetDataForDeleteByIds()
+        {
+            yield return new object[] { new List<object>() { "1", 1 }, true };
+            yield return new object[] { new List<object>() { 1, 2, 3, true }, true };
+            yield return new object[] { new List<object>() { 1, 2, 3, 4 }, false };
+        }
+
         #endregion
 
         #region Test classes
@@ -406,6 +453,11 @@ namespace Kros.KORM.UnitTests
             }
 
             public Task<object> ExecuteScalarCommandAsync(DbCommand command)
+            {
+                throw new NotImplementedException();
+            }
+
+            public ISqlExpressionVisitor GetExpressionVisitor()
             {
                 throw new NotImplementedException();
             }

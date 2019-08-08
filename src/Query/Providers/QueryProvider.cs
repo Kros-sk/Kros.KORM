@@ -542,6 +542,9 @@ namespace Kros.KORM.Query
             return new IdGeneratorHelper(factory.GetGenerator(tableName, batchSize), connection);
         }
 
+        /// <inheritdoc />
+        public ISqlExpressionVisitor GetExpressionVisitor() => _sqlGeneratorFactory.CreateVisitor(Connection);
+
         #endregion
 
         #region Linq

@@ -3,6 +3,8 @@ using Kros.KORM.Data;
 using Kros.KORM.Exceptions;
 using Kros.KORM.Metadata;
 using Kros.KORM.Properties;
+using Kros.KORM.Query.Expressions;
+using Kros.KORM.Query.Sql;
 using Kros.Utils;
 using System;
 using System.Collections;
@@ -10,6 +12,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace Kros.KORM.Query
@@ -28,7 +31,10 @@ namespace Kros.KORM.Query
         private HashSet<T> _addedItems = new HashSet<T>();
         private HashSet<T> _editedItems = new HashSet<T>();
         private HashSet<T> _deletedItems = new HashSet<T>();
+        private HashSet<object> _deletedItemsIds = new HashSet<object>();
+        private List<WhereExpression> _deleteExpressions = new List<WhereExpression>();
         private readonly TableInfo _tableInfo;
+        private Lazy<Type> _primaryKeyPropertyType;
 
         #endregion
 
@@ -41,12 +47,17 @@ namespace Kros.KORM.Query
         /// <param name="provider">Provider to executing commands.</param>
         /// <param name="query">Query.</param>
         /// <param name="tableInfo">Information about table from database.</param>
-        public DbSet(ICommandGenerator<T> commandGenerator, IQueryProvider provider, IQueryBase<T> query, TableInfo tableInfo)
+        public DbSet(
+            ICommandGenerator<T> commandGenerator,
+            IQueryProvider provider,
+            IQueryBase<T> query,
+            TableInfo tableInfo)
         {
             _commandGenerator = Check.NotNull(commandGenerator, nameof(commandGenerator));
             _provider = Check.NotNull(provider, nameof(provider));
             _query = Check.NotNull(query, nameof(query));
             _tableInfo = Check.NotNull(tableInfo, nameof(tableInfo));
+            _primaryKeyPropertyType = new Lazy<Type>(GetPrimaryKeyType);
         }
 
         #endregion
@@ -95,6 +106,55 @@ namespace Kros.KORM.Query
             _deletedItems.Add(entity);
         }
 
+        /// <inheritdoc />
+        public void Delete(object id)
+        {
+            Check.NotNull(id, nameof(id));
+            if (_deletedItemsIds.Contains(id))
+            {
+                throw new AlreadyInCollectionException(string.Format(Resources.ExistingItemIdCannotBeDeleted, id));
+            }
+            if (_primaryKeyPropertyType.Value != id.GetType())
+            {
+                throw new ArgumentException(
+                    string.Format(
+                        Resources.InvalidPrimaryKeyValueType,
+                        _primaryKeyPropertyType.Value.FullName,
+                        id.GetType().FullName));
+            }
+
+            _deletedItemsIds.Add(id);
+        }
+
+        /// <inheritdoc />
+        public void Delete(Expression<Func<T, bool>> condition)
+        {
+            Check.NotNull(condition, nameof(condition));
+
+            ISqlExpressionVisitor generator = _provider.GetExpressionVisitor();
+            WhereExpression where = generator.GenerateWhereCondition(condition.Body);
+
+            _deleteExpressions.Add(where);
+        }
+
+        /// <inheritdoc />
+        public void Delete(RawSqlString condition, params object[] parameters)
+        {
+            Check.NotNull(condition, nameof(condition));
+
+            var where = new WhereExpression(condition, parameters);
+
+            _deleteExpressions.Add(where);
+        }
+
+        private Type GetPrimaryKeyType()
+        {
+            ThrowHelper.CheckAndThrowMethodNotSupportedWhenNoPrimaryKey(_tableInfo, nameof(Delete));
+            ThrowHelper.CheckAndThrowMethodNotSupportedForCompositePrimaryKey(_tableInfo, nameof(Delete));
+
+            return _tableInfo.PrimaryKey.First().PropertyInfo.PropertyType;
+        }
+
         /// <summary>
         /// Adds the items to the context underlying the set in the Added state such that it will be inserted
         /// into the database when CommitChanges is called.
@@ -104,7 +164,7 @@ namespace Kros.KORM.Query
         {
             foreach (var entity in entities)
             {
-                this.Add(entity);
+                Add(entity);
             }
         }
 
@@ -116,7 +176,7 @@ namespace Kros.KORM.Query
         {
             foreach (var entity in entities)
             {
-                this.Edit(entity);
+                Edit(entity);
             }
         }
 
@@ -128,7 +188,7 @@ namespace Kros.KORM.Query
         {
             foreach (var entity in entities)
             {
-                this.Delete(entity);
+                Delete(entity);
             }
         }
 
@@ -140,6 +200,8 @@ namespace Kros.KORM.Query
             _addedItems.Clear();
             _editedItems.Clear();
             _deletedItems.Clear();
+            _deletedItemsIds.Clear();
+            _deleteExpressions.Clear();
         }
 
         /// <inheritdoc />
@@ -248,6 +310,8 @@ namespace Kros.KORM.Query
                 await CommitChangesAddedItemsAsync(_addedItems, useAsync);
                 await CommitChangesEditedItemsAsync(_editedItems, useAsync);
                 await CommitChangesDeletedItemsAsync(_deletedItems, useAsync);
+                await CommitChangesDeletedItemsByIdAsync(_deletedItemsIds, useAsync);
+                await CommitChangesDeletedByConditionsAsync(_deleteExpressions, useAsync);
 
                 Clear();
             });
@@ -367,7 +431,7 @@ namespace Kros.KORM.Query
 
         private async Task CommitChangesEditedItemsAsync(HashSet<T> items, bool useAsync)
         {
-            if (items?.Count > 0)
+            if (items.Count > 0)
             {
                 using (DbCommand command = _commandGenerator.GetUpdateCommand())
                 {
@@ -383,13 +447,45 @@ namespace Kros.KORM.Query
 
         private async Task CommitChangesDeletedItemsAsync(HashSet<T> items, bool useAsync)
         {
-            if (items?.Count > 0)
+            if (items.Count > 0)
             {
                 using (DbCommand command = _commandGenerator.GetDeleteCommand())
                 {
                     foreach (T item in items)
                     {
                         _commandGenerator.FillCommand(command, item);
+                        await ExecuteNonQueryAsync(command, useAsync);
+                    }
+                }
+            }
+        }
+
+        private async Task CommitChangesDeletedItemsByIdAsync(HashSet<object> ids, bool useAsync)
+        {
+            if (ids.Count > 0)
+            {
+                foreach (DbCommand command in _commandGenerator.GetDeleteCommands(ids))
+                {
+                    try
+                    {
+                        await ExecuteNonQueryAsync(command, useAsync);
+                    }
+                    finally
+                    {
+                        command.Dispose();
+                    }
+                }
+            }
+        }
+
+        private async Task CommitChangesDeletedByConditionsAsync(List<WhereExpression> expressions, bool useAsync)
+        {
+            if (expressions.Count > 0)
+            {
+                foreach (WhereExpression expression in expressions)
+                {
+                    using (DbCommand command = _commandGenerator.GetDeleteCommand(expression))
+                    {
                         await ExecuteNonQueryAsync(command, useAsync);
                     }
                 }
@@ -485,7 +581,7 @@ namespace Kros.KORM.Query
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return this.GetEnumerator();
+            return GetEnumerator();
         }
 
         #endregion
