@@ -332,11 +332,9 @@ namespace Kros.KORM.UnitTests.Metadata
             public object ConvertBack(object value) => throw new NotImplementedException();
         }
 
-        private class AutoIncrementValueGenerator : IValueGenerator<int>
+        private class AutoIncrementValueGenerator : IValueGenerator
         {
-            public int GetValue() => 123;
-
-            object IValueGenerator.GetValue() => GetValue();
+            public object GetValue() => 123;
         }
     }
 }

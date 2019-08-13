@@ -420,11 +420,10 @@ namespace Kros.KORM.UnitTests.CommandGenerator
             }
         }
 
-        private class AutoIncrementValueGenerator : IValueGenerator<int>
+        private class AutoIncrementValueGenerator : IValueGenerator
         {
             public const int GeneratedValue = 123;
-            public int GetValue() => GeneratedValue;
-            object IValueGenerator.GetValue() => GetValue();
+            public object GetValue() => GeneratedValue;
         }
 
         #endregion

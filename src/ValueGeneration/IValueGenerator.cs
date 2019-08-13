@@ -1,4 +1,6 @@
-﻿namespace Kros.KORM.ValueGeneration
+﻿using System;
+
+namespace Kros.KORM.ValueGeneration
 {
     /// <summary>
     /// Interface for column value generator.
@@ -11,16 +13,15 @@
         object GetValue();
     }
 
-    public interface IValueGenerator<T> : IValueGenerator
+    /// <summary>
+    /// Current time value generator.
+    /// </summary>
+    /// <remarks>
+    /// Generator generates date and time that are set to the current Coordinated Universal Time (UTC).
+    /// </remarks>
+    public class CurrentTimeValueGenerator : IValueGenerator
     {
-        T GetValue();
+        /// <inheritdoc />
+        public object GetValue() => DateTimeOffset.UtcNow;
     }
-
-    //public class CurrentTimeValueGenerator : IValueGenerator<DateTimeOffset>
-    //{
-    //    public DateTimeOffset GetValue() => DateTimeOffset.UtcNow;
-
-    //    object IValueGenerator.GetValue() => GetValue();
-    //}
-
 }

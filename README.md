@@ -327,23 +327,12 @@ public interface IValueGenerator
 }
 ```
 
-For more complicated scenarios you can use `IValueGeneratorEx` which can provide `Database` object.
-
-```csharp
-public interface IValueGeneratorEx
-{    
-	object GetValue(IDatabase database);
-}
-```
-
 Here is an example of custom value generator:
 
 ```c#
-private class AutoIncrementValueGenerator : IValueGenerator<int>
+private class AutoIncrementValueGenerator : IValueGenerator
 {
-	public int GetValue() => 123;
-
-    object IValueGenerator.GetValue() => GetValue();
+	  public object GetValue() => 123;
 }
 ```
 
