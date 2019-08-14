@@ -275,6 +275,7 @@ namespace Kros.KORM.CommandGenerator
 
             if (TryGetValueFromValueGenerators(columnInfo, valueGenerated, out object generatorValue))
             {
+                columnInfo.PropertyInfo.SetValue(item, generatorValue);
                 return generatorValue;
             }
 
