@@ -413,15 +413,20 @@ namespace Kros.KORM.Metadata
             entity.PropertyConverters.Add(propertyType, converter);
         }
 
-        void IModelMapperInternal.SetValueGenerator<TEntity>(string propertyName, IValueGenerator valueGenerator, ValueGenerated valueGenerated)
+        void IModelMapperInternal.SetValueGenerator<TEntity>(
+            string propertyName,
+            IValueGenerator valueGenerator,
+            ValueGenerated valueGenerated)
         {
             Check.NotNullOrWhiteSpace(propertyName, nameof(propertyName));
             Check.NotNull(valueGenerator, nameof(valueGenerator));
             EntityMapper entity = GetEntity<TEntity>();
+
             if (entity.ValueGenerators.TryGetValue(propertyName, out IValueGenerator currentValueGenerator))
             {
                 ThrowHelper.ValueGeneratorAlreadyConfigured<TEntity>(propertyName, valueGenerator, currentValueGenerator);
             }
+
             entity.ValueGenerators.Add(propertyName, valueGenerator);
             entity.ValueGenerated = valueGenerated;
         }

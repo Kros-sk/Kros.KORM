@@ -29,7 +29,8 @@ namespace Kros.KORM.Metadata
             public AutoIncrementMethodType PrimaryKeyAutoIncrementType { get; set; } = AutoIncrementMethodType.None;
             public Dictionary<string, string> ColumnMap { get; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             public Dictionary<string, IConverter> Converters { get; } = new Dictionary<string, IConverter>(StringComparer.OrdinalIgnoreCase);
-            public Dictionary<string, IValueGenerator> ValueGenerators { get; } = new Dictionary<string, IValueGenerator>(StringComparer.OrdinalIgnoreCase);
+            public Dictionary<string, IValueGenerator> ValueGenerators { get; } =
+                new Dictionary<string, IValueGenerator>(StringComparer.OrdinalIgnoreCase);
             public ValueGenerated ValueGenerated { get; set; }
             public HashSet<string> NoMap { get; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             public IInjector Injector { get; set; } = null;

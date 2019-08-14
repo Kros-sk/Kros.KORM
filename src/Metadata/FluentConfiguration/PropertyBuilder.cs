@@ -93,8 +93,8 @@ namespace Kros.KORM.Metadata
 
         private void SetValueGeneratorAndValueGenerated(IValueGenerator generator, ValueGenerated valueGenerated)
         {
+            _valueGenerator = Check.NotNull(generator, nameof(generator));
             _valueGenerated = valueGenerated;
-            _valueGenerator = generator;
         }
 
         IEntityTypePropertyBuilder<TEntity> IMappedPropertyBuilder<TEntity>.InjectValue(Func<object> injector)

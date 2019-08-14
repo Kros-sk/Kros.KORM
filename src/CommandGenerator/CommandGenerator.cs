@@ -268,20 +268,46 @@ namespace Kros.KORM.CommandGenerator
         /// <inheritdoc/>
         public object GetColumnValue(ColumnInfo columnInfo, T item, ValueGenerated valueGenerated)
         {
-            IValueGenerator valueGenerator = columnInfo.ValueGenerator;
-            if ((valueGenerator != null) && columnInfo.ValueGenerated.HasFlag(valueGenerated))
+            if (HasValueGeneratorOnInsert(columnInfo) && (valueGenerated == ValueGenerated.OnUpdate))
             {
-                return valueGenerator.GetValue();
+                return GetValue();
             }
 
-            object value = columnInfo.PropertyInfo.GetValue(item, null);
+            if (TryGetValueFromValueGenerators(columnInfo, valueGenerated, out object generatorValue))
+            {
+                return generatorValue;
+            }
+
+            object value = GetValue();
             IConverter converter = ConverterHelper.GetConverter(columnInfo, value?.GetType());
             if (converter != null)
             {
                 value = converter.ConvertBack(value);
             }
 
+            object GetValue() => columnInfo.PropertyInfo.GetValue(item, null);
+
             return value;
+        }
+
+        private bool HasValueGeneratorOnInsert(ColumnInfo columnInfo)
+            => (columnInfo.ValueGenerator != null && columnInfo.ValueGenerated == ValueGenerated.OnInsert);
+
+        private bool TryGetValueFromValueGenerators(ColumnInfo columnInfo, ValueGenerated valueGenerated, out object value)
+        {
+            value = null;
+
+            if (columnInfo.ValueGenerated.HasFlag(valueGenerated))
+            {
+                IValueGenerator valueGenerator = columnInfo.ValueGenerator;
+                if (valueGenerator != null)
+                {
+                    value = valueGenerator.GetValue();
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private string GetInsertCommandText(IEnumerable<ColumnInfo> columns)
