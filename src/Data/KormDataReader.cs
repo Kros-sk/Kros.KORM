@@ -1,7 +1,6 @@
 ﻿using Kros.Data.BulkActions;
 using Kros.KORM.CommandGenerator;
 using Kros.KORM.Metadata;
-using Kros.KORM.ValueGeneration;
 using Kros.Utils;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,7 +21,7 @@ namespace Kros.KORM.Data
             _data = data;
             DataEnumerator = _data.GetEnumerator();
             _generator = generator;
-            _columns = _generator.GetQueryColumns().ToList();
+            _columns = _generator.GetQueryColumns(ValueGenerated.Never).ToList();
         }
 
         protected IEnumerator<T> DataEnumerator { get; private set; }

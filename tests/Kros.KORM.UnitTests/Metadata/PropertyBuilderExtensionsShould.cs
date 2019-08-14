@@ -1,15 +1,6 @@
 ﻿using FluentAssertions;
-using Kros.KORM.Materializer;
 using Kros.KORM.Metadata;
-using Kros.KORM.Query;
-using Kros.KORM.UnitTests.Integration;
-using Kros.KORM.ValueGeneration;
-using Kros.UnitTests;
-using NSubstitute;
 using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
 using Xunit;
 
 namespace Kros.KORM.UnitTests.Metadata

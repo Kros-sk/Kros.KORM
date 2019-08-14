@@ -1,5 +1,4 @@
 ﻿using Kros.KORM.Converter;
-using Kros.KORM.ValueGeneration;
 using System.Reflection;
 
 namespace Kros.KORM.Metadata

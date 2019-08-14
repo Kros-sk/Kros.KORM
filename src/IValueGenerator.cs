@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Kros.KORM.ValueGeneration
+namespace Kros.KORM
 {
     /// <summary>
     /// Interface for column value generator.

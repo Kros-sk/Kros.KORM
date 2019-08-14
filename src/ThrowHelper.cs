@@ -1,7 +1,6 @@
 ﻿using Kros.KORM.Converter;
 using Kros.KORM.Metadata;
 using Kros.KORM.Properties;
-using Kros.KORM.ValueGeneration;
 using System;
 using System.Linq;
 using System.Runtime.CompilerServices;

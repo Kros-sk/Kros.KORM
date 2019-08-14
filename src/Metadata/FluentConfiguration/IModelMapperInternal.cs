@@ -1,6 +1,5 @@
 ﻿using Kros.KORM.Converter;
 using Kros.KORM.Injection;
-using Kros.KORM.ValueGeneration;
 using System;
 
 namespace Kros.KORM.Metadata

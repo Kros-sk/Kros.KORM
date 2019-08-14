@@ -3,7 +3,6 @@ using Kros.KORM.Metadata;
 using Kros.KORM.Query;
 using Kros.KORM.Query.Expressions;
 using Kros.KORM.Query.Sql;
-using Kros.KORM.ValueGeneration;
 using Kros.Utils;
 using System;
 using System.Collections;
@@ -95,8 +94,8 @@ namespace Kros.KORM.CommandGenerator
 
         private IEnumerable<ColumnInfo> GetQueryColumnsForInsert()
             => _tableInfo.HasIdentityPrimaryKey
-            ? GetQueryColumns().Where(p => !p.IsPrimaryKey)
-            : GetQueryColumns();
+            ? GetQueryColumns(ValueGenerated.OnInsert).Where(p => !p.IsPrimaryKey)
+            : GetQueryColumns(ValueGenerated.OnInsert);
 
         /// <summary>
         /// Gets the automatically generated DbCommand object required to perform updates on the database
@@ -107,7 +106,7 @@ namespace Kros.KORM.CommandGenerator
         {
             ThrowHelper.CheckAndThrowMethodNotSupportedWhenNoPrimaryKey(_tableInfo);
 
-            IEnumerable<ColumnInfo> columns = GetQueryColumns();
+            IEnumerable<ColumnInfo> columns = GetQueryColumns(ValueGenerated.OnUpdate);
             DbCommand cmd = _provider.GetCommandForCurrentTransaction();
             AddParametersToCommand(cmd, columns.Where(x => !x.IsPrimaryKey));
             AddParametersToCommand(cmd, columns.Where(x => x.IsPrimaryKey));
@@ -200,7 +199,7 @@ namespace Kros.KORM.CommandGenerator
             Check.NotNull(command, nameof(command));
             Check.NotNull(item, nameof(item));
 
-            foreach (ColumnInfo colInfo in GetQueryColumns())
+            foreach (ColumnInfo colInfo in GetQueryColumns(valueGenerated))
             {
                 string paramName = $"@{colInfo.Name}";
                 if (command.Parameters.Contains(paramName))
@@ -232,7 +231,7 @@ namespace Kros.KORM.CommandGenerator
         #region Private Helpers
 
         /// <inheritdoc/>
-        public IEnumerable<ColumnInfo> GetQueryColumns()
+        public IEnumerable<ColumnInfo> GetQueryColumns(ValueGenerated valueGenerated)
         {
             if (_columnsInfo == null)
             {
@@ -240,11 +239,12 @@ namespace Kros.KORM.CommandGenerator
                 var expression = (_query.Expression as SelectExpression);
                 var columns = expression.ColumnsExpression.ColumnsPart.Split(',');
 
-                foreach (var column in columns)
+                foreach (string column in columns)
                 {
                     ColumnInfo columnInfo = _tableInfo.Columns.Where(p => p.Name == column.Trim()).FirstOrDefault();
 
-                    if (columnInfo != null)
+                    if ((columnInfo != null) &&
+                        (columnInfo.ValueGenerator == null || columnInfo.ValueGenerated.HasFlag(valueGenerated)))
                     {
                         _columnsInfo.Add(columnInfo);
                     }

@@ -7,7 +7,6 @@ using Kros.KORM.Metadata;
 using Kros.KORM.Metadata.Attribute;
 using Kros.KORM.Query;
 using Kros.KORM.Query.Providers;
-using Kros.KORM.ValueGeneration;
 using NSubstitute;
 using System;
 using System.Collections.Generic;
