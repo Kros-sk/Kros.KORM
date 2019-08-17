@@ -190,6 +190,7 @@ namespace Kros.KORM.UnitTests.CommandGenerator
             CommandGenerator<ConverterDto> commandGenerator = CreateCommandGenerator<ConverterDto>(tableInfo);
 
             var dto = new ConverterDto() { Id = 1, Name = null };
+            commandGenerator.SetColumnValueFromValueGenerator(idColumn, dto, ValueGenerated.Never);
             var convertedValue = commandGenerator.GetColumnValue(idColumn, dto, ValueGenerated.Never);
 
             convertedValue.Should().Be(AutoIncrementValueGenerator.GeneratedValue);

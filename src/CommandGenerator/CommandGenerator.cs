@@ -205,6 +205,7 @@ namespace Kros.KORM.CommandGenerator
                 if (command.Parameters.Contains(paramName))
                 {
                     DbParameter parameter = command.Parameters[paramName];
+                    SetColumnValueFromValueGenerator(colInfo, item, valueGenerated);
                     object val = GetColumnValue(colInfo, item, valueGenerated);
                     parameter.Value = val ?? System.DBNull.Value;
                 }
@@ -268,27 +269,22 @@ namespace Kros.KORM.CommandGenerator
         /// <inheritdoc/>
         public object GetColumnValue(ColumnInfo columnInfo, T item, ValueGenerated valueGenerated)
         {
-            if (HasValueGeneratorOnInsert(columnInfo) && (valueGenerated == ValueGenerated.OnUpdate))
-            {
-                return GetValue();
-            }
-
-            if (TryGetValueFromValueGenerators(columnInfo, valueGenerated, out object generatorValue))
-            {
-                columnInfo.PropertyInfo.SetValue(item, generatorValue);
-                return generatorValue;
-            }
-
-            object value = GetValue();
+            object value = columnInfo.PropertyInfo.GetValue(item, null);
             IConverter converter = ConverterHelper.GetConverter(columnInfo, value?.GetType());
             if (converter != null)
             {
                 value = converter.ConvertBack(value);
             }
-
-            object GetValue() => columnInfo.PropertyInfo.GetValue(item, null);
-
             return value;
+        }
+
+        public void SetColumnValueFromValueGenerator(ColumnInfo columnInfo, T item, ValueGenerated valueGenerated)
+        {
+            if ((!HasValueGeneratorOnInsert(columnInfo) || valueGenerated != ValueGenerated.OnUpdate) &&
+                TryGetValueFromValueGenerators(columnInfo, valueGenerated, out object generatorValue))
+            {
+                columnInfo.PropertyInfo.SetValue(item, generatorValue);
+            }
         }
 
         private bool HasValueGeneratorOnInsert(ColumnInfo columnInfo)
