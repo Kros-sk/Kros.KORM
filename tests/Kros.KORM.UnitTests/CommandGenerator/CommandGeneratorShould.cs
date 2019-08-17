@@ -45,7 +45,7 @@ namespace Kros.KORM.UnitTests.CommandGenerator
         [Fact]
         public void HaveCorrectUpdateCommandText()
         {
-            const string expectedQuery = "UPDATE [Foo] SET [Salary] = @Salary WHERE ([IdRow] = @IdRow)";
+            const string expectedQuery = "UPDATE [Foo] SET [Salary] = @Salary, [PropertyValueGenerator] = @PropertyValueGenerator WHERE ([IdRow] = @IdRow)";
 
             DbCommand update = GetFooGenerator().GetUpdateCommand();
 
@@ -217,7 +217,7 @@ namespace Kros.KORM.UnitTests.CommandGenerator
             provider.GetCommandForCurrentTransaction().Returns(a => { return new SqlCommand(); });
 
             IQuery<Foo> query = CreateFooQuery();
-            query.Select(p => new { p.Id, p.Plat });
+            query.Select(p => new { p.Id, p.Plat, p.PropertyValueGenerator });
             return new CommandGenerator<Foo>(GetFooTableInfo(), provider, query);
         }
 
@@ -247,7 +247,13 @@ namespace Kros.KORM.UnitTests.CommandGenerator
                 new ColumnInfo(){ Name = "PropertyStringGuid", PropertyInfo = GetPropertyInfo<Foo>("PropertyStringGuid")},
                 new ColumnInfo(){ Name = "PropertyEnum",  PropertyInfo = GetPropertyInfo<Foo>("PropertyEnum")},
                 new ColumnInfo(){ Name = "PropertyDateTimeNullable", PropertyInfo = GetPropertyInfo<Foo>("PropertyDateTimeNullable")},
-                new ColumnInfo(){ Name = "PropertyEnumConv", PropertyInfo = GetPropertyInfo<Foo>("PropertyEnumConv"), Converter = new TestEnumConverter()}
+                new ColumnInfo(){ Name = "PropertyEnumConv", PropertyInfo = GetPropertyInfo<Foo>("PropertyEnumConv"), Converter = new TestEnumConverter()},
+                new ColumnInfo(){
+                    Name = "PropertyValueGenerator",
+                    PropertyInfo = GetPropertyInfo<Foo>("PropertyValueGenerator"),
+                    ValueGenerator = new AutoIncrementValueGenerator(),
+                    ValueGenerated = ValueGenerated.OnUpdate
+                }
             };
 
             if (withIdRow)
@@ -363,6 +369,9 @@ namespace Kros.KORM.UnitTests.CommandGenerator
 
             [Converter(typeof(TestEnumConverter))]
             public TestEnum PropertyEnumConv { get; set; }
+
+            [Alias("PropertyValueGenerator")]
+            public int PropertyValueGenerator { get; set; }
         }
 
         private class FooIdentity
