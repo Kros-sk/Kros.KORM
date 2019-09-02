@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Text;
 
 namespace Kros.KORM.Query.Sql
@@ -58,6 +59,7 @@ namespace Kros.KORM.Query.Sql
             _columnsPosition = 0;
             LinqParameters = new Parameters();
             Orders.Clear();
+            MemberExpressionStack.Clear();
 
             Visit(expression);
 
@@ -77,6 +79,7 @@ namespace Kros.KORM.Query.Sql
 
             LinqParameters = new Parameters();
             LinqStringBuilder = new StringBuilder();
+            MemberExpressionStack.Clear();
 
             Visit(whereExpression);
 
@@ -282,6 +285,18 @@ namespace Kros.KORM.Query.Sql
         #region LINQ
 
         /// <summary>
+        /// Returns the last <see cref="MemberExpression"/> node in the <see cref="MemberExpressionStack"/> or
+        /// <see langword="null"/> if the stack is empty.
+        /// </summary>
+        protected MemberExpression PreviousMemberExpression
+            => MemberExpressionStack.Count == 0 ? null : MemberExpressionStack.Peek();
+
+        /// <summary>
+        /// Stack for <see cref="MemberExpression"/> nodes.
+        /// </summary>
+        protected Stack<MemberExpression> MemberExpressionStack { get; } = new Stack<MemberExpression>();
+
+        /// <summary>
         /// Get root select expression.
         /// </summary>
         protected SelectExpression SelectExpression { get; private set; }
@@ -290,6 +305,16 @@ namespace Kros.KORM.Query.Sql
         /// Gets the linq string builder.
         /// </summary>
         protected StringBuilder LinqStringBuilder { get; private set; }
+
+        /// <summary>
+        /// Adds new parameter to the SQL with specified <paramref name="value"/>.
+        /// </summary>
+        /// <param name="value">The value of the SQL parameter.</param>
+        protected void AddParameterWithValue(object value)
+        {
+            LinqStringBuilder.Append(LinqParameters.GetNextParamName());
+            LinqParameters.AddParameter(value);
+        }
 
         /// <summary>
         /// Gets the linq query parameters.
@@ -366,33 +391,40 @@ namespace Kros.KORM.Query.Sql
         }
 
         private static bool IsVbOperatorsExpression(MethodCallExpression mcExp)
-            => ((mcExp.Method.DeclaringType.FullName == VbOperatorsClassName) ||
-                                mcExp.Method.DeclaringType.FullName == VbEmbeddedOperatorsClassName);
+            => (mcExp.Method.DeclaringType.FullName == VbOperatorsClassName) ||
+                (mcExp.Method.DeclaringType.FullName == VbEmbeddedOperatorsClassName);
 
         /// <summary>
         /// Visits the method call.
         /// </summary>
-        /// <param name="m">The method call expression.</param>
+        /// <param name="exp">The method call expression.</param>
         /// <returns>
         /// Reuced expression
         /// </returns>
-        protected override Expression VisitMethodCall(MethodCallExpression m)
+        protected override Expression VisitMethodCall(MethodCallExpression exp)
         {
-            var expression = PartialEvaluator.Eval(m, CanBeEvaluatedLocally) as MethodCallExpression;
+            Expression evaluated = PartialEvaluator.Eval(exp, CanBeEvaluatedLocally);
 
-            if (expression.Method.DeclaringType == typeof(Queryable))
+            if (evaluated is ConstantExpression constantExp)
             {
-                VisitLinqMethods(expression);
-
-                return Visit(expression.Arguments[0]);
+                AddParameterWithValue(GetConstantExpressionValue(constantExp));
+                return evaluated;
             }
 
-            if (expression.Method.DeclaringType == typeof(string))
+            if (evaluated is MethodCallExpression methodCallExp)
             {
-                return VisitStringMethods(expression);
-            }
+                if (methodCallExp.Method.DeclaringType == typeof(Queryable))
+                {
+                    VisitLinqMethods(methodCallExp);
 
-            return ThrowNotSupportedException(expression);
+                    return Visit(methodCallExp.Arguments[0]);
+                }
+                if (methodCallExp.Method.DeclaringType == typeof(string))
+                {
+                    return VisitStringMethods(methodCallExp);
+                }
+            }
+            return ThrowNotSupportedException(exp);
         }
 
         /// <summary>
@@ -787,20 +819,38 @@ namespace Kros.KORM.Query.Sql
             }
             else
             {
-                var type = expression.Value.GetType();
+                AddParameterWithValue(GetConstantExpressionValue(expression));
+            }
+            return expression;
+        }
 
-                if (Type.GetTypeCode(type) == TypeCode.Object && (type != typeof(Guid)))
+        /// <summary>
+        /// Returns value of constant expression <paramref name="expression"/>.
+        /// </summary>
+        /// <param name="expression">Expression.</param>
+        /// <returns>Value of the <paramref name="expression"/>.</returns>
+        protected object GetConstantExpressionValue(ConstantExpression expression)
+        {
+            object val = expression.Value;
+            MemberExpression prevNode;
+            while ((prevNode = PreviousMemberExpression) != null)
+            {
+                if (prevNode.Member is FieldInfo fi)
                 {
-                    throw new NotSupportedException(string.Format(Resources.ConstantIsNotSupported, expression.Value));
+                    val = fi.GetValue(val);
+                }
+                else if (prevNode.Member is PropertyInfo pi)
+                {
+                    val = pi.GetValue(val);
                 }
                 else
                 {
-                    LinqStringBuilder.Append(LinqParameters.GetNextParamName());
-                    LinqParameters.AddParameter(expression.Value);
+                    throw new NotSupportedException(
+                        string.Format(Resources.Error_CannotGetValueOfConstantExpression, expression));
                 }
+                MemberExpressionStack.Pop();
             }
-
-            return expression;
+            return val;
         }
 
         /// <summary>
@@ -814,18 +864,26 @@ namespace Kros.KORM.Query.Sql
                 (expression.Expression.NodeType == ExpressionType.Parameter ||
                  expression.Expression.NodeType == ExpressionType.Convert))
             {
-                var columnInfo = DatabaseMapper.GetTableInfo(expression.Member.DeclaringType).GetColumnInfoByPropertyName(expression.Member.Name);
+                ColumnInfo columnInfo = DatabaseMapper.GetTableInfo(expression.Member.DeclaringType)
+                    .GetColumnInfoByPropertyName(expression.Member.Name);
                 LinqStringBuilder.Append(columnInfo.Name);
                 return expression;
             }
-            throw new NotSupportedException(string.Format(Resources.MemberIsNotSupported, expression.Member.Name));
+
+            MemberExpressionStack.Push(expression);
+            Expression result = base.VisitMember(expression);
+            if (PreviousMemberExpression == expression)
+            {
+                MemberExpressionStack.Pop();
+            }
+            return result;
         }
 
         /// <summary>
         /// Visits the string methods.
         /// </summary>
         /// <param name="expression">The expression.</param>
-        /// <exception cref="System.NotSupportedException">If this <see cref="System.String"/> method is not supported.</exception>
+        /// <exception cref="NotSupportedException">If this <see cref="string"/> method is not supported.</exception>
         protected virtual Expression VisitStringMethods(MethodCallExpression expression)
         {
             switch (expression.Method.Name)
@@ -871,6 +929,8 @@ namespace Kros.KORM.Query.Sql
         /// <param name="expression">The expression.</param>
         protected virtual Expression BindSubstring(MethodCallExpression expression)
         {
+            const int substringMaxLength = 8000;
+
             LinqStringBuilder.Append("SUBSTRING(");
             Visit(expression.Object);
             LinqStringBuilder.Append(", ");
@@ -882,8 +942,7 @@ namespace Kros.KORM.Query.Sql
             }
             else
             {
-                LinqStringBuilder.Append(LinqParameters.GetNextParamName());
-                LinqParameters.AddParameter(8000);
+                AddParameterWithValue(substringMaxLength);
             }
             LinqStringBuilder.Append(")");
             return expression;

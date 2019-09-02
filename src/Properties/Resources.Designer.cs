@@ -169,6 +169,15 @@ namespace Kros.KORM.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cannot get value of constant expression &quot;{0}&quot;..
+        /// </summary>
+        internal static string Error_CannotGetValueOfConstantExpression {
+            get {
+                return ResourceManager.GetString("Error_CannotGetValueOfConstantExpression", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Connection string is not set..
         /// </summary>
         internal static string Error_ConnectionStringNotSet {

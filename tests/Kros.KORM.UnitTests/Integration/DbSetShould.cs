@@ -266,6 +266,29 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
 
         #region Delete Data
 
+        private class DeleteItem
+        {
+            public int Value { get; set; }
+            public int GetId() => 1;
+            public DeleteSubItem Sub1 { get; } = new DeleteSubItem();
+        }
+
+        private class DeleteSubItem
+        {
+            public DeleteSubSubItem Sub2 { get; } = new DeleteSubSubItem();
+        }
+
+        private class DeleteSubSubItem
+        {
+            public int Value { get; set; }
+            public int GetId() => 1;
+            public int GetId(int value1, int value2) => value1 + value2;
+        }
+
+        private int DeleteGetId() => 1;
+
+        private int DeleteGetId(int p1, int p2) => p1 + p2;
+
         [Fact]
         public void DeleteData()
         {
@@ -314,6 +337,23 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
         }
 
         [Fact]
+        public async Task DeleteDataByIdUsingVariableAsync()
+        {
+            using (var korm = CreateDatabase(CreateTable_TestTable, InsertDataScript))
+            {
+                var dbSet = korm.Query<Person>().AsDbSet();
+                int tmp = 1;
+                dbSet.Delete(tmp);
+
+                await dbSet.CommitChangesAsync();
+
+                korm.Query<Person>()
+                    .Should()
+                    .NotContain(p => p.Id == 1);
+            }
+        }
+
+        [Fact]
         public async Task DeleteDataByIdsAsync()
         {
             using (var korm = CreateDatabase(CreateTable_TestTable, InsertDataScript))
@@ -335,6 +375,111 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
             {
                 var dbSet = korm.Query<Person>().AsDbSet();
                 dbSet.Delete(p => p.Id == 1);
+
+                await dbSet.CommitChangesAsync();
+
+                korm.Query<Person>()
+                    .Should()
+                    .NotContain(p => p.Id == 1);
+            }
+        }
+
+        [Fact]
+        public async Task DeleteDataByLinqConditionUsingVariableAsync()
+        {
+            using (var korm = CreateDatabase(CreateTable_TestTable, InsertDataScript))
+            {
+                var dbSet = korm.Query<Person>().AsDbSet();
+                int tmp = 1;
+                dbSet.Delete(p => p.Id == tmp);
+
+                await dbSet.CommitChangesAsync();
+
+                korm.Query<Person>()
+                    .Should()
+                    .NotContain(p => p.Id == 1);
+            }
+        }
+
+        [Fact]
+        public async Task DeleteDataByLinqConditionUsingPropertyAsync()
+        {
+            using (var korm = CreateDatabase(CreateTable_TestTable, InsertDataScript))
+            {
+                var dbSet = korm.Query<Person>().AsDbSet();
+                var item = new DeleteItem
+                {
+                    Value = 1
+                };
+                dbSet.Delete(p => p.Id == item.Value);
+
+                await dbSet.CommitChangesAsync();
+
+                korm.Query<Person>()
+                    .Should()
+                    .NotContain(p => p.Id == 1);
+            }
+        }
+
+        [Fact]
+        public async Task DeleteDataByLinqConditionUsingNestedPropertyAsync()
+        {
+            using (var korm = CreateDatabase(CreateTable_TestTable, InsertDataScript))
+            {
+                var dbSet = korm.Query<Person>().AsDbSet();
+                var item = new DeleteItem();
+                item.Sub1.Sub2.Value = 1;
+                dbSet.Delete(p => p.Id == item.Sub1.Sub2.Value);
+
+                await dbSet.CommitChangesAsync();
+
+                korm.Query<Person>()
+                    .Should()
+                    .NotContain(p => p.Id == 1);
+            }
+        }
+
+        [Fact]
+        public async Task DeleteDataByLinqConditionUsingMethodAsync()
+        {
+            using (var korm = CreateDatabase(CreateTable_TestTable, InsertDataScript))
+            {
+                var dbSet = korm.Query<Person>().AsDbSet();
+                dbSet.Delete(p => p.Id == DeleteGetId(0, DeleteGetId()));
+
+                await dbSet.CommitChangesAsync();
+
+                korm.Query<Person>()
+                    .Should()
+                    .NotContain(p => p.Id == 1);
+            }
+        }
+
+        [Fact]
+        public async Task DeleteDataByLinqConditionUsingMethodInAnotherClassAsync()
+        {
+            using (var korm = CreateDatabase(CreateTable_TestTable, InsertDataScript))
+            {
+                var dbSet = korm.Query<Person>().AsDbSet();
+                var item = new DeleteItem();
+                dbSet.Delete(p => p.Id == item.GetId());
+
+                await dbSet.CommitChangesAsync();
+
+                korm.Query<Person>()
+                    .Should()
+                    .NotContain(p => p.Id == 1);
+            }
+        }
+
+        [Fact]
+        public async Task DeleteDataByLinqConditionUsingSubMethodInAnotherClassAsync()
+        {
+            using (var korm = CreateDatabase(CreateTable_TestTable, InsertDataScript))
+            {
+                var dbSet = korm.Query<Person>().AsDbSet();
+                var item = new DeleteItem();
+                dbSet.Delete(p => p.Id == item.Sub1.Sub2.GetId(0, item.Sub1.Sub2.GetId()));
 
                 await dbSet.CommitChangesAsync();
 
