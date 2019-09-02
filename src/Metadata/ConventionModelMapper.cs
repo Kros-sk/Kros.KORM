@@ -249,10 +249,14 @@ namespace Kros.KORM.Metadata
         {
             if (_entities.TryGetValue(modelType, out EntityMapper entity))
             {
-                if (entity.ValueGenerators.TryGetValue(columnInfo.PropertyInfo.Name, out IValueGenerator valueGenerator))
+                string propertyName = columnInfo.PropertyInfo.Name;
+                if (entity.ValueGenerators.TryGetValue(propertyName, out IValueGenerator valueGenerator))
                 {
-                    columnInfo.ValueGenerated = entity.ValueGenerated;
                     columnInfo.ValueGenerator = valueGenerator;
+                }
+                if (entity.ValueGenerated.TryGetValue(propertyName, out ValueGenerated valueGenerated))
+                {
+                    columnInfo.ValueGenerated = valueGenerated;
                 }
             }
         }
@@ -427,7 +431,7 @@ namespace Kros.KORM.Metadata
             }
 
             entity.ValueGenerators.Add(propertyName, valueGenerator);
-            entity.ValueGenerated = valueGenerated;
+            entity.ValueGenerated.Add(propertyName, valueGenerated);
         }
 
         void IModelMapperInternal.SetInjector<TEntity>(IInjector injector) => GetEntity<TEntity>().Injector = injector;

@@ -278,7 +278,7 @@ namespace Kros.KORM.CommandGenerator
             return value;
         }
 
-        public void SetColumnValueFromValueGenerator(ColumnInfo columnInfo, T item, ValueGenerated valueGenerated)
+        internal void SetColumnValueFromValueGenerator(ColumnInfo columnInfo, T item, ValueGenerated valueGenerated)
         {
             if ((!HasValueGeneratorOnInsert(columnInfo) || valueGenerated != ValueGenerated.OnUpdate) &&
                 TryGetValueFromValueGenerators(columnInfo, valueGenerated, out object generatorValue))

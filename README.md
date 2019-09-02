@@ -343,6 +343,11 @@ For using value generators you can use these three methods in `DatabaseConfigura
 - `.UseValueGeneratorOnUpdate<YourGenerator>()` - values will be generated on update to the database.
 - `.UseValueGeneratorOnInsertOrUpdate<YourGenerator>()`  - values will be generated on insert and update to the database.
 
+
+#### Currently predefined value generators:
+
+- __CurrentTimeValueGenerator__ - Generator generates date and time that are set to the current Coordinated Universal Time (UTC).
+
 ### OnAfterMaterialize
 
 If you want to do some special action right after materialisation is done (for example to do some calculations) or you want to get some other values from source reader, that can not by processed automatically, your class should implement interface [IMaterialize](https://kros-sk.github.io/Kros.Libs.Documentation/api/Kros.KORM.Materializer.IMaterialize.html).
