@@ -9,9 +9,9 @@ namespace Kros.KORM.Data
 {
     internal class KormDataReader<T> : IBulkActionDataReader
     {
-        private IEnumerable<T> _data;
-        private ICommandGenerator<T> _generator;
-        private List<ColumnInfo> _columns;
+        private readonly IEnumerable<T> _data;
+        private readonly ICommandGenerator<T> _generator;
+        private readonly List<ColumnInfo> _columns;
 
         public KormDataReader(IEnumerable<T> data, ICommandGenerator<T> generator)
         {
@@ -21,7 +21,7 @@ namespace Kros.KORM.Data
             _data = data;
             DataEnumerator = _data.GetEnumerator();
             _generator = generator;
-            _columns = _generator.GetQueryColumns().ToList();
+            _columns = _generator.GetQueryColumns(ValueGenerated.Never).ToList();
         }
 
         protected IEnumerator<T> DataEnumerator { get; private set; }
@@ -45,7 +45,7 @@ namespace Kros.KORM.Data
 
         public virtual object GetValue(int i)
         {
-            return _generator.GetColumnValue(_columns[i], DataEnumerator.Current);
+            return _generator.GetColumnValue(_columns[i], DataEnumerator.Current, ValueGenerated.Never);
         }
 
         public string GetString(int i) => (string)GetValue(i);

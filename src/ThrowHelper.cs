@@ -51,5 +51,14 @@ namespace Kros.KORM
                     string.Format(Resources.MethodNotSupportedForCompositePrimaryKey, methodName), tableInfo.Name);
             }
         }
-}
+
+        public static void ValueGeneratorAlreadyConfigured<TEntity>(
+            string propertyName, IValueGenerator valueGenerator, IValueGenerator currentValueGenerator)
+            => throw new InvalidOperationException(
+                string.Format(Resources.ThrowHelper_ValueGeneratorAlreadyConfigured,
+                    valueGenerator.GetType().FullName,
+                    propertyName,
+                    typeof(TEntity).Name,
+                    currentValueGenerator.GetType().FullName));
+    }
 }

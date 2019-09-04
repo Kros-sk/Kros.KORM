@@ -45,7 +45,7 @@ namespace Kros.KORM.UnitTests.CommandGenerator
         [Fact]
         public void HaveCorrectUpdateCommandText()
         {
-            const string expectedQuery = "UPDATE [Foo] SET [Salary] = @Salary WHERE ([IdRow] = @IdRow)";
+            const string expectedQuery = "UPDATE [Foo] SET [Salary] = @Salary, [PropertyValueGenerator] = @PropertyValueGenerator WHERE ([IdRow] = @IdRow)";
 
             DbCommand update = GetFooGenerator().GetUpdateCommand();
 
@@ -119,7 +119,7 @@ namespace Kros.KORM.UnitTests.CommandGenerator
 
             var generator = new CommandGenerator<Foo>(GetFooTableInfo(), provider, query);
             DbCommand insert = generator.GetInsertCommand();
-            generator.FillCommand(insert, item);
+            generator.FillCommand(insert, item, ValueGenerated.OnInsert);
 
             insert.Parameters["@IdRow"].Value.Should().Be(336);
             insert.Parameters["@Salary"].Value.Should().Be((decimal)1500);
@@ -167,32 +167,33 @@ namespace Kros.KORM.UnitTests.CommandGenerator
         [Fact]
         public void UseConverter()
         {
-            var idColumn = new ColumnInfo()
-            {
-                Name = nameof(ConverterDto.Id),
-                PropertyInfo = GetPropertyInfo<ConverterDto>(nameof(ConverterDto.Id))
-            };
-            var nameColumn = new ColumnInfo()
-            {
-                Name = nameof(ConverterDto.Name),
-                PropertyInfo = GetPropertyInfo<ConverterDto>(nameof(ConverterDto.Name)),
-                Converter = new NullToStringConverter()
-            };
-            var tableInfo = new TableInfo(new[] { idColumn, nameColumn }, new List<PropertyInfo>(), null)
-            {
-                Name = nameof(ConverterDto)
-            };
+            TableInfo tableInfo = CreateTableInfoFromDto<ConverterDto>();
+            tableInfo.Columns.Single(c => c.Name == nameof(ConverterDto.Name)).Converter = new NullToStringConverter();
+            ColumnInfo nameColumn = tableInfo.Columns.Single(col => col.Name == nameof(ConverterDto.Name));
 
-            KORM.Query.IQueryProvider queryProvider = Substitute.For<KORM.Query.IQueryProvider>();
-            IDatabaseMapper mapper = Substitute.For<IDatabaseMapper>();
-            mapper.GetTableInfo<ConverterDto>().Returns(tableInfo);
-            var query = new Query<ConverterDto>(mapper, queryProvider);
+            CommandGenerator<ConverterDto> commandGenerator = CreateCommandGenerator<ConverterDto>(tableInfo);
 
-            var generator = new CommandGenerator<ConverterDto>(tableInfo, queryProvider, query);
             var dto = new ConverterDto() { Id = 1, Name = null };
-            var convertedValue = generator.GetColumnValue(nameColumn, dto);
+            var convertedValue = commandGenerator.GetColumnValue(nameColumn, dto, ValueGenerated.Never);
 
             convertedValue.Should().Be("NULL");
+        }
+
+        [Fact]
+        public void UseValueGenerator()
+        {
+            TableInfo tableInfo = CreateTableInfoFromDto<ConverterDto>();
+
+            tableInfo.Columns.Single(c => c.Name == nameof(ConverterDto.Id)).ValueGenerator = new AutoIncrementValueGenerator();
+            ColumnInfo idColumn = tableInfo.Columns.Single(col => col.Name == nameof(ConverterDto.Id));
+
+            CommandGenerator<ConverterDto> commandGenerator = CreateCommandGenerator<ConverterDto>(tableInfo);
+
+            var dto = new ConverterDto() { Id = 1, Name = null };
+            commandGenerator.SetColumnValueFromValueGenerator(idColumn, dto, ValueGenerated.Never);
+            var convertedValue = commandGenerator.GetColumnValue(idColumn, dto, ValueGenerated.Never);
+
+            convertedValue.Should().Be(AutoIncrementValueGenerator.GeneratedValue);
         }
 
         #endregion
@@ -217,7 +218,7 @@ namespace Kros.KORM.UnitTests.CommandGenerator
             provider.GetCommandForCurrentTransaction().Returns(a => { return new SqlCommand(); });
 
             IQuery<Foo> query = CreateFooQuery();
-            query.Select(p => new { p.Id, p.Plat });
+            query.Select(p => new { p.Id, p.Plat, p.PropertyValueGenerator });
             return new CommandGenerator<Foo>(GetFooTableInfo(), provider, query);
         }
 
@@ -247,7 +248,13 @@ namespace Kros.KORM.UnitTests.CommandGenerator
                 new ColumnInfo(){ Name = "PropertyStringGuid", PropertyInfo = GetPropertyInfo<Foo>("PropertyStringGuid")},
                 new ColumnInfo(){ Name = "PropertyEnum",  PropertyInfo = GetPropertyInfo<Foo>("PropertyEnum")},
                 new ColumnInfo(){ Name = "PropertyDateTimeNullable", PropertyInfo = GetPropertyInfo<Foo>("PropertyDateTimeNullable")},
-                new ColumnInfo(){ Name = "PropertyEnumConv", PropertyInfo = GetPropertyInfo<Foo>("PropertyEnumConv"), Converter = new TestEnumConverter()}
+                new ColumnInfo(){ Name = "PropertyEnumConv", PropertyInfo = GetPropertyInfo<Foo>("PropertyEnumConv"), Converter = new TestEnumConverter()},
+                new ColumnInfo(){
+                    Name = "PropertyValueGenerator",
+                    PropertyInfo = GetPropertyInfo<Foo>("PropertyValueGenerator"),
+                    ValueGenerator = new AutoIncrementValueGenerator(),
+                    ValueGenerated = ValueGenerated.OnUpdate
+                }
             };
 
             if (withIdRow)
@@ -294,6 +301,33 @@ namespace Kros.KORM.UnitTests.CommandGenerator
 
         private PropertyInfo GetPropertyInfo<T>(string propertyName) => typeof(T).GetProperty(propertyName);
 
+        private TableInfo CreateTableInfoFromDto<T>()
+        {
+            var columns = new List<ColumnInfo>();
+            foreach (PropertyInfo property in typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance))
+            {
+                columns.Add(new ColumnInfo()
+                {
+                    Name = property.Name,
+                    PropertyInfo = property
+                });
+            }
+            return new TableInfo(columns, new List<PropertyInfo>(), null)
+            {
+                Name = typeof(T).Name
+            };
+        }
+
+        private CommandGenerator<T> CreateCommandGenerator<T>(TableInfo tableInfo)
+        {
+            IDatabaseMapper mapper = Substitute.For<IDatabaseMapper>();
+            mapper.GetTableInfo<T>().Returns(tableInfo);
+            KORM.Query.IQueryProvider queryProvider = Substitute.For<KORM.Query.IQueryProvider>();
+            var query = new Query<T>(mapper, queryProvider);
+
+            return new CommandGenerator<T>(tableInfo, queryProvider, query);
+        }
+
         private class ConverterDto
         {
             public int Id { get; set; }
@@ -336,6 +370,9 @@ namespace Kros.KORM.UnitTests.CommandGenerator
 
             [Converter(typeof(TestEnumConverter))]
             public TestEnum PropertyEnumConv { get; set; }
+
+            [Alias("PropertyValueGenerator")]
+            public int PropertyValueGenerator { get; set; }
         }
 
         private class FooIdentity
@@ -390,6 +427,12 @@ namespace Kros.KORM.UnitTests.CommandGenerator
                     return "V3";
                 }
             }
+        }
+
+        private class AutoIncrementValueGenerator : IValueGenerator
+        {
+            public const int GeneratedValue = 123;
+            public object GetValue() => GeneratedValue;
         }
 
         #endregion

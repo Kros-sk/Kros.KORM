@@ -101,6 +101,11 @@ namespace Kros.KORM.Metadata
                     {
                         modelMapper.SetConverter<TEntity>(propertyBuilder.PropertyName, propertyBuilder.Converter);
                     }
+                    if (propertyBuilder.ValueGenerator != null)
+                    {
+                        modelMapper.SetValueGenerator<TEntity>(
+                            propertyBuilder.PropertyName, propertyBuilder.ValueGenerator, propertyBuilder.ValueGenerated);
+                    }
                     if (propertyBuilder.Injector != null)
                     {
                         injectionConfig.Value.FillProperty(propertyBuilder.PropertyName, propertyBuilder.Injector);

@@ -1,4 +1,5 @@
 ﻿using Kros.KORM.Converter;
+using Kros.KORM.Properties;
 using Kros.Utils;
 using System;
 using System.Linq.Expressions;
@@ -13,6 +14,8 @@ namespace Kros.KORM.Metadata
         private string _columnName;
         private IConverter _converter;
         private bool _ignoreConverter = false;
+        private ValueGenerated _valueGenerated;
+        private IValueGenerator _valueGenerator;
         private Func<object> _injector;
 
         internal PropertyBuilder(IEntityTypePropertyBuilder<TEntity> entityTypeBuilder, string propertyName)
@@ -26,6 +29,8 @@ namespace Kros.KORM.Metadata
         internal string ColumnName => _columnName;
         internal IConverter Converter => _converter;
         internal bool IgnoreConverter => _ignoreConverter;
+        internal ValueGenerated ValueGenerated => _valueGenerated;
+        internal IValueGenerator ValueGenerator => _valueGenerator;
         internal Func<object> Injector => _injector;
 
         IEntityTypePropertyBuilder<TEntity> IPropertyBuilder<TEntity>.NoMap()
@@ -57,6 +62,39 @@ namespace Kros.KORM.Metadata
         {
             _ignoreConverter = true;
             return _entityTypeBuilder;
+        }
+
+        IEntityTypePropertyBuilder<TEntity> IMappedPropertyBuilder<TEntity>.UseValueGeneratorOnInsert<TValueGenerator>()
+            => ((IMappedPropertyBuilder<TEntity>)this).UseValueGeneratorOnInsert(new TValueGenerator());
+
+        IEntityTypePropertyBuilder<TEntity> IMappedPropertyBuilder<TEntity>.UseValueGeneratorOnInsert(IValueGenerator generator)
+        {
+            SetValueGeneratorAndValueGenerated(generator, ValueGenerated.OnInsert);
+            return _entityTypeBuilder;
+        }
+
+        IEntityTypePropertyBuilder<TEntity> IMappedPropertyBuilder<TEntity>.UseValueGeneratorOnUpdate<TValueGenerator>()
+            => ((IMappedPropertyBuilder<TEntity>)this).UseValueGeneratorOnUpdate(new TValueGenerator());
+
+        IEntityTypePropertyBuilder<TEntity> IMappedPropertyBuilder<TEntity>.UseValueGeneratorOnUpdate(IValueGenerator generator)
+        {
+            SetValueGeneratorAndValueGenerated(generator, ValueGenerated.OnUpdate);
+            return _entityTypeBuilder;
+        }
+
+        IEntityTypePropertyBuilder<TEntity> IMappedPropertyBuilder<TEntity>.UseValueGeneratorOnInsertOrUpdate<TValueGenerator>()
+            => ((IMappedPropertyBuilder<TEntity>)this).UseValueGeneratorOnInsertOrUpdate(new TValueGenerator());
+
+        IEntityTypePropertyBuilder<TEntity> IMappedPropertyBuilder<TEntity>.UseValueGeneratorOnInsertOrUpdate(IValueGenerator generator)
+        {
+            SetValueGeneratorAndValueGenerated(generator, ValueGenerated.OnInsertOrUpdate);
+            return _entityTypeBuilder;
+        }
+
+        private void SetValueGeneratorAndValueGenerated(IValueGenerator generator, ValueGenerated valueGenerated)
+        {
+            _valueGenerator = Check.NotNull(generator, nameof(generator));
+            _valueGenerated = valueGenerated;
         }
 
         IEntityTypePropertyBuilder<TEntity> IMappedPropertyBuilder<TEntity>.InjectValue(Func<object> injector)

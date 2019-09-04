@@ -224,6 +224,7 @@ namespace Kros.KORM.Metadata
             columnInfo.Name = GetColumnName(columnInfo, modelType);
 
             SetConverter(propertyInfo, columnInfo, modelType);
+            SetValueGenerator(columnInfo, modelType);
 
             return columnInfo;
         }
@@ -241,6 +242,22 @@ namespace Kros.KORM.Metadata
             if (columnInfo.Converter is null)
             {
                 columnInfo.Converter = GetConverterFromAttribute(propertyInfo);
+            }
+        }
+
+        private void SetValueGenerator(ColumnInfo columnInfo, Type modelType)
+        {
+            if (_entities.TryGetValue(modelType, out EntityMapper entity))
+            {
+                string propertyName = columnInfo.PropertyInfo.Name;
+                if (entity.ValueGenerators.TryGetValue(propertyName, out IValueGenerator valueGenerator))
+                {
+                    columnInfo.ValueGenerator = valueGenerator;
+                }
+                if (entity.ValueGenerated.TryGetValue(propertyName, out ValueGenerated valueGenerated))
+                {
+                    columnInfo.ValueGenerated = valueGenerated;
+                }
             }
         }
 
@@ -397,6 +414,24 @@ namespace Kros.KORM.Metadata
                 ThrowHelper.ConverterForTypeAlreadyConfigured<TEntity>(propertyType, converter, currentConverter);
             }
             entity.PropertyConverters.Add(propertyType, converter);
+        }
+
+        void IModelMapperInternal.SetValueGenerator<TEntity>(
+            string propertyName,
+            IValueGenerator valueGenerator,
+            ValueGenerated valueGenerated)
+        {
+            Check.NotNullOrWhiteSpace(propertyName, nameof(propertyName));
+            Check.NotNull(valueGenerator, nameof(valueGenerator));
+            EntityMapper entity = GetEntity<TEntity>();
+
+            if (entity.ValueGenerators.TryGetValue(propertyName, out IValueGenerator currentValueGenerator))
+            {
+                ThrowHelper.ValueGeneratorAlreadyConfigured<TEntity>(propertyName, valueGenerator, currentValueGenerator);
+            }
+
+            entity.ValueGenerators.Add(propertyName, valueGenerator);
+            entity.ValueGenerated.Add(propertyName, valueGenerated);
         }
 
         void IModelMapperInternal.SetInjector<TEntity>(IInjector injector) => GetEntity<TEntity>().Injector = injector;

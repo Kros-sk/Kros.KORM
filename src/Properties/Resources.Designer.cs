@@ -530,6 +530,15 @@ namespace Kros.KORM.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Trying to set value generator &quot;{0}&quot; for property &quot;{1}&quot; of entity &quot;{2}&quot;. Value generator is already set as &quot;{3}&quot;..
+        /// </summary>
+        internal static string ThrowHelper_ValueGeneratorAlreadyConfigured {
+            get {
+                return ResourceManager.GetString("ThrowHelper_ValueGeneratorAlreadyConfigured", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Type must be Enum type..
         /// </summary>
         internal static string TypeMustBeEnumType {
@@ -562,6 +571,15 @@ namespace Kros.KORM.Properties {
         internal static string UseConnectionMustBeCall {
             get {
                 return ResourceManager.GetString("UseConnectionMustBeCall", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ValueGenerated Never is not supported when using &quot;{0}&quot;..
+        /// </summary>
+        internal static string ValueGeneratedNeverNotSupported {
+            get {
+                return ResourceManager.GetString("ValueGeneratedNeverNotSupported", resourceCulture);
             }
         }
     }

@@ -1,10 +1,5 @@
 ﻿using Kros.KORM.Converter;
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
 using System.Reflection;
-using System.Text;
 
 namespace Kros.KORM.Metadata
 {
@@ -29,6 +24,16 @@ namespace Kros.KORM.Metadata
         /// Gets or sets the data converter.
         /// </summary>
         public IConverter Converter { get; set; }
+
+        /// <summary>
+        /// Gets or sets when value is generated for this column.
+        /// </summary>
+        public ValueGenerated ValueGenerated { get; set; }
+
+        /// <summary>
+        /// Gets or sets value generator for this column.
+        /// </summary>
+        public IValueGenerator ValueGenerator { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this column is primary key.
