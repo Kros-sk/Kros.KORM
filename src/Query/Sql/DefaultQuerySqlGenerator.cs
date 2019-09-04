@@ -18,6 +18,16 @@ namespace Kros.KORM.Query.Sql
     /// <seealso cref="Kros.KORM.Query.Sql.ISqlExpressionVisitor" />
     public class DefaultQuerySqlGenerator : ExpressionVisitor, ISqlExpressionVisitor
     {
+        /// <summary>
+        /// SQL Server boolean value <see langword="true"/>.
+        /// </summary>
+        protected const string SqlTrue = "1";
+
+        /// <summary>
+        /// SQL Server boolean value <see langword="false"/>.
+        /// </summary>
+        protected const string SqlFalse = "0";
+
         private const string VbOperatorsClassName = "Microsoft.VisualBasic.CompilerServices.Operators";
         private const string VbEmbeddedOperatorsClassName = "Microsoft.VisualBasic.CompilerServices.EmbeddedOperators";
 
@@ -321,6 +331,30 @@ namespace Kros.KORM.Query.Sql
         /// </summary>
         protected Parameters LinqParameters { get; private set; }
 
+        private string GetColumnNameFromMember(MemberExpression node)
+        {
+            ColumnInfo columnInfo = DatabaseMapper.GetTableInfo(node.Member.DeclaringType)
+                .GetColumnInfoByPropertyName(node.Member.Name);
+            return columnInfo.Name;
+        }
+
+        private void AppendMemberColumnName(MemberExpression node) => LinqStringBuilder.Append(GetColumnNameFromMember(node));
+
+        private void AppendBooleanCondition(MemberExpression node, bool value, bool negate)
+        {
+            string op = negate ? "<>" : "=";
+            LinqStringBuilder.AppendFormat("({0} {1} {2})", GetColumnNameFromMember(node), op, value ? SqlTrue : SqlFalse);
+        }
+
+        private bool IsBooleanPropertyExpression(Expression node)
+        {
+            if ((node is MemberExpression memberExp) && (memberExp.Member is PropertyInfo propInfo))
+            {
+                return propInfo.PropertyType == typeof(bool);
+            }
+            return false;
+        }
+
         private bool CanBeEvaluatedLocally(Expression expression)
         {
             if (expression is ConstantExpression cex)
@@ -379,6 +413,11 @@ namespace Kros.KORM.Query.Sql
         /// </returns>
         public override Expression Visit(Expression node)
         {
+            if (IsBooleanPropertyExpression(node))
+            {
+                AppendBooleanCondition((MemberExpression)node, true, false);
+                return node;
+            }
             if (node is BinaryExpression binExp)
             {
                 if (binExp.Left is MethodCallExpression mcExp && IsVbOperatorsExpression(mcExp))
@@ -692,8 +731,15 @@ namespace Kros.KORM.Query.Sql
             switch (expression.NodeType)
             {
                 case ExpressionType.Not:
-                    LinqStringBuilder.Append(" NOT ");
-                    Visit(expression.Operand);
+                    if (IsBooleanPropertyExpression(expression.Operand))
+                    {
+                        AppendBooleanCondition((MemberExpression)expression.Operand, true, true);
+                    }
+                    else
+                    {
+                        LinqStringBuilder.Append(" NOT ");
+                        Visit(expression.Operand);
+                    }
                     break;
                 case ExpressionType.Convert:
                 case ExpressionType.ConvertChecked:
@@ -714,44 +760,32 @@ namespace Kros.KORM.Query.Sql
         /// <exception cref="System.NotSupportedException">If this binary expression is not supported.</exception>
         protected override Expression VisitBinary(BinaryExpression expression)
         {
+            bool hasBooleanOperator = HasBooleanOperator(expression);
             LinqStringBuilder.Append("(");
-
-            Visit(expression.Left);
-
-            var op = GetOperator(expression);
-
-            switch (expression.NodeType)
-            {
-                case ExpressionType.And:
-                case ExpressionType.AndAlso:
-                case ExpressionType.Or:
-                case ExpressionType.OrElse:
-                case ExpressionType.Equal:
-                case ExpressionType.NotEqual:
-                case ExpressionType.LessThan:
-                case ExpressionType.LessThanOrEqual:
-                case ExpressionType.GreaterThan:
-                case ExpressionType.GreaterThanOrEqual:
-                case ExpressionType.Add:
-                case ExpressionType.AddChecked:
-                case ExpressionType.Subtract:
-                case ExpressionType.SubtractChecked:
-                case ExpressionType.Multiply:
-                case ExpressionType.MultiplyChecked:
-                case ExpressionType.Divide:
-                case ExpressionType.Modulo:
-                case ExpressionType.ExclusiveOr:
-                    LinqStringBuilder.Append($" {op} ");
-                    break;
-                default:
-                    throw new NotSupportedException(string.Format(Resources.BinaryOperatorIsNotSupported, expression.NodeType));
-            }
-
-            Visit(expression.Right);
-
+            ProcessBinaryExpressionOperand(expression.Left, hasBooleanOperator);
+            AppendOperator(expression);
+            ProcessBinaryExpressionOperand(expression.Right, hasBooleanOperator);
             LinqStringBuilder.Append(")");
-
             return expression;
+        }
+
+        private void ProcessBinaryExpressionOperand(Expression operand, bool hasBooleanOperator)
+        {
+            if (IsBooleanPropertyExpression(operand))
+            {
+                if (hasBooleanOperator)
+                {
+                    AppendBooleanCondition((MemberExpression)operand, true, false);
+                }
+                else
+                {
+                    AppendMemberColumnName((MemberExpression)operand);
+                }
+            }
+            else
+            {
+                Visit(operand);
+            }
         }
 
         /// <summary>
@@ -806,6 +840,25 @@ namespace Kros.KORM.Query.Sql
                 => Nullable.GetUnderlyingType(exp.Left.Type) != null;
         }
 
+        private void AppendOperator(BinaryExpression expression)
+        {
+            string op = GetOperator(expression);
+            if (string.IsNullOrEmpty(op))
+            {
+                throw new NotSupportedException(string.Format(Resources.BinaryOperatorIsNotSupported, expression.NodeType));
+            }
+            else
+            {
+                LinqStringBuilder.Append($" {op} ");
+            }
+        }
+
+        private bool HasBooleanOperator(BinaryExpression node)
+            => (node.NodeType == ExpressionType.And)
+                || (node.NodeType == ExpressionType.AndAlso)
+                || (node.NodeType == ExpressionType.Or)
+                || (node.NodeType == ExpressionType.OrElse);
+
         /// <summary>
         /// Visits the constant.
         /// </summary>
@@ -816,6 +869,10 @@ namespace Kros.KORM.Query.Sql
             if (expression.Value == null)
             {
                 LinqStringBuilder.Append("NULL");
+            }
+            else if (expression.Value.GetType() == typeof(bool))
+            {
+                LinqStringBuilder.Append((bool)expression.Value ? SqlTrue : SqlFalse);
             }
             else
             {
@@ -864,9 +921,7 @@ namespace Kros.KORM.Query.Sql
                 (expression.Expression.NodeType == ExpressionType.Parameter ||
                  expression.Expression.NodeType == ExpressionType.Convert))
             {
-                ColumnInfo columnInfo = DatabaseMapper.GetTableInfo(expression.Member.DeclaringType)
-                    .GetColumnInfoByPropertyName(expression.Member.Name);
-                LinqStringBuilder.Append(columnInfo.Name);
+                AppendMemberColumnName(expression);
                 return expression;
             }
 
