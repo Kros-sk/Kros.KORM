@@ -1,12 +1,67 @@
 ﻿using Kros.KORM.Metadata.Attribute;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using Xunit;
 
 namespace Kros.KORM.UnitTests.Query.Sql
 {
     public class LinqTranslatorShould : LinqTranslatorTestBase
     {
+        [Theory]
+        [MemberData(nameof(TranslateBooleanConditionsData))]
+        public void TranslateBooleanConditions(Expression<Func<DeleteDto, bool>> condition, string expectedWhere)
+        {
+            string expectedQuery = $"SELECT Id, IsDeleted FROM DeleteDto WHERE ({expectedWhere})";
+            var query = Query<DeleteDto>().Where(condition);
+            AreSame(query, expectedQuery);
+        }
+
+        public static IEnumerable<object[]> TranslateBooleanConditionsData()
+        {
+            yield return new object[]
+            {
+                (Expression<Func<DeleteDto, bool>>)(p => p.IsDeleted),
+                "(IsDeleted = 1)"
+            };
+            yield return new object[]
+            {
+                (Expression<Func<DeleteDto, bool>>)(p => !p.IsDeleted),
+                "(IsDeleted <> 1)"
+            };
+            yield return new object[]
+            {
+                (Expression<Func<DeleteDto, bool>>)(p => (p.IsDeleted == true) && p.IsDeleted),
+                "((IsDeleted = 1) AND (IsDeleted = 1))"
+            };
+            yield return new object[]
+            {
+                (Expression<Func<DeleteDto, bool>>)(p => (p.IsDeleted == false) || !p.IsDeleted),
+                "((IsDeleted = 0) OR (IsDeleted <> 1))"
+            };
+            yield return new object[]
+            {
+                (Expression<Func<DeleteDto, bool>>)(p => p.IsDeleted || (p.IsDeleted == true)),
+                "((IsDeleted = 1) OR (IsDeleted = 1))"
+            };
+            yield return new object[]
+            {
+                (Expression<Func<DeleteDto, bool>>)(p => !p.IsDeleted && (p.IsDeleted == false)),
+                "((IsDeleted <> 1) AND (IsDeleted = 0))"
+            };
+            yield return new object[]
+            {
+                (Expression<Func<DeleteDto, bool>>)(p => (false == p.IsDeleted) && !p.IsDeleted),
+                "((0 = IsDeleted) AND (IsDeleted <> 1))"
+            };
+            yield return new object[]
+            {
+                (Expression<Func<DeleteDto, bool>>)(p => (true == p.IsDeleted) && p.IsDeleted),
+                "((1 = IsDeleted) AND (IsDeleted = 1))"
+            };
+        }
+
         [Fact]
         public void EvaluateLambdaAndTranslateItToSql()
         {
@@ -51,7 +106,7 @@ namespace Kros.KORM.UnitTests.Query.Sql
         {
             var query = Query<Person>()
                 .Where(p => p.Address == "Zilina")
-                .OrderBy(p=> p.Id);
+                .OrderBy(p => p.Id);
 
             AreSame(query, "SELECT Id, FirstName, LastName, PostAddress FROM People" +
                            " WHERE ((PostAddress = @1))" +
@@ -99,6 +154,12 @@ namespace Kros.KORM.UnitTests.Query.Sql
 
             [Alias("PostAddress")]
             public string Address { get; set; }
+        }
+
+        public class DeleteDto
+        {
+            public int Id { get; set; }
+            public bool IsDeleted { get; set; }
         }
 
         class Foo
