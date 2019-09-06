@@ -33,6 +33,7 @@ To contribute with new topics/information or make changes, see [contributing](ht
 * [Convention model mapper](#convention-model-mapper)
 * [Configure model mapping by fluent api](#Configure-model-mapping-by-fluent-api)
 * [Converters](#converters)
+* [Value generators](#value-generators)
 * [OnAfterMaterialize](#onaftermaterialize)
 * [Property injection](#property-injection)
 * [Model builder](#model-builder)
