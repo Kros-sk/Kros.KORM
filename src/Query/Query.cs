@@ -22,7 +22,6 @@ namespace Kros.KORM.Query
 
         private IDatabaseMapper _databaseMapper;
         private IQueryProvider _provider;
-        private Expression _expression;
 
         #endregion
 
@@ -41,7 +40,7 @@ namespace Kros.KORM.Query
             _databaseMapper = databaseMapper;
             _provider = provider;
 
-            _expression = SelectExpression.Constant(_databaseMapper.GetTableInfo<T>(), this);
+            Expression = SelectExpression.Constant(_databaseMapper.GetTableInfo<T>(), this);
         }
 
         /// <summary>
@@ -54,7 +53,7 @@ namespace Kros.KORM.Query
             Check.NotNull(provider, nameof(provider));
 
             _provider = provider;
-            _expression = expression;
+            Expression = expression;
         }
 
         #endregion
@@ -75,7 +74,7 @@ namespace Kros.KORM.Query
         {
             Check.NotNullOrWhiteSpace(sql.Format, nameof(sql));
 
-            this.Expression = new SqlExpression(sql, args);
+            Expression = new SqlExpression(sql, args);
 
             return this;
         }
@@ -98,7 +97,7 @@ namespace Kros.KORM.Query
         {
             Check.NotNullOrWhiteSpace(selectPart, nameof(selectPart));
 
-            this.SelectExpression.SetColumnsExpression(new ColumnsExpression(selectPart));
+            SelectExpression.SetColumnsExpression(new ColumnsExpression(selectPart));
 
             return this;
         }
@@ -117,7 +116,7 @@ namespace Kros.KORM.Query
         {
             Check.NotNull(columns, nameof(columns));
 
-            this.SelectExpression.SetColumnsExpression(new ColumnsExpression(columns));
+            SelectExpression.SetColumnsExpression(new ColumnsExpression(columns));
 
             return this;
         }
@@ -138,7 +137,7 @@ namespace Kros.KORM.Query
         {
             Check.NotNull(selector, nameof(selector));
 
-            this.SelectExpression.SetColumnsExpression(ColumnsExpression.Create(selector,
+            SelectExpression.SetColumnsExpression(ColumnsExpression.Create(selector,
                 _databaseMapper.GetTableInfo<T>()));
 
             return this;
@@ -159,7 +158,7 @@ namespace Kros.KORM.Query
         {
             Check.NotNullOrWhiteSpace(table, nameof(table));
 
-            this.SelectExpression.SetTableExpression(new TableExpression(table));
+            SelectExpression.SetTableExpression(new TableExpression(table));
 
             return this;
         }
@@ -177,14 +176,14 @@ namespace Kros.KORM.Query
         {
             Check.NotNullOrWhiteSpace(whereCondition.Format, nameof(whereCondition));
 
-            this.SelectExpression.SetWhereExpression(new WhereExpression(whereCondition, args));
+            SelectExpression.SetWhereExpression(new WhereExpression(whereCondition, args));
 
             return this;
         }
 
         /// <inheritdoc />
-        public IFilteredQuery<T> Where(FormattableString whereCondition) =>
-            Where(whereCondition, whereCondition.GetArguments());
+        public IFilteredQuery<T> Where(FormattableString whereCondition)
+            => Where(whereCondition, whereCondition.GetArguments());
 
         /// <summary>
         /// Returns the first item of which match where condition, or a default value if item doesn't exist.
@@ -199,14 +198,14 @@ namespace Kros.KORM.Query
         {
             Check.NotNullOrWhiteSpace(whereCondition.Format, nameof(whereCondition));
 
-            this.SelectExpression.SetWhereExpression(new WhereExpression(whereCondition, args));
+            SelectExpression.SetWhereExpression(new WhereExpression(whereCondition, args));
 
             return this.AsEnumerable().FirstOrDefault();
         }
 
         /// <inheritdoc />
-        public T FirstOrDefault(FormattableString whereCondition) =>
-            FirstOrDefault(whereCondition, whereCondition.GetArguments());
+        public T FirstOrDefault(FormattableString whereCondition)
+            => FirstOrDefault(whereCondition, whereCondition.GetArguments());
 
         /// <summary>
         /// Check if exist elements in the table which match condition; otherwise, false.
@@ -225,15 +224,14 @@ namespace Kros.KORM.Query
             Check.NotNullOrWhiteSpace(whereCondition.Format, nameof(whereCondition));
             const string top = "TOP 1 1";
 
-            this.SelectExpression.SetColumnsExpression(new ColumnsExpression(top));
-            this.SelectExpression.SetWhereExpression(new WhereExpression(whereCondition, args));
+            SelectExpression.SetColumnsExpression(new ColumnsExpression(top));
+            SelectExpression.SetWhereExpression(new WhereExpression(whereCondition, args));
 
             return _provider.ExecuteScalar<T>(this) != null;
         }
 
         /// <inheritdoc />
-        public bool Any(FormattableString whereCondition) =>
-            Any(whereCondition, whereCondition.GetArguments());
+        public bool Any(FormattableString whereCondition) => Any(whereCondition, whereCondition.GetArguments());
 
         /// <summary>
         /// Add order by statement to sql.
@@ -247,7 +245,7 @@ namespace Kros.KORM.Query
         {
             Check.NotNullOrWhiteSpace(orderBy, nameof(orderBy));
 
-            this.SelectExpression.SetOrderByExpression(new OrderByExpression(orderBy));
+            SelectExpression.SetOrderByExpression(new OrderByExpression(orderBy));
 
             return this;
         }
@@ -264,12 +262,13 @@ namespace Kros.KORM.Query
         {
             Check.NotNullOrWhiteSpace(groupBy, nameof(groupBy));
 
-            this.SelectExpression.SetGroupByExpression(new GroupByExpression(groupBy));
+            SelectExpression.SetGroupByExpression(new GroupByExpression(groupBy));
 
             return this;
         }
 
-        private SelectExpression SelectExpression => this.Expression as SelectExpression;
+        private SelectExpression SelectExpression
+            => (Expression as SelectExpression) ?? (Expression as MethodCallExpression).FindSelectExpression();
 
         #region IQueryBase
 
@@ -279,17 +278,7 @@ namespace Kros.KORM.Query
         /// <remarks>
         /// This property is used for genereting sql query by IQueryProvider.
         /// </remarks>
-        public Expression Expression
-        {
-            get
-            {
-                return _expression;
-            }
-            private set
-            {
-                _expression = value;
-            }
-        }
+        public Expression Expression { get; private set; }
 
         /// <summary>
         /// Returns an enumerator that iterates through the collection.
@@ -299,7 +288,7 @@ namespace Kros.KORM.Query
         /// </returns>
         public IEnumerator<T> GetEnumerator() => _provider.Execute<T>(this).GetEnumerator();
 
-        IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         /// <summary>
         /// Executes the query, and returns the first column of the first row in the result set returned by the query.
@@ -335,7 +324,7 @@ namespace Kros.KORM.Query
         /// </example>
         public string ExecuteStringScalar()
         {
-            var value = this.ExecuteScalar();
+            var value = ExecuteScalar();
 
             if (value is DBNull || value == null)
             {
@@ -366,7 +355,7 @@ namespace Kros.KORM.Query
         /// </example>
         public TRet? ExecuteScalar<TRet>() where TRet : struct
         {
-            var value = this.ExecuteScalar();
+            var value = ExecuteScalar();
 
             return !(value is DBNull || value == null) ? (TRet)value : new TRet?();
         }

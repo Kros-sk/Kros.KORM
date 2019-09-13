@@ -388,22 +388,6 @@ namespace Kros.KORM.Query.Sql
             return e;
         }
 
-        private SelectExpression FindSelectExpression(MethodCallExpression expression)
-        {
-            if (expression.Arguments[0] is SelectExpression selectExpression)
-            {
-                return selectExpression;
-            }
-            else if (expression.Arguments[0] is MethodCallExpression methodCallExpression)
-            {
-                return FindSelectExpression(methodCallExpression);
-            }
-            else
-            {
-                throw new NotSupportedException();
-            }
-        }
-
         /// <summary>
         /// Dispatches the expression to one of the more specialized visit methods in this class.
         /// </summary>
@@ -521,7 +505,7 @@ namespace Kros.KORM.Query.Sql
 
         private void VisitLinqMethods(MethodCallExpression expression)
         {
-            SelectExpression = FindSelectExpression(expression);
+            SelectExpression = expression.FindSelectExpression();
             LinqStringBuilder = new StringBuilder();
 
             VisitLinqExpression(expression);
