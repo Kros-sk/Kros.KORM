@@ -74,6 +74,18 @@ namespace Kros.KORM.UnitTests.Query.Expressions
             selectExpression.GroupByExpression.Should().Be(expression);
         }
 
+        [Fact]
+        public void SetWhereConditionMoreTimes()
+        {
+            var tableInfo = new DatabaseMapper(new ConventionModelMapper()).GetTableInfo<Person>();
+            var selectExpression = new SelectExpression(tableInfo);
+
+            selectExpression.SetWhereExpression(new WhereExpression("PersonId > @1", 11));
+            selectExpression.SetWhereExpression(new WhereExpression("IsDeleted = 0"));
+
+            selectExpression.WhereExpression.Sql.Should().Be("(PersonId > @1) AND (IsDeleted = 0)");
+        }
+
         [Alias("TPerson")]
         public class Person
         {

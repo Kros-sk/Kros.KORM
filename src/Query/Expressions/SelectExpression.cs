@@ -104,6 +104,7 @@ namespace Kros.KORM.Query.Expressions
         public void SetColumnsExpression(ColumnsExpression columnExpression)
         {
             Check.NotNull(columnExpression, nameof(columnExpression));
+
             _columnsExpression = columnExpression;
         }
 
@@ -115,6 +116,7 @@ namespace Kros.KORM.Query.Expressions
         public void SetTableExpression(TableExpression tableExpression)
         {
             Check.NotNull(tableExpression, nameof(tableExpression));
+
             if (_tableExpression != null)
             {
                 throw new ArgumentException(
@@ -131,12 +133,15 @@ namespace Kros.KORM.Query.Expressions
         public void SetWhereExpression(WhereExpression whereExpression)
         {
             Check.NotNull(whereExpression, nameof(whereExpression));
-            if (WhereExpression != null)
+
+            if (WhereExpression is null)
             {
-                throw new ArgumentException(
-                    string.Format(Resources.ExpressionCanBeAppliedOnlyOnce, nameof(WhereExpression)), nameof(whereExpression));
+                WhereExpression = whereExpression;
             }
-            WhereExpression = whereExpression;
+            else
+            {
+                WhereExpression = WhereExpression.And(whereExpression);
+            }
         }
 
         /// <summary>
@@ -147,6 +152,7 @@ namespace Kros.KORM.Query.Expressions
         public void SetGroupByExpression(GroupByExpression groupByExpression)
         {
             Check.NotNull(groupByExpression, nameof(groupByExpression));
+
             if (GroupByExpression != null)
             {
                 throw new ArgumentException(string.Format(Resources.ExpressionCanBeAppliedOnlyOnce, nameof(GroupByExpression)),
@@ -163,6 +169,7 @@ namespace Kros.KORM.Query.Expressions
         public void SetOrderByExpression(OrderByExpression orderByExpression)
         {
             Check.NotNull(orderByExpression, nameof(orderByExpression));
+
             if (OrderByExpression != null)
             {
                 throw new ArgumentException(string.Format(Resources.ExpressionCanBeAppliedOnlyOnce, nameof(OrderByExpression)),
