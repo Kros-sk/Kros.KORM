@@ -23,6 +23,7 @@ namespace Kros.KORM.Metadata
         private const string ConventionalPrimaryKeyName = "ID";
 
         private readonly Dictionary<Type, EntityMapper> _entities = new Dictionary<Type, EntityMapper>();
+        private readonly Dictionary<string, Expression> _queryFilters = new Dictionary<string, Expression>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ConventionModelMapper"/> class.
@@ -163,9 +164,18 @@ namespace Kros.KORM.Metadata
 
             tableInfo.Name = GetTableName(tableInfo, modelType);
 
+            SetQueryFilter(tableInfo);
             SetPrimaryKey(tableInfo, modelType);
 
             return tableInfo;
+        }
+
+        private void SetQueryFilter(TableInfo tableInfo)
+        {
+            if (_queryFilters.TryGetValue(tableInfo.Name, out Expression queryFilter))
+            {
+                tableInfo.QueryFilter = queryFilter;
+            }
         }
 
         private void SetPrimaryKey(TableInfo tableInfo, Type modelType)
@@ -199,6 +209,18 @@ namespace Kros.KORM.Metadata
 
         private string GetTableName(TableInfo tableInfo, Type modelType)
         {
+            string name = GetTableName(modelType);
+
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                name = MapTableName(tableInfo, modelType);
+            }
+
+            return name;
+        }
+
+        private string GetTableName(Type modelType)
+        {
             string name;
 
             if (_entities.TryGetValue(modelType, out EntityMapper entity) && (entity.TableName != null))
@@ -208,11 +230,6 @@ namespace Kros.KORM.Metadata
             else
             {
                 name = GetName(modelType);
-            }
-
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                name = MapTableName(tableInfo, modelType);
             }
 
             return name;
@@ -441,6 +458,19 @@ namespace Kros.KORM.Metadata
             EntityMapper entity = GetEntity<TEntity>();
             entity.PrimaryKeyPropertyName = propertyName;
             entity.PrimaryKeyAutoIncrementType = autoIncrementType;
+        }
+
+        void IModelMapperInternal.SetQueryFilter<TEntity>(Expression queryFilter)
+        {
+            EntityMapper entity = GetEntity<TEntity>();
+            string tableName = GetTableName(typeof(TEntity));
+
+            if (_queryFilters.ContainsKey(tableName))
+            {
+                ThrowHelper.QueryFilterAlreadyConfigured(tableName);
+            }
+
+            _queryFilters[tableName] = queryFilter;
         }
 
         #endregion

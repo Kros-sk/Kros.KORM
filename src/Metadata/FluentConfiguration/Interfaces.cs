@@ -25,7 +25,7 @@ namespace Kros.KORM.Metadata
     /// </summary>
     /// <typeparam name="TEntity">Type of entity. In general it is a class representing table in database.</typeparam>
     public interface INamedEntityTypeBuilder<TEntity>
-        : IEntityTypeConvertersBuilder<TEntity> where TEntity : class
+        : IEntityTypeQueryFilterBuilder<TEntity> where TEntity : class
     {
         /// <summary>
         /// Configures which property represents primary key of the entity.
@@ -34,6 +34,25 @@ namespace Kros.KORM.Metadata
         /// <param name="propertyExpression">Expression which returns property representing primary key.</param>
         /// <returns>Builder for further configuring of primary key.</returns>
         IPrimaryKeyBuilder<TEntity> HasPrimaryKey<TProperty>(Expression<Func<TEntity, TProperty>> propertyExpression);
+    }
+
+    /// <summary>
+    /// Builder for fluent configuration of entity, which allows configuration query filter.
+    /// </summary>
+    /// <typeparam name="TEntity">The type of the entity.</typeparam>
+    /// <seealso cref="Kros.KORM.Metadata.IEntityTypeConvertersBuilder{TEntity}" />
+    public interface IEntityTypeQueryFilterBuilder<TEntity>
+        : IEntityTypeConvertersBuilder<TEntity> where TEntity : class
+    {
+        /// <summary>
+        /// Set default query filter which will be used in every query to table represented by <typeparamref name="TEntity"/>.
+        /// </summary>
+        /// <param name="queryFilter">The query filter.</param>
+        /// <returns>Returns builder for additional configuration of the entity.</returns>
+        /// <remarks>
+        /// This filter will be use for all entity over table.
+        /// </remarks>
+        INamedEntityTypeBuilder<TEntity> UseQueryFilter(Expression<Func<TEntity, bool>> queryFilter);
     }
 
     /// <summary>

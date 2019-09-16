@@ -1,6 +1,7 @@
 ﻿using Kros.KORM.Converter;
 using Kros.KORM.Injection;
 using System;
+using System.Linq.Expressions;
 
 namespace Kros.KORM.Metadata
 {
@@ -14,7 +15,14 @@ namespace Kros.KORM.Metadata
         /// </summary>
         /// <typeparam name="TEntity">Entity type.</typeparam>
         /// <param name="tableName">Database table name.</param>
-        void SetTableName<TEntity>(string tableName) where TEntity: class;
+        void SetTableName<TEntity>(string tableName) where TEntity : class;
+
+        /// <summary>
+        /// Set default query filter which will be used in every query to table represented by <typeparamref name="TEntity"/>.
+        /// </summary>
+        /// <typeparam name="TEntity">The type of the entity.</typeparam>
+        /// <param name="queryFilter">The query filter.</param>
+        void SetQueryFilter<TEntity>(Expression queryFilter) where TEntity : class;
 
         /// <summary>
         /// Sets column name for specific property.

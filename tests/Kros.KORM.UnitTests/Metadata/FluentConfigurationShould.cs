@@ -224,6 +224,81 @@ namespace Kros.KORM.UnitTests.Metadata
             builderAction.Should().Throw<InvalidOperationException>();
         }
 
+        [Fact]
+        public void UseQueryFilter()
+        {
+            var modelBuilder = new ModelConfigurationBuilder();
+            var modelMapper = new ConventionModelMapper();
+
+            modelBuilder.Entity<FooQueryFilter>()
+                .HasTableName("Foo")
+                .UseQueryFilter(f => f.AutorId == 5);
+
+            modelBuilder.Build(modelMapper);
+
+            TableInfo tableInfo = modelMapper.GetTableInfo<FooQueryFilter>();
+
+            tableInfo.QueryFilter
+                .Should().NotBeNull();
+        }
+
+        [Fact]
+        public void DoNotReturnQueryFilterIfWasNotConfigured()
+        {
+            var modelBuilder = new ModelConfigurationBuilder();
+            var modelMapper = new ConventionModelMapper();
+
+            modelBuilder.Entity<FooQueryFilter>()
+                .HasTableName("Foo");
+
+            modelBuilder.Build(modelMapper);
+
+            TableInfo tableInfo = modelMapper.GetTableInfo<FooQueryFilter>();
+
+            tableInfo.QueryFilter
+                .Should().BeNull();
+        }
+
+        [Fact]
+        public void ThrowExceptionWhenTryingConfigureQueryFilterMoreTimeForSameTable()
+        {
+            var modelBuilder = new ModelConfigurationBuilder();
+            var modelMapper = new ConventionModelMapper();
+
+            modelBuilder.Entity<FooQueryFilter>()
+                .HasTableName("Foo")
+                .UseQueryFilter(f => f.AutorId == 5);
+
+            modelBuilder.Entity<BarQueryFilter>()
+                .HasTableName("Foo")
+                .UseQueryFilter(f => f.AutorId == 5);
+
+            Action action = () => modelBuilder.Build(modelMapper);
+
+            action.Should()
+                .Throw<InvalidOperationException>("*Query filter*");
+        }
+
+        [Fact]
+        public void UseQueryFilterForAnotherEntityOverSameTable()
+        {
+            var modelBuilder = new ModelConfigurationBuilder();
+            var modelMapper = new ConventionModelMapper();
+
+            modelBuilder.Entity<FooQueryFilter>()
+                .HasTableName("Foo")
+                .UseQueryFilter(f => f.AutorId == 5);
+            modelBuilder.Entity<BarQueryFilter>()
+                .HasTableName("Foo");
+
+            modelBuilder.Build(modelMapper);
+
+            TableInfo tableInfo = modelMapper.GetTableInfo<BarQueryFilter>();
+
+            tableInfo.QueryFilter
+                .Should().NotBeNull();
+        }
+
         private static TableInfo CreateExpectedTableInfo(List<ColumnInfo> columns, string tableName)
         {
             var tableInfoExpected = new TableInfo(columns, Enumerable.Empty<PropertyInfo>(), null)
@@ -334,6 +409,18 @@ namespace Kros.KORM.UnitTests.Metadata
         private class AutoIncrementValueGenerator : IValueGenerator
         {
             public object GetValue() => 123;
+        }
+
+        private class FooQueryFilter
+        {
+            public int Id { get; set; }
+
+            public int AutorId { get; set; }
+        }
+
+        private class BarQueryFilter
+        {
+            public int AutorId { get; set; }
         }
     }
 }
