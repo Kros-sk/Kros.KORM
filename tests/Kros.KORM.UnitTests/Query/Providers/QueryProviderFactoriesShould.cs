@@ -7,6 +7,7 @@ using Kros.KORM.Metadata;
 using Kros.KORM.Query;
 using Kros.KORM.Query.Providers;
 using Kros.KORM.Query.Sql;
+using NSubstitute;
 using System;
 using System.Data;
 using System.Data.Common;
@@ -66,7 +67,11 @@ namespace Kros.KORM.UnitTests.Query.Providers
                 ISqlExpressionVisitorFactory sqlGeneratorFactory,
                 IModelBuilder modelBuilder,
                 ILogger logger)
-                : base(connectionString, sqlGeneratorFactory, modelBuilder, logger)
+                : base(connectionString,
+                      sqlGeneratorFactory,
+                      modelBuilder,
+                      logger,
+                      Substitute.For<IDatabaseMapper>())
             {
             }
 

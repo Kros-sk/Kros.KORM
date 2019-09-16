@@ -40,7 +40,11 @@ namespace Kros.KORM.Query
             IModelBuilder modelBuilder,
             IDatabaseMapper databaseMapper)
             => new SqlServerQueryProvider(
-                connectionString, new SqlServerSqlExpressionVisitorFactory(databaseMapper), modelBuilder, new Logger());
+                connectionString,
+                new SqlServerSqlExpressionVisitorFactory(databaseMapper),
+                modelBuilder,
+                new Logger(),
+                databaseMapper);
 
         /// <summary>
         /// Registers instance of this type to <see cref="QueryProviderFactories"/>.

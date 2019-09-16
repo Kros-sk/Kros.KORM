@@ -4,6 +4,7 @@ using Kros.Data.Schema;
 using Kros.Data.Schema.SqlServer;
 using Kros.KORM.Helper;
 using Kros.KORM.Materializer;
+using Kros.KORM.Metadata;
 using Kros.KORM.Query.Sql;
 using System.Data.Common;
 using System.Data.SqlClient;
@@ -23,12 +24,14 @@ namespace Kros.KORM.Query
         /// <param name="sqlGeneratorFactory">The SQL generator factory.</param>
         /// <param name="modelBuilder">The model builder.</param>
         /// <param name="logger">The logger.</param>
+        /// <param name="databaseMapper">The Database mapper.</param>
         public SqlServerQueryProvider(
             KormConnectionSettings connectionString,
             ISqlExpressionVisitorFactory sqlGeneratorFactory,
             IModelBuilder modelBuilder,
-            ILogger logger)
-            : base(connectionString, sqlGeneratorFactory, modelBuilder, logger)
+            ILogger logger,
+            IDatabaseMapper databaseMapper)
+            : base(connectionString, sqlGeneratorFactory, modelBuilder, logger, databaseMapper)
         {
         }
 

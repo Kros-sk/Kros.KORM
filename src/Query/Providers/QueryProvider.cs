@@ -5,6 +5,7 @@ using Kros.Data.Schema;
 using Kros.KORM.Data;
 using Kros.KORM.Helper;
 using Kros.KORM.Materializer;
+using Kros.KORM.Metadata;
 using Kros.KORM.Properties;
 using Kros.KORM.Query.Providers;
 using Kros.KORM.Query.Sql;
@@ -97,6 +98,7 @@ namespace Kros.KORM.Query
         #region Private fields
 
         private readonly ILogger _logger;
+        private readonly IDatabaseMapper _databaseMapper;
         private readonly ISqlExpressionVisitorFactory _sqlGeneratorFactory;
         private readonly IModelBuilder _modelBuilder;
         private readonly KormConnectionSettings _connectionSettings = null;
@@ -117,22 +119,21 @@ namespace Kros.KORM.Query
         /// <param name="sqlGeneratorFactory">The SQL generator factory.</param>
         /// <param name="modelBuilder">The model builder.</param>
         /// <param name="logger">The logger.</param>
+        /// <param name="databaseMapper">The Database mapper.</param>
         public QueryProvider(
             KormConnectionSettings connectionSettings,
             ISqlExpressionVisitorFactory sqlGeneratorFactory,
             IModelBuilder modelBuilder,
-            ILogger logger)
+            ILogger logger,
+            IDatabaseMapper databaseMapper)
         {
-            Check.NotNull(connectionSettings, nameof(connectionSettings));
-            Check.NotNull(sqlGeneratorFactory, nameof(sqlGeneratorFactory));
-            Check.NotNull(modelBuilder, nameof(modelBuilder));
-            Check.NotNull(logger, nameof(logger));
+            _logger = Check.NotNull(logger, nameof(logger));
+            _databaseMapper = Check.NotNull(databaseMapper, nameof(databaseMapper));
+            _connectionSettings = Check.NotNull(connectionSettings, nameof(connectionSettings));
 
-            _logger = logger;
-            _connectionSettings = connectionSettings;
             IsExternalConnection = false;
-            _sqlGeneratorFactory = sqlGeneratorFactory;
-            _modelBuilder = modelBuilder;
+            _sqlGeneratorFactory = Check.NotNull(sqlGeneratorFactory, nameof(sqlGeneratorFactory)); ;
+            _modelBuilder = Check.NotNull(modelBuilder, nameof(modelBuilder)); ;
             _transactionHelper = new Lazy<TransactionHelper>(() => new TransactionHelper(Connection));
         }
 
@@ -622,7 +623,8 @@ namespace Kros.KORM.Query
         /// </summary>
         protected DbConnection Connection
         {
-            get {
+            get
+            {
                 if (_connection == null)
                 {
                     _connection = DbProviderFactory.CreateConnection();

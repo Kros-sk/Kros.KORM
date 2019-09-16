@@ -3,6 +3,7 @@ using Kros.Data.BulkActions;
 using Kros.Data.Schema;
 using Kros.KORM.Helper;
 using Kros.KORM.Materializer;
+using Kros.KORM.Metadata;
 using Kros.KORM.Query;
 using Kros.KORM.Query.Sql;
 using Kros.KORM.UnitTests.Base;
@@ -55,7 +56,8 @@ namespace Kros.KORM.UnitTests.Query.Providers
                       new KormConnectionSettings() { ConnectionString = "QueryProviderTestConnectionString", KormProvider = "QueryProviderTest" },
                       Substitute.For<ISqlExpressionVisitorFactory>(),
                       new ModelBuilder(Database.DefaultModelFactory),
-                      Substitute.For<ILogger>())
+                      Substitute.For<ILogger>(),
+                      Substitute.For<IDatabaseMapper>())
             {
                 _dbProviderFactory = new TestDbProviderFactory(internalConnection);
             }
@@ -512,7 +514,8 @@ END";
                 new KormConnectionSettings() { ConnectionString = connectionString },
                 Substitute.For<ISqlExpressionVisitorFactory>(),
                 new ModelBuilder(Database.DefaultModelFactory),
-                Substitute.For<ILogger>());
+                Substitute.For<ILogger>(),
+                Substitute.For<IDatabaseMapper>());
 
         #endregion
     }
