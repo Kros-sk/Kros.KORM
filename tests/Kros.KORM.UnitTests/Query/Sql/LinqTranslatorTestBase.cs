@@ -175,7 +175,7 @@ namespace Kros.KORM.UnitTests.Query.Sql
             /// <summary>
             /// Gets the last generated SQL.
             /// </summary>
-            public IQueryable LastExpression { get; private set; }
+            public IQueryable LastExpression { get; set; }
 
             public override DbProviderFactory DbProviderFactory => throw new NotImplementedException();
 
@@ -191,8 +191,11 @@ namespace Kros.KORM.UnitTests.Query.Sql
 
             public override IEnumerable<T> Execute<T>(IQuery<T> query)
             {
-                LastExpression = query;
-                SetDefaultQueryFilter(query, _visitorFactory.CreateVisitor(_sqlConnection));
+                if (LastExpression is null)
+                {
+                    SetDefaultQueryFilter(query, _visitorFactory.CreateVisitor(_sqlConnection));
+                    LastExpression = query;
+                }
 
                 return Enumerable.Empty<T>();
             }
