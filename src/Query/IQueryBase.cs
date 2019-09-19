@@ -13,8 +13,8 @@ namespace Kros.KORM.Query
     /// </para>
     /// </summary>
     /// <typeparam name="T">Type of model class.</typeparam>
-    public interface IQueryBase<T> : IEnumerable<T>,
-        System.Linq.IQueryable<T>, System.Linq.IQueryable, System.Linq.IOrderedQueryable<T>, System.Linq.IOrderedQueryable
+    public interface IQueryBase<T> : IEnumerable<T>, System.Linq.IQueryable<T>, System.Linq.IQueryable,
+        System.Linq.IOrderedQueryable<T>, System.Linq.IOrderedQueryable
     {
         /// <summary>
         /// Returns the collection of all entities that can be queried from the database.

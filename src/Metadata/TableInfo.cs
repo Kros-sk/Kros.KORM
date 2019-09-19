@@ -31,7 +31,8 @@ namespace Kros.KORM.Metadata
         /// <param name="onAfterMaterialize">Method info accessor for calling OnAfterMaterialize over <seealso cref="IMaterialize"/>IMaterialize
         /// If Model doesn't implement <seealso cref="IMaterialize"/> then null.</param>
         /// <exception cref="ArgumentNullException">When columns is null.</exception>
-        public TableInfo(IEnumerable<ColumnInfo> columns,
+        public TableInfo(
+            IEnumerable<ColumnInfo> columns,
             IEnumerable<PropertyInfo> allModelProperties,
             MethodInfo onAfterMaterialize)
         {
@@ -52,6 +53,13 @@ namespace Kros.KORM.Metadata
             _identityPrimaryKey = new Lazy<ColumnInfo>(()
                 => PrimaryKey.FirstOrDefault(p => p.AutoIncrementMethodType == AutoIncrementMethodType.Identity));
         }
+
+        private TableInfo() { }
+
+        /// <summary>
+        /// Gets the empty table info.
+        /// </summary>
+        public static TableInfo Empty { get; } = new TableInfo();
 
         #endregion
 

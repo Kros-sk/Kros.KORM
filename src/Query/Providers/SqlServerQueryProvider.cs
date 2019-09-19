@@ -42,12 +42,14 @@ namespace Kros.KORM.Query
         /// <param name="sqlGeneratorFactory">The SQL generator factory.</param>
         /// <param name="modelBuilder">The model builder.</param>
         /// <param name="logger">The logger.</param>
+        /// <param name="databaseMapper">The Database mapper.</param>
         public SqlServerQueryProvider(
             DbConnection connection,
             ISqlExpressionVisitorFactory sqlGeneratorFactory,
             IModelBuilder modelBuilder,
-            ILogger logger)
-            : base(connection, sqlGeneratorFactory, modelBuilder, logger)
+            ILogger logger,
+            IDatabaseMapper databaseMapper)
+            : base(connection, sqlGeneratorFactory, modelBuilder, logger, databaseMapper)
         {
         }
 

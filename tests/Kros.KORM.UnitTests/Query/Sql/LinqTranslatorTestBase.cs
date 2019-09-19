@@ -1,7 +1,7 @@
 ﻿using FluentAssertions;
-using Kros.Data;
 using Kros.Data.BulkActions;
-using Kros.KORM.Data;
+using Kros.Data.Schema;
+using Kros.KORM.Helper;
 using Kros.KORM.Materializer;
 using Kros.KORM.Metadata;
 using Kros.KORM.Metadata.Attribute;
@@ -9,6 +9,7 @@ using Kros.KORM.Query;
 using Kros.KORM.Query.Expressions;
 using Kros.KORM.Query.Providers;
 using Kros.KORM.Query.Sql;
+using NSubstitute;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -16,7 +17,6 @@ using System.Data.Common;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Threading.Tasks;
 
 namespace Kros.KORM.UnitTests.Query.Sql
 {
@@ -54,7 +54,8 @@ namespace Kros.KORM.UnitTests.Query.Sql
         /// </summary>
         /// <typeparam name="T">Model type</typeparam>
         /// <returns>Query for testing.</returns>
-        public IQuery<T> Query<T>() => new Database(new SqlConnection(), new FakeQueryProviderFactory()).Query<T>();
+        public virtual IQuery<T> Query<T>()
+            => new Database(new SqlConnection(), new FakeQueryProviderFactory()).Query<T>();
 
         /// <summary>
         /// Create visitor for translate query to SQL.
@@ -92,7 +93,7 @@ namespace Kros.KORM.UnitTests.Query.Sql
         /// <param name="value">The value.</param>
         /// <param name="expectedSql">The expected SQL.</param>
         /// <param name="parameters">The parameters.</param>
-        protected void WasGeneratedSameSql<T>(IQuery<T> value, string expectedSql, params object[] parameters)
+        protected virtual void WasGeneratedSameSql<T>(IQuery<T> value, string expectedSql, params object[] parameters)
         {
             var provider = value.Provider as FakeQueryProvider;
 
@@ -152,176 +153,82 @@ namespace Kros.KORM.UnitTests.Query.Sql
             }
         }
 
-        public class FakeQueryProvider : KORM.Query.IQueryProvider
+        public class FakeQueryProvider : QueryProvider
         {
+            private readonly DbConnection _sqlConnection;
+            private readonly ISqlExpressionVisitorFactory _visitorFactory;
+
+            public FakeQueryProvider(
+                DbConnection sqlConnection,
+                ISqlExpressionVisitorFactory visitorFactory,
+                IDatabaseMapper databaseMapper)
+                : base(sqlConnection,
+                     visitorFactory,
+                     Substitute.For<IModelBuilder>(),
+                     Substitute.For<ILogger>(),
+                     databaseMapper)
+            {
+                _sqlConnection = sqlConnection;
+                _visitorFactory = visitorFactory;
+            }
+
             /// <summary>
             /// Gets the last generated SQL.
             /// </summary>
             public IQueryable LastExpression { get; private set; }
 
-            public DbProviderFactory DbProviderFactory => throw new NotImplementedException();
+            public override DbProviderFactory DbProviderFactory => throw new NotImplementedException();
 
-            public ITransaction BeginTransaction(IsolationLevel isolationLevel)
+            public override IBulkInsert CreateBulkInsert()
             {
                 throw new NotImplementedException();
             }
 
-            public IBulkInsert CreateBulkInsert()
+            public override IBulkUpdate CreateBulkUpdate()
             {
                 throw new NotImplementedException();
             }
 
-            public IBulkUpdate CreateBulkUpdate() => throw new NotImplementedException();
-
-            public DbCommand CreateCommand()
+            public override IEnumerable<T> Execute<T>(IQuery<T> query)
             {
-                throw new NotImplementedException();
-            }
-
-            public DbConnection CreateConnection()
-            {
-                throw new NotImplementedException();
-            }
-
-            public IIdGenerator CreateIdGenerator(string tableName, int batchSize)
-            {
-                throw new NotImplementedException();
-            }
-
-            public IQueryable CreateQuery(Expression expression)
-            {
-                throw new NotImplementedException();
-            }
-
-            public IQueryable<TElement> CreateQuery<TElement>(Expression expression)
-                => new Query<TElement>(this, expression);
-
-            public void Dispose()
-            {
-                throw new NotImplementedException();
-            }
-
-            public IEnumerable<T> Execute<T>(IQuery<T> query)
-            {
-                throw new NotImplementedException();
-            }
-
-            public object Execute(Expression expression)
-            {
-                throw new NotImplementedException();
-            }
-
-            public TResult Execute<TResult>(Expression expression)
-            {
-                var query = new Query<TResult>(this, expression);
-
                 LastExpression = query;
+                SetDefaultQueryFilter(query, _visitorFactory.CreateVisitor(_sqlConnection));
 
-                return default(TResult);
+                return Enumerable.Empty<T>();
             }
 
-            public void ExecuteInTransaction(Action action)
+            protected override IDatabaseSchemaLoader GetSchemaLoader()
             {
                 throw new NotImplementedException();
             }
-
-            public Task ExecuteInTransactionAsync(Func<Task> action)
-            {
-                throw new NotImplementedException();
-            }
-
-            public int ExecuteNonQuery(string query)
-            {
-                throw new NotImplementedException();
-            }
-
-            public int ExecuteNonQuery(string query, CommandParameterCollection parameters)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Task<int> ExecuteNonQueryAsync(string query)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Task<int> ExecuteNonQueryAsync(string query, params object[] parameters)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Task<int> ExecuteNonQueryAsync(string query, CommandParameterCollection parameters)
-            {
-                throw new NotImplementedException();
-            }
-
-            public int ExecuteNonQueryCommand(IDbCommand command)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Task<int> ExecuteNonQueryCommandAsync(DbCommand command)
-            {
-                throw new NotImplementedException();
-            }
-
-            public object ExecuteScalar<T>(IQuery<T> query)
-            {
-                throw new NotImplementedException();
-            }
-
-            public object ExecuteScalarCommand(IDbCommand command)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Task<object> ExecuteScalarCommandAsync(DbCommand command)
-            {
-                throw new NotImplementedException();
-            }
-
-            public TResult ExecuteStoredProcedure<TResult>(string storedProcedureName)
-            {
-                throw new NotImplementedException();
-            }
-
-            public TResult ExecuteStoredProcedure<TResult>(string storedProcedureName, CommandParameterCollection parameters)
-            {
-                throw new NotImplementedException();
-            }
-
-            public DbCommand GetCommandForCurrentTransaction()
-            {
-                throw new NotImplementedException();
-            }
-
-            public ISqlExpressionVisitor GetExpressionVisitor()
-            {
-                throw new NotImplementedException();
-            }
-
-            public void SetParameterDbType(DbParameter parameter, string tableName, string columnName)
-            {
-                throw new NotImplementedException();
-            }
-
-            public bool SupportsIdentity()
-            {
-                throw new NotImplementedException();
-            }
-
-            public bool SupportsPrepareCommand() => true;
         }
 
         public class FakeQueryProviderFactory : IQueryProviderFactory
         {
             public KORM.Query.IQueryProvider Create(DbConnection connection, IModelBuilder modelBuilder, IDatabaseMapper databaseMapper)
-                => new FakeQueryProvider();
+                => new FakeQueryProvider(connection, new FakeSqlServerSqlExpressionVisitorFactory(databaseMapper), databaseMapper);
 
             public KORM.Query.IQueryProvider Create(KormConnectionSettings connectionString, IModelBuilder modelBuilder, IDatabaseMapper databaseMapper)
             {
                 throw new NotImplementedException();
             }
+        }
+
+        public class FakeSqlServerSqlExpressionVisitorFactory : ISqlExpressionVisitorFactory
+        {
+            private readonly IDatabaseMapper _databaseMapper;
+
+            /// <summary>
+            /// Creates an instance with specified database mapper <paramref name="databaseMapper"/>.
+            /// </summary>
+            /// <param name="databaseMapper">Database mapper.</param>
+            public FakeSqlServerSqlExpressionVisitorFactory(IDatabaseMapper databaseMapper)
+            {
+                _databaseMapper = databaseMapper;
+            }
+
+            public ISqlExpressionVisitor CreateVisitor(IDbConnection connection)
+                => new SqlServer2012SqlGenerator(_databaseMapper);
         }
     }
 }

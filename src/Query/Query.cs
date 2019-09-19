@@ -16,7 +16,7 @@ namespace Kros.KORM.Query
     /// </summary>
     /// <typeparam name="T">Class of model.</typeparam>
     /// <seealso cref="Kros.KORM.Query.IQuery{T}" />
-    internal sealed class Query<T> : IQuery<T>, IFilteredQuery<T>, IGroupedQuery<T>, IOrderedQuery<T>
+    internal sealed class Query<T> : IQuery<T>, IFilteredQuery<T>, IGroupedQuery<T>, IOrderedQuery<T>, IQueryBaseInternal
     {
         #region Private fields
 
@@ -368,6 +368,9 @@ namespace Kros.KORM.Query
             new DbSet<T>(
                 new CommandGenerator<T>(_databaseMapper.GetTableInfo<T>(), _provider, this),
                 _provider, this, _databaseMapper.GetTableInfo<T>());
+
+        void IQueryBaseInternal.ApplyQueryFilter(WhereExpression where)
+            => SelectExpression.SetWhereExpression(where);
 
         #endregion
 

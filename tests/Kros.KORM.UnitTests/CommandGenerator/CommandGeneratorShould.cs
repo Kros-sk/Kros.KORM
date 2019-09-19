@@ -230,7 +230,8 @@ namespace Kros.KORM.UnitTests.CommandGenerator
                     new SqlConnection(),
                     new SqlServerSqlExpressionVisitorFactory(new DatabaseMapper(new ConventionModelMapper())),
                     Substitute.For<IModelBuilder>(),
-                    new Logger()));
+                    new Logger(),
+                    Substitute.For<IDatabaseMapper>()));
 
             return query;
         }
@@ -283,7 +284,8 @@ namespace Kros.KORM.UnitTests.CommandGenerator
                     new SqlConnection(),
                     new SqlServerSqlExpressionVisitorFactory(new DatabaseMapper(new ConventionModelMapper())),
                     Substitute.For<IModelBuilder>(),
-                    new Logger()));
+                    new Logger(),
+                    Substitute.For<IDatabaseMapper>()));
 
             return query;
         }

@@ -79,7 +79,7 @@ namespace Kros.KORM.UnitTests.Query.Providers
                 ISqlExpressionVisitorFactory sqlGeneratorFactory,
                 IModelBuilder modelBuilder,
                 ILogger logger)
-                : base(connection, sqlGeneratorFactory, modelBuilder, logger)
+                : base(connection, sqlGeneratorFactory, modelBuilder, logger, Substitute.For<IDatabaseMapper>())
             {
             }
 

@@ -462,8 +462,7 @@ namespace Kros.KORM.Metadata
 
         void IModelMapperInternal.SetQueryFilter<TEntity>(Expression queryFilter)
         {
-            EntityMapper entity = GetEntity<TEntity>();
-            string tableName = GetTableName(typeof(TEntity));
+            string tableName = GetTableName(TableInfo.Empty, typeof(TEntity));
 
             if (_queryFilters.ContainsKey(tableName))
             {

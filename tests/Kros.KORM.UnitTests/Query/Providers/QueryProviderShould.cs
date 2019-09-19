@@ -66,7 +66,8 @@ namespace Kros.KORM.UnitTests.Query.Providers
                 : base(externalConnection,
                       Substitute.For<ISqlExpressionVisitorFactory>(),
                       new ModelBuilder(Database.DefaultModelFactory),
-                      Substitute.For<ILogger>())
+                      Substitute.For<ILogger>(),
+                      Substitute.For<IDatabaseMapper>())
             {
                 _dbProviderFactory = new TestDbProviderFactory(null);
             }
@@ -507,7 +508,8 @@ END";
                 connection,
                 Substitute.For<ISqlExpressionVisitorFactory>(),
                 new ModelBuilder(Database.DefaultModelFactory),
-                Substitute.For<ILogger>());
+                Substitute.For<ILogger>(),
+                Substitute.For<IDatabaseMapper>());
 
         private static SqlServerQueryProvider CreateQueryProvider(string connectionString)
             => new SqlServerQueryProvider(
