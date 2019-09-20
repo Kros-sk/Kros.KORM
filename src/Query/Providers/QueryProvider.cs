@@ -666,11 +666,11 @@ namespace Kros.KORM.Query
         protected internal void SetDefaultQueryFilter<T>(IQuery<T> query, ISqlExpressionVisitor sqlVisitor)
         {
             TableInfo tableInfo = _databaseMapper.GetTableInfo<T>();
-            if (tableInfo.QueryFilter != null)
+            if (tableInfo.QueryFilter != null && (query is IQueryBaseInternal queryBase) && !queryBase.IgnoreQueryFilters)
             {
                 WhereExpression queryFilter =
                     sqlVisitor.GenerateWhereCondition(tableInfo.QueryFilter, DefaultQueryFilterParameterNamePrefix);
-                (query as IQueryBaseInternal).ApplyQueryFilter(queryFilter);
+                queryBase.ApplyQueryFilter(queryFilter);
             }
         }
 

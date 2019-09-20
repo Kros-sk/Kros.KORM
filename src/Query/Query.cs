@@ -22,7 +22,7 @@ namespace Kros.KORM.Query
 
         private IDatabaseMapper _databaseMapper;
         private IQueryProvider _provider;
-
+        private bool _ignoreQueryFilters = false;
         #endregion
 
         #region Constructor
@@ -58,18 +58,15 @@ namespace Kros.KORM.Query
 
         #endregion
 
-        /// <summary>
-        /// Create query from sql statement.
-        /// </summary>
-        /// <param name="sql">The SQL for executing in server.</param>
-        /// <param name="args">The arguments.</param>
-        /// <returns>
-        /// Query from sql.
-        /// </returns>
-        /// <remarks>
-        /// Sql must be server specific. Because no translation is provide.
-        /// </remarks>
-        /// <exception cref="ArgumentNullException">if <c>sql</c> is null or white string.</exception>
+        /// <inheritdoc />
+        public ISelectionQuery<T> IgnoreQueryFilters()
+        {
+            _ignoreQueryFilters = true;
+
+            return this;
+        }
+
+        /// <inheritdoc />
         public IQueryBase<T> Sql(RawSqlString sql, params object[] args)
         {
             Check.NotNullOrWhiteSpace(sql.Format, nameof(sql));
@@ -82,18 +79,8 @@ namespace Kros.KORM.Query
         /// <inheritdoc/>
         public IQueryBase<T> Sql(FormattableString sql) => Sql(sql, sql.GetArguments());
 
-        /// <summary>
-        /// Create query from sql statement.
-        /// </summary>
-        /// <param name="selectPart"></param>
-        /// <returns>
-        /// Query from sql.
-        /// </returns>
-        /// <exception cref="ArgumentNullException">if <c>sql</c> is null or white string.</exception>
-        /// <remarks>
-        /// Sql must be server specific. Because no translation is provide.
-        /// </remarks>
-        public IQuery<T> Select(string selectPart)
+        /// <inheritdoc />
+        public IFromQuery<T> Select(string selectPart)
         {
             Check.NotNullOrWhiteSpace(selectPart, nameof(selectPart));
 
@@ -102,17 +89,8 @@ namespace Kros.KORM.Query
             return this;
         }
 
-        /// <summary>
-        /// Add columns to sql.
-        /// </summary>
-        /// <param name="columns">The columns for select clausule.</param>
-        /// <returns>
-        /// Query for enumerable models.
-        /// </returns>
-        /// <remarks>
-        ///  When Select method is not call, query take columns by T model.
-        /// </remarks>
-        public IQuery<T> Select(params string[] columns)
+        /// <inheritdoc />
+        public IFromQuery<T> Select(params string[] columns)
         {
             Check.NotNull(columns, nameof(columns));
 
@@ -121,19 +99,8 @@ namespace Kros.KORM.Query
             return this;
         }
 
-        /// <summary>
-        /// Add select part to sql.
-        /// </summary>
-        /// <typeparam name="TResult"></typeparam>
-        /// <param name="selector">The selector.</param>
-        /// <returns>
-        /// Query for enumerable models.
-        /// </returns>
-        /// <exception cref="ArgumentNullException">if <c>sqlPart</c> is null or white string.</exception>
-        /// <remarks>
-        /// When <c>Select</c> method is not call, query take columns by T model.
-        /// </remarks>
-        public IQuery<T> Select<TResult>(Func<T, TResult> selector)
+        /// <inheritdoc />
+        public IFromQuery<T> Select<TResult>(Func<T, TResult> selector)
         {
             Check.NotNull(selector, nameof(selector));
 
@@ -143,17 +110,7 @@ namespace Kros.KORM.Query
             return this;
         }
 
-        /// <summary>
-        /// Add FROM part to sql query.
-        /// </summary>
-        /// <param name="table">Table name or join.</param>
-        /// <returns>
-        /// Query for enumerable models.
-        /// </returns>
-        /// <remarks>
-        /// When <c>From</c> method is not call, query take table by T model type.
-        /// </remarks>
-        /// <exception cref="ArgumentNullException">if <c>table</c> is null or white string.</exception>
+        /// <inheritdoc />
         public IProjectionQuery<T> From(string table)
         {
             Check.NotNullOrWhiteSpace(table, nameof(table));
@@ -163,15 +120,7 @@ namespace Kros.KORM.Query
             return this;
         }
 
-        /// <summary>
-        /// Add where condition to sql.
-        /// </summary>
-        /// <param name="whereCondition">The where condition.</param>
-        /// <param name="args">The arguments for where.</param>
-        /// <returns>
-        /// Query for enumerable models.
-        /// </returns>
-        /// <exception cref="ArgumentNullException">if <c>whereCondition</c> is null or white string.</exception>
+        /// <inheritdoc />
         public IFilteredQuery<T> Where(RawSqlString whereCondition, params object[] args)
         {
             Check.NotNullOrWhiteSpace(whereCondition.Format, nameof(whereCondition));
@@ -185,15 +134,7 @@ namespace Kros.KORM.Query
         public IFilteredQuery<T> Where(FormattableString whereCondition)
             => Where(whereCondition, whereCondition.GetArguments());
 
-        /// <summary>
-        /// Returns the first item of which match where condition, or a default value if item doesn't exist.
-        /// </summary>
-        /// <param name="whereCondition">The where condition.</param>
-        /// <param name="args">The arguments for where.</param>
-        /// <returns>
-        /// <see langword="null"/> if item doesn't exist; otherwise, the first item which match the condition.
-        /// </returns>
-        /// <exception cref="ArgumentNullException">if <c>whereCondition</c> is null or white string.</exception>
+        /// <inheritdoc />
         public T FirstOrDefault(RawSqlString whereCondition, params object[] args)
         {
             Check.NotNullOrWhiteSpace(whereCondition.Format, nameof(whereCondition));
@@ -207,18 +148,7 @@ namespace Kros.KORM.Query
         public T FirstOrDefault(FormattableString whereCondition)
             => FirstOrDefault(whereCondition, whereCondition.GetArguments());
 
-        /// <summary>
-        /// Check if exist elements in the table which match condition; otherwise, false.
-        /// </summary>
-        /// <param name="whereCondition">The where condition.</param>
-        /// <param name="args">The arguments for where.</param>
-        /// <returns>
-        /// <see langword="true"/> if exist elements in the table which match condition; otherwise, <see langword="false"/>.
-        /// </returns>
-        /// <exception cref="ArgumentNullException">if <c>whereCondition</c> is null or white string.</exception>
-        /// <example>
-        ///   <code source="..\..\Documentation\Examples\Kros.KORM.Examples\IQueryExample.cs" title="Any" region="Any" language="cs" />
-        /// </example>
+        /// <inheritdoc />
         public bool Any(RawSqlString whereCondition, params object[] args)
         {
             Check.NotNullOrWhiteSpace(whereCondition.Format, nameof(whereCondition));
@@ -233,14 +163,7 @@ namespace Kros.KORM.Query
         /// <inheritdoc />
         public bool Any(FormattableString whereCondition) => Any(whereCondition, whereCondition.GetArguments());
 
-        /// <summary>
-        /// Add order by statement to sql.
-        /// </summary>
-        /// <param name="orderBy">The order by statement.</param>
-        /// <returns>
-        /// Query for enumerable models.
-        /// </returns>
-        /// <exception cref="ArgumentNullException">if <c>orderBy</c> is null or white string.</exception>
+        /// <inheritdoc />
         public IOrderedQuery<T> OrderBy(string orderBy)
         {
             Check.NotNullOrWhiteSpace(orderBy, nameof(orderBy));
@@ -250,14 +173,7 @@ namespace Kros.KORM.Query
             return this;
         }
 
-        /// <summary>
-        /// Add group by statement to sql query.
-        /// </summary>
-        /// <param name="groupBy">The group by statement.</param>
-        /// <returns>
-        /// Query for enumerable models.
-        /// </returns>
-        /// <exception cref="System.NotImplementedException"></exception>
+        /// <inheritdoc />
         public IGroupedQuery<T> GroupBy(string groupBy)
         {
             Check.NotNullOrWhiteSpace(groupBy, nameof(groupBy));
@@ -272,56 +188,18 @@ namespace Kros.KORM.Query
 
         #region IQueryBase
 
-        /// <summary>
-        /// Property represent expression for this query.
-        /// </summary>
-        /// <remarks>
-        /// This property is used for genereting sql query by IQueryProvider.
-        /// </remarks>
+        /// <inheritdoc />
         public Expression Expression { get; private set; }
 
-        /// <summary>
-        /// Returns an enumerator that iterates through the collection.
-        /// </summary>
-        /// <returns>
-        /// An enumerator that can be used to iterate through the collection.
-        /// </returns>
+        /// <inheritdoc />
         public IEnumerator<T> GetEnumerator() => _provider.Execute<T>(this).GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        /// <summary>
-        /// Executes the query, and returns the first column of the first row in the result set returned by the query.
-        /// Additional columns or rows are ignored.
-        /// </summary>
-        /// <returns>
-        /// The first column of the first row in the result set, or <see langword="null"/>
-        /// if the result set is empty. Returns a maximum of 2033 characters.
-        /// </returns>
-        /// <example>
-        /// <code
-        ///   source="..\..\Documentation\Examples\Kros.KORM.Examples\IQueryExample.cs"
-        ///   title="Execute string scalar"
-        ///   region="ExecuteScalar"
-        ///   language="cs" />
-        /// </example>
+        /// <inheritdoc />
         public object ExecuteScalar() => _provider.ExecuteScalar(this);
 
-        /// <summary>
-        /// Executes the query, and returns the first column of the first row in the result set returned by the query.
-        /// Additional columns or rows are ignored.
-        /// </summary>
-        /// <returns>
-        /// The first column of the first row in the result set as string, or <see langword="null"/>
-        /// if the result set is empty. Returns a maximum of 2033 characters.
-        /// </returns>
-        /// <example>
-        /// <code
-        ///   source="..\..\Documentation\Examples\Kros.KORM.Examples\IQueryExample.cs"
-        ///   title="Execute string scalar"
-        ///   region="ExecuteStringScalar"
-        ///   language="cs" />
-        /// </example>
+        /// <inheritdoc />
         public string ExecuteStringScalar()
         {
             var value = ExecuteScalar();
@@ -336,23 +214,7 @@ namespace Kros.KORM.Query
             }
         }
 
-        /// <summary>
-        /// Executes the query, and returns the first column of the first row in the result set returned by the query.
-        /// Additional columns or rows are ignored.
-        /// </summary>
-        /// <typeparam name="TRet">Return type.</typeparam>
-        /// <returns>
-        /// The first column of the first row in the result set as nullable type of TRet. If the result set is empty,
-        /// then HasValue is false.
-        /// Returns a maximum of 2033 characters.
-        /// </returns>
-        /// <example>
-        /// <code
-        ///   source="..\..\Documentation\Examples\Kros.KORM.Examples\IQueryExample.cs"
-        ///   title="Execute generic scalar"
-        ///   region="ExecuteScalarGeneric"
-        ///   language="cs" />
-        /// </example>
+        /// <inheritdoc />
         public TRet? ExecuteScalar<TRet>() where TRet : struct
         {
             var value = ExecuteScalar();
@@ -360,10 +222,7 @@ namespace Kros.KORM.Query
             return !(value is DBNull || value == null) ? (TRet)value : new TRet?();
         }
 
-        /// <summary>
-        /// Returns the collection of all entities that can be queried from the database.
-        /// </summary>
-        /// <returns><seealso cref="DbSet{T}"/>.</returns>
+        /// <inheritdoc />
         public IDbSet<T> AsDbSet() =>
             new DbSet<T>(
                 new CommandGenerator<T>(_databaseMapper.GetTableInfo<T>(), _provider, this),
@@ -371,6 +230,8 @@ namespace Kros.KORM.Query
 
         void IQueryBaseInternal.ApplyQueryFilter(WhereExpression where)
             => SelectExpression.SetWhereExpression(where);
+
+        bool IQueryBaseInternal.IgnoreQueryFilters => _ignoreQueryFilters;
 
         #endregion
 

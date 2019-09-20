@@ -28,6 +28,14 @@ namespace Kros.KORM.UnitTests.Query.Sql
         }
 
         [Fact]
+        public void DoNotAddWhereConditionIfIgnoreIsCalled()
+        {
+            var query = Query<Foo>().IgnoreQueryFilters();
+
+            WasGeneratedSameSql2(query, "SELECT Id, IsDeleted, Value FROM Foo");
+        }
+
+        [Fact]
         public void AddWhereConditionToSqlWhenEntityHasConfiguredTableName()
         {
             var query = Query<Bar>();
