@@ -1,4 +1,6 @@
-﻿using Kros.KORM.Query.Expressions;
+﻿using Kros.KORM.Metadata;
+using Kros.KORM.Query.Expressions;
+using Kros.KORM.Query.Sql;
 
 namespace Kros.KORM.Query
 {
@@ -10,8 +12,9 @@ namespace Kros.KORM.Query
         /// <summary>
         /// Applies the query filter to this query.
         /// </summary>
-        /// <param name="where">The query filter.</param>
-        void ApplyQueryFilter(WhereExpression where);
+        /// <param name="databaseMapper">Database mapper.</param>
+        /// <param name="expressionVisitor">Sql expression visitior.</param>
+        void ApplyQueryFilter(IDatabaseMapper databaseMapper, ISqlExpressionVisitor expressionVisitor);
 
         /// <summary>
         /// Gets a value indicating whether [ignore query filters].

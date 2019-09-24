@@ -18,11 +18,14 @@ namespace Kros.KORM.Query
     /// <seealso cref="Kros.KORM.Query.IQuery{T}" />
     internal sealed class Query<T> : IQuery<T>, IFilteredQuery<T>, IGroupedQuery<T>, IOrderedQuery<T>, IQueryBaseInternal
     {
+        private const string DefaultQueryFilterParameterNamePrefix = "Dqf";
+
         #region Private fields
 
         private IDatabaseMapper _databaseMapper;
         private IQueryProvider _provider;
         private bool _ignoreQueryFilters = false;
+
         #endregion
 
         #region Constructor
@@ -228,8 +231,23 @@ namespace Kros.KORM.Query
                 new CommandGenerator<T>(_databaseMapper.GetTableInfo<T>(), _provider, this),
                 _provider, this, _databaseMapper.GetTableInfo<T>());
 
-        void IQueryBaseInternal.ApplyQueryFilter(WhereExpression where)
-            => SelectExpression.SetWhereExpression(where);
+        void IQueryBaseInternal.ApplyQueryFilter(IDatabaseMapper databaseMapper, ISqlExpressionVisitor expressionVisitor)
+        {
+            SelectExpression select = SelectExpression;
+            IQueryBaseInternal query = select?.OriginalQuery;
+
+            if (query != null && !query.IgnoreQueryFilters)
+            {
+                TableInfo tableInfo = databaseMapper.GetTableInfo(select.EntityType);
+                if (tableInfo.QueryFilter != null)
+                {
+                    WhereExpression queryFilter =
+                        expressionVisitor.GenerateWhereCondition(tableInfo.QueryFilter, DefaultQueryFilterParameterNamePrefix);
+                    select.SetWhereExpression(queryFilter);
+
+                }
+            }
+        }
 
         bool IQueryBaseInternal.IgnoreQueryFilters => _ignoreQueryFilters;
 

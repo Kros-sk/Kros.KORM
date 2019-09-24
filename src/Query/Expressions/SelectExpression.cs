@@ -19,7 +19,8 @@ namespace Kros.KORM.Query.Expressions
         private TableInfo _tableInfo;
         private ColumnsExpression _columnsExpression;
         private TableExpression _tableExpression;
-        private object _originalQuery;
+        internal Type EntityType { get; private set; }
+        internal IQueryBaseInternal OriginalQuery { get; private set; }
 
         #endregion
 
@@ -244,7 +245,8 @@ namespace Kros.KORM.Query.Expressions
         internal static Expression Constant<T>(TableInfo tableInfo, Query<T> query)
         {
             var expression = new SelectExpression(tableInfo);
-            expression._originalQuery = query;
+            expression.OriginalQuery = query;
+            expression.EntityType = typeof(T);
 
             return expression;
         }
@@ -252,12 +254,12 @@ namespace Kros.KORM.Query.Expressions
         /// <summary>
         /// Gets the static type of the expression that this <see cref="T:System.Linq.Expressions.Expression"></see> represents.
         /// </summary>
-        public override Type Type => _originalQuery.GetType();
+        public override Type Type => OriginalQuery.GetType();
 
         /// <summary>
         /// Gets the value.
         /// </summary>
-        public object Value => _originalQuery;
+        public object Value => OriginalQuery;
 
         /// <summary>
         /// Gets the node type of this <see cref="T:System.Linq.Expressions.Expression"></see>.

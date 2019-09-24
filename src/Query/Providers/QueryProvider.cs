@@ -93,7 +93,6 @@ namespace Kros.KORM.Query
         #region Constants
 
         private const string RETURN_VALUE_PARAM_NAME = "returnValue";
-        private const string DefaultQueryFilterParameterNamePrefix = "Dqf";
 
         #endregion
 
@@ -664,15 +663,7 @@ namespace Kros.KORM.Query
         /// <param name="query">The query.</param>
         /// <param name="sqlVisitor">The SQL visitor.</param>
         protected internal void SetDefaultQueryFilter<T>(IQuery<T> query, ISqlExpressionVisitor sqlVisitor)
-        {
-            TableInfo tableInfo = _databaseMapper.GetTableInfo<T>();
-            if (tableInfo.QueryFilter != null && (query is IQueryBaseInternal queryBase) && !queryBase.IgnoreQueryFilters)
-            {
-                WhereExpression queryFilter =
-                    sqlVisitor.GenerateWhereCondition(tableInfo.QueryFilter, DefaultQueryFilterParameterNamePrefix);
-                queryBase.ApplyQueryFilter(queryFilter);
-            }
-        }
+            => (query as IQueryBaseInternal).ApplyQueryFilter(_databaseMapper, sqlVisitor);
 
         private DbCommand CreateCommand(string commandText, CommandParameterCollection parameters)
         {

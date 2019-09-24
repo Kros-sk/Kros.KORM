@@ -28,7 +28,7 @@ namespace Kros.KORM.UnitTests.Base
         protected virtual IDatabase CreateDatabase(string initScript)
             => new TestDatabase(new SqlServerTestHelper(BaseConnectionString, BaseDatabaseName, initScript));
 
-        protected virtual IDatabase CreateDatabase(params string[] initDatabaseScripts)
+        protected virtual TestDatabase CreateDatabase(params string[] initDatabaseScripts)
            => new TestDatabase(new SqlServerTestHelper(BaseConnectionString, BaseDatabaseName, initDatabaseScripts));
 
         protected bool IsAnyReaderOpened(SqlConnection connection, string tableName)

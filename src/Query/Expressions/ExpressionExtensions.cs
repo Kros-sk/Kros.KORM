@@ -17,6 +17,10 @@ namespace Kros.KORM.Query.Expressions
         /// </exception>
         public static SelectExpression FindSelectExpression(this MethodCallExpression expression)
         {
+            if (expression is null)
+            {
+                return null;
+            }
             if (expression.Arguments[0] is SelectExpression selectExpression)
             {
                 return selectExpression;
