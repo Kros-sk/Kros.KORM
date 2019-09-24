@@ -23,7 +23,8 @@ namespace Kros.KORM.Metadata
         private const string ConventionalPrimaryKeyName = "ID";
 
         private readonly Dictionary<Type, EntityMapper> _entities = new Dictionary<Type, EntityMapper>();
-        private readonly Dictionary<string, Expression> _queryFilters = new Dictionary<string, Expression>();
+        private readonly Dictionary<string, Expression> _queryFilters
+            = new Dictionary<string, Expression>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ConventionModelMapper"/> class.

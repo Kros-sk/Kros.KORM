@@ -193,7 +193,7 @@ namespace Kros.KORM.UnitTests.Query.Sql
             {
                 if (LastExpression is null)
                 {
-                    SetDefaultQueryFilter(query, _visitorFactory.CreateVisitor(_sqlConnection));
+                    SetQueryFilter(query, _visitorFactory.CreateVisitor(_sqlConnection));
                     LastExpression = query;
                 }
 

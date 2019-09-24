@@ -134,7 +134,7 @@ namespace Kros.KORM.Query
 
             InitSqlExpressionVisitor(Check.NotNull(sqlGeneratorFactory, nameof(sqlGeneratorFactory)));
             IsExternalConnection = false;
-            _modelBuilder = Check.NotNull(modelBuilder, nameof(modelBuilder)); ;
+            _modelBuilder = Check.NotNull(modelBuilder, nameof(modelBuilder));
             _transactionHelper = new Lazy<TransactionHelper>(() => new TransactionHelper(Connection));
         }
 
@@ -647,7 +647,7 @@ namespace Kros.KORM.Query
         {
             DbCommand command = _transactionHelper.Value.CreateCommand();
 
-            SetDefaultQueryFilter(query, _sqlExpressionVisitor.Value);
+            SetQueryFilter(query, _sqlExpressionVisitor.Value);
 
             QueryInfo queryInfo = _sqlExpressionVisitor.Value.GenerateSql(query.Expression);
             command.CommandText = queryInfo.Query;
@@ -662,7 +662,7 @@ namespace Kros.KORM.Query
         /// <typeparam name="T">Entity type.</typeparam>
         /// <param name="query">The query.</param>
         /// <param name="sqlVisitor">The SQL visitor.</param>
-        protected internal void SetDefaultQueryFilter<T>(IQuery<T> query, ISqlExpressionVisitor sqlVisitor)
+        protected internal void SetQueryFilter<T>(IQuery<T> query, ISqlExpressionVisitor sqlVisitor)
             => (query as IQueryBaseInternal).ApplyQueryFilter(_databaseMapper, sqlVisitor);
 
         private DbCommand CreateCommand(string commandText, CommandParameterCollection parameters)

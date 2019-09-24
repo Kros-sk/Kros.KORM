@@ -287,12 +287,12 @@ public class DatabaseConfiguration : DatabaseConfigurationBase
     public override void OnModelCreating(ModelConfigurationBuilder modelBuilder)
     {
         modelBuilder.Entity<Document>()
-            .UseQueryFilter(entity => entity.UserId == 12 && entity.ParentId == 1);
+            .UseQueryFilter(entity => entity.UserId == ActiveUser.Id && entity.ParentId == 1);
     }
 }
 ```
 
-KORM will automatically add a condition `((UserId = 0) AND (ParentId = 1))` when calling any query using `Query<Document>()`.
+KORM will automatically add a condition `((UserId = @Dqf1) AND (ParentId = @Dqf2))` when calling any query using `Query<Document>()`.
 > Except for direct sql calls like `_database.Query<Document>().Sql("SELECT * FROM DOCUMENT")`.
 <!-- -->
 > :warning: Configuration `modelBuilder.Table("Documents")` is applied for all entities mapped to table `Documents` (for example `Document`, `DocumentDto`, `DocumentInfo`, ...).

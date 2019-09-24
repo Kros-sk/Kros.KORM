@@ -17,10 +17,10 @@ namespace Kros.KORM.Query
         void ApplyQueryFilter(IDatabaseMapper databaseMapper, ISqlExpressionVisitor expressionVisitor);
 
         /// <summary>
-        /// Gets a value indicating whether [ignore query filters].
+        /// Gets a value indicating whether ignore query filters.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if [ignore query filters]; otherwise, <c>false</c>.
+        ///   <c>true</c> if ignore query filters; otherwise, <c>false</c>.
         /// </value>
         bool IgnoreQueryFilters { get; }
     }

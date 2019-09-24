@@ -244,7 +244,6 @@ namespace Kros.KORM.Query
                     WhereExpression queryFilter =
                         expressionVisitor.GenerateWhereCondition(tableInfo.QueryFilter, DefaultQueryFilterParameterNamePrefix);
                     select.SetWhereExpression(queryFilter);
-
                 }
             }
         }
