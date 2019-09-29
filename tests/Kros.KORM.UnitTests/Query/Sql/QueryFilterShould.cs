@@ -56,7 +56,18 @@ namespace Kros.KORM.UnitTests.Query.Sql
         {
             var query = Query<Foo>().Where(f => f.Id > 22);
 
-            WasGeneratedSameSql2(query, "SELECT Id, IsDeleted, Value FROM Foo WHERE (((Value > @Dqf1)) AND ((Id > @1)))", 22, 2);
+            WasGeneratedSameSql2(query, "SELECT Id, IsDeleted, Value FROM Foo WHERE (((Value > @Dqf1)) AND ((Id > @1)))", 2, 22);
+        }
+
+        [Fact]
+        public void AddWhereConditionToSqlWithCorrectParamsOrder()
+        {
+            var query = Query<Foo>().Where(f => f.Id > 22 || f.Id < 33);
+
+            WasGeneratedSameSql2(
+                query,
+                "SELECT Id, IsDeleted, Value FROM Foo WHERE (((Value > @Dqf1)) AND (((Id > @1) OR (Id < @2))))",
+                2, 22, 33);
         }
 
         [Fact]

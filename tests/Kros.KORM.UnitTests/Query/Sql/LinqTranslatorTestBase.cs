@@ -83,7 +83,7 @@ namespace Kros.KORM.UnitTests.Query.Sql
             sql.Query.Should().Be(expectedQuery.Query);
             CompareLimitOffsetDataReaders(sql.Reader as LimitOffsetDataReader, expectedQuery.Reader as LimitOffsetDataReader)
                 .Should().BeTrue();
-            parameters?.Should().BeEquivalentTo(ParameterExtractor.ExtractParameters(expression));
+            parameters?.Should().BeEquivalentTo(ParameterExtractor.ExtractParameters(expression), o => o.WithStrictOrdering());
         }
 
         /// <summary>
