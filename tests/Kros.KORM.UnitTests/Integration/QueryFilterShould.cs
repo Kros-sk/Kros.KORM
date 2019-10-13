@@ -121,8 +121,8 @@ INSERT INTO [Foo] VALUES (4, 3, 'Jakub');";
             {
                 base.OnModelCreating(modelBuilder);
 
-                modelBuilder.Entity<Foo>()
-                    .UseQueryFilter(f => f.UserId == 1);
+                modelBuilder.Table("Foo")
+                    .UseQueryFilter<Foo>(f => f.UserId == 1);
             }
         }
     }

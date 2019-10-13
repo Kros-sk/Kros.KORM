@@ -14,7 +14,6 @@ namespace Kros.KORM.Metadata
     {
         private string _tableName;
         private string _primaryKeyPropertyName;
-        private Expression<Func<TEntity, bool>> _queryFilter;
         private AutoIncrementMethodType _autoIncrementType = AutoIncrementMethodType.None;
         private readonly Dictionary<Type, IConverter> _propertyConverters = new Dictionary<Type, IConverter>();
         private readonly Dictionary<string, PropertyBuilder<TEntity>> _propertyBuilders
@@ -23,12 +22,6 @@ namespace Kros.KORM.Metadata
         INamedEntityTypeBuilder<TEntity> IEntityTypeBuilder<TEntity>.HasTableName(string tableName)
         {
             _tableName = Check.NotNullOrWhiteSpace(tableName, nameof(tableName));
-            return this;
-        }
-
-        INamedEntityTypeBuilder<TEntity> IEntityTypeQueryFilterBuilder<TEntity>.UseQueryFilter(Expression<Func<TEntity, bool>> queryFilter)
-        {
-            _queryFilter = Check.NotNull(queryFilter, nameof(queryFilter));
             return this;
         }
 
@@ -89,10 +82,6 @@ namespace Kros.KORM.Metadata
             foreach (KeyValuePair<Type, IConverter> item in _propertyConverters)
             {
                 modelMapper.SetConverterForProperties<TEntity>(item.Key, item.Value);
-            }
-            if (_queryFilter != null)
-            {
-                modelMapper.SetQueryFilter<TEntity>(_queryFilter);
             }
 
             var injectionConfig = new Lazy<InjectionConfiguration<TEntity>>(() => new InjectionConfiguration<TEntity>());

@@ -24,7 +24,7 @@ namespace Kros.KORM.UnitTests.Query.Sql
         {
             var query = Query<Foo>();
 
-            WasGeneratedSameSql(query, "SELECT Id, IsDeleted, Value FROM Foo WHERE ((Value > @Dqf1))", 2);
+            WasGeneratedSameSql(query, "SELECT Id, IsDeleted, Value FROM Foo WHERE ((Value > @__Dqf1))", 2);
         }
 
         [Fact]
@@ -40,7 +40,7 @@ namespace Kros.KORM.UnitTests.Query.Sql
         {
             var query = Query<Bar>();
 
-            WasGeneratedSameSql(query, "SELECT Id, Value FROM Bars WHERE ((Value LIKE @Dqf1 + '%'))", "Slov");
+            WasGeneratedSameSql(query, "SELECT Id, Value FROM Bars WHERE ((Value LIKE @__Dqf1 + '%'))", "Slov");
         }
 
         [Fact]
@@ -48,7 +48,7 @@ namespace Kros.KORM.UnitTests.Query.Sql
         {
             var query = Query<Foo>().Where("Id > @1", 22);
 
-            WasGeneratedSameSql2(query, "SELECT Id, IsDeleted, Value FROM Foo WHERE ((Id > @1) AND ((Value > @Dqf1)))", 22, 2);
+            WasGeneratedSameSql2(query, "SELECT Id, IsDeleted, Value FROM Foo WHERE ((Id > @1) AND ((Value > @__Dqf1)))", 22, 2);
         }
 
         [Fact]
@@ -56,7 +56,7 @@ namespace Kros.KORM.UnitTests.Query.Sql
         {
             var query = Query<Foo>().Where(f => f.Id > 22);
 
-            WasGeneratedSameSql2(query, "SELECT Id, IsDeleted, Value FROM Foo WHERE (((Value > @Dqf1)) AND ((Id > @1)))", 2, 22);
+            WasGeneratedSameSql2(query, "SELECT Id, IsDeleted, Value FROM Foo WHERE (((Value > @__Dqf1)) AND ((Id > @1)))", 2, 22);
         }
 
         [Fact]
@@ -66,7 +66,7 @@ namespace Kros.KORM.UnitTests.Query.Sql
 
             WasGeneratedSameSql2(
                 query,
-                "SELECT Id, IsDeleted, Value FROM Foo WHERE (((Value > @Dqf1)) AND (((Id > @1) OR (Id < @2))))",
+                "SELECT Id, IsDeleted, Value FROM Foo WHERE (((Value > @__Dqf1)) AND (((Id > @1) OR (Id < @2))))",
                 2, 22, 33);
         }
 
@@ -75,7 +75,7 @@ namespace Kros.KORM.UnitTests.Query.Sql
         {
             var query = Query<Foo2>();
 
-            WasGeneratedSameSql(query, "SELECT Id FROM Foo WHERE ((Value > @Dqf1))", 2);
+            WasGeneratedSameSql(query, "SELECT Id FROM Foo WHERE ((Value > @__Dqf1))", 2);
         }
 
         [Fact]
@@ -84,7 +84,7 @@ namespace Kros.KORM.UnitTests.Query.Sql
             var query = Query<Foo>();
             query.FirstOrDefault();
 
-            WasGeneratedSameSql(query, "SELECT TOP 1 Id, IsDeleted, Value FROM Foo WHERE ((Value > @Dqf1))", 2);
+            WasGeneratedSameSql(query, "SELECT TOP 1 Id, IsDeleted, Value FROM Foo WHERE ((Value > @__Dqf1))", 2);
         }
 
         [Fact]
@@ -92,10 +92,10 @@ namespace Kros.KORM.UnitTests.Query.Sql
         {
             var query = Query<FooBar>();
 
-            WasGeneratedSameSql2(query, "SELECT Value FROM FooBar WHERE ((Value > @Dqf1))", 0);
+            WasGeneratedSameSql2(query, "SELECT Value FROM FooBar WHERE ((Value > @__Dqf1))", 0);
 
             query = Query<FooBar>();
-            WasGeneratedSameSql2(query, "SELECT Value FROM FooBar WHERE ((Value > @Dqf1))", 1);
+            WasGeneratedSameSql2(query, "SELECT Value FROM FooBar WHERE ((Value > @__Dqf1))", 1);
         }
 
         [Fact]
@@ -108,7 +108,7 @@ namespace Kros.KORM.UnitTests.Query.Sql
 
             WasGeneratedSameSql2(
                 query,
-                "SELECT Id FROM ComplexCondition WHERE (((((Value > @Dqf1) AND (Value < @Dqf2)) OR (Id > @Dqf3))) AND ((Id < @1))) ORDER BY Id",
+                "SELECT Id FROM ComplexCondition WHERE (((((Value > @__Dqf1) AND (Value < @__Dqf2)) OR (Id > @__Dqf3))) AND ((Id < @1))) ORDER BY Id",
                 1, 1000, 0, 10000);
         }
 
@@ -166,21 +166,22 @@ namespace Kros.KORM.UnitTests.Query.Sql
             {
                 base.OnModelCreating(modelBuilder);
 
-                modelBuilder.Entity<Foo>()
-                    .UseQueryFilter(f => f.Value > 2);
+                modelBuilder.Table("Foo")
+                    .UseQueryFilter<Foo>(f => f.Value > 2);
 
                 modelBuilder.Entity<Foo2>()
                     .HasTableName("Foo");
 
                 modelBuilder.Entity<Bar>()
-                    .HasTableName("Bars")
-                    .UseQueryFilter(b => b.Value.StartsWith("Slov"));
+                    .HasTableName("Bars");
 
-                modelBuilder.Entity<FooBar>()
-                    .UseQueryFilter(f => f.Value > GetValue());
+                modelBuilder.Table("Bars").UseQueryFilter<Bar>(b => b.Value.StartsWith("Slov"));
 
-                modelBuilder.Entity<ComplexCondition>()
-                    .UseQueryFilter(f => (f.Value > 1 && f.Value < 1000) || f.Id > 0);
+                modelBuilder.Table("FooBar")
+                    .UseQueryFilter<FooBar>(f => f.Value > GetValue());
+
+                modelBuilder.Table("ComplexCondition")
+                    .UseQueryFilter<ComplexCondition>(f => (f.Value > 1 && f.Value < 1000) || f.Id > 0);
             }
 
             private int _value = 0;

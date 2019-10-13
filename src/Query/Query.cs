@@ -18,7 +18,7 @@ namespace Kros.KORM.Query
     /// <seealso cref="Kros.KORM.Query.IQuery{T}" />
     internal sealed class Query<T> : IQuery<T>, IFilteredQuery<T>, IGroupedQuery<T>, IOrderedQuery<T>, IQueryBaseInternal
     {
-        private const string DefaultQueryFilterParameterNamePrefix = "Dqf";
+        private const string DefaultQueryFilterParameterNamePrefix = "__Dqf";
 
         #region Private fields
 

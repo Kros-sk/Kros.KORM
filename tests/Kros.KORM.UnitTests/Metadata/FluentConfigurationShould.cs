@@ -231,8 +231,10 @@ namespace Kros.KORM.UnitTests.Metadata
             var modelMapper = new ConventionModelMapper();
 
             modelBuilder.Entity<FooQueryFilter>()
-                .HasTableName("Foo")
-                .UseQueryFilter(f => f.AutorId == 5);
+                .HasTableName("Foo");
+
+           modelBuilder.Table("Foo")
+                .UseQueryFilter<FooQueryFilter>(f => f.AutorId == 5);
 
             modelBuilder.Build(modelMapper);
 
@@ -257,46 +259,6 @@ namespace Kros.KORM.UnitTests.Metadata
 
             tableInfo.QueryFilter
                 .Should().BeNull();
-        }
-
-        [Fact]
-        public void ThrowExceptionWhenTryingConfigureQueryFilterMoreTimeForSameTable()
-        {
-            var modelBuilder = new ModelConfigurationBuilder();
-            var modelMapper = new ConventionModelMapper();
-
-            modelBuilder.Entity<FooQueryFilter>()
-                .HasTableName("Foo")
-                .UseQueryFilter(f => f.AutorId == 5);
-
-            modelBuilder.Entity<BarQueryFilter>()
-                .HasTableName("Foo")
-                .UseQueryFilter(f => f.AutorId == 5);
-
-            Action action = () => modelBuilder.Build(modelMapper);
-
-            action.Should()
-                .Throw<InvalidOperationException>("*Query filter*");
-        }
-
-        [Fact]
-        public void UseQueryFilterForAnotherEntityOverSameTable()
-        {
-            var modelBuilder = new ModelConfigurationBuilder();
-            var modelMapper = new ConventionModelMapper();
-
-            modelBuilder.Entity<FooQueryFilter>()
-                .HasTableName("Foo")
-                .UseQueryFilter(f => f.AutorId == 5);
-            modelBuilder.Entity<BarQueryFilter>()
-                .HasTableName("Foo");
-
-            modelBuilder.Build(modelMapper);
-
-            TableInfo tableInfo = modelMapper.GetTableInfo<BarQueryFilter>();
-
-            tableInfo.QueryFilter
-                .Should().NotBeNull();
         }
 
         private static TableInfo CreateExpectedTableInfo(List<ColumnInfo> columns, string tableName)

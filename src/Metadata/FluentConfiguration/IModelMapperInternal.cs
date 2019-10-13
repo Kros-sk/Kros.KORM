@@ -18,11 +18,11 @@ namespace Kros.KORM.Metadata
         void SetTableName<TEntity>(string tableName) where TEntity : class;
 
         /// <summary>
-        /// Set default query filter which will be used in every query to table represented by <typeparamref name="TEntity"/>.
+        /// Set default query filter which will be used in every query to table <paramref name="tableName"/>.
         /// </summary>
-        /// <typeparam name="TEntity">The type of the entity.</typeparam>
+        /// <param name="tableName">Table name.</param>
         /// <param name="queryFilter">The query filter.</param>
-        void SetQueryFilter<TEntity>(Expression queryFilter) where TEntity : class;
+        void SetQueryFilter(string tableName ,Expression queryFilter);
 
         /// <summary>
         /// Sets column name for specific property.

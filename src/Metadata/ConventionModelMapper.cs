@@ -461,9 +461,9 @@ namespace Kros.KORM.Metadata
             entity.PrimaryKeyAutoIncrementType = autoIncrementType;
         }
 
-        void IModelMapperInternal.SetQueryFilter<TEntity>(Expression queryFilter)
+        void IModelMapperInternal.SetQueryFilter(string tableName, Expression queryFilter)
         {
-            string tableName = GetTableName(TableInfo.Empty, typeof(TEntity));
+            Check.NotNullOrWhiteSpace(tableName, nameof(tableName));
 
             if (_queryFilters.ContainsKey(tableName))
             {
