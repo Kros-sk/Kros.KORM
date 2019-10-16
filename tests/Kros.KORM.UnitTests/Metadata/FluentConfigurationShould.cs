@@ -261,6 +261,25 @@ namespace Kros.KORM.UnitTests.Metadata
                 .Should().BeNull();
         }
 
+        [Fact]
+        public void ThrowExceptionWhenTryConfigureQueryFilterMoreTimesForOneTable()
+        {
+            var modelBuilder = new ModelConfigurationBuilder();
+            var modelMapper = new ConventionModelMapper();
+
+            modelBuilder.Table("Foo")
+                 .UseQueryFilter<FooQueryFilter>(f => f.AutorId == 5);
+
+            Action action = ()
+                => modelBuilder.Table("Foo")
+                .UseQueryFilter<FooQueryFilter>(f => f.Id > 2);
+
+            action
+                .Should()
+                .Throw<InvalidOperationException>()
+                .WithMessage("*Foo*");
+        }
+
         private static TableInfo CreateExpectedTableInfo(List<ColumnInfo> columns, string tableName)
         {
             var tableInfoExpected = new TableInfo(columns, Enumerable.Empty<PropertyInfo>(), null)

@@ -5,7 +5,7 @@ using System.Linq.Expressions;
 namespace Kros.KORM.Metadata.FluentConfiguration
 {
     /// <summary>
-    /// Interface for configuration of behavior for all entity for table.
+    /// Setting behavior for all entities within the table.
     /// </summary>
     /// <seealso cref="Kros.KORM.Metadata.ITableBuilder" />
     internal class TableBuilder : ITableBuilder
@@ -20,6 +20,10 @@ namespace Kros.KORM.Metadata.FluentConfiguration
 
         void ITableBuilder.UseQueryFilter<TEntity>(Expression<Func<TEntity, bool>> queryFilter)
         {
+            if (_queryFilter != null)
+            {
+                ThrowHelper.QueryFilterAlreadyConfigured(_tableName);
+            }
             _queryFilter = Check.NotNull(queryFilter, nameof(queryFilter));
         }
 

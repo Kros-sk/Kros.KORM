@@ -222,7 +222,7 @@ namespace Kros.KORM.Metadata
     }
 
     /// <summary>
-    /// Interface for configuration of behavior for all entity for table.
+    /// Interface setting behavior for all entities within the table.
     /// </summary>
     public interface ITableBuilder
     {
@@ -231,7 +231,7 @@ namespace Kros.KORM.Metadata
         /// </summary>
         /// <param name="queryFilter">The query filter.</param>
         /// <remarks>
-        /// This filter will be use for all entity over this table.
+        /// This filter will be used for all entity over this table.
         /// </remarks>
         void UseQueryFilter<TEntity>(Expression<Func<TEntity, bool>> queryFilter) where TEntity: class;
     }

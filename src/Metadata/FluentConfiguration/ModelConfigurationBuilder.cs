@@ -12,7 +12,7 @@ namespace Kros.KORM.Metadata
     {
         private readonly Dictionary<Type, EntityTypeBuilderBase> _entityBuilders = new Dictionary<Type, EntityTypeBuilderBase>();
         private readonly Dictionary<string, TableBuilder> _tableBuilders
-            = new Dictionary<string, TableBuilder>(StringComparer.InvariantCultureIgnoreCase);
+            = new Dictionary<string, TableBuilder>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// Returns an object that can be used to configure of a given entity type.

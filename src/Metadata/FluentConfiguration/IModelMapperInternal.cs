@@ -22,7 +22,7 @@ namespace Kros.KORM.Metadata
         /// </summary>
         /// <param name="tableName">Table name.</param>
         /// <param name="queryFilter">The query filter.</param>
-        void SetQueryFilter(string tableName ,Expression queryFilter);
+        void SetQueryFilter(string tableName, Expression queryFilter);
 
         /// <summary>
         /// Sets column name for specific property.

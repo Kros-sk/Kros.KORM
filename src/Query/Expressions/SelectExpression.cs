@@ -130,7 +130,9 @@ namespace Kros.KORM.Query.Expressions
         /// Sets the where expression.
         /// </summary>
         /// <param name="whereExpression">The where expression.</param>
-        /// <exception cref="System.ArgumentException">'whereExpression' can be applied only once.;whereExpression</exception>
+        /// <remarks>
+        /// If you call this method multiple times, the conditions are merged via AND.
+        /// </remarks>
         public void SetWhereExpression(WhereExpression whereExpression)
         {
             Check.NotNull(whereExpression, nameof(whereExpression));

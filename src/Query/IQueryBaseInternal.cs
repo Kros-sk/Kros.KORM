@@ -1,11 +1,10 @@
 ﻿using Kros.KORM.Metadata;
-using Kros.KORM.Query.Expressions;
 using Kros.KORM.Query.Sql;
 
 namespace Kros.KORM.Query
 {
     /// <summary>
-    /// Interface, which describe intenal funcions of Query.
+    /// Interface, which describe intenal functions of Query.
     /// </summary>
     internal interface IQueryBaseInternal
     {
@@ -17,10 +16,10 @@ namespace Kros.KORM.Query
         void ApplyQueryFilter(IDatabaseMapper databaseMapper, ISqlExpressionVisitor expressionVisitor);
 
         /// <summary>
-        /// Gets a value indicating whether ignore query filters.
+        /// Gets a value indicating whether to ignore query filter.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if ignore query filters; otherwise, <c>false</c>.
+        ///   <c>true</c> if query filter is ignored; otherwise, <c>false</c>.
         /// </value>
         bool IgnoreQueryFilters { get; }
     }

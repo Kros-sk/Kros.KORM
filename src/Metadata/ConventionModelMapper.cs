@@ -465,11 +465,6 @@ namespace Kros.KORM.Metadata
         {
             Check.NotNullOrWhiteSpace(tableName, nameof(tableName));
 
-            if (_queryFilters.ContainsKey(tableName))
-            {
-                ThrowHelper.QueryFilterAlreadyConfigured(tableName);
-            }
-
             _queryFilters[tableName] = queryFilter;
         }
 

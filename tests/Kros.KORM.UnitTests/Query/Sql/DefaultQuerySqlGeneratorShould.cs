@@ -123,7 +123,7 @@ namespace Kros.KORM.UnitTests.Query.Sql
         }
 
         [Fact]
-        public void GenerateWhereConditionWithSpecifixParameterName()
+        public void GenerateWhereConditionWithSpecificParameterName()
         {
             DefaultQuerySqlGenerator generator = CreateQuerySqlGenerator();
             Expression<Func<Person, bool>> where = (p) => p.Id == 1 && p.FirstName.StartsWith("M");
