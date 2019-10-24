@@ -32,6 +32,7 @@ To contribute with new topics/information or make changes, see [contributing](ht
 * [DataAnnotation attributes](#dataannotation-attributes)
 * [Convention model mapper](#convention-model-mapper)
 * [Configure model mapping by fluent api](#Configure-model-mapping-by-fluent-api)
+* [Global query filter](#Global-query-filter)
 * [Converters](#converters)
 * [Value generators](#value-generators)
 * [OnAfterMaterialize](#onaftermaterialize)
@@ -273,6 +274,38 @@ var database = Database
 
 If converter is used for property type (`UseConverterForProperties`) and also for specific property of that type (`UseConverter`),
 the latter one has precedence.
+
+### Global query filter
+
+In many cases, we want to define a global filter to apply to each query. For example: `ParentId = 1`, `UserId = ActiveUser.Id`, etc.
+
+You can configurate query filter in `DatabaseConfiguration` class.
+
+```CSharp
+public class DatabaseConfiguration : DatabaseConfigurationBase
+{
+    public override void OnModelCreating(ModelConfigurationBuilder modelBuilder)
+    {
+        modelBuilder.Table("Document")
+            .UseQueryFilter<Document>(entity => entity.UserId == ActiveUser.Id && entity.ParentId == 1);
+    }
+}
+```
+
+KORM will automatically add a condition `((UserId = @__Dqf1) AND (ParentId = @__Dqf2))` when calling any query using `Query<Document>()`.
+> Except for direct sql calls like `_database.Query<Document>().Sql("SELECT * FROM DOCUMENT")`.
+
+> :warning: Configuration `modelBuilder.Table("Documents")` is applied for all entities mapped to table `Documents` (for example `Document`, `DocumentDto`, `DocumentInfo`, ...).
+
+#### Ignoring global filters
+
+If I need to call a query without these conditions, I must explicitly say:
+
+```Csharp
+_database.Query<Document>()
+    .IgnoreQueryFilters()
+    .ToList();
+```
 
 ### Converters
 

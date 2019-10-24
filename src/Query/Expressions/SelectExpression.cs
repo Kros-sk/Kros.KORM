@@ -19,7 +19,8 @@ namespace Kros.KORM.Query.Expressions
         private TableInfo _tableInfo;
         private ColumnsExpression _columnsExpression;
         private TableExpression _tableExpression;
-        private object _originalQuery;
+        internal Type EntityType { get; private set; }
+        internal IQueryBaseInternal OriginalQuery { get; private set; }
 
         #endregion
 
@@ -104,6 +105,7 @@ namespace Kros.KORM.Query.Expressions
         public void SetColumnsExpression(ColumnsExpression columnExpression)
         {
             Check.NotNull(columnExpression, nameof(columnExpression));
+
             _columnsExpression = columnExpression;
         }
 
@@ -115,6 +117,7 @@ namespace Kros.KORM.Query.Expressions
         public void SetTableExpression(TableExpression tableExpression)
         {
             Check.NotNull(tableExpression, nameof(tableExpression));
+
             if (_tableExpression != null)
             {
                 throw new ArgumentException(
@@ -127,16 +130,21 @@ namespace Kros.KORM.Query.Expressions
         /// Sets the where expression.
         /// </summary>
         /// <param name="whereExpression">The where expression.</param>
-        /// <exception cref="System.ArgumentException">'whereExpression' can be applied only once.;whereExpression</exception>
+        /// <remarks>
+        /// If you call this method multiple times, the conditions are merged via AND.
+        /// </remarks>
         public void SetWhereExpression(WhereExpression whereExpression)
         {
             Check.NotNull(whereExpression, nameof(whereExpression));
-            if (WhereExpression != null)
+
+            if (WhereExpression is null)
             {
-                throw new ArgumentException(
-                    string.Format(Resources.ExpressionCanBeAppliedOnlyOnce, nameof(WhereExpression)), nameof(whereExpression));
+                WhereExpression = whereExpression;
             }
-            WhereExpression = whereExpression;
+            else
+            {
+                WhereExpression = WhereExpression.And(whereExpression);
+            }
         }
 
         /// <summary>
@@ -147,6 +155,7 @@ namespace Kros.KORM.Query.Expressions
         public void SetGroupByExpression(GroupByExpression groupByExpression)
         {
             Check.NotNull(groupByExpression, nameof(groupByExpression));
+
             if (GroupByExpression != null)
             {
                 throw new ArgumentException(string.Format(Resources.ExpressionCanBeAppliedOnlyOnce, nameof(GroupByExpression)),
@@ -163,6 +172,7 @@ namespace Kros.KORM.Query.Expressions
         public void SetOrderByExpression(OrderByExpression orderByExpression)
         {
             Check.NotNull(orderByExpression, nameof(orderByExpression));
+
             if (OrderByExpression != null)
             {
                 throw new ArgumentException(string.Format(Resources.ExpressionCanBeAppliedOnlyOnce, nameof(OrderByExpression)),
@@ -237,7 +247,8 @@ namespace Kros.KORM.Query.Expressions
         internal static Expression Constant<T>(TableInfo tableInfo, Query<T> query)
         {
             var expression = new SelectExpression(tableInfo);
-            expression._originalQuery = query;
+            expression.OriginalQuery = query;
+            expression.EntityType = typeof(T);
 
             return expression;
         }
@@ -245,12 +256,12 @@ namespace Kros.KORM.Query.Expressions
         /// <summary>
         /// Gets the static type of the expression that this <see cref="T:System.Linq.Expressions.Expression"></see> represents.
         /// </summary>
-        public override Type Type => _originalQuery.GetType();
+        public override Type Type => OriginalQuery.GetType();
 
         /// <summary>
         /// Gets the value.
         /// </summary>
-        public object Value => _originalQuery;
+        public object Value => OriginalQuery;
 
         /// <summary>
         /// Gets the node type of this <see cref="T:System.Linq.Expressions.Expression"></see>.

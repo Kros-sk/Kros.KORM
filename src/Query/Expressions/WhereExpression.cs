@@ -37,6 +37,14 @@ namespace Kros.KORM.Query.Expressions
             Parameters = args.ToList();
         }
 
+        /// <summary>
+        /// Create new where condition as: this condition AND <paramref name="where"/> condition.
+        /// </summary>
+        /// <param name="where">The where condition for adding whith this. .</param>
+        /// <returns>New where condition: (this) AND (<paramref name="where"/>)</returns>
+        public WhereExpression And(WhereExpression where)
+            => new WhereExpression($"({Sql}) AND ({where.Sql})", Enumerable.Concat(Parameters, where.Parameters).ToArray());
+
         #region Visitor
 
         /// <summary>

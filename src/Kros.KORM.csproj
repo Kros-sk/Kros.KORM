@@ -14,16 +14,15 @@
     <ApplicationIcon>icon.ico</ApplicationIcon>
     <Product>Kros.KORM</Product>
     <AssemblyName>Kros.KORM</AssemblyName>
-    <DocumentationFile>$(OutDir)Kros.KORM.xml</DocumentationFile>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
   <PropertyGroup>
     <PackageId>Kros.KORM</PackageId>
+    <PackageIcon>icon.png</PackageIcon>
     <PackageReleaseNotes>https://github.com/Kros-sk/Kros.KORM/releases</PackageReleaseNotes>
     <PackageProjectUrl>https://github.com/Kros-sk/Kros.KORM/blob/master/README.md</PackageProjectUrl>
-    <PackageTags>Kros;KORM;ORM;Database;DAL;SQL;Database;MSSQL;Data;BulkInsert;BulkOperation;BulkCopy;
-    BulkUpdate;Bulk Insert;Bulk Update</PackageTags>
+    <PackageTags>Kros;KORM;ORM;Database;DAL;SQL;Database;MSSQL;Data;BulkInsert;BulkOperation;BulkCopy;BulkUpdate;Bulk Insert;Bulk Update</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageIconUrl>https://en.gravatar.com/userimage/137934964/524e95fbd8c2e8779e02819ab6902bef.png</PackageIconUrl>
     <RepositoryUrl>https://github.com/Kros-sk/Kros.KORM</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
   </PropertyGroup>
@@ -31,14 +30,17 @@
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <ItemGroup>
+    <None Include="Resources\icon.png" Pack="true" PackagePath="" />
+  </ItemGroup>
+  <ItemGroup>
     <None Remove="Resources\MigrationsHistoryTableScript.sql" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\MigrationsHistoryTableScript.sql" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Kros.Utils" Version="1.9.0" />
-    <PackageReference Include="System.Reflection.Emit.Lightweight" Version="4.3.0" />
+    <PackageReference Include="Kros.Utils" Version="1.10.1" />
+    <PackageReference Include="System.Reflection.Emit.Lightweight" Version="4.6.0" />
     <PackageReference Include="System.ValueTuple" Version="4.5.0" />
   </ItemGroup>
   <ItemGroup>

@@ -83,11 +83,11 @@ namespace Kros.KORM.Query.Sql
         }
 
         /// <inheritdoc />
-        public WhereExpression GenerateWhereCondition(Expression whereExpression)
+        public WhereExpression GenerateWhereCondition(Expression whereExpression, string parameterNamePrefix = "")
         {
             Check.NotNull(whereExpression, nameof(whereExpression));
 
-            LinqParameters = new Parameters();
+            LinqParameters = new Parameters(parameterNamePrefix);
             LinqStringBuilder = new StringBuilder();
             MemberExpressionStack.Clear();
 
@@ -388,22 +388,6 @@ namespace Kros.KORM.Query.Sql
             return e;
         }
 
-        private SelectExpression FindSelectExpression(MethodCallExpression expression)
-        {
-            if (expression.Arguments[0] is SelectExpression selectExpression)
-            {
-                return selectExpression;
-            }
-            else if (expression.Arguments[0] is MethodCallExpression methodCallExpression)
-            {
-                return FindSelectExpression(methodCallExpression);
-            }
-            else
-            {
-                throw new NotSupportedException();
-            }
-        }
-
         /// <summary>
         /// Dispatches the expression to one of the more specialized visit methods in this class.
         /// </summary>
@@ -521,7 +505,7 @@ namespace Kros.KORM.Query.Sql
 
         private void VisitLinqMethods(MethodCallExpression expression)
         {
-            SelectExpression = FindSelectExpression(expression);
+            SelectExpression = expression.FindSelectExpression();
             LinqStringBuilder = new StringBuilder();
 
             VisitLinqExpression(expression);
@@ -1106,11 +1090,21 @@ namespace Kros.KORM.Query.Sql
         {
             private int _parametersCount = 0;
             private List<object> _params = new List<object>();
+            private readonly string _parameterNamePrefix;
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="Parameters"/> class.
+            /// </summary>
+            /// <param name="parameterNamePrefix">The parameter name prefix.</param>
+            public Parameters(string parameterNamePrefix = "")
+            {
+                _parameterNamePrefix = parameterNamePrefix;
+            }
 
             /// <summary>
             /// Gets the name of the next parameter.
             /// </summary>
-            public string GetNextParamName() => $"@{++_parametersCount}";
+            public string GetNextParamName() => $"@{_parameterNamePrefix}{++_parametersCount}";
 
             /// <summary>
             /// Adds the parameter.

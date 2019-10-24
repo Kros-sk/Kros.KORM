@@ -3,6 +3,7 @@ using Kros.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 
 namespace Kros.KORM.Metadata
@@ -30,7 +31,8 @@ namespace Kros.KORM.Metadata
         /// <param name="onAfterMaterialize">Method info accessor for calling OnAfterMaterialize over <seealso cref="IMaterialize"/>IMaterialize
         /// If Model doesn't implement <seealso cref="IMaterialize"/> then null.</param>
         /// <exception cref="ArgumentNullException">When columns is null.</exception>
-        public TableInfo(IEnumerable<ColumnInfo> columns,
+        public TableInfo(
+            IEnumerable<ColumnInfo> columns,
             IEnumerable<PropertyInfo> allModelProperties,
             MethodInfo onAfterMaterialize)
         {
@@ -40,8 +42,8 @@ namespace Kros.KORM.Metadata
             _columns = columns.ToDictionary(columnInfo => columnInfo.Name,
                                             columnInfo => columnInfo,
                                             StringComparer.CurrentCultureIgnoreCase);
-            this.OnAfterMaterialize = onAfterMaterialize;
-            this.AllModelProperties = allModelProperties;
+            OnAfterMaterialize = onAfterMaterialize;
+            AllModelProperties = allModelProperties;
 
             _properties = new Lazy<Dictionary<string, ColumnInfo>>(() =>
                    _columns.ToDictionary(columnInfo => columnInfo.Value.PropertyInfo.Name,
@@ -51,6 +53,13 @@ namespace Kros.KORM.Metadata
             _identityPrimaryKey = new Lazy<ColumnInfo>(()
                 => PrimaryKey.FirstOrDefault(p => p.AutoIncrementMethodType == AutoIncrementMethodType.Identity));
         }
+
+        private TableInfo() { }
+
+        /// <summary>
+        /// Gets the empty table info.
+        /// </summary>
+        public static TableInfo Empty { get; } = new TableInfo();
 
         #endregion
 
@@ -96,6 +105,11 @@ namespace Kros.KORM.Metadata
         /// Has table primary key mark as <see cref="AutoIncrementMethodType.Identity"/>?
         /// </summary>
         public bool HasIdentityPrimaryKey => IdentityPrimaryKey != null;
+
+        /// <summary>
+        /// Gets or sets the query filter.
+        /// </summary>
+        public Expression  QueryFilter { get; set; }
 
         #endregion
 

@@ -539,6 +539,15 @@ namespace Kros.KORM.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Query filter for table &quot;{0}&quot; was already configured..
+        /// </summary>
+        internal static string ThrowHelper_QueryFilterAlreadyConfigured {
+            get {
+                return ResourceManager.GetString("ThrowHelper_QueryFilterAlreadyConfigured", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Trying to set value generator &quot;{0}&quot; for property &quot;{1}&quot; of entity &quot;{2}&quot;. Value generator is already set as &quot;{3}&quot;..
         /// </summary>
         internal static string ThrowHelper_ValueGeneratorAlreadyConfigured {

@@ -5,7 +5,9 @@ using Kros.Data.Schema;
 using Kros.KORM.Data;
 using Kros.KORM.Helper;
 using Kros.KORM.Materializer;
+using Kros.KORM.Metadata;
 using Kros.KORM.Properties;
+using Kros.KORM.Query.Expressions;
 using Kros.KORM.Query.Providers;
 using Kros.KORM.Query.Sql;
 using Kros.Utils;
@@ -97,7 +99,7 @@ namespace Kros.KORM.Query
         #region Private fields
 
         private readonly ILogger _logger;
-        private readonly ISqlExpressionVisitorFactory _sqlGeneratorFactory;
+        private readonly IDatabaseMapper _databaseMapper;
         private readonly IModelBuilder _modelBuilder;
         private readonly KormConnectionSettings _connectionSettings = null;
         private DbConnection _connection = null;
@@ -105,6 +107,7 @@ namespace Kros.KORM.Query
             new Cache<string, TableSchema>(StringComparer.OrdinalIgnoreCase);
         private MethodInfo _nonGenericMaterializeMethod = null;
         private readonly Lazy<TransactionHelper> _transactionHelper;
+        private Lazy<ISqlExpressionVisitor> _sqlExpressionVisitor;
 
         #endregion
 
@@ -117,22 +120,21 @@ namespace Kros.KORM.Query
         /// <param name="sqlGeneratorFactory">The SQL generator factory.</param>
         /// <param name="modelBuilder">The model builder.</param>
         /// <param name="logger">The logger.</param>
+        /// <param name="databaseMapper">The Database mapper.</param>
         public QueryProvider(
             KormConnectionSettings connectionSettings,
             ISqlExpressionVisitorFactory sqlGeneratorFactory,
             IModelBuilder modelBuilder,
-            ILogger logger)
+            ILogger logger,
+            IDatabaseMapper databaseMapper)
         {
-            Check.NotNull(connectionSettings, nameof(connectionSettings));
-            Check.NotNull(sqlGeneratorFactory, nameof(sqlGeneratorFactory));
-            Check.NotNull(modelBuilder, nameof(modelBuilder));
-            Check.NotNull(logger, nameof(logger));
+            _logger = Check.NotNull(logger, nameof(logger));
+            _databaseMapper = Check.NotNull(databaseMapper, nameof(databaseMapper));
+            _connectionSettings = Check.NotNull(connectionSettings, nameof(connectionSettings));
 
-            _logger = logger;
-            _connectionSettings = connectionSettings;
+            InitSqlExpressionVisitor(Check.NotNull(sqlGeneratorFactory, nameof(sqlGeneratorFactory)));
             IsExternalConnection = false;
-            _sqlGeneratorFactory = sqlGeneratorFactory;
-            _modelBuilder = modelBuilder;
+            _modelBuilder = Check.NotNull(modelBuilder, nameof(modelBuilder));
             _transactionHelper = new Lazy<TransactionHelper>(() => new TransactionHelper(Connection));
         }
 
@@ -143,23 +145,27 @@ namespace Kros.KORM.Query
         /// <param name="sqlGeneratorFactory">The SQL generator factory.</param>
         /// <param name="modelBuilder">The model builder.</param>
         /// <param name="logger">The logger.</param>
+        /// <param name="databaseMapper">The Database mapper.</param>
         public QueryProvider(
             DbConnection externalConnection,
             ISqlExpressionVisitorFactory sqlGeneratorFactory,
             IModelBuilder modelBuilder,
-            ILogger logger)
+            ILogger logger,
+            IDatabaseMapper databaseMapper)
         {
-            Check.NotNull(externalConnection, nameof(externalConnection));
-            Check.NotNull(sqlGeneratorFactory, nameof(sqlGeneratorFactory));
-            Check.NotNull(modelBuilder, nameof(modelBuilder));
-            Check.NotNull(logger, nameof(logger));
+            _connection = Check.NotNull(externalConnection, nameof(externalConnection));
+            _modelBuilder = Check.NotNull(modelBuilder, nameof(modelBuilder));
+            _logger = Check.NotNull(logger, nameof(logger));
+            _databaseMapper = Check.NotNull(databaseMapper, nameof(databaseMapper));
 
-            _logger = logger;
-            _connection = externalConnection;
+            InitSqlExpressionVisitor(Check.NotNull(sqlGeneratorFactory, nameof(sqlGeneratorFactory)));
             IsExternalConnection = true;
-            _sqlGeneratorFactory = sqlGeneratorFactory;
-            _modelBuilder = modelBuilder;
             _transactionHelper = new Lazy<TransactionHelper>(() => new TransactionHelper(Connection));
+        }
+
+        private void InitSqlExpressionVisitor(ISqlExpressionVisitorFactory sqlGeneratorFactory)
+        {
+            _sqlExpressionVisitor = new Lazy<ISqlExpressionVisitor>(() => sqlGeneratorFactory.CreateVisitor(Connection));
         }
 
         #endregion
@@ -218,12 +224,12 @@ namespace Kros.KORM.Query
         /// IEnumerable of models, which was materialized by query
         /// </returns>
         /// <exception cref="ArgumentNullException">If query is null.</exception>
-        public IEnumerable<T> Execute<T>(IQuery<T> query)
+        public virtual IEnumerable<T> Execute<T>(IQuery<T> query)
         {
             Check.NotNull(query, nameof(query));
 
+            DbCommandInfo commandInfo = CreateCommand(query);
             Data.ConnectionHelper cnHelper = OpenConnection();
-            DbCommandInfo commandInfo = CreateCommand(query.Expression);
             _logger.LogCommand(commandInfo.Command);
             IDataReader reader = new ModelBuilder.QueryDataReader(commandInfo.Command, commandInfo.Reader,
                 cnHelper.CloseConnection);
@@ -246,7 +252,7 @@ namespace Kros.KORM.Query
             Check.NotNull(query, nameof(query));
 
             using (var cnHelper = OpenConnection())
-            using (DbCommandInfo commandInfo = CreateCommand(query.Expression))
+            using (DbCommandInfo commandInfo = CreateCommand(query))
             {
                 _logger.LogCommand(commandInfo.Command);
                 if (commandInfo.Reader == null)
@@ -543,7 +549,7 @@ namespace Kros.KORM.Query
         }
 
         /// <inheritdoc />
-        public ISqlExpressionVisitor GetExpressionVisitor() => _sqlGeneratorFactory.CreateVisitor(Connection);
+        public ISqlExpressionVisitor GetExpressionVisitor() => _sqlExpressionVisitor.Value;
 
         #endregion
 
@@ -588,9 +594,7 @@ namespace Kros.KORM.Query
         /// The value that results from executing the specified query.
         /// </returns>
         public TResult Execute<TResult>(Expression expression)
-        {
-            return this.Execute(new Query<TResult>(this, expression)).FirstOrDefault();
-        }
+            => Execute(new Query<TResult>(this, expression)).FirstOrDefault();
 
         #endregion
 
@@ -604,7 +608,8 @@ namespace Kros.KORM.Query
 
         /// <summary>
         /// Connection string na databázu, ktorý bol zadaný pri vytvorení inštancie triedy
-        /// (<see cref="QueryProvider(KormConnectionSettings, ISqlExpressionVisitorFactory, IModelBuilder, ILogger)"/>).
+        /// (<see cref="QueryProvider(
+        /// KormConnectionSettings, ISqlExpressionVisitorFactory, IModelBuilder, ILogger, IDatabaseMapper)"/>).
         /// Ak bola trieda vytvorená konkrétnou inštanciou spojenia, vráti <see langword="null"/>.
         /// </summary>
         protected string ConnectionString { get => _connectionSettings?.ConnectionString; }
@@ -622,7 +627,8 @@ namespace Kros.KORM.Query
         /// </summary>
         protected DbConnection Connection
         {
-            get {
+            get
+            {
                 if (_connection == null)
                 {
                     _connection = DbProviderFactory.CreateConnection();
@@ -637,16 +643,27 @@ namespace Kros.KORM.Query
             return new Data.ConnectionHelper(Connection);
         }
 
-        private DbCommandInfo CreateCommand(Expression expression)
+        private DbCommandInfo CreateCommand<T>(IQuery<T> query)
         {
-            var command = _transactionHelper.Value.CreateCommand();
+            DbCommand command = _transactionHelper.Value.CreateCommand();
 
-            QueryInfo queryInfo = _sqlGeneratorFactory.CreateVisitor(command.Connection).GenerateSql(expression);
+            SetQueryFilter(query, _sqlExpressionVisitor.Value);
+
+            QueryInfo queryInfo = _sqlExpressionVisitor.Value.GenerateSql(query.Expression);
             command.CommandText = queryInfo.Query;
-            ParameterExtractingExpressionVisitor.ExtractParametersToCommand(command, expression);
+            ParameterExtractingExpressionVisitor.ExtractParametersToCommand(command, query.Expression);
 
             return new DbCommandInfo(command, queryInfo.Reader);
         }
+
+        /// <summary>
+        /// Sets the default query filter.
+        /// </summary>
+        /// <typeparam name="T">Entity type.</typeparam>
+        /// <param name="query">The query.</param>
+        /// <param name="sqlVisitor">The SQL visitor.</param>
+        protected internal void SetQueryFilter<T>(IQuery<T> query, ISqlExpressionVisitor sqlVisitor)
+            => (query as IQueryBaseInternal).ApplyQueryFilter(_databaseMapper, sqlVisitor);
 
         private DbCommand CreateCommand(string commandText, CommandParameterCollection parameters)
         {

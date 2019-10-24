@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Kros.KORM.Metadata.FluentConfiguration;
+using Kros.Utils;
+using System;
 using System.Collections.Generic;
 
 namespace Kros.KORM.Metadata
@@ -9,6 +11,8 @@ namespace Kros.KORM.Metadata
     public class ModelConfigurationBuilder
     {
         private readonly Dictionary<Type, EntityTypeBuilderBase> _entityBuilders = new Dictionary<Type, EntityTypeBuilderBase>();
+        private readonly Dictionary<string, TableBuilder> _tableBuilders
+            = new Dictionary<string, TableBuilder>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// Returns an object that can be used to configure of a given entity type.
@@ -30,6 +34,26 @@ namespace Kros.KORM.Metadata
         }
 
         /// <summary>
+        /// Returns an object that can be used to configure behavior for all entities over table <paramref name="tableName"/>.
+        /// </summary>
+        /// <param name="tableName">Name of the table.</param>
+        /// <returns>
+        /// An object that can be used to configure behavior for all entities over table <paramref name="tableName"/>.
+        /// </returns>
+        public ITableBuilder Table(string tableName)
+        {
+            Check.NotNullOrWhiteSpace(tableName, nameof(tableName));
+
+            if (!_tableBuilders.TryGetValue(tableName, out TableBuilder builder))
+            {
+                builder = new TableBuilder(tableName);
+                _tableBuilders[tableName] = builder;
+            }
+
+            return builder;
+        }
+
+        /// <summary>
         /// Builds model configuration.
         /// </summary>
         /// <param name="modelMapper">Model mapper.</param>
@@ -38,6 +62,11 @@ namespace Kros.KORM.Metadata
             foreach (EntityTypeBuilderBase entityBuilder in _entityBuilders.Values)
             {
                 entityBuilder.Build(modelMapper);
+            }
+
+            foreach (TableBuilder tableBuilder in _tableBuilders.Values)
+            {
+                tableBuilder.Build(modelMapper);
             }
         }
     }

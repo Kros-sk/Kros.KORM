@@ -220,4 +220,19 @@ namespace Kros.KORM.Metadata
         /// <returns>Entity builder for configuring another properties.</returns>
         IEntityTypePropertyBuilder<TEntity> InjectValue(Func<object> injector);
     }
+
+    /// <summary>
+    /// Interface setting behavior for all entities within the table.
+    /// </summary>
+    public interface ITableBuilder
+    {
+        /// <summary>
+        /// Set default query filter which will be used in every query to table.
+        /// </summary>
+        /// <param name="queryFilter">The query filter.</param>
+        /// <remarks>
+        /// This filter will be used for all entity over this table.
+        /// </remarks>
+        void UseQueryFilter<TEntity>(Expression<Func<TEntity, bool>> queryFilter) where TEntity: class;
+    }
 }

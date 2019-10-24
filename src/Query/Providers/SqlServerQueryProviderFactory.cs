@@ -23,8 +23,11 @@ namespace Kros.KORM.Query
         /// Instance of <see cref="SqlServerQueryProvider"/>.
         /// </returns>
         public IQueryProvider Create(DbConnection connection, IModelBuilder modelBuilder, IDatabaseMapper databaseMapper)
-            => new SqlServerQueryProvider(
-                connection, new SqlServerSqlExpressionVisitorFactory(databaseMapper), modelBuilder, new Logger());
+            => new SqlServerQueryProvider(connection,
+                new SqlServerSqlExpressionVisitorFactory(databaseMapper),
+                modelBuilder,
+                new Logger(),
+                databaseMapper);
 
         /// <summary>
         /// Creates the SqlServer query provider.
@@ -40,7 +43,11 @@ namespace Kros.KORM.Query
             IModelBuilder modelBuilder,
             IDatabaseMapper databaseMapper)
             => new SqlServerQueryProvider(
-                connectionString, new SqlServerSqlExpressionVisitorFactory(databaseMapper), modelBuilder, new Logger());
+                connectionString,
+                new SqlServerSqlExpressionVisitorFactory(databaseMapper),
+                modelBuilder,
+                new Logger(),
+                databaseMapper);
 
         /// <summary>
         /// Registers instance of this type to <see cref="QueryProviderFactories"/>.

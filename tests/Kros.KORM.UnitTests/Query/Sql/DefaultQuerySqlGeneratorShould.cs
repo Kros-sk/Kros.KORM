@@ -122,6 +122,17 @@ namespace Kros.KORM.UnitTests.Query.Sql
             whereExpression.Parameters.Should().BeEquivalentTo(new object[] { 1, "M" });
         }
 
+        [Fact]
+        public void GenerateWhereConditionWithSpecificParameterName()
+        {
+            DefaultQuerySqlGenerator generator = CreateQuerySqlGenerator();
+            Expression<Func<Person, bool>> where = (p) => p.Id == 1 && p.FirstName.StartsWith("M");
+
+            WhereExpression whereExpression = generator.GenerateWhereCondition(where, "Filter");
+
+            whereExpression.Sql.Should().Be("((Id = @Filter1) AND (Name LIKE @Filter2 + '%'))");
+        }
+
         private static DefaultQuerySqlGenerator CreateQuerySqlGenerator()
             => new DefaultQuerySqlGenerator(new DatabaseMapper(new ConventionModelMapper()));
 

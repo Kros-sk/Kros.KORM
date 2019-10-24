@@ -60,5 +60,9 @@ namespace Kros.KORM
                     propertyName,
                     typeof(TEntity).Name,
                     currentValueGenerator.GetType().FullName));
+
+        public static void QueryFilterAlreadyConfigured(string tableName)
+            => throw new InvalidOperationException(
+                string.Format(Resources.ThrowHelper_QueryFilterAlreadyConfigured, tableName));
     }
 }
