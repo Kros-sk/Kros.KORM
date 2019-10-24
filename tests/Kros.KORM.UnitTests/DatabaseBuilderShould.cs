@@ -95,6 +95,7 @@ $@"CREATE TABLE [dbo].[Foo] (
         public void BuildInstanceWithCustomModelFactory()
         {
             var modelFactory = Substitute.For<IModelFactory>();
+            modelFactory.GetFactory<Foo>(Arg.Any<IDataReader>()).Returns(reader => default(Foo));
 
             var database = Database
                 .Builder
