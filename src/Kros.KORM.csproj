@@ -1,47 +1,51 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;netcoreapp2.1;net46</TargetFrameworks>
-    <Company>KROS a.s.</Company>
+    <TargetFrameworks>netcoreapp2.1;net46</TargetFrameworks>
     <Version>4.0.0-alpha.12</Version>
-    <Authors>KROS a.s.</Authors>
+    <Authors>KROS a. s.</Authors>
+    <Company>KROS a. s.</Company>
+    <Description>KORM is fast, easy to use, micro ORM tool (Kros Object Relation Mapper).</Description>
     <Title>Kros.KORM</Title>
-    <Description>KORM is fast, easy to use, micro .NET Standard ORM tool. (Kros Object Relation Mapper)</Description>
-    <Copyright>Copyright © KROS a.s.</Copyright>
-    <SignAssembly>false</SignAssembly>
-    <AssemblyOriginatorKeyFile>Kros.KORM.snk</AssemblyOriginatorKeyFile>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Copyright>Copyright © KROS a. s.</Copyright>
     <RootNamespace>Kros.KORM</RootNamespace>
     <ApplicationIcon>icon.ico</ApplicationIcon>
     <Product>Kros.KORM</Product>
     <AssemblyName>Kros.KORM</AssemblyName>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
+
   <PropertyGroup>
-    <PackageId>Kros.KORM</PackageId>
     <PackageIcon>icon.png</PackageIcon>
-    <PackageReleaseNotes>https://github.com/Kros-sk/Kros.KORM/releases</PackageReleaseNotes>
-    <PackageProjectUrl>https://github.com/Kros-sk/Kros.KORM/blob/master/README.md</PackageProjectUrl>
-    <PackageTags>Kros;KORM;ORM;Database;DAL;SQL;Database;MSSQL;Data;BulkInsert;BulkOperation;BulkCopy;BulkUpdate;Bulk Insert;Bulk Update</PackageTags>
+    <PackageId>Kros.KORM</PackageId>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <RepositoryUrl>https://github.com/Kros-sk/Kros.KORM</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/Kros-sk/Kros.KORM</PackageProjectUrl>
+    <PackageReleaseNotes>https://github.com/Kros-sk/Kros.KORM/releases</PackageReleaseNotes>
+    <PackageTags>Kros;KORM;ORM;Database;DAL;SQL;Database;MSSQL;Data;BulkInsert;BulkOperation;BulkCopy;BulkUpdate;Bulk Insert;Bulk Update</PackageTags>
     <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/Kros-sk/Kros.KORM</RepositoryUrl>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netstandard2.0|AnyCPU'">
+
+  <ItemGroup>
+    <PackageReference Include="Kros.Utils" Version="1.10.1" />
+    <PackageReference Include="System.Reflection.Emit.Lightweight" Version="4.6.0" />
+    <PackageReference Include="System.ValueTuple" Version="4.5.0" />
+  </ItemGroup>
+
+  <PropertyGroup Condition="'$(TargetFramework)'=='netcoreapp2.1'">
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
+
   <ItemGroup>
     <None Include="Resources\icon.png" Pack="true" PackagePath="" />
   </ItemGroup>
+
   <ItemGroup>
     <None Remove="Resources\MigrationsHistoryTableScript.sql" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\MigrationsHistoryTableScript.sql" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Kros.Utils" Version="1.10.1" />
-    <PackageReference Include="System.Reflection.Emit.Lightweight" Version="4.6.0" />
-    <PackageReference Include="System.ValueTuple" Version="4.5.0" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Properties\Resources.Designer.cs">
