@@ -1,10 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
     <IsPackable>false</IsPackable>
-    <Authors>Kros a.s.</Authors>
-    <Company>Kros a.s.</Company>
+    <Authors>KROS a. s.</Authors>
+    <Company>KROS a. s.</Company>
   </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="FluentAssertions" Version="5.9.0" />
     <PackageReference Include="xunit" Version="2.4.1" />
@@ -13,8 +15,14 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
   </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\src\Kros.KORM.csproj" />
     <ProjectReference Include="..\Kros.KORM.UnitTests\Kros.KORM.UnitTests.csproj" />
   </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="if exist &quot;$(ProjectDir)..\Kros.KORM.UnitTests\appsettings.local.json&quot; (&#xD;&#xA;  copy &quot;$(ProjectDir)..\Kros.KORM.UnitTests\appsettings.local.json&quot; &quot;$(TargetDir)&quot;&#xD;&#xA;)" />
+  </Target>
+
 </Project>
