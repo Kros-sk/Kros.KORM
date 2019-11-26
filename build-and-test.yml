@@ -1,0 +1,19 @@
+parameters:
+  buildConfiguration: 'Release'
+
+steps:
+  - task: FileTransform@1
+    displayName: 'Transform appsettings.json'
+    inputs:
+      folderPath: '$(System.DefaultWorkingDirectory)'
+      fileType: 'json'
+      targetFiles: '**/*[Tt]est*/appsettings.json'
+
+  - task: DotNetCoreCLI@2
+    displayName: 'Build'
+    inputs:
+      command: build
+      projects: 'Kros.KORM.sln'
+      arguments: '--configuration ${{ parameters.buildConfiguration }}'
+
+  - template: steps/dotnet-test-and-publish-results.yml@templates

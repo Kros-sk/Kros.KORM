@@ -13,51 +13,19 @@ resources:
 
 variables:
   - group: Nuget
-  - name: buildConfiguration
-    value: 'Release'
-  - name: projectName
-    value: 'Kros.KORM'
 
 steps:
   - template: steps/agent-info.yml@templates
   - template: steps/delete-nupkgs.yml@templates
-
-  - task: DotNetCoreCLI@2
-    displayName: 'Nuget restore'
-    inputs:
-      command: 'restore'
-      projects: '**/$(projectName).csproj'
-
-  - task: FileTransform@1
-    inputs:
-      folderPath: '$(System.DefaultWorkingDirectory)'
-      fileType: 'json'
-      targetFiles: '**/*[Tt]ests*/appsettings.json'
-
-  - task: DotNetCoreCLI@2
-    displayName: 'Build'
-    inputs:
-      command: build
-      projects: '**/$(projectName).csproj'
-      arguments: '--configuration $(BuildConfiguration) --no-restore'
-
-  - task: DotNetCoreCLI@2
-    displayName: 'Tests'
-    inputs:
-      command: test
-      projects: '**/$(projectName).UnitTests.csproj'
+  - template: build-and-test.yml
 
   - task: CopyFiles@2
     displayName: 'Copy package files to staging directory'
     inputs:
-      Contents: '**/$(projectName)*.nupkg'
+      Contents: '**/*.nupkg'
       TargetFolder: '$(build.artifactStagingDirectory)'
       FlattenFolders: true
 
-  - task: NuGetCommand@2
-    displayName: 'Nuget push to $(nuget.feed)'
-    inputs:
-      command: push
-      nuGetFeedType: external
-      publishFeedCredentials: $(nuget.feed)
-      packagesToPush: '$(build.artifactStagingDirectory)/**/*.nupkg'
+  - template: steps/nuget-push.yml@templates
+    parameters:
+      feed: '$(nuget.feed)'
