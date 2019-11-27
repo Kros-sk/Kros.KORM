@@ -36,7 +36,7 @@ namespace Kros.KORM
         /// <typeparam name="TEntity">Entities type.</typeparam>
         /// <param name="database"><see cref="IDatabase"/> instance.</param>
         /// <param name="entities">Entities to add.</param>
-        public static async Task AddBulkAsync<TEntity>(
+        public static async Task BulkAddAsync<TEntity>(
             this IDatabase database,
             IEnumerable<TEntity> entities) where TEntity : class
             => await ProcessBulkOperationAsync(database, async (IDbSet<TEntity> dbSet) => await dbSet.BulkInsertAsync(entities));
@@ -118,7 +118,7 @@ namespace Kros.KORM
         /// <typeparam name="TEntity">Entities type.</typeparam>
         /// <param name="database"><see cref="IDatabase"/> instance.</param>
         /// <param name="entities">Entities to edit.</param>
-        public static async Task EditBulkAsync<TEntity>(
+        public static async Task BulkEditAsync<TEntity>(
             this IDatabase database,
             IEnumerable<TEntity> entities) where TEntity : class
             => await ProcessBulkOperationAsync(database, async (IDbSet<TEntity> dbSet) => await dbSet.BulkUpdateAsync(entities));
