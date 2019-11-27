@@ -630,12 +630,17 @@ For simplifying calling methods (`Add`, `Edit`, `Delete`) use extension methods 
 
 ```CSharp
 await database.AddAsync(person);
+await database.AddAsync(people);
+await database.BulkAddAsync(people);
 await database.DeleteAsync(person);
+await database.DeleteAsync(people);
 await database.DeleteAsync<Person>(2);
 await database.DeleteAsync<Person>(p => p.Id == 2);
 await database.DeleteAsync<Person>("Id = @1", 2);
 await database.EditAsync(person);
 await database.EditAsync(person, "Id", "Age");
+await database.EditAsync(people);
+await database.BulkEditAsync(people);
 ```
 
 ### SQL commands executing
