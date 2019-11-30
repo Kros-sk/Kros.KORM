@@ -13,6 +13,7 @@ using System.Data;
 using System.Data.Common;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Kros.KORM.Query
@@ -301,17 +302,18 @@ namespace Kros.KORM.Query
         public void CommitChanges() => CommitChangesCoreAsync(false).GetAwaiter().GetResult();
 
         /// <inheritdoc/>
-        public Task CommitChangesAsync() => CommitChangesCoreAsync(true);
+        public Task CommitChangesAsync(CancellationToken cancellationToken = default)
+            => CommitChangesCoreAsync(true, cancellationToken);
 
-        private async Task CommitChangesCoreAsync(bool useAsync)
+        private async Task CommitChangesCoreAsync(bool useAsync, CancellationToken cancellationToken = default)
         {
             await _provider.ExecuteInTransactionAsync(async () =>
             {
-                await CommitChangesAddedItemsAsync(_addedItems, useAsync);
-                await CommitChangesEditedItemsAsync(_editedItems, useAsync);
-                await CommitChangesDeletedItemsAsync(_deletedItems, useAsync);
-                await CommitChangesDeletedItemsByIdAsync(_deletedItemsIds, useAsync);
-                await CommitChangesDeletedByConditionsAsync(_deleteExpressions, useAsync);
+                await CommitChangesAddedItemsAsync(_addedItems, useAsync, cancellationToken);
+                await CommitChangesEditedItemsAsync(_editedItems, useAsync, cancellationToken);
+                await CommitChangesDeletedItemsAsync(_deletedItems, useAsync, cancellationToken);
+                await CommitChangesDeletedItemsByIdAsync(_deletedItemsIds, useAsync, cancellationToken);
+                await CommitChangesDeletedByConditionsAsync(_deleteExpressions, useAsync, cancellationToken);
 
                 Clear();
             });
@@ -344,7 +346,10 @@ namespace Kros.KORM.Query
             }
         }
 
-        private async Task CommitChangesAddedItemsAsync(HashSet<T> items, bool useAsync)
+        private async Task CommitChangesAddedItemsAsync(
+            HashSet<T> items,
+            bool useAsync,
+            CancellationToken cancellationToken = default)
         {
             if (items?.Count > 0)
             {
@@ -359,12 +364,12 @@ namespace Kros.KORM.Query
                         _commandGenerator.FillCommand(command, item, ValueGenerated.OnInsert);
                         if (hasIdentity)
                         {
-                            var id = await ExecuteScalarAsync(command, useAsync);
+                            var id = await ExecuteScalarAsync(command, useAsync, cancellationToken);
                             _tableInfo.IdentityPrimaryKey.SetValue(item, id);
                         }
                         else
                         {
-                            await ExecuteNonQueryAsync(command, useAsync);
+                            await ExecuteNonQueryAsync(command, useAsync, cancellationToken);
                         }
                     }
                 }
@@ -383,11 +388,11 @@ namespace Kros.KORM.Query
             return hasIdentity;
         }
 
-        private async Task ExecuteNonQueryAsync(DbCommand command, bool useAsync)
+        private async Task ExecuteNonQueryAsync(DbCommand command, bool useAsync, CancellationToken cancellationToken = default)
         {
             if (useAsync)
             {
-                await _provider.ExecuteNonQueryCommandAsync(command);
+                await _provider.ExecuteNonQueryCommandAsync(command, cancellationToken);
             }
             else
             {
@@ -395,11 +400,14 @@ namespace Kros.KORM.Query
             }
         }
 
-        private async Task<object> ExecuteScalarAsync(DbCommand command, bool useAsync)
+        private async Task<object> ExecuteScalarAsync(
+            DbCommand command,
+            bool useAsync,
+            CancellationToken cancellationToken = default)
         {
             if (useAsync)
             {
-                return await _provider.ExecuteScalarCommandAsync(command);
+                return await _provider.ExecuteScalarCommandAsync(command, cancellationToken);
             }
             else
             {
@@ -429,7 +437,10 @@ namespace Kros.KORM.Query
         private bool CanGeneratePrimaryKeys() =>
             _tableInfo.PrimaryKey.Count(p => p.AutoIncrementMethodType == AutoIncrementMethodType.Custom) == 1;
 
-        private async Task CommitChangesEditedItemsAsync(HashSet<T> items, bool useAsync)
+        private async Task CommitChangesEditedItemsAsync(
+            HashSet<T> items,
+            bool useAsync,
+            CancellationToken cancellationToken = default)
         {
             if (items.Count > 0)
             {
@@ -445,7 +456,10 @@ namespace Kros.KORM.Query
             }
         }
 
-        private async Task CommitChangesDeletedItemsAsync(HashSet<T> items, bool useAsync)
+        private async Task CommitChangesDeletedItemsAsync(
+            HashSet<T> items,
+            bool useAsync,
+            CancellationToken cancellationToken = default)
         {
             if (items.Count > 0)
             {
@@ -460,7 +474,10 @@ namespace Kros.KORM.Query
             }
         }
 
-        private async Task CommitChangesDeletedItemsByIdAsync(HashSet<object> ids, bool useAsync)
+        private async Task CommitChangesDeletedItemsByIdAsync(
+            HashSet<object> ids,
+            bool useAsync,
+            CancellationToken cancellationToken = default)
         {
             if (ids.Count > 0)
             {
@@ -468,7 +485,7 @@ namespace Kros.KORM.Query
                 {
                     try
                     {
-                        await ExecuteNonQueryAsync(command, useAsync);
+                        await ExecuteNonQueryAsync(command, useAsync, cancellationToken);
                     }
                     finally
                     {
@@ -478,7 +495,10 @@ namespace Kros.KORM.Query
             }
         }
 
-        private async Task CommitChangesDeletedByConditionsAsync(List<WhereExpression> expressions, bool useAsync)
+        private async Task CommitChangesDeletedByConditionsAsync(
+            List<WhereExpression> expressions,
+            bool useAsync,
+            CancellationToken cancellationToken = default)
         {
             if (expressions.Count > 0)
             {
@@ -486,7 +506,7 @@ namespace Kros.KORM.Query
                 {
                     using (DbCommand command = _commandGenerator.GetDeleteCommand(expression))
                     {
-                        await ExecuteNonQueryAsync(command, useAsync);
+                        await ExecuteNonQueryAsync(command, useAsync, cancellationToken);
                     }
                 }
             }

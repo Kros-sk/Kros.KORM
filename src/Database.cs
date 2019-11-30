@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Kros.KORM
@@ -212,15 +213,22 @@ namespace Kros.KORM
             => _queryProvider.ExecuteNonQuery(query, parameters);
 
         /// <inheritdoc/>
-        public async Task<int> ExecuteNonQueryAsync(string query) => await _queryProvider.ExecuteNonQueryAsync(query);
+        public async Task<int> ExecuteNonQueryAsync(string query, CancellationToken cancellationToken = default)
+            => await _queryProvider.ExecuteNonQueryAsync(query, cancellationToken);
 
         /// <inheritdoc/>
-        public async Task<int> ExecuteNonQueryAsync(string query, params object[] parameters)
-            => await _queryProvider.ExecuteNonQueryAsync(query, parameters);
+        public async Task<int> ExecuteNonQueryAsync(
+            string query,
+            CancellationToken cancellationToken = default,
+            params object[] parameters)
+            => await _queryProvider.ExecuteNonQueryAsync(query: query, cancellationToken: cancellationToken, paramValues: parameters);
 
         /// <inheritdoc/>
-        public async Task<int> ExecuteNonQueryAsync(string query, CommandParameterCollection parameters)
-            => await _queryProvider.ExecuteNonQueryAsync(query, parameters);
+        public async Task<int> ExecuteNonQueryAsync(
+            string query,
+            CommandParameterCollection parameters,
+            CancellationToken cancellationToken = default)
+            => await _queryProvider.ExecuteNonQueryAsync(query, parameters, cancellationToken);
 
         /// <summary>
         /// Executes the query, and returns the first column of the first row in the result set returned by the query.

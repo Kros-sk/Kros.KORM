@@ -20,6 +20,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Kros.KORM.Query
@@ -284,12 +285,12 @@ namespace Kros.KORM.Query
         }
 
         /// <inheritdoc/>
-        public async Task<object> ExecuteScalarCommandAsync(DbCommand command)
+        public async Task<object> ExecuteScalarCommandAsync(DbCommand command, CancellationToken cancellationToken = default)
         {
             Check.NotNull(command, nameof(command));
             _logger.LogCommand(command);
 
-            return await command.ExecuteScalarAsync();
+            return await command.ExecuteScalarAsync(cancellationToken);
         }
 
         /// <inheritdoc/>
@@ -325,12 +326,12 @@ namespace Kros.KORM.Query
         }
 
         /// <inheritdoc/>
-        public async Task<int> ExecuteNonQueryCommandAsync(DbCommand command)
+        public async Task<int> ExecuteNonQueryCommandAsync(DbCommand command, CancellationToken cancellationToken = default)
         {
             Check.NotNull(command, nameof(command));
             _logger.LogCommand(command);
 
-            return await command.ExecuteNonQueryAsync();
+            return await command.ExecuteNonQueryAsync(cancellationToken);
         }
 
         /// <inheritdoc/>
@@ -349,11 +350,14 @@ namespace Kros.KORM.Query
         }
 
         /// <inheritdoc/>
-        public async Task<int> ExecuteNonQueryAsync(string query)
-            => await ExecuteNonQueryAsync(query, (CommandParameterCollection)null);
+        public async Task<int> ExecuteNonQueryAsync(string query, CancellationToken cancellationToken = default)
+            => await ExecuteNonQueryAsync(query, (CommandParameterCollection)null, cancellationToken);
 
         /// <inheritdoc/>
-        public Task<int> ExecuteNonQueryAsync(string query, params object[] paramValues)
+        public Task<int> ExecuteNonQueryAsync(
+            string query,
+            CancellationToken cancellationToken = default,
+            params object[] paramValues)
         {
             var paramsCollection = new CommandParameterCollection();
             var tempParameters = new ParamEnumerator(query);
@@ -375,18 +379,21 @@ namespace Kros.KORM.Query
                 throw new ArgumentException(Resources.MoreValuesThanParameters);
             }
 
-            return ExecuteNonQueryAsync(query, paramsCollection);
+            return ExecuteNonQueryAsync(query, paramsCollection, cancellationToken);
         }
 
         /// <inheritdoc/>
-        public async Task<int> ExecuteNonQueryAsync(string query, CommandParameterCollection parameters)
+        public async Task<int> ExecuteNonQueryAsync(
+            string query,
+            CommandParameterCollection parameters,
+            CancellationToken cancellationToken = default)
         {
             CheckCommandParameters(parameters);
 
             using (OpenConnection())
             using (DbCommand command = CreateCommand(query, parameters))
             {
-                return await ExecuteNonQueryCommandAsync(command);
+                return await ExecuteNonQueryCommandAsync(command, cancellationToken);
             }
         }
 

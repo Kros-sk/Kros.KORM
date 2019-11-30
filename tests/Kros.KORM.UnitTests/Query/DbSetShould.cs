@@ -14,6 +14,7 @@ using System.Data;
 using System.Data.Common;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -423,24 +424,30 @@ namespace Kros.KORM.UnitTests
 
             public async Task ExecuteInTransactionAsync(Func<Task> action) => await action();
 
-            public Task<int> ExecuteNonQueryCommandAsync(DbCommand command)
+            public Task<int> ExecuteNonQueryCommandAsync(DbCommand command, CancellationToken cancellationToken = default)
             {
                 throw new NotImplementedException();
             }
 
             public bool SupportsPrepareCommand() => true;
 
-            public Task<int> ExecuteNonQueryAsync(string query)
+            public Task<int> ExecuteNonQueryAsync(string query, CancellationToken cancellationToken = default)
             {
                 throw new NotImplementedException();
             }
 
-            public Task<int> ExecuteNonQueryAsync(string query, params object[] parameters)
+            public Task<int> ExecuteNonQueryAsync(
+                string query,
+                CancellationToken cancellationToken = default,
+                params object[] parameters)
             {
                 throw new NotImplementedException();
             }
 
-            public Task<int> ExecuteNonQueryAsync(string query, CommandParameterCollection parameters)
+            public Task<int> ExecuteNonQueryAsync(
+                string query,
+                CommandParameterCollection parameters,
+                CancellationToken cancellationToken = default)
             {
                 throw new NotImplementedException();
             }
@@ -452,7 +459,7 @@ namespace Kros.KORM.UnitTests
                 throw new NotImplementedException();
             }
 
-            public Task<object> ExecuteScalarCommandAsync(DbCommand command)
+            public Task<object> ExecuteScalarCommandAsync(DbCommand command, CancellationToken cancellationToken = default)
             {
                 throw new NotImplementedException();
             }
