@@ -379,7 +379,7 @@ namespace Kros.KORM.Query
                 throw new ArgumentException(Resources.MoreValuesThanParameters);
             }
 
-            return ExecuteNonQueryAsync(query: query, cancellationToken: cancellationToken, paramValues: paramsCollection);
+            return ExecuteNonQueryAsync(query, paramsCollection, cancellationToken);
         }
 
         /// <inheritdoc/>
