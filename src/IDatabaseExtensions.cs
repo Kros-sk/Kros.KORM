@@ -3,6 +3,7 @@ using Kros.KORM.Query.Sql;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Kros.KORM
@@ -18,8 +19,12 @@ namespace Kros.KORM
         /// <typeparam name="TEntity">Entity type.</typeparam>
         /// <param name="database"><see cref="IDatabase"/> instance.</param>
         /// <param name="entity">The entity to add.</param>
-        public static async Task AddAsync<TEntity>(this IDatabase database, TEntity entity) where TEntity : class
-            => await CommitChangesAsync(database, (IDbSet<TEntity> dbSet) => dbSet.Add(entity));
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+        public static async Task AddAsync<TEntity>(
+            this IDatabase database,
+            TEntity entity,
+            CancellationToken cancellationToken = default) where TEntity : class
+            => await CommitChangesAsync(database, (IDbSet<TEntity> dbSet) => dbSet.Add(entity), cancellationToken);
 
         /// <summary>
         /// Adds <paramref name="entities"/> to the database.
@@ -47,8 +52,12 @@ namespace Kros.KORM
         /// <typeparam name="TEntity">Entity type.</typeparam>
         /// <param name="database"><see cref="IDatabase"/> instance.</param>
         /// <param name="entity">The entity to delete.</param>
-        public static async Task DeleteAsync<TEntity>(this IDatabase database, TEntity entity) where TEntity : class
-            => await CommitChangesAsync(database, (IDbSet<TEntity> dbSet) => dbSet.Delete(entity));
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+        public static async Task DeleteAsync<TEntity>(
+            this IDatabase database,
+            TEntity entity,
+            CancellationToken cancellationToken = default) where TEntity : class
+            => await CommitChangesAsync(database, (IDbSet<TEntity> dbSet) => dbSet.Delete(entity), cancellationToken);
 
         /// <summary>
         /// Deletes <paramref name="entities"/> from the database.
@@ -67,8 +76,12 @@ namespace Kros.KORM
         /// <typeparam name="TEntity">Entity type.</typeparam>
         /// <param name="database"><see cref="IDatabase"/> instance.</param>
         /// <param name="id">The entity id to delete.</param>
-        public static async Task DeleteAsync<TEntity>(this IDatabase database, object id) where TEntity : class
-            => await CommitChangesAsync(database, (IDbSet<TEntity> dbSet) => dbSet.Delete(id));
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+        public static async Task DeleteAsync<TEntity>(
+            this IDatabase database,
+            object id,
+            CancellationToken cancellationToken = default) where TEntity : class
+            => await CommitChangesAsync(database, (IDbSet<TEntity> dbSet) => dbSet.Delete(id), cancellationToken);
 
         /// <summary>
         /// Deletes the <typeparamref name="TEntity"/> from the database by <paramref name="condition"/>.
@@ -76,10 +89,12 @@ namespace Kros.KORM
         /// <typeparam name="TEntity">Entity type.</typeparam>
         /// <param name="database"><see cref="IDatabase"/> instance.</param>
         /// <param name="condition">The delete condition.</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
         public static async Task DeleteAsync<TEntity>(
             this IDatabase database,
-            Expression<Func<TEntity, bool>> condition) where TEntity : class
-            => await CommitChangesAsync(database, (IDbSet<TEntity> dbSet) => dbSet.Delete(condition));
+            Expression<Func<TEntity, bool>> condition,
+            CancellationToken cancellationToken = default) where TEntity : class
+            => await CommitChangesAsync(database, (IDbSet<TEntity> dbSet) => dbSet.Delete(condition), cancellationToken);
 
         /// <summary>
         /// Deletes the <typeparamref name="TEntity"/> from the database by <paramref name="condition"/>.
@@ -88,11 +103,13 @@ namespace Kros.KORM
         /// <param name="database"><see cref="IDatabase"/> instance.</param>
         /// <param name="condition">The delete condition.</param>
         /// <param name="parameters">Condition parameters.</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
         public static async Task DeleteAsync<TEntity>(
             this IDatabase database,
             RawSqlString condition,
+            CancellationToken cancellationToken = default,
             params object[] parameters) where TEntity : class
-            => await CommitChangesAsync(database, (IDbSet<TEntity> dbSet) => dbSet.Delete(condition, parameters));
+            => await CommitChangesAsync(database, (IDbSet<TEntity> dbSet) => dbSet.Delete(condition, parameters), cancellationToken);
 
         /// <summary>
         /// Edits the <paramref name="entity"/> in the database.
@@ -100,8 +117,12 @@ namespace Kros.KORM
         /// <typeparam name="TEntity">Entity type.</typeparam>
         /// <param name="database"><see cref="IDatabase"/> instance.</param>
         /// <param name="entity">The entity to edit.</param>
-        public static async Task EditAsync<TEntity>(this IDatabase database, TEntity entity) where TEntity : class
-            => await CommitChangesAsync(database, (IDbSet<TEntity> dbSet) => dbSet.Edit(entity));
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+        public static async Task EditAsync<TEntity>(
+            this IDatabase database,
+            TEntity entity,
+            CancellationToken cancellationToken = default) where TEntity : class
+            => await CommitChangesAsync(database, (IDbSet<TEntity> dbSet) => dbSet.Edit(entity), cancellationToken);
 
         /// <summary>
         /// Edits <paramref name="entities"/> in the database.
@@ -130,11 +151,17 @@ namespace Kros.KORM
         /// <param name="database"><see cref="IDatabase"/> instance.</param>
         /// <param name="entity">The entity to edit.</param>
         /// <param name="columns">Columns for editing.</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
         public static async Task EditAsync<TEntity>(
             this IDatabase database,
             TEntity entity,
+            CancellationToken cancellationToken = default,
             params string[] columns) where TEntity : class
-            => await CommitChangesAsync(database, (IDbSet<TEntity> dbSet) => dbSet.Edit(entity), columns);
+            => await CommitChangesAsync(
+                database,
+                (IDbSet<TEntity> dbSet) => dbSet.Edit(entity),
+                cancellationToken: cancellationToken,
+                columns: columns);
 
         private static IDbSet<TEntity> GetDbSet<TEntity>(IDatabase database, params string[] columns) where TEntity : class
             => columns.Length == 0
@@ -144,13 +171,14 @@ namespace Kros.KORM
         private static async Task CommitChangesAsync<TEntity>(
             IDatabase database,
             Action<IDbSet<TEntity>> action,
+            CancellationToken cancellationToken = default,
             params string[] columns) where TEntity : class
         {
             IDbSet<TEntity> dbSet = GetDbSet<TEntity>(database, columns);
 
             action(dbSet);
 
-            await dbSet.CommitChangesAsync();
+            await dbSet.CommitChangesAsync(cancellationToken);
         }
 
         private static async Task ProcessBulkOperationAsync<TEntity>(

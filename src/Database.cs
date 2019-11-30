@@ -217,8 +217,11 @@ namespace Kros.KORM
             => await _queryProvider.ExecuteNonQueryAsync(query, cancellationToken);
 
         /// <inheritdoc/>
-        public async Task<int> ExecuteNonQueryAsync(string query, params object[] parameters)
-            => await _queryProvider.ExecuteNonQueryAsync(query, parameters);
+        public async Task<int> ExecuteNonQueryAsync(
+            string query,
+            CancellationToken cancellationToken = default,
+            params object[] parameters)
+            => await _queryProvider.ExecuteNonQueryAsync(query: query, cancellationToken: cancellationToken, paramValues: parameters);
 
         /// <inheritdoc/>
         public async Task<int> ExecuteNonQueryAsync(

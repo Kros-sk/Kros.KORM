@@ -283,7 +283,9 @@ END";
             {
                 var query = $"INSERT INTO {Table_TestTable} (Id, Number, Description) VALUES (@Id, @Number, @Description)";
                 QueryProvider provider = CreateQueryProvider(helper.Connection);
-                int result = await provider.ExecuteNonQueryAsync(query, 6, 666, "Sed ac lobortis magna.");
+                int result = await provider.ExecuteNonQueryAsync(
+                    query: query,
+                    paramValues: new object[] { 6, 666, "Sed ac lobortis magna." });
                 result.Should().Be(1); // Inserted 1 row.
             }
         }
@@ -302,7 +304,7 @@ END";
                 };
 
                 QueryProvider provider = CreateQueryProvider(helper.Connection);
-                int result = await provider.ExecuteNonQueryAsync(query, parameters);
+                int result = await provider.ExecuteNonQueryAsync(query: query, parameters: parameters);
                 result.Should().Be(1); // Inserted 1 row.
             }
         }

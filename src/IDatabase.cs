@@ -1,4 +1,4 @@
-using Kros.Data.BulkActions;
+﻿using Kros.Data.BulkActions;
 using Kros.KORM.Data;
 using Kros.KORM.Materializer;
 using Kros.KORM.Query;
@@ -104,11 +104,12 @@ namespace Kros.KORM
         /// </summary>
         /// <param name="query">Arbitrary SQL query. It should not be SELECT query.</param>
         /// <param name="parameters">List of parameters.</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
         /// <returns>
         /// A task that represents the asynchronous operation. The task result contains the
         /// numbers of affected rows.
         /// </returns>
-        Task<int> ExecuteNonQueryAsync(string query, params object[] parameters);
+        Task<int> ExecuteNonQueryAsync(string query, CancellationToken cancellationToken = default, params object[] parameters);
 
         /// <summary>
         /// Asynchronously executes arbitrary query with parameters.

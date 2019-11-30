@@ -66,13 +66,13 @@ INSERT INTO {Table_TestTable} VALUES (2, 22, 'Kilie', 'Bistrol');";
         {
             using (IDatabase database = CreateDatabase(CreateTable_TestTable, InsertDataScript))
             {
-                var person = new Person() { Id = 2};
+                var person = new Person() { Id = 2 };
 
                 await database.DeleteAsync(person);
 
                 database.Query<Person>()
                     .Should()
-                    .NotContain(p=> p.Id == 2);
+                    .NotContain(p => p.Id == 2);
             }
         }
 
@@ -94,7 +94,7 @@ INSERT INTO {Table_TestTable} VALUES (2, 22, 'Kilie', 'Bistrol');";
         {
             using (IDatabase database = CreateDatabase(CreateTable_TestTable, InsertDataScript))
             {
-                await database.DeleteAsync<Person>(p=> p.Id == 2);
+                await database.DeleteAsync<Person>(p => p.Id == 2);
 
                 database.Query<Person>()
                     .Should()
@@ -107,7 +107,7 @@ INSERT INTO {Table_TestTable} VALUES (2, 22, 'Kilie', 'Bistrol');";
         {
             using (IDatabase database = CreateDatabase(CreateTable_TestTable, InsertDataScript))
             {
-                await database.DeleteAsync<Person>("Id = @1", 2);
+                await database.DeleteAsync<Person>(condition: "Id = @1", parameters: 2);
 
                 database.Query<Person>()
                     .Should()
@@ -138,7 +138,7 @@ INSERT INTO {Table_TestTable} VALUES (2, 22, 'Kilie', 'Bistrol');";
             {
                 var person = new Person() { Id = 2, Age = 18, FirstName = "Bob", LastName = "Bobek" };
 
-                await database.EditAsync(person, "Id", "Age");
+                await database.EditAsync(entity: person, columns: new string[] { "Id", "Age" });
 
                 Person actual = database
                     .Query<Person>()

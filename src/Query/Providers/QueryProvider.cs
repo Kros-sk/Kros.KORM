@@ -356,6 +356,7 @@ namespace Kros.KORM.Query
         /// <inheritdoc/>
         public Task<int> ExecuteNonQueryAsync(
             string query,
+            CancellationToken cancellationToken = default,
             params object[] paramValues)
         {
             var paramsCollection = new CommandParameterCollection();
@@ -378,14 +379,14 @@ namespace Kros.KORM.Query
                 throw new ArgumentException(Resources.MoreValuesThanParameters);
             }
 
-            return ExecuteNonQueryAsync(query, paramsCollection);
+            return ExecuteNonQueryAsync(query: query, cancellationToken: cancellationToken, paramValues: paramsCollection);
         }
 
         /// <inheritdoc/>
         public async Task<int> ExecuteNonQueryAsync(
             string query,
             CommandParameterCollection parameters,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken = default)
         {
             CheckCommandParameters(parameters);
 
