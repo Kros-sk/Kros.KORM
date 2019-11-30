@@ -1,10 +1,11 @@
-﻿using Kros.Data.BulkActions;
+using Kros.Data.BulkActions;
 using Kros.KORM.Data;
 using Kros.KORM.Materializer;
 using Kros.KORM.Query;
 using System;
 using System.Data;
 using System.Data.Common;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Kros.KORM
@@ -91,11 +92,12 @@ namespace Kros.KORM
         /// Asynchronously executes arbitrary query.
         /// </summary>
         /// <param name="query">Arbitrary SQL query. It should not be SELECT query.</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
         /// <returns>
         /// A task that represents the asynchronous operation. The task result contains the
         /// numbers of affected rows.
         /// </returns>
-        Task<int> ExecuteNonQueryAsync(string query);
+        Task<int> ExecuteNonQueryAsync(string query, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Asynchronously executes arbitrary query.
@@ -113,11 +115,15 @@ namespace Kros.KORM
         /// </summary>
         /// <param name="query">Arbitrary SQL query. It should not be SELECT query.</param>
         /// <param name="parameters">The query parameters.</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
         /// <returns>
         /// A task that represents the asynchronous operation. The task result contains the
         /// numbers of affected rows.
         /// </returns>
-        Task<int> ExecuteNonQueryAsync(string query, CommandParameterCollection parameters);
+        Task<int> ExecuteNonQueryAsync(
+            string query,
+            CommandParameterCollection parameters,
+            CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Executes the query, and returns the first column of the first row in the result set returned by the query.

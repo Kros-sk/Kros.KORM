@@ -1,4 +1,4 @@
-﻿using Kros.Data;
+using Kros.Data;
 using Kros.Data.BulkActions;
 using Kros.KORM.Data;
 using Kros.KORM.Materializer;
@@ -8,6 +8,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Kros.KORM.Query
@@ -56,11 +57,12 @@ namespace Kros.KORM.Query
         /// set returned by the query. Additional columns or rows are ignored.
         /// </summary>
         /// <param name="command">The command.</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
         /// <returns>
         /// The first column of the first row in the result set, or a null reference
         /// (Nothingin Visual Basic) if the result set is empty.
         /// </returns>
-        Task<object> ExecuteScalarCommandAsync(DbCommand command);
+        Task<object> ExecuteScalarCommandAsync(DbCommand command, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Asynchronously executes action in transaction.
@@ -82,11 +84,12 @@ namespace Kros.KORM.Query
         /// Asynchronously executes the command.
         /// </summary>
         /// <param name="command">The command.</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
         /// <returns>
         /// A task that represents the asynchronous save operation. The task result contains the
         /// numbers of affected rows.
         /// </returns>
-        Task<int> ExecuteNonQueryCommandAsync(DbCommand command);
+        Task<int> ExecuteNonQueryCommandAsync(DbCommand command, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Returns <see cref="DbProviderFactory"/> for current provider.
@@ -159,11 +162,12 @@ namespace Kros.KORM.Query
         /// Asynchronously executes arbitrary query.
         /// </summary>
         /// <param name="query">Arbitrary SQL query. It should not be SELECT query.</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
         /// <returns>
         /// A task that represents the asynchronous operation. The task result contains the
         /// numbers of affected rows.
         /// </returns>
-        Task<int> ExecuteNonQueryAsync(string query);
+        Task<int> ExecuteNonQueryAsync(string query, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Asynchronously executes arbitrary query.
@@ -182,11 +186,15 @@ namespace Kros.KORM.Query
         /// </summary>
         /// <param name="query">Arbitrary SQL query. It should not be SELECT query.</param>
         /// <param name="parameters">The query parameters.</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
         /// <returns>
         /// A task that represents the asynchronous operation. The task result contains the
         /// numbers of affected rows.
         /// </returns>
-        Task<int> ExecuteNonQueryAsync(string query, CommandParameterCollection parameters);
+        Task<int> ExecuteNonQueryAsync(
+            string query,
+            CommandParameterCollection parameters,
+            CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Executes the stored procedure with parameters and returns its result. The result can be scalar value
