@@ -6,10 +6,10 @@ using Kros.KORM.Metadata.Attribute;
 using Kros.KORM.Query;
 using Kros.KORM.Query.Expressions;
 using Kros.KORM.Query.Providers;
+using Microsoft.Data.SqlClient;
 using NSubstitute;
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.Linq;
 using Xunit;
 

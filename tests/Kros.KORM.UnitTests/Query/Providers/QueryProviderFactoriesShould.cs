@@ -7,11 +7,11 @@ using Kros.KORM.Metadata;
 using Kros.KORM.Query;
 using Kros.KORM.Query.Providers;
 using Kros.KORM.Query.Sql;
+using Microsoft.Data.SqlClient;
 using NSubstitute;
 using System;
 using System.Data;
 using System.Data.Common;
-using System.Data.SqlClient;
 using Xunit;
 
 namespace Kros.KORM.UnitTests.Query.Providers

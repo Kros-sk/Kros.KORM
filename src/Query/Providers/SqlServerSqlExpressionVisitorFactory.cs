@@ -2,9 +2,9 @@
 using Kros.KORM.Metadata;
 using Kros.KORM.Query.Sql;
 using Kros.Utils;
+using Microsoft.Data.SqlClient;
 using System;
 using System.Data;
-using System.Data.SqlClient;
 
 namespace Kros.KORM.Query.Providers
 {

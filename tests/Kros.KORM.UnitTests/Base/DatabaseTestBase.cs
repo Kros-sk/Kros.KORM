@@ -1,7 +1,7 @@
 ﻿using Kros.Data;
 using Kros.UnitTests;
+using Microsoft.Data.SqlClient;
 using System;
-using System.Data.SqlClient;
 
 namespace Kros.KORM.UnitTests.Base
 {

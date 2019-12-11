@@ -2,8 +2,8 @@
 using Kros.Data.SqlServer;
 using Kros.KORM.UnitTests.Integration;
 using Kros.UnitTests;
+using Microsoft.Data.SqlClient;
 using System;
-using System.Data.SqlClient;
 using Xunit;
 
 namespace Kros.KORM.UnitTests

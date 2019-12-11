@@ -3,7 +3,7 @@ using Kros.Data.SqlServer;
 using Kros.KORM.Materializer;
 using Kros.KORM.Metadata;
 using Kros.KORM.Query;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using Xunit;
 
 namespace Kros.KORM.UnitTests.Query

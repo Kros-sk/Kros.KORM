@@ -1,12 +1,11 @@
 ﻿using FluentAssertions;
-using Kros.Data.SqlServer;
 using Kros.KORM.Metadata.Attribute;
 using Kros.KORM.Query;
 using Kros.KORM.UnitTests.Base;
+using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
 using Xunit;
 
 namespace Kros.KORM.UnitTests.Integration

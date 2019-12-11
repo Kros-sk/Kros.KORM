@@ -9,12 +9,12 @@ using Kros.KORM.Query;
 using Kros.KORM.Query.Expressions;
 using Kros.KORM.Query.Providers;
 using Kros.KORM.Query.Sql;
+using Microsoft.Data.SqlClient;
 using NSubstitute;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
-using System.Data.SqlClient;
 using System.Linq;
 using System.Linq.Expressions;
 
