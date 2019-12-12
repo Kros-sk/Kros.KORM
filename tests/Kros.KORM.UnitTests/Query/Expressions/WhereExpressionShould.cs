@@ -1,7 +1,7 @@
 ﻿using FluentAssertions;
 using Kros.KORM.Query.Expressions;
 using Kros.KORM.Query.Sql;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using Xunit;
 
 namespace Kros.KORM.UnitTests.Query.Expressions

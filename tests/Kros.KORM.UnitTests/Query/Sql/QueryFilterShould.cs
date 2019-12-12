@@ -1,8 +1,8 @@
 ﻿using Kros.KORM.Metadata;
 using Kros.KORM.Query;
-using System.Data.SqlClient;
-using Xunit;
+using Microsoft.Data.SqlClient;
 using System.Linq;
+using Xunit;
 
 namespace Kros.KORM.UnitTests.Query.Sql
 {

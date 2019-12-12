@@ -1,6 +1,6 @@
 ﻿using FluentAssertions;
 using Kros.KORM.Helper;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using System.Text;
 using Xunit;
 
