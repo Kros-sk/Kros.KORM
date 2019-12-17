@@ -631,7 +631,7 @@ namespace Kros.KORM.Query
         /// Vráti spojenie na databázu s ktorou trieda pracuje. Ak trieda bola vytvorená iba so zadaným
         /// connection string-om, je vytvorené nové spojenie.
         /// </summary>
-        protected DbConnection Connection
+        protected virtual DbConnection Connection
         {
             get
             {
