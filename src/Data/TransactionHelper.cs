@@ -15,29 +15,27 @@ namespace Kros.KORM.Data
         public const IsolationLevel DefaultIsolationLevel = IsolationLevel.ReadCommitted;
         private const int DefaultCommandTimeout = 30;
 
-        private readonly DbConnection _connection;
-        private Transaction _topTransaction;
-        private bool _canCommit = true;
-        private readonly Stack<ITransaction> _transactions = new Stack<ITransaction>();
-
         #region Nested types
 
         private class Transaction : ITransaction
         {
             private readonly TransactionHelper _transactionHelper;
-            private readonly ConnectionHelper _connectionHelper;
+            private readonly DbConnection _connection;
+            private readonly bool _closeConnection;
             private readonly Lazy<DbTransaction> _transaction;
             private readonly TransactionHelper _transactionHelper;
             private bool _wasCommitOrRollback = false;
 
             public Transaction(
                 TransactionHelper transactionHelper,
-                ConnectionHelper connectionHelper,
+                DbConnection connection,
+                bool closeConnection,
                 IsolationLevel isolationLevel)
             {
                 _transactionHelper = transactionHelper;
-                _connectionHelper = connectionHelper;
-                _transaction = new Lazy<DbTransaction>(() => connectionHelper.Connection.BeginTransaction(isolationLevel));
+                _connection = connection;
+                _closeConnection = closeConnection;
+                _transaction = new Lazy<DbTransaction>(() => _connection.BeginTransaction(isolationLevel));
             }
 
             public void Commit()
@@ -73,7 +71,10 @@ namespace Kros.KORM.Data
                 {
                     _transaction.Value.Dispose();
                 }
-                _connectionHelper.Dispose();
+                if (_closeConnection)
+                {
+                    _connection.Close();
+                }
             }
         }
 
@@ -118,16 +119,23 @@ namespace Kros.KORM.Data
 
         #endregion
 
-        public TransactionHelper(DbConnection connection)
+        private readonly DbConnection _connection;
+        private readonly bool _closeConnection;
+        private Transaction _topTransaction;
+        private bool _canCommit = true;
+        private readonly Stack<ITransaction> _transactions = new Stack<ITransaction>();
+
+        public TransactionHelper(DbConnection connection, bool closeConnection)
         {
             _connection = Check.NotNull(connection, nameof(connection));
+            _closeConnection = closeConnection;
         }
 
         public ITransaction BeginTransaction(IsolationLevel isolationLevel)
         {
             if (_transactions.Count == 0)
             {
-                _topTransaction = new Transaction(this, new ConnectionHelper(_connection), isolationLevel);
+                _topTransaction = new Transaction(this, _connection, _closeConnection, isolationLevel);
                 _transactions.Push(_topTransaction);
                 _canCommit = true;
             }

@@ -122,7 +122,7 @@ namespace Kros.KORM.Query
             InitSqlExpressionVisitor(Check.NotNull(sqlGeneratorFactory, nameof(sqlGeneratorFactory)));
             IsExternalConnection = false;
             _modelBuilder = Check.NotNull(modelBuilder, nameof(modelBuilder));
-            _transactionHelper = new Lazy<TransactionHelper>(() => new TransactionHelper(Connection));
+            _transactionHelper = new Lazy<TransactionHelper>(TransactionHelperFactory);
         }
 
         /// <summary>
@@ -147,11 +147,17 @@ namespace Kros.KORM.Query
 
             InitSqlExpressionVisitor(Check.NotNull(sqlGeneratorFactory, nameof(sqlGeneratorFactory)));
             IsExternalConnection = true;
-            _transactionHelper = new Lazy<TransactionHelper>(() => new TransactionHelper(Connection));
+            _transactionHelper = new Lazy<TransactionHelper>(TransactionHelperFactory);
         }
 
         private void InitSqlExpressionVisitor(ISqlExpressionVisitorFactory sqlGeneratorFactory)
             => _sqlExpressionVisitor = new Lazy<ISqlExpressionVisitor>(() => sqlGeneratorFactory.CreateVisitor(Connection));
+
+        private TransactionHelper TransactionHelperFactory()
+        {
+            DbConnection connection = GetConnection();
+            return new TransactionHelper(connection, !connection.State.HasFlag(ConnectionState.Open));
+        }
 
         #endregion
 
@@ -631,17 +637,17 @@ namespace Kros.KORM.Query
         /// Vráti spojenie na databázu s ktorou trieda pracuje. Ak trieda bola vytvorená iba so zadaným
         /// connection string-om, je vytvorené nové spojenie.
         /// </summary>
-        protected virtual DbConnection Connection
+        [Obsolete("Use GetConnection() method.")]
+        protected DbConnection Connection => GetConnection();
+
+        protected virtual DbConnection GetConnection()
         {
-            get
+            if (_connection == null)
             {
-                if (_connection == null)
-                {
-                    _connection = DbProviderFactory.CreateConnection();
-                    _connection.ConnectionString = _connectionSettings.ConnectionString;
-                }
-                return _connection;
+                _connection = DbProviderFactory.CreateConnection();
+                _connection.ConnectionString = _connectionSettings.ConnectionString;
             }
+            return _connection;
         }
 
         private Data.ConnectionHelper OpenConnection()
