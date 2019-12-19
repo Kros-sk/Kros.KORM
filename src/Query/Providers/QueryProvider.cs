@@ -16,6 +16,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -151,7 +152,7 @@ namespace Kros.KORM.Query
         }
 
         private void InitSqlExpressionVisitor(ISqlExpressionVisitorFactory sqlGeneratorFactory)
-            => _sqlExpressionVisitor = new Lazy<ISqlExpressionVisitor>(() => sqlGeneratorFactory.CreateVisitor(Connection));
+            => _sqlExpressionVisitor = new Lazy<ISqlExpressionVisitor>(() => sqlGeneratorFactory.CreateVisitor(GetConnection()));
 
         private TransactionHelper TransactionHelperFactory()
         {
@@ -196,7 +197,7 @@ namespace Kros.KORM.Query
         private TableSchema LoadTableSchema(string tableName)
         {
             IDatabaseSchemaLoader schemaLoader = GetSchemaLoader();
-            TableSchema tableSchema = schemaLoader.LoadTableSchema(Connection, tableName);
+            TableSchema tableSchema = schemaLoader.LoadTableSchema(GetConnection(), tableName);
             return tableSchema
                 ?? throw new InvalidOperationException(string.Format(Resources.QueryProviderCouldNotGetTableSchema, tableName));
         }
@@ -547,7 +548,7 @@ namespace Kros.KORM.Query
 
         private IDbConnection GetConnectionForIdGenerator()
         {
-            var connection = (Connection as ICloneable).Clone() as DbConnection;
+            var connection = (GetConnection() as ICloneable).Clone() as DbConnection;
             try
             {
                 connection.Open();
@@ -640,6 +641,10 @@ namespace Kros.KORM.Query
         [Obsolete("Use GetConnection() method.")]
         protected DbConnection Connection => GetConnection();
 
+        /// <summary>
+        /// Returns (creates if needed) connection.
+        /// </summary>
+        /// <returns><see cref="DbConnection"/> instance.</returns>
         protected virtual DbConnection GetConnection()
         {
             if (_connection == null)
@@ -650,11 +655,10 @@ namespace Kros.KORM.Query
             return _connection;
         }
 
-        private Data.ConnectionHelper OpenConnection()
-        {
-            return new Data.ConnectionHelper(Connection);
-        }
+        private Data.ConnectionHelper OpenConnection() => new Data.ConnectionHelper(GetConnection());
 
+        [SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities",
+            Justification = "Query is external or generated.")]
         private DbCommandInfo CreateCommand<T>(IQuery<T> query)
         {
             DbCommand command = _transactionHelper.Value.CreateCommand();
@@ -677,6 +681,8 @@ namespace Kros.KORM.Query
         protected internal void SetQueryFilter<T>(IQuery<T> query, ISqlExpressionVisitor sqlVisitor)
             => (query as IQueryBaseInternal).ApplyQueryFilter(_databaseMapper, sqlVisitor);
 
+        [SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities",
+            Justification = "Query is external or generated.")]
         private DbCommand CreateCommand(string commandText, CommandParameterCollection parameters)
         {
             DbCommand command = _transactionHelper.Value.CreateCommand();
@@ -689,7 +695,6 @@ namespace Kros.KORM.Query
                     AddCommandParameter(command, parameter);
                 }
             }
-
             return command;
         }
 

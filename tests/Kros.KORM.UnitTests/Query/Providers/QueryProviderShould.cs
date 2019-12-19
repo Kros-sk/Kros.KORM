@@ -76,10 +76,7 @@ namespace Kros.KORM.UnitTests.Query.Providers
 
             public override DbProviderFactory DbProviderFactory => _dbProviderFactory;
 
-            public void CreateConnection()
-            {
-                var connection = Connection;
-            }
+            public void CreateConnection() => GetConnection();
 
             public override IBulkInsert CreateBulkInsert()
             {
@@ -511,7 +508,8 @@ END";
                 Substitute.For<ISqlExpressionVisitorFactory>(),
                 new ModelBuilder(Database.DefaultModelFactory),
                 Substitute.For<ILogger>(),
-                Substitute.For<IDatabaseMapper>());
+                Substitute.For<IDatabaseMapper>(),
+                null);
 
         private static SqlServerQueryProvider CreateQueryProvider(string connectionString)
             => new SqlServerQueryProvider(
@@ -519,7 +517,8 @@ END";
                 Substitute.For<ISqlExpressionVisitorFactory>(),
                 new ModelBuilder(Database.DefaultModelFactory),
                 Substitute.For<ILogger>(),
-                Substitute.For<IDatabaseMapper>());
+                Substitute.For<IDatabaseMapper>(),
+                null);
 
         #endregion
     }

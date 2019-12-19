@@ -284,7 +284,8 @@ SELECT * FROM @OutputTable;";
                     new SqlServerSqlExpressionVisitorFactory(new DatabaseMapper(new ConventionModelMapper())),
                     Substitute.For<IModelBuilder>(),
                     new Logger(),
-                    Substitute.For<IDatabaseMapper>()));
+                    Substitute.For<IDatabaseMapper>(),
+                    null));
 
             return query;
         }
@@ -349,7 +350,8 @@ SELECT * FROM @OutputTable;";
                     new SqlServerSqlExpressionVisitorFactory(new DatabaseMapper(new ConventionModelMapper())),
                     Substitute.For<IModelBuilder>(),
                     new Logger(),
-                    Substitute.For<IDatabaseMapper>()));
+                    Substitute.For<IDatabaseMapper>(),
+                    null));
 
             return query;
         }
