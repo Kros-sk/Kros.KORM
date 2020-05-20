@@ -97,6 +97,7 @@ namespace Kros.KORM.Migrations
             {
                 using (Data.ITransaction transaction = database.BeginTransaction())
                 {
+                    transaction.CommandTimeout = _migrationOptions.Timeout;
                     var script = await scriptInfo.GetScriptAsync();
 
                     await ExecuteMigrationScript(database, script);
@@ -146,7 +147,7 @@ namespace Kros.KORM.Migrations
 
             foreach (string line in lines.Where(p => p.Length > 0))
             {
-                await database.ExecuteNonQueryAsync(line);
+                    await database.ExecuteNonQueryAsync(line);
             }
         }
 
