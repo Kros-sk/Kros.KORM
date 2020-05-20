@@ -147,7 +147,7 @@ namespace Kros.KORM.Migrations
 
             foreach (string line in lines.Where(p => p.Length > 0))
             {
-                    await database.ExecuteNonQueryAsync(line);
+                await database.ExecuteNonQueryAsync(line);
             }
         }
 
