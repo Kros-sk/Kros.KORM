@@ -98,7 +98,7 @@ namespace Kros.KORM.Migrations
                 using (Data.ITransaction transaction = database.BeginTransaction())
                 {
                     var script = await scriptInfo.GetScriptAsync();
-                    transaction.CommandTimeout = _migrationOptions.Timeout;
+                    transaction.CommandTimeout = (int)_migrationOptions.Timeout.TotalSeconds;
 
                     await ExecuteMigrationScript(database, script);
                     await AddNewMigrationInfo(database, scriptInfo);
