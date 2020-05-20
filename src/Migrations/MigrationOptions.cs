@@ -20,7 +20,7 @@ namespace Kros.KORM.Migrations
 
         /// <summary>
         /// The time in seconds to wait for the migration script command.
-        /// If not set, default value <see cref="TIMEOUT_DEFAULT"/> will be used.
+        /// If not set, default value 30s will be used.
         /// </summary>
         public int Timeout { get; set; } = TIMEOUT_DEFAULT;
 
