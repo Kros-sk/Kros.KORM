@@ -10,7 +10,7 @@ namespace Kros.KORM.Migrations
     /// </summary>
     public class MigrationOptions
     {
-        private const int DEFAULT_TIMEOUT_IN_SECONDS = 30;
+        private const int DefaultTimeoutInSeconds = 30;
 
         private List<IMigrationScriptsProvider> _providers = new List<IMigrationScriptsProvider>();
 
@@ -23,7 +23,7 @@ namespace Kros.KORM.Migrations
         /// Timeout for the migration script command.
         /// If not set, default value 30s will be used.
         /// </summary>
-        public TimeSpan Timeout { get; set; } = TimeSpan.FromSeconds(DEFAULT_TIMEOUT_IN_SECONDS);
+        public TimeSpan Timeout { get; set; } = TimeSpan.FromSeconds(DefaultTimeoutInSeconds);
 
         /// <summary>
         /// Register new <see cref="IMigrationScriptsProvider"/>.
