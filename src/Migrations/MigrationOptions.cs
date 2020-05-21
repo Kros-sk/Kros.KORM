@@ -1,4 +1,5 @@
 ﻿using Kros.KORM.Migrations.Providers;
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 
@@ -9,12 +10,20 @@ namespace Kros.KORM.Migrations
     /// </summary>
     public class MigrationOptions
     {
+        private const int DefaultTimeoutInSeconds = 30;
+
         private List<IMigrationScriptsProvider> _providers = new List<IMigrationScriptsProvider>();
 
         /// <summary>
         /// List of <see cref="IMigrationScriptsProvider"/>.
         /// </summary>
         public IEnumerable<IMigrationScriptsProvider> Providers => _providers;
+
+        /// <summary>
+        /// Timeout for the migration script command.
+        /// If not set, default value 30s will be used.
+        /// </summary>
+        public TimeSpan Timeout { get; set; } = TimeSpan.FromSeconds(DefaultTimeoutInSeconds);
 
         /// <summary>
         /// Register new <see cref="IMigrationScriptsProvider"/>.
