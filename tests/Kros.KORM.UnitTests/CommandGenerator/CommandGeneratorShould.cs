@@ -75,13 +75,7 @@ namespace Kros.KORM.UnitTests.CommandGenerator
                 "ON src.[FK1] = dst.[FK1] AND src.[FK2] = dst.[FK2] " +
                 "WHEN NOT MATCHED THEN INSERT([FK1], [FK2]) VALUES (@FK1, @FK2) ";
 
-            KORM.Query.IQueryProvider provider = Substitute.For<KORM.Query.IQueryProvider>();
-            provider.GetCommandForCurrentTransaction().Returns(a => { return new SqlCommand(); });
-
-            IQuery<FooPrimaryKeys> query = CreateQuery<FooPrimaryKeys>();
-            query.Select(p => new { FK1 = 1, FK2 = 2 });
-            TableInfo tableInfo = CreateTableInfoFromDto<FooPrimaryKeys>();
-            CommandGenerator<FooPrimaryKeys> commandGenerator = new CommandGenerator<FooPrimaryKeys>(tableInfo, provider, query);
+            CommandGenerator<FooPrimaryKeys> commandGenerator = GetFooPrimaryKeyGenerator();
 
             DbCommand upsert = commandGenerator.GetUpsertCommand();
 
@@ -321,6 +315,17 @@ namespace Kros.KORM.UnitTests.CommandGenerator
             }
 
             return new TableInfo(columns, new List<PropertyInfo>(), null) { Name = "Foo" };
+        }
+
+        private CommandGenerator<FooPrimaryKeys> GetFooPrimaryKeyGenerator()
+        {
+            KORM.Query.IQueryProvider provider = Substitute.For<KORM.Query.IQueryProvider>();
+            provider.GetCommandForCurrentTransaction().Returns(a => { return new SqlCommand(); });
+
+            IQuery<FooPrimaryKeys> query = CreateQuery<FooPrimaryKeys>();
+            query.Select(p => new { FK1 = 1, FK2 = 2 });
+            TableInfo tableInfo = CreateTableInfoFromDto<FooPrimaryKeys>();
+            return new CommandGenerator<FooPrimaryKeys>(tableInfo, provider, query);
         }
 
         private CommandGenerator<FooIdentity> GetFooIdentityGenerator()
