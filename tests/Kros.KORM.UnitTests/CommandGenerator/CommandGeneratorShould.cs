@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+using FluentAssertions.Common;
 using Kros.KORM.CommandGenerator;
 using Kros.KORM.Converter;
 using Kros.KORM.Helper;
@@ -50,6 +51,41 @@ namespace Kros.KORM.UnitTests.CommandGenerator
             DbCommand update = GetFooGenerator().GetUpdateCommand();
 
             update.CommandText.Should().Be(expectedQuery);
+        }
+
+        [Fact]
+        public void HaveCorrectUpsertCommandText()
+        {
+            const string expectedQuery = "MERGE INTO [Foo] dst " +
+                "USING(SELECT @IdRow IdRow) src " +
+                "ON src.[IdRow] = dst.[IdRow] " +
+                "WHEN MATCHED THEN UPDATE SET [Salary] = @Salary, [PropertyValueGenerator] = @PropertyValueGenerator " +
+                "WHEN NOT MATCHED THEN INSERT([IdRow], [Salary]) VALUES (@IdRow, @Salary) ";
+
+            DbCommand upsert = GetFooGenerator().GetUpsertCommand();
+
+            upsert.CommandText.Should().Be(expectedQuery);
+        }
+
+        [Fact]
+        public void HaveCorrectUpsertCommandTextForPrimaryKeyOnly()
+        {
+            const string expectedQuery = "MERGE INTO [FooPrimaryKeys] dst " +
+                "USING(SELECT @FK1 FK1, @FK2 FK2) src " +
+                "ON src.[FK1] = dst.[FK1] AND src.[FK2] = dst.[FK2] " +
+                "WHEN NOT MATCHED THEN INSERT([FK1], [FK2]) VALUES (@FK1, @FK2) ";
+
+            KORM.Query.IQueryProvider provider = Substitute.For<KORM.Query.IQueryProvider>();
+            provider.GetCommandForCurrentTransaction().Returns(a => { return new SqlCommand(); });
+
+            IQuery<FooPrimaryKeys> query = CreateQuery<FooPrimaryKeys>();
+            query.Select(p => new { FK1 = 1, FK2 = 2 });
+            TableInfo tableInfo = CreateTableInfoFromDto<FooPrimaryKeys>();
+            CommandGenerator<FooPrimaryKeys> commandGenerator = new CommandGenerator<FooPrimaryKeys>(tableInfo, provider, query);
+
+            DbCommand upsert = commandGenerator.GetUpsertCommand();
+
+            upsert.CommandText.Should().Be(expectedQuery);
         }
 
         [Fact]
@@ -148,6 +184,24 @@ namespace Kros.KORM.UnitTests.CommandGenerator
         }
 
         [Fact]
+        public void ThrowMissingPrimaryKeyExceptionWhenGetUpsertCommand()
+        {
+            KORM.Query.IQueryProvider provider = Substitute.For<KORM.Query.IQueryProvider>();
+            provider.GetCommandForCurrentTransaction().Returns(new SqlCommand());
+
+            IQuery<Foo> query = CreateFooQuery();
+            query.Select(p => new { p.Plat, p.KrstneMeno, p.PropertyGuid, p.PropertyEnum, p.PropertyEnumConv });
+
+            var generator = new CommandGenerator<Foo>(GetFooTableInfo(false), provider, query);
+
+            Action action = () =>
+            {
+                DbCommand update = generator.GetUpsertCommand();
+            };
+            action.Should().Throw<KORM.Exceptions.MissingPrimaryKeyException>();
+        }
+
+        [Fact]
         public void ThrowMissingPrimaryKeyExceptionWhenGetDeleteCommand()
         {
             KORM.Query.IQueryProvider provider = Substitute.For<KORM.Query.IQueryProvider>();
@@ -223,8 +277,11 @@ namespace Kros.KORM.UnitTests.CommandGenerator
         }
 
         private IQuery<Foo> CreateFooQuery()
+            => CreateQuery<Foo>();
+
+        private IQuery<T> CreateQuery<T>()
         {
-            var query = new Query<Foo>(
+            var query = new Query<T>(
                 new DatabaseMapper(new ConventionModelMapper()),
                 new SqlServerQueryProvider(
                     new SqlConnection(),
@@ -311,7 +368,8 @@ namespace Kros.KORM.UnitTests.CommandGenerator
                 columns.Add(new ColumnInfo()
                 {
                     Name = property.Name,
-                    PropertyInfo = property
+                    PropertyInfo = property,
+                    IsPrimaryKey = property.IsDecoratedWith<KeyAttribute>()
                 });
             }
             return new TableInfo(columns, new List<PropertyInfo>(), null)
@@ -385,6 +443,15 @@ namespace Kros.KORM.UnitTests.CommandGenerator
 
             [Alias("Salary")]
             public decimal Plat { get; set; }
+        }
+
+        private class FooPrimaryKeys
+        {
+            [Key(1)]
+            public int FK1 { get; set; }
+
+            [Key(2)]
+            public int FK2 { get; set; }
         }
 
         private enum TestEnum
