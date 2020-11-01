@@ -131,7 +131,7 @@ namespace Kros.KORM.CommandGenerator
             DbCommand cmd = _provider.GetCommandForCurrentTransaction();
             AddParametersToCommand(cmd, columns.Where(x => !x.IsPrimaryKey));
             AddParametersToCommand(cmd, columns.Where(x => x.IsPrimaryKey));
-            cmd.CommandText = GetUpsertCommandText(columns);
+            cmd.CommandText = GetUpsertCommandText();
             return cmd;
         }
 
@@ -389,14 +389,11 @@ namespace Kros.KORM.CommandGenerator
             return string.Format(UPDATE_QUERY_BASE, _tableInfo.Name, paramSetPart.ToString(), paramWherePart.ToString());
         }
 
-        private string GetUpsertCommandText(IEnumerable<ColumnInfo> columns)
+        private string GetUpsertCommandText()
         {
-            IEnumerable<ColumnInfo> keyColumns = columns.Where(c => c.IsPrimaryKey);
-            IEnumerable<ColumnInfo> updateColumns = columns
-                .Where(c => c.ValueGenerator == null || c.ValueGenerated.HasFlag(ValueGenerated.OnUpdate));
-            IEnumerable<ColumnInfo> insertColumns = columns
-                .Where(c => c.ValueGenerator == null || c.ValueGenerated.HasFlag(ValueGenerated.OnInsert))
-                .ToList();
+            IEnumerable<ColumnInfo> keyColumns = GetQueryColumns().Where(c => c.IsPrimaryKey);
+            IEnumerable<ColumnInfo> updateColumns = GetQueryColumns(ValueGenerated.OnUpdate);
+            IEnumerable<ColumnInfo> insertColumns = GetQueryColumns(ValueGenerated.OnInsert);
 
             IEnumerable<string> sourceSelectPart = keyColumns.Select(c => $"@{c.Name} {c.Name}");
             IEnumerable<string> sourceConditionPart = keyColumns.Select(c => $"src.[{c.Name}] = dst.[{c.Name}]");
