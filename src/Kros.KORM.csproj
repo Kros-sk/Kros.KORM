@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>netcoreapp2.1;net46</TargetFrameworks>
-    <Version>4.0.0-alpha.15</Version>
+    <Version>4.0.0-alpha.16</Version>
     <Authors>KROS a. s.</Authors>
     <Company>KROS a. s.</Company>
     <Description>KORM is fast, easy to use, micro ORM tool (Kros Object Relation Mapper).</Description>
@@ -14,6 +14,20 @@
     <AssemblyName>Kros.KORM</AssemblyName>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(TF_BUILD)' == 'true'">
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -29,6 +43,7 @@
 
   <ItemGroup>
     <PackageReference Include="Kros.Utils" Version="1.11.0" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
     <PackageReference Include="System.Reflection.Emit.Lightweight" Version="4.6.0" />
     <PackageReference Include="System.ValueTuple" Version="4.5.0" />
   </ItemGroup>

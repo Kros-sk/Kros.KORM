@@ -22,7 +22,9 @@ steps:
   - task: CopyFiles@2
     displayName: 'Copy package files to staging directory'
     inputs:
-      Contents: '**/*.nupkg'
+      Contents: |
+        **/*.nupkg
+        **/*.snupkg
       TargetFolder: '$(build.artifactStagingDirectory)'
       FlattenFolders: true
 
