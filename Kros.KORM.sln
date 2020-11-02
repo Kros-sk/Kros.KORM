@@ -11,6 +11,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{F98075A9
 EndProject
 Project("{778DAE3C-4631-46EA-AA77-85C1314464D9}") = "Kros.KORM.VB.UnitTests", "tests\Kros.KORM.VB.UnitTests\Kros.KORM.VB.UnitTests.vbproj", "{67731885-451B-42E2-BD2F-F885AC44432F}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{B1809F68-5FED-4F94-B754-68AEBAA21637}"
+	ProjectSection(SolutionItems) = preProject
+		build-and-test.yml = build-and-test.yml
+		build-ci.yml = build-ci.yml
+		build.yml = build.yml
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
