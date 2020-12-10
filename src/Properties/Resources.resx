@@ -120,6 +120,9 @@
   <data name="BinaryOperatorIsNotSupported" xml:space="preserve">
     <value>The binary operator '{0}' is not supported.</value>
   </data>
+  <data name="BulkUpdatePrimaryKeyIsNotSet" xml:space="preserve">
+    <value>Primary key is not set.</value>
+  </data>
   <data name="CannotCallMethod" xml:space="preserve">
     <value>Can't call '{0}' if you configured column name or converter.</value>
     <comment>0 - method name</comment>
@@ -179,9 +182,6 @@
   </data>
   <data name="ExpressionCanBeAppliedOnlyOnce" xml:space="preserve">
     <value>{0} can be applied only once.</value>
-  </data>
-  <data name="InvalidPrimaryKeyForBulkUpdate" xml:space="preserve">
-    <value>Table {0} has none, or composite primary key. Primary key must be one column only.</value>
   </data>
   <data name="InvalidPrimaryKeyValueType" xml:space="preserve">
     <value>Invalid type of id value. Property which represents primary key is of type '{0}', but the value's type is `{1}`.</value>
