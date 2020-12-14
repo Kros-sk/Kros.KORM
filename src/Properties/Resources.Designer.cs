@@ -70,6 +70,15 @@ namespace Kros.KORM.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Primary key is not set..
+        /// </summary>
+        internal static string BulkUpdatePrimaryKeyIsNotSet {
+            get {
+                return ResourceManager.GetString("BulkUpdatePrimaryKeyIsNotSet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Can&apos;t call &apos;{0}&apos; if you configured column name or converter..
         /// </summary>
         internal static string CannotCallMethod {
@@ -237,15 +246,6 @@ namespace Kros.KORM.Properties {
         internal static string ExpressionCanBeAppliedOnlyOnce {
             get {
                 return ResourceManager.GetString("ExpressionCanBeAppliedOnlyOnce", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Table {0} has none, or composite primary key. Primary key must be one column only..
-        /// </summary>
-        internal static string InvalidPrimaryKeyForBulkUpdate {
-            get {
-                return ResourceManager.GetString("InvalidPrimaryKeyForBulkUpdate", resourceCulture);
             }
         }
         
