@@ -177,6 +177,9 @@
   <data name="ExistingItemCannotBeEdited" xml:space="preserve">
     <value>Cannot edit item (hash code = {0}). This item already exists in collection {1}.</value>
   </data>
+  <data name="ExistingItemCanNotBeUpserted" xml:space="preserve">
+    <value>Cannot upsert item (hash code = {0}). This item already exists in collection {1}.</value>
+  </data>
   <data name="ExistingItemIdCannotBeDeleted" xml:space="preserve">
     <value>Cannot delete item with Id '{0}'. Item with this Id is already marked for deleting.</value>
   </data>

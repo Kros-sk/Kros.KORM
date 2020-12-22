@@ -76,7 +76,7 @@ namespace Kros.KORM.Query
         {
             CheckItemInCollection(entity, _editedItems, Resources.ExistingItemCannotBeAdded, nameof(EditedItems));
             CheckItemInCollection(entity, _deletedItems, Resources.ExistingItemCannotBeAdded, nameof(DeletedItems));
-            CheckItemInCollection(entity, _upsertedItems, Resources.ExistingItemCannotBeDeleted, nameof(UpsertedItems));
+            CheckItemInCollection(entity, _upsertedItems, Resources.ExistingItemCannotBeAdded, nameof(UpsertedItems));
 
             _addedItems.Add(entity);
         }
@@ -91,7 +91,7 @@ namespace Kros.KORM.Query
         {
             CheckItemInCollection(entity, _addedItems, Resources.ExistingItemCannotBeEdited, nameof(AddedItems));
             CheckItemInCollection(entity, _deletedItems, Resources.ExistingItemCannotBeEdited, nameof(DeletedItems));
-            CheckItemInCollection(entity, _upsertedItems, Resources.ExistingItemCannotBeDeleted, nameof(UpsertedItems));
+            CheckItemInCollection(entity, _upsertedItems, Resources.ExistingItemCannotBeEdited, nameof(UpsertedItems));
 
             _editedItems.Add(entity);
         }
@@ -104,8 +104,9 @@ namespace Kros.KORM.Query
         /// <exception cref="AlreadyInCollectionException">Adding item already exists in list of items.</exception>
         public void Upsert(T entity)
         {
-            CheckItemInCollection(entity, _addedItems, "TODO", nameof(AddedItems));
-            CheckItemInCollection(entity, _deletedItems, "TODO", nameof(DeletedItems));
+            CheckItemInCollection(entity, _addedItems, Resources.ExistingItemCanNotBeUpserted, nameof(AddedItems));
+            CheckItemInCollection(entity, _editedItems, Resources.ExistingItemCanNotBeUpserted, nameof(EditedItems));
+            CheckItemInCollection(entity, _deletedItems, Resources.ExistingItemCanNotBeUpserted, nameof(DeletedItems));
 
             _upsertedItems.Add(entity);
         }
