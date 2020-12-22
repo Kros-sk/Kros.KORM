@@ -595,6 +595,32 @@ public void Delete()
 }
 ```
 
+#### Upsert record by it's primary key
+
+Kros.KORM supports upserting records based on primary key match.
+This can be handy when you know the primary key (or composite primary key) of the record but you can be sure if it allready exists in database.
+
+Given (CompanyId, UserId) is composite primary key for UserRole table:
+```CSharp
+var admin = new UserRole { CompanyId = 1, UserId = 11, Role = "Admin" };
+var owner = new UserRole { CompanyId = 1, UserId = 11, Role = "Owner" };
+var user = new UserRole { CompanyId = 2, UserId = 22, Role = "User" };
+
+using (var database = new Database(_connection))
+{
+    var userRoles = database.Query<UserRole>().AsDbSet();
+
+    userRoles.Add(admin);
+    userRoles.CommitChanges();
+
+    var userRoles = database.Query<UserRole>().AsDbSet();
+
+    people.Upsert(owner); // this will update admins UserRole to owner
+    people.Upsert(user); // this will insert user
+    people.CommitChanges();
+}
+```
+
 #### Explicit transactions
 
 By default, changes of a `DbSet` are committed to database in a transaction. If committing of one record fails, rollback of transaction is executed.
