@@ -598,7 +598,7 @@ public void Delete()
 #### Upsert record by it's primary key
 
 Kros.KORM supports upserting records based on primary key match.
-This can be handy when you know the primary key (or composite primary key) of the record but you can be sure if it allready exists in database.
+This can be handy when you know the primary key (or composite primary key) of the record but you can not be sure if it allready exists in database.
 
 Given (CompanyId, UserId) is composite primary key for UserRole table:
 ```CSharp
