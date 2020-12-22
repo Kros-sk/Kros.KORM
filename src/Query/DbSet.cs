@@ -556,9 +556,9 @@ namespace Kros.KORM.Query
             tempTableAction,
             bool useAsync)
         {
-            if (_tableInfo.PrimaryKey.Count() != 1)
+            if (!_tableInfo.PrimaryKey.Any())
             {
-                throw new InvalidOperationException(string.Format(Resources.InvalidPrimaryKeyForBulkUpdate, _tableInfo.Name));
+                throw new InvalidOperationException(Resources.BulkUpdatePrimaryKeyIsNotSet);
             }
 
             if (items != null)
@@ -566,7 +566,7 @@ namespace Kros.KORM.Query
                 using (var bulkUpdate = _provider.CreateBulkUpdate())
                 {
                     bulkUpdate.DestinationTableName = _tableInfo.Name;
-                    bulkUpdate.PrimaryKeyColumn = _tableInfo.PrimaryKey.FirstOrDefault().Name;
+                    bulkUpdate.PrimaryKeyColumn = string.Join(",", _tableInfo.PrimaryKey.Select(pk => pk.Name));
                     bulkUpdate.TempTableAction = tempTableAction;
 
                     using (var reader = new KormDataReader<T>(items, _commandGenerator))
