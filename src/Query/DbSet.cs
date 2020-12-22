@@ -494,7 +494,7 @@ namespace Kros.KORM.Query
                     PrepareCommand(command);
                     foreach (T item in items)
                     {
-                        _commandGenerator.FillCommand(command, item, ValueGenerated.Never); //@TODO naplnenie commandu
+                        _commandGenerator.FillCommand(command, item, ValueGenerated.Never);
                         await ExecuteNonQueryAsync(command, useAsync);
                     }
                 }
