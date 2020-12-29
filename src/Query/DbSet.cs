@@ -476,7 +476,7 @@ namespace Kros.KORM.Query
                     foreach (T item in items)
                     {
                         _commandGenerator.FillCommand(command, item, ValueGenerated.OnUpdate);
-                        await ExecuteNonQueryAsync(command, useAsync);
+                        await ExecuteNonQueryAsync(command, useAsync, cancellationToken);
                     }
                 }
             }
@@ -495,7 +495,7 @@ namespace Kros.KORM.Query
                     foreach (T item in items)
                     {
                         _commandGenerator.FillCommand(command, item, ValueGenerated.Never);
-                        await ExecuteNonQueryAsync(command, useAsync);
+                        await ExecuteNonQueryAsync(command, useAsync, cancellationToken);
                     }
                 }
             }
@@ -513,7 +513,7 @@ namespace Kros.KORM.Query
                     foreach (T item in items)
                     {
                         _commandGenerator.FillCommand(command, item, ValueGenerated.Never);
-                        await ExecuteNonQueryAsync(command, useAsync);
+                        await ExecuteNonQueryAsync(command, useAsync, cancellationToken);
                     }
                 }
             }
