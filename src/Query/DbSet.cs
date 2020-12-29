@@ -97,7 +97,7 @@ namespace Kros.KORM.Query
         }
 
         /// <summary>
-        /// Adds the item to the context underlying the set in the Upserted state such that it will be updated or 
+        /// Adds the item to the context underlying the set in the Upserted state such that it will be updated or
         /// inserted in the database when CommitChanges is called.
         /// </summary>
         /// <param name="entity">Item to add.</param>
@@ -483,9 +483,9 @@ namespace Kros.KORM.Query
         }
 
         private async Task CommitChangesUpsertedItemsAsync(
-        HashSet<T> items,
-        bool useAsync,
-        CancellationToken cancellationToken = default)
+            HashSet<T> items,
+            bool useAsync,
+            CancellationToken cancellationToken = default)
         {
             if (items.Count > 0)
             {
