@@ -23,6 +23,9 @@ namespace Kros.KORM.CommandGenerator
 
         private const string INSERT_QUERY_BASE = "INSERT INTO [{0}] ({1}){2} VALUES ({3})";
         private const string UPDATE_QUERY_BASE = "UPDATE [{0}] SET {1} WHERE {2}";
+        private const string UPSERT_QUERY_BASE = "MERGE INTO [{0}] dst USING(SELECT {1}) src ON {2} {3}{4}";
+        private const string UPSERT_QUERY_UPDATE_PART = "WHEN MATCHED THEN UPDATE SET {0} ";
+        private const string UPSERT_QUERY_INSERT_PART = "WHEN NOT MATCHED THEN INSERT({0}) VALUES ({1}) ";
         private const string DELETE_QUERY_BASE = "DELETE FROM [{0}] WHERE {1}";
         private const string DELETE_QUERY_BASE_IN = "DELETE FROM [{0}] WHERE [{1}] IN (";
         private const int DEFAULT_MAX_PARAMETERS_FOR_DELETE_COMMANDS_IN_PART = 100;
@@ -111,6 +114,24 @@ namespace Kros.KORM.CommandGenerator
             AddParametersToCommand(cmd, columns.Where(x => !x.IsPrimaryKey));
             AddParametersToCommand(cmd, columns.Where(x => x.IsPrimaryKey));
             cmd.CommandText = GetUpdateCommandText(columns);
+            return cmd;
+        }
+
+        /// <summary>
+        /// Gets the upsert command.
+        /// </summary>
+        /// <returns>
+        /// Upsert command.
+        /// </returns>
+        public DbCommand GetUpsertCommand()
+        {
+            ThrowHelper.CheckAndThrowMethodNotSupportedWhenNoPrimaryKey(_tableInfo);
+
+            IEnumerable<ColumnInfo> columns = GetQueryColumns(ValueGenerated.OnUpdate);
+            DbCommand cmd = _provider.GetCommandForCurrentTransaction();
+            AddParametersToCommand(cmd, columns.Where(x => !x.IsPrimaryKey));
+            AddParametersToCommand(cmd, columns.Where(x => x.IsPrimaryKey));
+            cmd.CommandText = GetUpsertCommandText();
             return cmd;
         }
 
@@ -233,6 +254,9 @@ namespace Kros.KORM.CommandGenerator
 
         /// <inheritdoc/>
         public IEnumerable<ColumnInfo> GetQueryColumns(ValueGenerated valueGenerated)
+            => GetQueryColumns().Where(c => c.ValueGenerator == null || c.ValueGenerated.HasFlag(valueGenerated));
+
+        private IEnumerable<ColumnInfo> GetQueryColumns()
         {
             if (_columnsInfo == null)
             {
@@ -244,8 +268,7 @@ namespace Kros.KORM.CommandGenerator
                 {
                     ColumnInfo columnInfo = _tableInfo.Columns.Where(p => p.Name == column.Trim()).FirstOrDefault();
 
-                    if ((columnInfo != null) &&
-                        (columnInfo.ValueGenerator == null || columnInfo.ValueGenerated.HasFlag(valueGenerated)))
+                    if (columnInfo != null)
                     {
                         _columnsInfo.Add(columnInfo);
                     }
@@ -364,6 +387,37 @@ namespace Kros.KORM.CommandGenerator
             }
 
             return string.Format(UPDATE_QUERY_BASE, _tableInfo.Name, paramSetPart.ToString(), paramWherePart.ToString());
+        }
+
+        private string GetUpsertCommandText()
+        {
+            IEnumerable<ColumnInfo> keyColumns = GetQueryColumns().Where(c => c.IsPrimaryKey);
+            IEnumerable<ColumnInfo> updateColumns = GetQueryColumns(ValueGenerated.OnUpdate);
+            IEnumerable<ColumnInfo> insertColumns = GetQueryColumns(ValueGenerated.OnInsert);
+
+            IEnumerable<string> sourceSelectPart = keyColumns.Select(c => $"@{c.Name} {c.Name}");
+            IEnumerable<string> sourceConditionPart = keyColumns.Select(c => $"src.[{c.Name}] = dst.[{c.Name}]");
+            IEnumerable<string> insertColumnsPart = insertColumns.Select(c => $"[{c.Name}]");
+            IEnumerable<string> insertValuesPart = insertColumns.Select(c => $"@{c.Name}");
+            IEnumerable<string> updateSetPart = updateColumns.Where(c => !c.IsPrimaryKey).Select(c => $"[{c.Name}] = @{c.Name}");
+
+            string updatePart = string.Join(", ", updateSetPart);
+            if (!string.IsNullOrEmpty(updatePart))
+            {
+                updatePart = string.Format(UPSERT_QUERY_UPDATE_PART, updatePart);
+            }
+            string insertPart = string.Format(
+                UPSERT_QUERY_INSERT_PART,
+                string.Join(", ", insertColumnsPart),
+                string.Join(", ", insertValuesPart));
+
+            return string.Format(
+                UPSERT_QUERY_BASE,
+                _tableInfo.Name,
+                string.Join(", ", sourceSelectPart),
+                string.Join(" AND ", sourceConditionPart),
+                updatePart ?? string.Empty,
+                insertPart);
         }
 
         private string GetDeleteCommandText(IEnumerable<ColumnInfo> columns)

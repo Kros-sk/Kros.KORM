@@ -232,6 +232,15 @@ namespace Kros.KORM.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cannot upsert item (hash code = {0}). This item already exists in collection {1}..
+        /// </summary>
+        internal static string ExistingItemCanNotBeUpserted {
+            get {
+                return ResourceManager.GetString("ExistingItemCanNotBeUpserted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cannot delete item with Id &apos;{0}&apos;. Item with this Id is already marked for deleting..
         /// </summary>
         internal static string ExistingItemIdCannotBeDeleted {

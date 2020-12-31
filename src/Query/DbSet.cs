@@ -32,6 +32,7 @@ namespace Kros.KORM.Query
         private HashSet<T> _addedItems = new HashSet<T>();
         private HashSet<T> _editedItems = new HashSet<T>();
         private HashSet<T> _deletedItems = new HashSet<T>();
+        private HashSet<T> _upsertedItems = new HashSet<T>();
         private HashSet<object> _deletedItemsIds = new HashSet<object>();
         private List<WhereExpression> _deleteExpressions = new List<WhereExpression>();
         private readonly TableInfo _tableInfo;
@@ -75,6 +76,7 @@ namespace Kros.KORM.Query
         {
             CheckItemInCollection(entity, _editedItems, Resources.ExistingItemCannotBeAdded, nameof(EditedItems));
             CheckItemInCollection(entity, _deletedItems, Resources.ExistingItemCannotBeAdded, nameof(DeletedItems));
+            CheckItemInCollection(entity, _upsertedItems, Resources.ExistingItemCannotBeAdded, nameof(UpsertedItems));
 
             _addedItems.Add(entity);
         }
@@ -89,8 +91,24 @@ namespace Kros.KORM.Query
         {
             CheckItemInCollection(entity, _addedItems, Resources.ExistingItemCannotBeEdited, nameof(AddedItems));
             CheckItemInCollection(entity, _deletedItems, Resources.ExistingItemCannotBeEdited, nameof(DeletedItems));
+            CheckItemInCollection(entity, _upsertedItems, Resources.ExistingItemCannotBeEdited, nameof(UpsertedItems));
 
             _editedItems.Add(entity);
+        }
+
+        /// <summary>
+        /// Adds the item to the context underlying the set in the Upserted state such that it will be updated or
+        /// inserted in the database when CommitChanges is called.
+        /// </summary>
+        /// <param name="entity">Item to add.</param>
+        /// <exception cref="AlreadyInCollectionException">Adding item already exists in list of items.</exception>
+        public void Upsert(T entity)
+        {
+            CheckItemInCollection(entity, _addedItems, Resources.ExistingItemCanNotBeUpserted, nameof(AddedItems));
+            CheckItemInCollection(entity, _editedItems, Resources.ExistingItemCanNotBeUpserted, nameof(EditedItems));
+            CheckItemInCollection(entity, _deletedItems, Resources.ExistingItemCanNotBeUpserted, nameof(DeletedItems));
+
+            _upsertedItems.Add(entity);
         }
 
         /// <summary>
@@ -103,6 +121,7 @@ namespace Kros.KORM.Query
         {
             CheckItemInCollection(entity, _addedItems, Resources.ExistingItemCannotBeDeleted, nameof(AddedItems));
             CheckItemInCollection(entity, _editedItems, Resources.ExistingItemCannotBeDeleted, nameof(EditedItems));
+            CheckItemInCollection(entity, _upsertedItems, Resources.ExistingItemCannotBeDeleted, nameof(UpsertedItems));
 
             _deletedItems.Add(entity);
         }
@@ -200,6 +219,7 @@ namespace Kros.KORM.Query
         {
             _addedItems.Clear();
             _editedItems.Clear();
+            _upsertedItems.Clear();
             _deletedItems.Clear();
             _deletedItemsIds.Clear();
             _deleteExpressions.Clear();
@@ -311,6 +331,7 @@ namespace Kros.KORM.Query
             {
                 await CommitChangesAddedItemsAsync(_addedItems, useAsync, cancellationToken);
                 await CommitChangesEditedItemsAsync(_editedItems, useAsync, cancellationToken);
+                await CommitChangesUpsertedItemsAsync(_upsertedItems, useAsync, cancellationToken);
                 await CommitChangesDeletedItemsAsync(_deletedItems, useAsync, cancellationToken);
                 await CommitChangesDeletedItemsByIdAsync(_deletedItemsIds, useAsync, cancellationToken);
                 await CommitChangesDeletedByConditionsAsync(_deleteExpressions, useAsync, cancellationToken);
@@ -333,6 +354,11 @@ namespace Kros.KORM.Query
         /// List of items in Deleted state.
         /// </summary>
         public IEnumerable<T> DeletedItems { get { return _deletedItems; } }
+
+        /// <summary>
+        /// List of items in Upserted state.
+        /// </summary>
+        public IEnumerable<T> UpsertedItems { get { return _upsertedItems; } }
 
         #endregion
 
@@ -450,7 +476,26 @@ namespace Kros.KORM.Query
                     foreach (T item in items)
                     {
                         _commandGenerator.FillCommand(command, item, ValueGenerated.OnUpdate);
-                        await ExecuteNonQueryAsync(command, useAsync);
+                        await ExecuteNonQueryAsync(command, useAsync, cancellationToken);
+                    }
+                }
+            }
+        }
+
+        private async Task CommitChangesUpsertedItemsAsync(
+            HashSet<T> items,
+            bool useAsync,
+            CancellationToken cancellationToken = default)
+        {
+            if (items.Count > 0)
+            {
+                using (DbCommand command = _commandGenerator.GetUpsertCommand())
+                {
+                    PrepareCommand(command);
+                    foreach (T item in items)
+                    {
+                        _commandGenerator.FillCommand(command, item, ValueGenerated.Never);
+                        await ExecuteNonQueryAsync(command, useAsync, cancellationToken);
                     }
                 }
             }
@@ -468,7 +513,7 @@ namespace Kros.KORM.Query
                     foreach (T item in items)
                     {
                         _commandGenerator.FillCommand(command, item, ValueGenerated.Never);
-                        await ExecuteNonQueryAsync(command, useAsync);
+                        await ExecuteNonQueryAsync(command, useAsync, cancellationToken);
                     }
                 }
             }
