@@ -42,6 +42,13 @@ namespace Kros.KORM.Query
         void Edit(IEnumerable<T> entities);
 
         /// <summary>
+        /// Adds the item to the context underlying the set in the Upserted state such that it will be updated or
+        /// inserted in the database when CommitChanges is called.
+        /// </summary>
+        /// <param name="entity">Item to add.</param>
+        void Upsert(T entity);
+
+        /// <summary>
         /// Marks the item as Deleted such that it will be deleted from the database when CommitChanges is called.
         /// </summary>
         /// <param name="entity">The item to delete.</param>
