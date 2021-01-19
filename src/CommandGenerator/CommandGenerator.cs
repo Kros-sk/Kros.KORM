@@ -23,7 +23,7 @@ namespace Kros.KORM.CommandGenerator
 
         private const string INSERT_QUERY_BASE = "INSERT INTO [{0}] ({1}){2} VALUES ({3})";
         private const string UPDATE_QUERY_BASE = "UPDATE [{0}] SET {1} WHERE {2}";
-        private const string UPSERT_QUERY_BASE = "MERGE INTO [{0}] dst USING(SELECT {1}) src ON {2} {3}{4}";
+        private const string UPSERT_QUERY_BASE = "MERGE INTO [{0}] dst USING(SELECT {1}) src ON {2} {3}{4};";
         private const string UPSERT_QUERY_UPDATE_PART = "WHEN MATCHED THEN UPDATE SET {0} ";
         private const string UPSERT_QUERY_INSERT_PART = "WHEN NOT MATCHED THEN INSERT({0}) VALUES ({1}) ";
         private const string DELETE_QUERY_BASE = "DELETE FROM [{0}] WHERE {1}";
