@@ -217,7 +217,6 @@ INSERT INTO {Table_TestTable} VALUES (2, 22, 'Kilie', 'Bistrol');";
                 actualMat.Age.Should().Be(19);
                 actualMat.FirstName.Should().Be("Mat");
                 actualMat.LastName.Should().Be("Handy");
-
             }
         }
     }

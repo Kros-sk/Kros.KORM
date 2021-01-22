@@ -163,7 +163,6 @@ namespace Kros.KORM
                 cancellationToken: cancellationToken,
                 columns: columns);
 
-
         /// <summary>
         /// Inserts or updates <paramref name="entity"/> in the database.
         /// </summary>
