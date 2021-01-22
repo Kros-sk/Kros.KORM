@@ -60,7 +60,7 @@ namespace Kros.KORM.UnitTests.CommandGenerator
                 "USING(SELECT @IdRow IdRow) src " +
                 "ON src.[IdRow] = dst.[IdRow] " +
                 "WHEN MATCHED THEN UPDATE SET [Salary] = @Salary, [PropertyValueGenerator] = @PropertyValueGenerator " +
-                "WHEN NOT MATCHED THEN INSERT([IdRow], [Salary]) VALUES (@IdRow, @Salary) ";
+                "WHEN NOT MATCHED THEN INSERT([IdRow], [Salary]) VALUES (@IdRow, @Salary) ;";
 
             DbCommand upsert = GetFooGenerator().GetUpsertCommand();
 
@@ -73,7 +73,7 @@ namespace Kros.KORM.UnitTests.CommandGenerator
             const string expectedQuery = "MERGE INTO [FooPrimaryKeys] dst " +
                 "USING(SELECT @FK1 FK1, @FK2 FK2) src " +
                 "ON src.[FK1] = dst.[FK1] AND src.[FK2] = dst.[FK2] " +
-                "WHEN NOT MATCHED THEN INSERT([FK1], [FK2]) VALUES (@FK1, @FK2) ";
+                "WHEN NOT MATCHED THEN INSERT([FK1], [FK2]) VALUES (@FK1, @FK2) ;";
 
             CommandGenerator<FooPrimaryKeys> commandGenerator = GetFooPrimaryKeyGenerator();
 
