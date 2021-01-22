@@ -163,6 +163,43 @@ namespace Kros.KORM
                 cancellationToken: cancellationToken,
                 columns: columns);
 
+
+        /// <summary>
+        /// Inserts or updates <paramref name="entity"/> in the database.
+        /// </summary>
+        /// <typeparam name="TEntity">Entity type.</typeparam>
+        /// <param name="database"><see cref="IDatabase"/> instance.</param>
+        /// <param name="entity">The entity to edit.</param>
+        /// <param name="columns">Columns for editing.</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+        public static async Task UpsertAsync<TEntity>(
+            this IDatabase database,
+            TEntity entity,
+            CancellationToken cancellationToken = default,
+            params string[] columns) where TEntity : class
+            => await CommitChangesAsync(
+                database, (IDbSet<TEntity> dbSet) => dbSet.Upsert(entity),
+                cancellationToken,
+                columns);
+
+        /// <summary>
+        /// Inserts or updates <paramref name="entities"/> in the database.
+        /// </summary>
+        /// <typeparam name="TEntity">Entity type.</typeparam>
+        /// <param name="database"><see cref="IDatabase"/> instance.</param>
+        /// <param name="entities">The entity to edit.</param>
+        /// <param name="columns">Columns for editing.</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+        public static async Task UpsertAsync<TEntity>(
+            this IDatabase database,
+            IEnumerable<TEntity> entities,
+            CancellationToken cancellationToken = default,
+            params string[] columns) where TEntity : class
+            => await CommitChangesAsync(
+                database, (IDbSet<TEntity> dbSet) => dbSet.Upsert(entities),
+                cancellationToken,
+                columns);
+
         private static IDbSet<TEntity> GetDbSet<TEntity>(IDatabase database, params string[] columns) where TEntity : class
             => columns.Length == 0
                 ? database.Query<TEntity>().AsDbSet()
