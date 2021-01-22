@@ -615,9 +615,9 @@ using (var database = new Database(_connection))
 
     var userRoles = database.Query<UserRole>().AsDbSet();
 
-    people.Upsert(owner); // this will update admins UserRole to owner
-    people.Upsert(user); // this will insert user
-    people.CommitChanges();
+    userRoles.Upsert(owner); // this will update admins UserRole to owner
+    userRoles.Upsert(user); // this will insert user
+    userRoles.CommitChanges();
 }
 ```
 
@@ -667,6 +667,9 @@ await database.EditAsync(person);
 await database.EditAsync(person, "Id", "Age");
 await database.EditAsync(people);
 await database.BulkEditAsync(people);
+await database.UpsertAsync(person);
+await database.UpsertAsync(people);
+
 ```
 
 ### SQL commands executing
