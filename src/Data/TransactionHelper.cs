@@ -1,11 +1,9 @@
-﻿using Kros.KORM.Properties;
-using Kros.Utils;
+﻿using Kros.Utils;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Linq;
-using System.Text;
 
 namespace Kros.KORM.Data
 {
@@ -17,19 +15,19 @@ namespace Kros.KORM.Data
         public const IsolationLevel DefaultIsolationLevel = IsolationLevel.ReadCommitted;
         private const int TIMEOUT_DEFAULT = 30;
 
-        private DbConnection _connection;
+        private readonly DbConnection _connection;
         private Transaction _topTransaction;
         private bool _canCommit = true;
-        private Stack<ITransaction> _transactions = new Stack<ITransaction>();
+        private readonly Stack<ITransaction> _transactions = new Stack<ITransaction>();
 
         #region Nested types
 
         private class Transaction : ITransaction
         {
             private readonly ConnectionHelper _connectionHelper;
-            private Lazy<DbTransaction> _transaction;
+            private readonly Lazy<DbTransaction> _transaction;
+            private readonly TransactionHelper _transactionHelper;
             private bool _wasCommitOrRollback = false;
-            private TransactionHelper _transactionHelper;
 
             public Transaction(TransactionHelper transactionHelper, ConnectionHelper connectionHelper, IsolationLevel isolationLevel)
             {
@@ -57,8 +55,8 @@ namespace Kros.KORM.Data
 
             public int CommandTimeout { get; set; } = TIMEOUT_DEFAULT;
 
-            public static implicit operator DbTransaction(Transaction transaction) =>
-                transaction?._transaction.Value;
+            public static implicit operator DbTransaction(Transaction transaction)
+                => transaction?._transaction.Value;
 
             /// <inheritdoc/>
             public void Dispose()
@@ -77,12 +75,14 @@ namespace Kros.KORM.Data
 
         private class NestedTransaction : ITransaction
         {
-            private TransactionHelper _transactionHelper;
+            private readonly TransactionHelper _transactionHelper;
             private bool _wasCommitOrRollback = false;
+            private readonly int _timeout;
 
-            public NestedTransaction(TransactionHelper transactionHelper)
+            public NestedTransaction(TransactionHelper transactionHelper, int timeout)
             {
                 _transactionHelper = transactionHelper;
+                _timeout = timeout;
             }
 
             public void Commit()
@@ -107,8 +107,8 @@ namespace Kros.KORM.Data
 
             public int CommandTimeout
             {
-                get { return TIMEOUT_DEFAULT; }
-                set { throw new InvalidOperationException(Resources.NestedTransactionCommandTimeoutIsReadonly); }
+                get => _timeout;
+                set { }
             }
         }
 
@@ -116,9 +116,7 @@ namespace Kros.KORM.Data
 
         public TransactionHelper(DbConnection connection)
         {
-            Check.NotNull(connection, nameof(connection));
-
-            _connection = connection;
+            _connection = Check.NotNull(connection, nameof(connection));
         }
 
         public ITransaction BeginTransaction(IsolationLevel isolationLevel)
@@ -131,17 +129,20 @@ namespace Kros.KORM.Data
             }
             else
             {
-                _transactions.Push(new NestedTransaction(this));
+                _transactions.Push(new NestedTransaction(this, _topTransaction.CommandTimeout));
             }
 
             return _transactions.Peek();
         }
 
-        public ITransaction BeginTransaction() => BeginTransaction(DefaultIsolationLevel);
+        public ITransaction BeginTransaction()
+            => BeginTransaction(DefaultIsolationLevel);
 
-        private bool CanCommitTransaction => _canCommit;
+        private bool CanCommitTransaction
+            => _canCommit;
 
-        public DbTransaction CurrentTransaction => _topTransaction;
+        public DbTransaction CurrentTransaction
+            => _topTransaction;
 
         private void EndTransaction(bool success)
         {
@@ -156,10 +157,10 @@ namespace Kros.KORM.Data
 
         public DbCommand CreateCommand()
         {
-            var cmd = _connection.CreateCommand();
+            DbCommand cmd = _connection.CreateCommand();
             if (_topTransaction != null)
             {
-                cmd.Transaction = _topTransaction as Transaction;
+                cmd.Transaction = _topTransaction;
                 cmd.CommandTimeout = _topTransaction.CommandTimeout;
             }
 
