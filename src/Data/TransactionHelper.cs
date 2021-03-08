@@ -135,14 +135,11 @@ namespace Kros.KORM.Data
             return _transactions.Peek();
         }
 
-        public ITransaction BeginTransaction()
-            => BeginTransaction(DefaultIsolationLevel);
+        public ITransaction BeginTransaction() => BeginTransaction(DefaultIsolationLevel);
 
-        private bool CanCommitTransaction
-            => _canCommit;
+        private bool CanCommitTransaction => _canCommit;
 
-        public DbTransaction CurrentTransaction
-            => _topTransaction;
+        public DbTransaction CurrentTransaction => _topTransaction;
 
         private void EndTransaction(bool success)
         {
