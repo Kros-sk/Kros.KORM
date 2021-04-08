@@ -11,3 +11,4 @@ using System.Runtime.InteropServices;
 
 [assembly: InternalsVisibleTo("Kros.KORM.UnitTests")]
 [assembly: InternalsVisibleTo("Kros.KORM.MsAccess.UnitTests")]
+[assembly: InternalsVisibleTo("Kros.KORM.PerformanceTests")]
