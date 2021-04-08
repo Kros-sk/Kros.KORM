@@ -36,21 +36,7 @@ namespace Kros.KORM.Materializer
                 }
                 else
                 {
-                    string fieldName = columnInfo.Name;
-                    int ordinal = reader.GetOrdinal(fieldName);
-
-                    Type srcType = reader.GetFieldType(ordinal);
-
-                    IConverter converter = ConverterHelper.GetConverter(columnInfo, srcType);
-
-                    if (converter == null)
-                    {
-                        iLGenerator.CallReaderGetValueWithoutConverter(ordinal, columnInfo, srcType);
-                    }
-                    else
-                    {
-                        iLGenerator.CallReaderGetValueWithConverter(ordinal, converter, columnInfo);
-                    }
+                    FromReader(reader, iLGenerator, columnInfo);
                 }
             }
 
@@ -59,6 +45,25 @@ namespace Kros.KORM.Materializer
             iLGenerator.Emit(OpCodes.Ret);
 
             return dynamicMethod.CreateDelegate(Expression.GetFuncType(typeof(IDataReader), type)) as Func<IDataReader, T>;
+        }
+
+        private static void FromReader(IDataReader reader, ILGenerator iLGenerator, ColumnInfo columnInfo)
+        {
+            string fieldName = columnInfo.Name;
+            int ordinal = reader.GetOrdinal(fieldName);
+
+            Type srcType = reader.GetFieldType(ordinal);
+
+            IConverter converter = ConverterHelper.GetConverter(columnInfo, srcType);
+
+            if (converter == null)
+            {
+                iLGenerator.CallReaderGetValueWithoutConverter(ordinal, columnInfo, srcType);
+            }
+            else
+            {
+                iLGenerator.CallReaderGetValueWithConverter(ordinal, converter, columnInfo);
+            }
         }
     }
 }
