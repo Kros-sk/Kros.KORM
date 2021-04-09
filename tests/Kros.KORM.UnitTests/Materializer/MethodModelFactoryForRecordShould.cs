@@ -167,7 +167,7 @@ namespace Kros.KORM.UnitTests.Materializer
 
             public void OnAfterMaterialize(IDataRecord source)
                 => Value = source.GetInt32(source.GetOrdinal("Value"));
-        };
+        }
 
         public interface IService
         {
@@ -224,7 +224,6 @@ namespace Kros.KORM.UnitTests.Materializer
                 .Property(p => p.Service).InjectValue(() => new Service());
 
             modelBuilder.Build(modelMapper);
-
 
             return (modelMapper.GetTableInfo<T>(), modelMapper.GetInjector<T>());
         }
