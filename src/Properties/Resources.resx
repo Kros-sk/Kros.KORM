@@ -215,7 +215,7 @@ or only one public parametrized constructor.</value>
   <data name="MigrationsHistoryTableScript" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\resources\migrationshistorytablescript.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
-  <data name="MissongMethodInModelBuilder" xml:space="preserve">
+  <data name="MissingMethodInModelBuilder" xml:space="preserve">
     <value>ModelBuilder instance ({0}) does not have method {1}({2}).</value>
   </data>
   <data name="MoreParametersThanValues" xml:space="preserve">

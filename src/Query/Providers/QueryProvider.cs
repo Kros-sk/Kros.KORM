@@ -506,7 +506,7 @@ namespace Kros.KORM.Query
                     const string methodName = nameof(IModelBuilder.Materialize);
                     const string methodArg = nameof(IDataReader);
                     throw new InvalidOperationException(
-                        string.Format(Resources.MissongMethodInModelBuilder, modelBuilderType, methodName, methodArg));
+                        string.Format(Resources.MissingMethodInModelBuilder, modelBuilderType, methodName, methodArg));
                 }
             }
             MethodInfo materializeMethod = _nonGenericMaterializeMethod.MakeGenericMethod(tresult.GenericTypeArguments[0]);
