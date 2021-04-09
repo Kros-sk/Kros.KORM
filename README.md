@@ -40,6 +40,7 @@ To contribute with new topics/information or make changes, see [contributing](ht
 * [Model builder](#model-builder)
 * [Committing of changes](#committing-of-changes)
 * [SQL commands executing](#sql-commands-executing)
+* [Record types](#record-types)
 * [Logging](#logging)
 * [Supported database types](#supported-database-types)
 * [ASP.NET Core extensions](#aspnet-core-extensions)
@@ -757,6 +758,38 @@ using (var transaction = database.BeginTransaction(IsolationLevel.Chaos))
     }
 }
 ```
+
+### Record types
+
+KORM supports a new `record` type for model definition.
+
+```csharp
+public record Person(int Id, string FirstName, string LastName);
+
+using var database = new Database(new SqlConnection("connection string"));
+
+foreach (Person person = database.Query<Person>())
+{
+    Console.WriteLine($"{person.Id}: {person.FirstName} - {person.LastName}");
+}
+```
+
+The same features as for "standard" `class`-es are supported. Converters, name mapping and value injection. It is possible to use [fluent notation](#Configure-model-mapping-by-fluent-api), but also using attributes.
+
+To use attribute notation, you must use syntax with `property:` keyword.
+
+```csharp
+public record Person(int Id, [property: Alias("FirstName")]string Name);
+```
+
+Materializing `record` types is a bit faster than with property-filled classes.
+
+1000 rows of `InMemoryDbReader`:
+
+| Method | Mean | Error | StdDev |
+|----|----|----|----|
+|RecordTypes|301.5 us | 5.07 us | 7.11 us|
+|ClassTypes|458.1 us | 7.13 us | 6.68 us|
 
 ### Logging
 
