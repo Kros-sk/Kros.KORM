@@ -10,20 +10,20 @@ using System.Reflection.Emit;
 
 namespace Kros.KORM.Materializer
 {
-    internal static class ILGeneratorExtensions
+    internal static class ILGeneratorHelper
     {
         private readonly static List<IConverter> _converters = new List<IConverter>();
         private readonly static Dictionary<string, MethodInfo> _readerValueGetters = InitReaderValueGetters();
         private readonly static MethodInfo _fnIsDBNull = typeof(IDataRecord).GetMethod(nameof(IDataReader.IsDBNull));
         private readonly static MethodInfo _getValueMethodInfo =
             typeof(IDataRecord).GetMethod("GetValue", new Type[] { typeof(int) });
-        private readonly static FieldInfo _fldConverters = typeof(ILGeneratorExtensions).GetField(nameof(_converters),
+        private readonly static FieldInfo _fldConverters = typeof(ILGeneratorHelper).GetField(nameof(_converters),
             BindingFlags.Static | BindingFlags.GetField | BindingFlags.NonPublic);
         private readonly static MethodInfo _fnConvertersListGetItem = typeof(List<IConverter>).GetProperty("Item").GetGetMethod();
         private readonly static MethodInfo _fnGetValue = typeof(IDataRecord).GetMethod("GetValue", new Type[] { typeof(int) });
         private readonly static MethodInfo _fnConvert = typeof(IConverter).GetMethod("Convert");
         private readonly static List<IInjector> _injectors = new List<IInjector>();
-        private readonly static FieldInfo _fldInjectors = typeof(ILGeneratorExtensions).GetField(nameof(_injectors),
+        private readonly static FieldInfo _fldInjectors = typeof(ILGeneratorHelper).GetField(nameof(_injectors),
             BindingFlags.Static | BindingFlags.GetField | BindingFlags.NonPublic);
         private readonly static MethodInfo _fnInjectorsListGetItem = typeof(List<IInjector>).GetProperty("Item").GetGetMethod();
         private readonly static MethodInfo _fnInjectorMethodInfo =

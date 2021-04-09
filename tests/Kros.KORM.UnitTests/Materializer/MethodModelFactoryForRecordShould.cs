@@ -9,7 +9,6 @@ using Kros.KORM.UnitTests.Helper;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using Xunit;
@@ -18,11 +17,6 @@ namespace Kros.KORM.UnitTests.Materializer
 {
     public class MethodModelFactoryForRecordShould
     {
-        // injection
-        // CallOnAfterMaterialize
-        // Value Generator
-        // co ked reader nemal field?
-
         [Fact]
         public void ShouldUseNameMapping()
         {
@@ -175,8 +169,6 @@ namespace Kros.KORM.UnitTests.Materializer
                 => Value = source.GetInt32(source.GetOrdinal("Value"));
         };
 
-        #region Helpers
-
         public interface IService
         {
             int GetValue();
@@ -198,6 +190,15 @@ namespace Kros.KORM.UnitTests.Materializer
 
             public object ConvertBack(object value) => throw new NotImplementedException();
         }
+
+        public enum Gender
+        {
+            None,
+            Man,
+            Woman
+        }
+
+        #region Helpers
 
         private static Func<IDataReader, T> GetFactory<T>(IDataReader dataReader)
         {
@@ -262,13 +263,6 @@ namespace Kros.KORM.UnitTests.Materializer
 
             public static DataBuilder Create(params (string name, Type type)[] names)
                 => new DataBuilder(names);
-        }
-
-        public enum Gender
-        {
-            None,
-            Man,
-            Woman
         }
 
         #endregion
