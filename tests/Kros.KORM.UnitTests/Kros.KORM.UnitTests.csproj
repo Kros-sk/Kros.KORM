@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>net5</TargetFramework>
     <IsPackable>false</IsPackable>
     <Authors>KROS a. s.</Authors>
     <Company>KROS a. s.</Company>
@@ -88,6 +88,9 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <None Update="appsettings.local.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="appsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -105,4 +108,8 @@
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="if exist &quot;$(ProjectDir)appsettings.local.json&quot; (&#xD;&#xA;  copy &quot;$(ProjectDir)appsettings.local.json&quot; &quot;$(TargetDir)&quot;&#xD;&#xA;)" />
   </Target>
+
+  <PropertyGroup >
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
 </Project>

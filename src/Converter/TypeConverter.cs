@@ -12,8 +12,8 @@ namespace Kros.KORM.Converter
     /// </example>
     internal class TypeConverter:IConverter
     {
-        private Type _clrType;
-        private Type _dbType;
+        private readonly Type _clrType;
+        private readonly Type _dbType;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TypeConverter"/> class.
@@ -38,9 +38,7 @@ namespace Kros.KORM.Converter
         /// </returns>
         /// <exception cref="System.NotImplementedException"></exception>
         public object Convert(object value)
-        {
-            return System.Convert.ChangeType(value, _clrType);
-        }
+            => value is not null ? System.Convert.ChangeType(value, _clrType) : null;
 
         /// <summary>
         /// Converts the value from Clr to Db.
@@ -51,8 +49,6 @@ namespace Kros.KORM.Converter
         /// </returns>
         /// <exception cref="System.NotImplementedException"></exception>
         public object ConvertBack(object value)
-        {
-            return System.Convert.ChangeType(value, _dbType);
-        }
+            => System.Convert.ChangeType(value, _dbType);
     }
 }

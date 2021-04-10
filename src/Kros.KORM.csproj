@@ -48,7 +48,7 @@
     <PackageReference Include="System.ValueTuple" Version="4.5.0" />
   </ItemGroup>
 
-  <PropertyGroup Condition="'$(TargetFramework)'=='netcoreapp2.1'">
+  <PropertyGroup >
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
