@@ -21,6 +21,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kros.KORM.PerformanceTests", "tests\Kros.KORM.PerformanceTests\Kros.KORM.PerformanceTests.csproj", "{7DAE1DC7-4C58-41B5-AC88-86933E26095D}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kros.Utils", "..\Kros.Utils\src\Kros.Utils.csproj", "{D9D9EDA6-E062-4841-8D96-1041FBE067E9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -43,6 +45,10 @@ Global
 		{7DAE1DC7-4C58-41B5-AC88-86933E26095D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7DAE1DC7-4C58-41B5-AC88-86933E26095D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7DAE1DC7-4C58-41B5-AC88-86933E26095D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D9D9EDA6-E062-4841-8D96-1041FBE067E9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D9D9EDA6-E062-4841-8D96-1041FBE067E9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D9D9EDA6-E062-4841-8D96-1041FBE067E9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D9D9EDA6-E062-4841-8D96-1041FBE067E9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
