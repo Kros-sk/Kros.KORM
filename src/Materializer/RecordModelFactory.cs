@@ -29,13 +29,13 @@ namespace Kros.KORM.Materializer
 
             foreach (ParameterInfo param in paramsInfo)
             {
-                ColumnInfo columnInfo = tableInfo.GetColumnInfoByPropertyName(param.Name);
                 if (injector.IsInjectable(param.Name))
                 {
                     iLGenerator.CallGetInjectedValue(injector, param.Name, param.ParameterType);
                 }
                 else
                 {
+                    ColumnInfo columnInfo = tableInfo.GetColumnInfoByPropertyName(param.Name);
                     FromReader(reader, iLGenerator, columnInfo);
                 }
             }
@@ -56,7 +56,7 @@ namespace Kros.KORM.Materializer
 
             IConverter converter = ConverterHelper.GetConverter(columnInfo, srcType);
 
-            if (converter == null)
+            if (converter is null)
             {
                 iLGenerator.CallReaderGetValueWithoutConverter(ordinal, columnInfo, srcType);
             }

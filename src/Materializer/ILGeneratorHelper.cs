@@ -65,13 +65,13 @@ namespace Kros.KORM.Materializer
             bool castNeeded;
             if (valuegetter != null
                 && valuegetter.ReturnType == srcType
-                && (valuegetter.ReturnType == columnInfo.PropertyInfo.PropertyType ||
-                valuegetter.ReturnType == Nullable.GetUnderlyingType(columnInfo.PropertyInfo.PropertyType)))
+                && (valuegetter.ReturnType == columnInfo.PropertyInfo.PropertyType
+                || valuegetter.ReturnType == Nullable.GetUnderlyingType(columnInfo.PropertyInfo.PropertyType)))
             {
                 castNeeded = false;
             }
-            else if ((srcType == columnInfo.PropertyInfo.PropertyType) ||
-                     (srcType == Nullable.GetUnderlyingType(columnInfo.PropertyInfo.PropertyType)))
+            else if ((srcType == columnInfo.PropertyInfo.PropertyType)
+                || (srcType == Nullable.GetUnderlyingType(columnInfo.PropertyInfo.PropertyType)))
             {
                 valuegetter = _getValueMethodInfo;
                 castNeeded = true;
@@ -171,7 +171,7 @@ namespace Kros.KORM.Materializer
 
         private static Dictionary<string, MethodInfo> InitReaderValueGetters()
         {
-            var getters = new Dictionary<string, MethodInfo>(StringComparer.CurrentCultureIgnoreCase);
+            var getters = new Dictionary<string, MethodInfo>(StringComparer.OrdinalIgnoreCase);
 
             MethodInfo CreateReaderValueGetter(string typeName)
                 => typeof(IDataRecord).GetMethod($"Get{typeName}", new Type[] { typeof(int) });
@@ -179,18 +179,18 @@ namespace Kros.KORM.Materializer
             void Add<T>()
                 => getters.Add(typeof(T).Name, CreateReaderValueGetter(typeof(T).Name));
 
-            Add<Boolean>();
-            Add<Byte>();
-            Add<Char>();
+            Add<bool>();
+            Add<byte>();
+            Add<char>();
             Add<DateTime>();
-            Add<Decimal>();
-            Add<Double>();
+            Add<decimal>();
+            Add<double>();
             Add<Guid>();
-            Add<Int16>();
-            Add<Int32>();
-            Add<Int64>();
+            Add<short>();
+            Add<int>();
+            Add<long>();
 
-            Add<String>();
+            Add<string>();
 
             getters.Add(nameof(Single), CreateReaderValueGetter("Float"));
 

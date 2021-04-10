@@ -205,6 +205,16 @@ namespace Kros.KORM.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Type &apos;{0}&apos; should have only one public or non-public default constructor
+        ///or only one public parametrized constructor..
+        /// </summary>
+        internal static string Error_TooManyConstructors {
+            get {
+                return ResourceManager.GetString("Error_TooManyConstructors", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cannot add item (hash code = {0}). This item already exists in collection {1}..
         /// </summary>
         internal static string ExistingItemCannotBeAdded {

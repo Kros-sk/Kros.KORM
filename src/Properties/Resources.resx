@@ -168,6 +168,10 @@
   <data name="Error_KormProviderNotSet" xml:space="preserve">
     <value>KORM provider is not set.</value>
   </data>
+  <data name="Error_TooManyConstructors" xml:space="preserve">
+    <value>Type '{0}' should have only one public or non-public default constructor
+or only one public parametrized constructor.</value>
+  </data>
   <data name="ExistingItemCannotBeAdded" xml:space="preserve">
     <value>Cannot add item (hash code = {0}). This item already exists in collection {1}.</value>
   </data>

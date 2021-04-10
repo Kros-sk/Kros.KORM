@@ -3,6 +3,7 @@ using Kros.KORM.Converter;
 using Kros.KORM.Helper;
 using Kros.KORM.Injection;
 using Kros.KORM.Metadata;
+using Kros.KORM.Properties;
 using Kros.Utils;
 using System;
 using System.Data;
@@ -111,7 +112,7 @@ namespace Kros.KORM.Materializer
         {
             if (reader.IsDBNull(0))
             {
-                return default(T);
+                return default;
             }
 
             Type destType = typeof(T);
@@ -130,7 +131,7 @@ namespace Kros.KORM.Materializer
             }
         }
 
-        private void EmitReaderFields(IDataReader reader,
+        private static void EmitReaderFields(IDataReader reader,
             TableInfo tableInfo,
             ILGenerator ilGenerator,
             IInjector injector)
@@ -143,7 +144,7 @@ namespace Kros.KORM.Materializer
             EmitPropertyForInjecting(tableInfo, ilGenerator, injector);
         }
 
-        private void EmitPropertyForInjecting(TableInfo tableInfo,
+        private static void EmitPropertyForInjecting(TableInfo tableInfo,
             ILGenerator ilGenerator,
             IInjector injector)
         {
@@ -157,7 +158,7 @@ namespace Kros.KORM.Materializer
             }
         }
 
-        private void EmitField(IDataReader reader,
+        private static void EmitField(IDataReader reader,
             TableInfo tableInfo,
             ILGenerator ilGenerator,
             int columnIndex)
@@ -190,9 +191,7 @@ namespace Kros.KORM.Materializer
 
             if (info.ctor is null)
             {
-                throw new InvalidOperationException(
-                    @$"Type '[{type.FullName}]' should have only one public or non-public default constructor
-or only one public parametrized constructor.");
+                throw new InvalidOperationException(string.Format(Resources.Error_TooManyConstructors, type.FullName));
             }
 
             return info;

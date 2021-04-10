@@ -12,8 +12,8 @@ namespace Kros.KORM.Converter
     /// </example>
     internal class TypeConverter:IConverter
     {
-        private Type _clrType;
-        private Type _dbType;
+        private readonly Type _clrType;
+        private readonly Type _dbType;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TypeConverter"/> class.

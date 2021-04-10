@@ -27,7 +27,7 @@ namespace Kros.KORM.UnitTests.Helper
         {
             _data = data.GetEnumerator();
             _originData = data;
-            if (_originData.Count() > 0)
+            if (_originData.Any())
             {
                 _keys = _originData.First().Keys.ToList();
                 _types = types.ToList();

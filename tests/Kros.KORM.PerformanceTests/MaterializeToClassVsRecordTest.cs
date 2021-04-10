@@ -9,8 +9,8 @@ namespace Kros.KORM.PerformanceTests
 {
     public class MaterializeToClassVsRecordTest
     {
-        private DataTable _table;
-        private IDatabase _database;
+        private readonly DataTable _table;
+        private readonly IDatabase _database;
 
         public MaterializeToClassVsRecordTest()
         {
@@ -36,7 +36,7 @@ namespace Kros.KORM.PerformanceTests
         [Benchmark]
         public void RecordTypes()
         {
-            foreach (Foo employee in _database.ModelBuilder.Materialize<Foo>(_table))
+            foreach (RecordType employee in _database.ModelBuilder.Materialize<RecordType>(_table))
             {
             }
         }
@@ -44,13 +44,14 @@ namespace Kros.KORM.PerformanceTests
         [Benchmark]
         public void ClassTypes()
         {
-            foreach (Bar employee in _database.ModelBuilder.Materialize<Bar>(_table))
+            foreach (ClassType employee in _database.ModelBuilder.Materialize<ClassType>(_table))
             {
             }
         }
 
-        public record Foo(int Id, string FirstName, string LastName, double Salary, bool IsEmployed);
-        public class Bar
+        public record RecordType(int Id, string FirstName, string LastName, double Salary, bool IsEmployed);
+
+        public class ClassType
         {
             public int Id { get; set; }
             public string FirstName { get; set; }

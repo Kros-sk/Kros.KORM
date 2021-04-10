@@ -1,7 +1,7 @@
-﻿using System;
-using Xunit;
+﻿using FluentAssertions;
 using Kros.KORM.Helper;
-using FluentAssertions;
+using System;
+using Xunit;
 
 namespace Kros.KORM.UnitTests.Helper
 {
@@ -81,10 +81,10 @@ namespace Kros.KORM.UnitTests.Helper
             public string LastName { get; init; }
 
             public BarRecordWithMoreCtors(string firstName)
-              => (FirstName, LastName) = (firstName, string.Empty);
+                => (FirstName, LastName) = (firstName, string.Empty);
 
             public BarRecordWithMoreCtors(string firstName, string lastName)
-              => (FirstName, LastName) = (firstName, lastName);
+                => (FirstName, LastName) = (firstName, lastName);
         }
     }
 }
