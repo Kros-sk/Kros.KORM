@@ -57,7 +57,7 @@ namespace Kros.KORM.Query
                 _connection = connection;
             }
 
-            public int GetNext() => _idGenerator.GetNext();
+            public object GetNext() => _idGenerator.GetNext();
 
             public void InitDatabaseForIdGenerator() => _idGenerator.InitDatabaseForIdGenerator();
 

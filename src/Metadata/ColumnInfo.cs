@@ -1,4 +1,5 @@
 ﻿using Kros.KORM.Converter;
+using System;
 using System.Reflection;
 
 namespace Kros.KORM.Metadata
@@ -8,7 +9,8 @@ namespace Kros.KORM.Metadata
     /// </summary>
     public class ColumnInfo
     {
-        #region Public Property
+        private PropertyInfo _propertyInfo;
+        private object _defaultValue;
 
         /// <summary>
         /// Column name.
@@ -18,7 +20,23 @@ namespace Kros.KORM.Metadata
         /// <summary>
         /// Gets or sets the property information.
         /// </summary>
-        public PropertyInfo PropertyInfo { get; set; }
+        public PropertyInfo PropertyInfo
+        {
+            get => _propertyInfo;
+            set {
+                _propertyInfo = value;
+                _defaultValue = null;
+                if (_propertyInfo is not null && _propertyInfo.PropertyType.IsValueType)
+                {
+                    _defaultValue = Activator.CreateInstance(PropertyInfo.PropertyType);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Default value for the data type of the column.
+        /// </summary>
+        public object DefaultValue => _defaultValue;
 
         /// <summary>
         /// Gets or sets the data converter.
@@ -50,19 +68,12 @@ namespace Kros.KORM.Metadata
         /// </summary>
         public AutoIncrementMethodType AutoIncrementMethodType { get; set; } = AutoIncrementMethodType.None;
 
-        #endregion
-
-        #region Public Methods
-
         /// <summary>
         /// Sets the value.
         /// </summary>
         /// <param name="targetObject">The target object.</param>
         /// <param name="value">The value.</param>
-        public void SetValue(object targetObject, object value)
-        {
-            this.PropertyInfo.SetValue(targetObject, value, null);
-        }
+        public void SetValue(object targetObject, object value) => PropertyInfo.SetValue(targetObject, value, null);
 
         /// <summary>
         /// Gets the value.
@@ -71,11 +82,6 @@ namespace Kros.KORM.Metadata
         /// <returns>
         /// Return value from targetObject.
         /// </returns>
-        public object GetValue(object targetObject)
-        {
-            return this.PropertyInfo.GetValue(targetObject, null);
-        }
-
-        #endregion
+        public object GetValue(object targetObject) => PropertyInfo.GetValue(targetObject, null);
     }
 }
