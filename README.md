@@ -786,10 +786,10 @@ Materializing `record` types is a bit faster than with property-filled classes.
 
 1000 rows of `InMemoryDbReader`:
 
-| Method | Mean | Error | StdDev |
-|----|----|----|----|
-|RecordTypes|301.5 us | 5.07 us | 7.11 us|
-|ClassTypes|458.1 us | 7.13 us | 6.68 us|
+| Method      | Mean      | Error   | StdDev  |
+| ----------- | --------- | ------- | ------- |
+| RecordTypes | 301.50 μs | 5.07 μs | 7.11 μs |
+| ClassTypes  | 458.10 μs | 7.13 μs | 6.68 μs |
 
 ### Logging
 
