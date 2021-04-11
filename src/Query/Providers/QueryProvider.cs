@@ -46,7 +46,7 @@ namespace Kros.KORM.Query
             public void Dispose() => Command?.Dispose();
         }
 
-        private class IdGeneratorHelper : IIdGenerator
+        private sealed class IdGeneratorHelper : IIdGenerator
         {
             private readonly DbConnection _connection;
             private readonly IIdGenerator _idGenerator;
@@ -61,31 +61,18 @@ namespace Kros.KORM.Query
 
             public void InitDatabaseForIdGenerator() => _idGenerator.InitDatabaseForIdGenerator();
 
-            #region IDisposable Support
+            private bool _disposed = false;
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
-
-            private bool _disposedValue = false;
-
-            protected virtual void Dispose(bool disposing)
+            public void Dispose()
             {
-                if (!_disposedValue)
+                if (_disposed)
                 {
-                    if (disposing)
-                    {
-                        _idGenerator.Dispose();
-                        _connection.Dispose();
-                    }
-
-                    _disposedValue = true;
+                    return;
                 }
+                _idGenerator.Dispose();
+                _connection.Dispose();
+                _disposed = true;
             }
-
-            public void Dispose() => Dispose(true);
-
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
-
-            #endregion
         }
 
         #endregion
@@ -121,7 +108,7 @@ namespace Kros.KORM.Query
         /// <param name="modelBuilder">The model builder.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="databaseMapper">The Database mapper.</param>
-        public QueryProvider(
+        protected QueryProvider(
             KormConnectionSettings connectionSettings,
             ISqlExpressionVisitorFactory sqlGeneratorFactory,
             IModelBuilder modelBuilder,
@@ -146,7 +133,7 @@ namespace Kros.KORM.Query
         /// <param name="modelBuilder">The model builder.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="databaseMapper">The Database mapper.</param>
-        public QueryProvider(
+        protected QueryProvider(
             DbConnection externalConnection,
             ISqlExpressionVisitorFactory sqlGeneratorFactory,
             IModelBuilder modelBuilder,
@@ -164,9 +151,7 @@ namespace Kros.KORM.Query
         }
 
         private void InitSqlExpressionVisitor(ISqlExpressionVisitorFactory sqlGeneratorFactory)
-        {
-            _sqlExpressionVisitor = new Lazy<ISqlExpressionVisitor>(() => sqlGeneratorFactory.CreateVisitor(Connection));
-        }
+            => _sqlExpressionVisitor = new Lazy<ISqlExpressionVisitor>(() => sqlGeneratorFactory.CreateVisitor(Connection));
 
         #endregion
 
@@ -633,8 +618,7 @@ namespace Kros.KORM.Query
         /// </summary>
         protected DbConnection Connection
         {
-            get
-            {
+            get {
                 if (_connection == null)
                 {
                     _connection = DbProviderFactory.CreateConnection();
@@ -687,7 +671,7 @@ namespace Kros.KORM.Query
             return command;
         }
 
-        private void AddCommandParameter(DbCommand command, CommandParameter commandParameter)
+        private static void AddCommandParameter(DbCommand command, CommandParameter commandParameter)
         {
             DbParameter dbParameter = command.CreateParameter();
             dbParameter.ParameterName = commandParameter.ParameterName;
@@ -715,7 +699,7 @@ namespace Kros.KORM.Query
             return returnParameter;
         }
 
-        private DbParameter GetReturnParameter(DbCommand command)
+        private static DbParameter GetReturnParameter(DbCommand command)
         {
             foreach (DbParameter parameter in command.Parameters)
             {
@@ -745,28 +729,30 @@ namespace Kros.KORM.Query
 
         #region IDisposable
 
-        private bool _disposedValue = false;
+        private bool _disposed = false;
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         protected virtual void Dispose(bool disposing)
         {
-            if (!_disposedValue)
+            if (_disposed)
             {
-                if (disposing)
-                {
-                    if ((_connection != null) && (!IsExternalConnection))
-                    {
-                        _connection.Dispose();
-                        _connection = null;
-                    }
-                }
-                _disposedValue = true;
+                return;
             }
+            if (disposing)
+            {
+                if ((_connection != null) && (!IsExternalConnection))
+                {
+                    _connection.Dispose();
+                    _connection = null;
+                }
+            }
+            _disposed = true;
         }
 
         public void Dispose()
         {
             Dispose(true);
+            GC.SuppressFinalize(this);
         }
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
