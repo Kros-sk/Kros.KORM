@@ -779,9 +779,10 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
 
         private void OnGeneratePrimaryKey(Action<IDbSet<Person>> commitAction)
         {
-            using (var korm = CreateDatabase(CreateTable_TestTable,
-                            SqlServerIdGenerator.GetIdStoreTableCreationScript(),
-                            SqlServerIdGenerator.GetStoredProcedureCreationScript()))
+            using (var korm = CreateDatabase(
+                CreateTable_TestTable,
+                SqlServerIntIdGenerator.GetIdStoreTableCreationScript(),
+                SqlServerIntIdGenerator.GetStoredProcedureCreationScript()))
             {
                 var dbSet = korm.Query<Person>().AsDbSet();
 
@@ -820,8 +821,8 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
         public void DoNotGeneratePrimaryKeyIfFilled()
         {
             using (var korm = CreateDatabase(CreateTable_TestTable,
-               SqlServerIdGenerator.GetIdStoreTableCreationScript(),
-               SqlServerIdGenerator.GetStoredProcedureCreationScript()))
+                SqlServerIntIdGenerator.GetIdStoreTableCreationScript(),
+                SqlServerIntIdGenerator.GetStoredProcedureCreationScript()))
             {
                 var dbSet = korm.Query<Person>().AsDbSet();
 
@@ -862,8 +863,8 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
         public void DoNotGeneratePrimaryKeyIfKeyIsNotAutoIncrement()
         {
             using (var korm = CreateDatabase(CreateTable_TestTable,
-               SqlServerIdGenerator.GetIdStoreTableCreationScript(),
-               SqlServerIdGenerator.GetStoredProcedureCreationScript()))
+                SqlServerIntIdGenerator.GetIdStoreTableCreationScript(),
+                SqlServerIntIdGenerator.GetStoredProcedureCreationScript()))
             {
                 var dbSet = korm.Query<Foo>().AsDbSet();
 
@@ -888,8 +889,8 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
         public void IteratedThroughItemsOnlyOnceWhenGeneratePrimaryKeys()
         {
             using (var korm = CreateDatabase(CreateTable_TestTable,
-               SqlServerIdGenerator.GetIdStoreTableCreationScript(),
-               SqlServerIdGenerator.GetStoredProcedureCreationScript()))
+                SqlServerIntIdGenerator.GetIdStoreTableCreationScript(),
+                SqlServerIntIdGenerator.GetStoredProcedureCreationScript()))
             {
                 var dbSet = korm.Query<Person>().AsDbSet();
 
