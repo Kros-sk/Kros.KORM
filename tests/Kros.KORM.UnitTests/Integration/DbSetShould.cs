@@ -6,6 +6,7 @@ using Kros.KORM.Metadata.Attribute;
 using Kros.KORM.Query;
 using Kros.KORM.UnitTests.Base;
 using Kros.KORM.UnitTests.Properties;
+using Microsoft.Data.SqlClient;
 using Nito.AsyncEx;
 using System;
 using System.Collections.Generic;
@@ -779,10 +780,9 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
 
         private void OnGeneratePrimaryKey(Action<IDbSet<Person>> commitAction)
         {
-            using (var korm = CreateDatabase(
-                CreateTable_TestTable,
-                SqlServerIntIdGenerator.GetIdStoreTableCreationScript(),
-                SqlServerIntIdGenerator.GetStoredProcedureCreationScript()))
+            var scripts = GetIdGeneratorScripts();
+            scripts.Insert(0, CreateTable_TestTable);
+            using (var korm = CreateDatabase(scripts))
             {
                 var dbSet = korm.Query<Person>().AsDbSet();
 
@@ -820,9 +820,9 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
         [Fact]
         public void DoNotGeneratePrimaryKeyIfFilled()
         {
-            using (var korm = CreateDatabase(CreateTable_TestTable,
-                SqlServerIntIdGenerator.GetIdStoreTableCreationScript(),
-                SqlServerIntIdGenerator.GetStoredProcedureCreationScript()))
+            var scripts = GetIdGeneratorScripts();
+            scripts.Insert(0, CreateTable_TestTable);
+            using (var korm = CreateDatabase(scripts))
             {
                 var dbSet = korm.Query<Person>().AsDbSet();
 
@@ -862,9 +862,9 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
         [Fact]
         public void DoNotGeneratePrimaryKeyIfKeyIsNotAutoIncrement()
         {
-            using (var korm = CreateDatabase(CreateTable_TestTable,
-                SqlServerIntIdGenerator.GetIdStoreTableCreationScript(),
-                SqlServerIntIdGenerator.GetStoredProcedureCreationScript()))
+            var scripts = GetIdGeneratorScripts();
+            scripts.Insert(0, CreateTable_TestTable);
+            using (var korm = CreateDatabase(scripts))
             {
                 var dbSet = korm.Query<Foo>().AsDbSet();
 
@@ -888,9 +888,9 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
         [Fact]
         public void IteratedThroughItemsOnlyOnceWhenGeneratePrimaryKeys()
         {
-            using (var korm = CreateDatabase(CreateTable_TestTable,
-                SqlServerIntIdGenerator.GetIdStoreTableCreationScript(),
-                SqlServerIntIdGenerator.GetStoredProcedureCreationScript()))
+            var scripts = GetIdGeneratorScripts();
+            scripts.Insert(0, CreateTable_TestTable);
+            using (var korm = CreateDatabase(scripts))
             {
                 var dbSet = korm.Query<Person>().AsDbSet();
 
@@ -1012,6 +1012,16 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
         #endregion
 
         #region Helpers
+
+        private static List<string> GetIdGeneratorScripts()
+        {
+            var scripts = new List<string>();
+            var generator = new SqlServerIntIdGenerator(new SqlConnection(), "_NonExistingtable", 1);
+            scripts.Add(generator.BackendTableScript);
+            scripts.Add(generator.BackendStoredProcedureScript);
+            generator.Dispose();
+            return scripts;
+        }
 
         private static IEnumerable<DataTypesData> GetDataTypesData()
         {
