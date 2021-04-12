@@ -23,7 +23,8 @@ namespace Kros.KORM.Metadata
         public PropertyInfo PropertyInfo
         {
             get => _propertyInfo;
-            set {
+            set
+            {
                 _propertyInfo = value;
                 _defaultValue = null;
                 if (_propertyInfo is not null && _propertyInfo.PropertyType.IsValueType)
@@ -37,6 +38,14 @@ namespace Kros.KORM.Metadata
         /// Default value for the data type of the column.
         /// </summary>
         public object DefaultValue => _defaultValue;
+
+        /// <summary>
+        /// Checks if <paramref name="value"/> is default value of the column.
+        /// </summary>
+        /// <param name="value">Checked value.</param>
+        /// <returns><see langword="true"/> if <paramref name="value"/> is default value for the column,
+        /// otherwise <see langword="false"/>.</returns>
+        public bool IsDefaultValue(object value) => value is null || value.Equals(DefaultValue);
 
         /// <summary>
         /// Gets or sets the data converter.

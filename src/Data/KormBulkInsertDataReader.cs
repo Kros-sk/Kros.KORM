@@ -52,7 +52,7 @@ namespace Kros.KORM.Data
         }
 
         private bool CanGenerateId(int i, object value)
-            => (i == _primaryKeyOrdinal) && (value is null || value.Equals(_primaryKey.DefaultValue));
+            => (i == _primaryKeyOrdinal) && _primaryKey.IsDefaultValue(value);
 
         protected override void Dispose(bool disposing)
         {

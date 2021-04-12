@@ -48,10 +48,10 @@ namespace Kros.KORM.Query
 
         private sealed class IdGeneratorHelper : IIdGenerator
         {
-            private readonly DbConnection _connection;
+            private readonly IDbConnection _connection;
             private readonly IIdGenerator _idGenerator;
 
-            public IdGeneratorHelper(IIdGenerator idGenerator, DbConnection connection)
+            public IdGeneratorHelper(IIdGenerator idGenerator, IDbConnection connection)
             {
                 _idGenerator = idGenerator;
                 _connection = connection;
@@ -523,7 +523,23 @@ namespace Kros.KORM.Query
             _transactionHelper.Value.BeginTransaction(isolationLevel);
 
         /// <inheritdoc/>
+        [Obsolete("Method is deprecated. Use CreateIdGenerator(Type, string, int).")]
         public IIdGenerator CreateIdGenerator(string tableName, int batchSize)
+            => CreateIdGenerator(typeof(int), tableName, batchSize);
+
+        /// <inheritdoc/>
+        public IIdGenerator CreateIdGenerator(Type dataType, string tableName, int batchSize)
+        {
+            var connection = GetConnectionForIdGenerator();
+            var factory = IdGeneratorFactories.GetFactory(dataType, connection);
+            return new IdGeneratorHelper(factory.GetGenerator(tableName, batchSize), connection);
+        }
+
+        /// <inheritdoc/>
+        public IIdGeneratorsForDatabaseInit GetIdGeneratorsForDatabaseInit()
+            => IdGeneratorFactories.GetGeneratorsForDatabaseInit(GetConnectionForIdGenerator());
+
+        private IDbConnection GetConnectionForIdGenerator()
         {
             var connection = (Connection as ICloneable).Clone() as DbConnection;
             try
@@ -532,11 +548,10 @@ namespace Kros.KORM.Query
             }
             catch (SqlException ex)
             {
+                connection.Dispose();
                 throw new InvalidOperationException(Resources.CannotOpenConnectionWhenGeneratingPrimaryKeys, ex);
             }
-
-            var factory = IdGeneratorFactories.GetFactory(connection);
-            return new IdGeneratorHelper(factory.GetGenerator(tableName, batchSize), connection);
+            return connection;
         }
 
         /// <inheritdoc />
@@ -618,7 +633,8 @@ namespace Kros.KORM.Query
         /// </summary>
         protected DbConnection Connection
         {
-            get {
+            get
+            {
                 if (_connection == null)
                 {
                     _connection = DbProviderFactory.CreateConnection();

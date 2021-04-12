@@ -300,9 +300,12 @@ namespace Kros.KORM
         /// <inheritdoc/>
         public void InitDatabaseForIdGenerator()
         {
-            using (Kros.Data.IIdGenerator idGenerator = _queryProvider.CreateIdGenerator("DummyTableName", 1))
+            using (var idGenerators = _queryProvider.GetIdGeneratorsForDatabaseInit())
             {
-                idGenerator.InitDatabaseForIdGenerator();
+                foreach (var idGenerator in idGenerators)
+                {
+                    idGenerator.InitDatabaseForIdGenerator();
+                }
             }
         }
 
