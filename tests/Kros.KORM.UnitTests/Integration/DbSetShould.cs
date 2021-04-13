@@ -780,9 +780,7 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
 
         private void OnGeneratePrimaryKey(Action<IDbSet<Person>> commitAction)
         {
-            var scripts = GetIdGeneratorScripts();
-            scripts.Insert(0, CreateTable_TestTable);
-            using (var korm = CreateDatabase(scripts))
+            using (var korm = CreateTestDatabase())
             {
                 var dbSet = korm.Query<Person>().AsDbSet();
 
@@ -820,9 +818,7 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
         [Fact]
         public void DoNotGeneratePrimaryKeyIfFilled()
         {
-            var scripts = GetIdGeneratorScripts();
-            scripts.Insert(0, CreateTable_TestTable);
-            using (var korm = CreateDatabase(scripts))
+            using (var korm = CreateTestDatabase())
             {
                 var dbSet = korm.Query<Person>().AsDbSet();
 
@@ -862,9 +858,7 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
         [Fact]
         public void DoNotGeneratePrimaryKeyIfKeyIsNotAutoIncrement()
         {
-            var scripts = GetIdGeneratorScripts();
-            scripts.Insert(0, CreateTable_TestTable);
-            using (var korm = CreateDatabase(scripts))
+            using (var korm = CreateTestDatabase())
             {
                 var dbSet = korm.Query<Foo>().AsDbSet();
 
@@ -888,9 +882,7 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
         [Fact]
         public void IteratedThroughItemsOnlyOnceWhenGeneratePrimaryKeys()
         {
-            var scripts = GetIdGeneratorScripts();
-            scripts.Insert(0, CreateTable_TestTable);
-            using (var korm = CreateDatabase(scripts))
+            using (var korm = CreateTestDatabase())
             {
                 var dbSet = korm.Query<Person>().AsDbSet();
 
@@ -1013,14 +1005,10 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
 
         #region Helpers
 
-        private static List<string> GetIdGeneratorScripts()
+        private TestDatabase CreateTestDatabase()
         {
-            var scripts = new List<string>();
-            var generator = new SqlServerIntIdGenerator(new SqlConnection(), "_NonExistingtable", 1);
-            scripts.Add(generator.BackendTableScript);
-            scripts.Add(generator.BackendStoredProcedureScript);
-            generator.Dispose();
-            return scripts;
+            var (_, _, tableScript, procedureScript) = SqlServerIntIdGenerator.GetSqlInfo();
+            return CreateDatabase(new[] { CreateTable_TestTable, tableScript, procedureScript });
         }
 
         private static IEnumerable<DataTypesData> GetDataTypesData()
