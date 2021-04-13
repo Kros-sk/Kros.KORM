@@ -6,7 +6,6 @@ using Kros.KORM.Metadata.Attribute;
 using Kros.KORM.Query;
 using Kros.KORM.UnitTests.Base;
 using Kros.KORM.UnitTests.Properties;
-using Microsoft.Data.SqlClient;
 using Nito.AsyncEx;
 using System;
 using System.Collections.Generic;
@@ -52,7 +51,7 @@ namespace Kros.KORM.UnitTests.Integration
             public string ColNVarcharMax { get; set; }
         }
 
-        [Alias("People")]
+        [Alias(Table_TestTable)]
         public class Person
         {
             [Key(AutoIncrementMethodType.Custom)]
@@ -72,7 +71,7 @@ namespace Kros.KORM.UnitTests.Integration
             public string TestLongText { get; set; }
         }
 
-        [Alias("People")]
+        [Alias(Table_TestTable)]
         private class Foo
         {
             [Key(AutoIncrementMethodType.None)]
@@ -759,144 +758,6 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
                 await dbSet.BulkUpdateAsync(GetPersonData(), (c, t, s) => { });
 
                 AssertData(korm);
-            }
-        }
-
-        #endregion
-
-        #region Primary Keys
-
-        [Fact]
-        public void GeneratePrimaryKey()
-        {
-            OnGeneratePrimaryKey(dbSet => dbSet.CommitChanges());
-        }
-
-        [Fact]
-        public void GeneratePrimaryKeyWhenBulkInsertIsCall()
-        {
-            OnGeneratePrimaryKey(dbSet => dbSet.BulkInsert());
-        }
-
-        private void OnGeneratePrimaryKey(Action<IDbSet<Person>> commitAction)
-        {
-            using (var korm = CreateTestDatabase())
-            {
-                var dbSet = korm.Query<Person>().AsDbSet();
-
-                var sourcePeople = new List<Person>() {
-                    new Person() { FirstName = "Milan" },
-                    new Person() { FirstName = "Peter" },
-                    new Person() { FirstName = "Milada" }
-                };
-
-                dbSet.Add(sourcePeople);
-
-                commitAction(dbSet);
-
-                var id = 1;
-                foreach (var item in sourcePeople)
-                {
-                    item.Id.Should().Be(id++);
-                }
-
-                var people = korm.Query<Person>().OrderBy(p => p.Id);
-
-                var sourceEnumerator = sourcePeople.GetEnumerator();
-                id = 1;
-                foreach (var item in people)
-                {
-                    sourceEnumerator.MoveNext();
-                    var source = sourceEnumerator.Current;
-
-                    item.Id.Should().Be(id++);
-                    item.FirstName.Should().Be(source.FirstName);
-                }
-            }
-        }
-
-        [Fact]
-        public void DoNotGeneratePrimaryKeyIfFilled()
-        {
-            using (var korm = CreateTestDatabase())
-            {
-                var dbSet = korm.Query<Person>().AsDbSet();
-
-                var sourcePeople = new List<Person>() {
-                    new Person() { Id = 5,  FirstName = "Milan" },
-                    new Person() { Id = 7, FirstName = "Peter" },
-                    new Person() { Id = 9, FirstName = "Milada" }
-                };
-
-                dbSet.Add(sourcePeople);
-
-                dbSet.CommitChanges();
-
-                var id = 5;
-                foreach (var item in sourcePeople)
-                {
-                    item.Id.Should().Be(id);
-                    id += 2;
-                }
-
-                var people = korm.Query<Person>().OrderBy(p => p.Id);
-
-                var sourceEnumerator = sourcePeople.GetEnumerator();
-                id = 5;
-                foreach (var item in people)
-                {
-                    sourceEnumerator.MoveNext();
-                    var source = sourceEnumerator.Current;
-
-                    item.Id.Should().Be(id);
-                    item.FirstName.Should().Be(source.FirstName);
-                    id += 2;
-                }
-            }
-        }
-
-        [Fact]
-        public void DoNotGeneratePrimaryKeyIfKeyIsNotAutoIncrement()
-        {
-            using (var korm = CreateTestDatabase())
-            {
-                var dbSet = korm.Query<Foo>().AsDbSet();
-
-                var sourcePeople = new List<Foo>() {
-                    new Foo(),
-                    new Foo(),
-                    new Foo(),
-                };
-
-                dbSet.Add(sourcePeople);
-
-                dbSet.CommitChanges();
-
-                sourcePeople.Select(p => p.Id).Should().BeEquivalentTo(new int[] { 0, 0, 0 });
-
-                var people = korm.Query<Person>().AsEnumerable();
-                people.Select(p => p.Id).Should().BeEquivalentTo(new int[] { 0, 0, 0 });
-            }
-        }
-
-        [Fact]
-        public void IteratedThroughItemsOnlyOnceWhenGeneratePrimaryKeys()
-        {
-            using (var korm = CreateTestDatabase())
-            {
-                var dbSet = korm.Query<Person>().AsDbSet();
-
-                var iterationCount = 0;
-                IEnumerable<Person> SourceItems()
-                {
-                    iterationCount++;
-                    yield return new Person() { Id = 5, FirstName = "Milan" };
-                }
-                var sourcePeople = SourceItems();
-
-                dbSet.BulkInsert(sourcePeople);
-
-                iterationCount.Should().Be(1);
             }
         }
 
