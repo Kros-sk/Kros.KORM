@@ -510,14 +510,43 @@ Support two types of generating:
 
 1. Custom
 
-Primary key must be simple `Int32` column. Primary key property in POCO class must be decorated by `Key` attribute and its property `AutoIncrementMethodType` must be set to `Custom`.
+KORM supports 'Int32' and 'Int64' generators. Primary key property in POCO class must be decorated by `Key` attribute
+and its property `AutoIncrementMethodType` must be set to `Custom`.
 
 ```CSharp
-[Key(autoIncrementMethodType: AutoIncrementMethodType.Custom)]
-public int Id { get; set; }
+public class User
+{
+    [Key(autoIncrementMethodType: AutoIncrementMethodType.Custom)]
+    public int Id { get; set; }
+}
 ```
 
-Kros.KORM generates primary key for every inserted record, that does not have value for primary key property. For generating primary keys implementations of [IIdGenerator](https://kros-sk.github.io/Kros.Libs.Documentation/api/Kros.Utils/Kros.Data.IIdGenerator.html) are used.
+Kros.KORM generates primary key for every inserted record, that does not have value for primary key property.
+For generating primary keys implementations of [IIdGenerator](https://kros-sk.github.io/Kros.Libs.Documentation/api/Kros.Utils/Kros.Data.IIdGenerator.html)
+are used.
+
+The names of internal generators are the same as table names, for which the values are generated. But this can be explicitly
+set to some other name. It can be used for example when one generated sequence of numbers need to be used in two tables.
+
+```CSharp
+public class User
+{
+    [Key(autoIncrementMethodType: AutoIncrementMethodType.Custom, generatorName: "CustomGeneratorName")]
+    public int Id { get; set; }
+}
+
+// Or using fluent database configuration.
+
+public class DatabaseConfiguration : DatabaseConfigurationBase
+{
+    public override void OnModelCreating(ModelConfigurationBuilder modelBuilder)
+    {
+        modelBuilder.Entity<User>()
+            .HasPrimaryKey(entity => entity.Id).AutoIncrement(AutoIncrementMethodType.Custom, "CustomGeneratorName");
+    }
+}
+```
+
 
 2. Identity
 

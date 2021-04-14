@@ -454,7 +454,8 @@ namespace Kros.KORM.Query
             if (CanGeneratePrimaryKeys(out ColumnInfo primaryKey))
             {
                 Type dataType = primaryKey.PropertyInfo.PropertyType;
-                using (var generator = _provider.CreateIdGenerator(dataType, _tableInfo.Name, items.Count))
+                string generatorName = primaryKey.AutoIncrementGeneratorName ?? _tableInfo.Name;
+                using (var generator = _provider.CreateIdGenerator(dataType, generatorName, items.Count))
                 {
                     foreach (T item in items)
                     {
@@ -597,7 +598,8 @@ namespace Kros.KORM.Query
                     var batchSize = items is ICollection<T> coll ? coll.Count : defaultBatchSize;
 
                     var idGenerator = CanGeneratePrimaryKeys(out ColumnInfo pkColumn)
-                        ? _provider.CreateIdGenerator(pkColumn.PropertyInfo.PropertyType, _tableInfo.Name, batchSize)
+                        ? _provider.CreateIdGenerator(pkColumn.PropertyInfo.PropertyType,
+                            pkColumn.AutoIncrementGeneratorName ?? _tableInfo.Name, batchSize)
                         : null;
 
                     using (var reader = new KormBulkInsertDataReader<T>(items, _commandGenerator, idGenerator, _tableInfo))

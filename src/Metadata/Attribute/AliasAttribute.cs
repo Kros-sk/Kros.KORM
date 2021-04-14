@@ -14,7 +14,7 @@ namespace Kros.KORM.Metadata.Attribute
         /// </summary>
         /// <param name="alias">The database alias.</param>
         /// <exception cref="ArgumentNullException">The value of <paramref name="alias"/> is <see langword="null"/>.</exception>
-        /// <exception cref="ArgumentException">The value of <paramref name="alias"/> is empty string, or stirng
+        /// <exception cref="ArgumentException">The value of <paramref name="alias"/> is empty string, or string
         /// containing whitespace characters only.</exception>
         public AliasAttribute(string alias)
         {

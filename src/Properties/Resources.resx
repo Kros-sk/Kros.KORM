@@ -170,6 +170,9 @@
   <data name="Error_ConnectionStringNotSet" xml:space="preserve">
     <value>Connection string is not set.</value>
   </data>
+  <data name="Error_GeneratorNameCanBeSetOnlyWithCustomAutoIncrementType" xml:space="preserve">
+    <value>Column '{0}.{1}' has generator name '{2}' and auto increment method type '{3}'. Generator name can be set only when auto increment method type is 'Custom'.</value>
+  </data>
   <data name="Error_KormProviderNotSet" xml:space="preserve">
     <value>KORM provider is not set.</value>
   </data>
