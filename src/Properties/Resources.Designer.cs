@@ -344,9 +344,9 @@ namespace Kros.KORM.Properties {
         /// <summary>
         ///   Looks up a localized string similar to ModelBuilder instance ({0}) does not have method {1}({2})..
         /// </summary>
-        internal static string MissongMethodInModelBuilder {
+        internal static string MissingMethodInModelBuilder {
             get {
-                return ResourceManager.GetString("MissongMethodInModelBuilder", resourceCulture);
+                return ResourceManager.GetString("MissingMethodInModelBuilder", resourceCulture);
             }
         }
         
