@@ -4,6 +4,7 @@ using Kros.KORM.Metadata;
 using Kros.KORM.Metadata.Attribute;
 using Kros.KORM.Query;
 using Kros.KORM.UnitTests.Base;
+using System;
 using Xunit;
 
 namespace Kros.KORM.UnitTests.Integration
@@ -61,6 +62,13 @@ $@"CREATE TABLE [dbo].[{TestTableNameB}] (
             public string Name { get; set; }
         }
 
+        public class PersonInvalid
+        {
+            [Key(autoIncrementMethodType: AutoIncrementMethodType.Identity, generatorName: TestTableNameA)]
+            public int Id { get; set; }
+            public string Name { get; set; }
+        }
+
         private TestDatabase CreateTestDatabase()
         {
             TestDatabase db = CreateDatabase(new[] { CreateTable_A, CreateTable_B });
@@ -81,6 +89,14 @@ $@"CREATE TABLE [dbo].[{TestTableNameB}] (
         }
 
         #endregion
+
+        [Fact]
+        public void GeneratorNameIsAllowedOnlyWithCustomAutoIncrement()
+        {
+            using TestDatabase db = CreateTestDatabase();
+            Action action = () => { IDbSet<PersonInvalid> setA = db.Query<PersonInvalid>().AsDbSet(); };
+            action.Should().Throw<InvalidOperationException>().WithMessage("*Custom*");
+        }
 
         [Fact]
         public void DifferentTablesUseSamePkGenerator_InsertSingleItem()
