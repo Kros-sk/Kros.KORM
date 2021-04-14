@@ -334,8 +334,10 @@ namespace Kros.KORM.Metadata
             var ret = new List<ColumnInfo>();
             if (pkByAttributes.Count == 1)
             {
+                CheckGeneratorName(tableInfo.Name, pkByAttributes[0].Column, pkByAttributes[0].Attribute);
                 ret.Add(pkByAttributes[0].Column);
                 ret[0].AutoIncrementMethodType = pkByAttributes[0].Attribute.AutoIncrementMethodType;
+                ret[0].GeneratorName = pkByAttributes[0].Attribute.GeneratorName;
             }
             else if (pkByAttributes.Count > 1)
             {
@@ -353,6 +355,17 @@ namespace Kros.KORM.Metadata
             }
 
             return ret;
+        }
+
+        private static void CheckGeneratorName(string tableName, ColumnInfo column, KeyAttribute keyInfo)
+        {
+            if (!string.IsNullOrEmpty(keyInfo.GeneratorName)
+                && (keyInfo.AutoIncrementMethodType != AutoIncrementMethodType.Custom))
+            {
+                throw new InvalidOperationException(
+                    string.Format(Resources.Error_GeneratorNameCanBeSetOnlyWithCustomAutoIncrementType,
+                    tableName, column.Name, keyInfo.GeneratorName, keyInfo.AutoIncrementMethodType));
+            }
         }
 
         private static void CheckPrimaryKeyColumns(

@@ -205,6 +205,15 @@ namespace Kros.KORM.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Column &apos;{0}.{1}&apos; has generator name &apos;{2}&apos; and auto increment method type &apos;{3}&apos;. Generator name can be set only when auto increment method type&apos; is &apos;Custom&apos;..
+        /// </summary>
+        internal static string Error_GeneratorNameCanBeSetOnlyWithCustomAutoIncrementType {
+            get {
+                return ResourceManager.GetString("Error_GeneratorNameCanBeSetOnlyWithCustomAutoIncrementType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to KORM provider is not set..
         /// </summary>
         internal static string Error_KormProviderNotSet {
