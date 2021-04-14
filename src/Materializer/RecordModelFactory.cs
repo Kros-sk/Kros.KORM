@@ -1,4 +1,5 @@
-﻿using Kros.KORM.Converter;
+﻿using Kros.Extensions;
+using Kros.KORM.Converter;
 using Kros.KORM.Injection;
 using Kros.KORM.Metadata;
 using System;
@@ -36,6 +37,11 @@ namespace Kros.KORM.Materializer
                 else
                 {
                     ColumnInfo columnInfo = tableInfo.GetColumnInfoByPropertyName(param.Name);
+                    if (columnInfo is null)
+                    {
+                        throw new InvalidOperationException(
+                            Properties.Resources.ConstructorParameterDoesNotMatchProperty.Format(param.Name, type.FullName));
+                    }
                     FromReader(reader, iLGenerator, columnInfo);
                 }
             }

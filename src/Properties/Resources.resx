@@ -155,6 +155,11 @@
   <data name="ConstantIsNotSupported" xml:space="preserve">
     <value>The constant for '{0}' is not supported.</value>
   </data>
+  <data name="ConstructorParameterDoesNotMatchProperty" xml:space="preserve">
+    <value>The constructor parameter '{0}' does not match any property in type '{1}'.</value>
+    <comment>0 - constructor parameter name
+1 - model type</comment>
+  </data>
   <data name="ConverterTypeIsNotIConverter" xml:space="preserve">
     <value>Converter type must implement implement IConverter interface.</value>
   </data>
