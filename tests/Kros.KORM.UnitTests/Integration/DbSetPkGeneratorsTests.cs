@@ -45,6 +45,22 @@ $@"CREATE TABLE [dbo].[{TestTableNameB}] (
             public string Name { get; set; }
         }
 
+        [Alias(TestTableNameA)]
+        public class PersonMain
+        {
+            [Key(autoIncrementMethodType: AutoIncrementMethodType.Custom)]
+            public int IdA { get; set; }
+            public string Name { get; set; }
+        }
+
+        [Alias(TestTableNameB)]
+        public class PersonTemp
+        {
+            [Key(autoIncrementMethodType: AutoIncrementMethodType.Custom, generatorName: TestTableNameA)]
+            public int IdB { get; set; }
+            public string Name { get; set; }
+        }
+
         private TestDatabase CreateTestDatabase()
         {
             TestDatabase db = CreateDatabase(new[] { CreateTable_A, CreateTable_B });
@@ -135,6 +151,36 @@ $@"CREATE TABLE [dbo].[{TestTableNameB}] (
             personB4.Pk.Should().Be(10);
             personB5.Pk.Should().Be(11);
             personB6.Pk.Should().Be(12);
+        }
+
+        [Fact]
+        public void DifferentTablesUseSamePkGenerator_DefaultGeneratorInMainTable()
+        {
+            using TestDatabase db = CreateTestDatabase();
+
+            IDbSet<PersonMain> setMain = db.Query<PersonMain>().AsDbSet();
+            var personMain1 = new PersonMain { Name = "Alice Main" };
+            var personMain2 = new PersonMain { Name = "Bob Main" };
+            var personMain3 = new PersonMain { Name = "Connor Main" };
+
+            IDbSet<PersonTemp> setTemp = db.Query<PersonTemp>().AsDbSet();
+            var personTemp1 = new PersonTemp { Name = "Alice Temp" };
+            var personTemp2 = new PersonTemp { Name = "Bob Temp" };
+            var personTemp3 = new PersonTemp { Name = "Connor Temp" };
+
+            InsertItems(setMain, personMain1);
+            InsertItems(setTemp, personTemp1);
+            InsertItems(setMain, personMain2);
+            InsertItems(setTemp, personTemp2);
+            InsertItems(setMain, personMain3);
+            InsertItems(setTemp, personTemp3);
+
+            personMain1.IdA.Should().Be(1);
+            personMain2.IdA.Should().Be(3);
+            personMain3.IdA.Should().Be(5);
+            personTemp1.IdB.Should().Be(2);
+            personTemp2.IdB.Should().Be(4);
+            personTemp3.IdB.Should().Be(6);
         }
     }
 }
