@@ -30,7 +30,7 @@ $@"CREATE TABLE [dbo].[{TestTableNameB}] (
 ) ON [PRIMARY];";
 
         [Alias(TestTableNameA)]
-        public class PersonA
+        private class PersonA
         {
             [Key(autoIncrementMethodType: AutoIncrementMethodType.Custom, generatorName: AbGenerator)]
             public int IdA { get; set; }
@@ -38,7 +38,7 @@ $@"CREATE TABLE [dbo].[{TestTableNameB}] (
         }
 
         [Alias(TestTableNameB)]
-        public class PersonB
+        private class PersonB
         {
             [Alias("IdB")]
             [Key(autoIncrementMethodType: AutoIncrementMethodType.Custom, generatorName: AbGenerator)]
@@ -47,7 +47,7 @@ $@"CREATE TABLE [dbo].[{TestTableNameB}] (
         }
 
         [Alias(TestTableNameA)]
-        public class PersonMain
+        private class PersonMain
         {
             [Key(autoIncrementMethodType: AutoIncrementMethodType.Custom)]
             public int IdA { get; set; }
@@ -55,14 +55,20 @@ $@"CREATE TABLE [dbo].[{TestTableNameB}] (
         }
 
         [Alias(TestTableNameB)]
-        public class PersonTemp
+        private class PersonTemp
         {
             [Key(autoIncrementMethodType: AutoIncrementMethodType.Custom, generatorName: TestTableNameA)]
             public int IdB { get; set; }
             public string Name { get; set; }
         }
 
-        public class PersonInvalid
+        private class PersonDbConfig
+        {
+            public int IdA { get; set; }
+            public string Name { get; set; }
+        }
+
+        private class PersonInvalid
         {
             [Key(autoIncrementMethodType: AutoIncrementMethodType.Identity, generatorName: TestTableNameA)]
             public int Id { get; set; }
@@ -77,6 +83,25 @@ $@"CREATE TABLE [dbo].[{TestTableNameB}] (
                 idGenerator.InitDatabaseForIdGenerator();
             }
             return db;
+        }
+
+        private static IDatabase CreateDatabaseWithConfiguration(TestDatabase sourceDb)
+        {
+            IDatabase db = Database.Builder
+                .UseConnection(sourceDb.ConnectionString)
+                .UseDatabaseConfiguration<DatabaseConfiguration>()
+                .Build();
+            return db;
+        }
+
+        private const string ConfiguredGeneratorName = "LoremIpsum";
+
+        private class DatabaseConfiguration : DatabaseConfigurationBase
+        {
+            public override void OnModelCreating(ModelConfigurationBuilder modelBuilder)
+                => modelBuilder.Entity<PersonDbConfig>()
+                    .HasTableName(TestTableNameA)
+                    .HasPrimaryKey(entity => entity.IdA).AutoIncrement(AutoIncrementMethodType.Custom, ConfiguredGeneratorName);
         }
 
         private static void InsertItems<T>(IDbSet<T> set, params T[] items)
@@ -96,6 +121,38 @@ $@"CREATE TABLE [dbo].[{TestTableNameB}] (
             using TestDatabase db = CreateTestDatabase();
             Action action = () => { IDbSet<PersonInvalid> setA = db.Query<PersonInvalid>().AsDbSet(); };
             action.Should().Throw<InvalidOperationException>().WithMessage("*Custom*");
+        }
+
+        [Fact]
+        public void UseExplicitGeneratorWithDatabaseConfiguration()
+        {
+            using TestDatabase testDb = CreateTestDatabase();
+            using IDatabase db = CreateDatabaseWithConfiguration(testDb);
+
+            object GetGenerator()
+            {
+                using (var cmd = testDb.Connection.CreateCommand())
+                {
+                    testDb.Connection.Open();
+                    cmd.CommandText = $"SELECT 1 FROM [idStore] WHERE [TableName] = '{ConfiguredGeneratorName}'";
+                    object result = cmd.ExecuteScalar();
+                    testDb.Connection.Close();
+                    return result;
+                }
+            }
+
+            object generatorInDb = GetGenerator();
+            generatorInDb.Should().BeNull();
+
+            IDbSet<PersonDbConfig> set = db.Query<PersonDbConfig>().AsDbSet();
+            var person = new PersonDbConfig { Name = "Alice" };
+            set.Add(person);
+            set.CommitChanges();
+
+            person.IdA.Should().Be(1);
+
+            generatorInDb = GetGenerator();
+            generatorInDb.Should().NotBeNull();
         }
 
         [Fact]

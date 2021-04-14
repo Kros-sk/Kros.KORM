@@ -186,6 +186,7 @@ namespace Kros.KORM.Metadata
                 ColumnInfo columnInfo = tableInfo.GetColumnInfoByPropertyName(entity.PrimaryKeyPropertyName);
                 columnInfo.IsPrimaryKey = true;
                 columnInfo.AutoIncrementMethodType = entity.PrimaryKeyAutoIncrementType;
+                columnInfo.AutoIncrementGeneratorName = entity.PrimaryKeyGeneratorName;
             }
             else
             {
@@ -337,7 +338,7 @@ namespace Kros.KORM.Metadata
                 CheckGeneratorName(tableInfo.Name, pkByAttributes[0].Column, pkByAttributes[0].Attribute);
                 ret.Add(pkByAttributes[0].Column);
                 ret[0].AutoIncrementMethodType = pkByAttributes[0].Attribute.AutoIncrementMethodType;
-                ret[0].GeneratorName = pkByAttributes[0].Attribute.GeneratorName;
+                ret[0].AutoIncrementGeneratorName = pkByAttributes[0].Attribute.GeneratorName;
             }
             else if (pkByAttributes.Count > 1)
             {
@@ -467,11 +468,15 @@ namespace Kros.KORM.Metadata
 
         void IModelMapperInternal.SetInjector<TEntity>(IInjector injector) => GetEntity<TEntity>().Injector = injector;
 
-        void IModelMapperInternal.SetPrimaryKey<TEntity>(string propertyName, AutoIncrementMethodType autoIncrementType)
+        void IModelMapperInternal.SetPrimaryKey<TEntity>(
+            string propertyName,
+            AutoIncrementMethodType autoIncrementType,
+            string generatorName)
         {
             EntityMapper entity = GetEntity<TEntity>();
             entity.PrimaryKeyPropertyName = propertyName;
             entity.PrimaryKeyAutoIncrementType = autoIncrementType;
+            entity.PrimaryKeyGeneratorName = generatorName;
         }
 
         void IModelMapperInternal.SetQueryFilter(string tableName, Expression queryFilter)

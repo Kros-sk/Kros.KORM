@@ -75,7 +75,7 @@ namespace Kros.KORM.Metadata
         /// <summary>
         /// Name of the generator. If not set, table name will be used.
         /// </summary>
-        public string GeneratorName { get; set; }
+        public string AutoIncrementGeneratorName { get; set; }
 
         /// <summary>
         /// Type of primary key auto increment method.

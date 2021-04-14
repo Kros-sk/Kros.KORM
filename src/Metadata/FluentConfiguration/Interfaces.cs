@@ -93,6 +93,15 @@ namespace Kros.KORM.Metadata
         /// <returns>Returns builder for additional configuration of the entity.</returns>
         IEntityTypeConvertersBuilder<TEntity> AutoIncrement(
             AutoIncrementMethodType autoIncrementType = AutoIncrementMethodType.Identity);
+
+        /// <summary>
+        /// Configures auto-increment type of primary key. If
+        /// </summary>
+        /// <param name="autoIncrementType">Auto-increment type of the primary key. If called without specifying the value,
+        /// <see cref="AutoIncrementMethodType">AutoIncrementMethodType.Identity</see> will be used.</param>
+        /// <param name="generatorName">Name of the ID generator for column.</param>
+        /// <returns>Returns builder for additional configuration of the entity.</returns>
+        IEntityTypeConvertersBuilder<TEntity> AutoIncrement(AutoIncrementMethodType autoIncrementType, string generatorName);
     }
 
     /// <summary>
@@ -233,6 +242,6 @@ namespace Kros.KORM.Metadata
         /// <remarks>
         /// This filter will be used for all entity over this table.
         /// </remarks>
-        void UseQueryFilter<TEntity>(Expression<Func<TEntity, bool>> queryFilter) where TEntity: class;
+        void UseQueryFilter<TEntity>(Expression<Func<TEntity, bool>> queryFilter) where TEntity : class;
     }
 }
