@@ -150,6 +150,22 @@ namespace Kros.KORM.UnitTests.Materializer
             bar.Value.Should().Be(value);
         }
 
+        [Fact()]
+        public void ShouldThrowInvalidOperationExceptionWhenCtorParameterDoesNotMatchProperty()
+        {
+            IDataReader data = DataBuilder.Create(("Id", typeof(long)))
+                .AddRow((long)22)
+                .Build();
+
+            Action action = () =>
+            {
+                Func<IDataReader, FooWithDifferentPropertiesAsCtorParams> factory
+                    = GetFactory<FooWithDifferentPropertiesAsCtorParams>(data);
+            };
+
+            action.Should().Throw<InvalidOperationException>().WithMessage("*'name'*'FooWithDifferentPropertiesAsCtorParams'*");
+        }
+
         public record FooWithDifferentPropertyNames(int Id, [property: Alias("FirstName")] string Name, double Salary);
 
         public record FooWithDifferentTypes(int Id, string Name, double Age, decimal? Salary, DateTime DayOfBirth,
@@ -167,6 +183,19 @@ namespace Kros.KORM.UnitTests.Materializer
 
             public void OnAfterMaterialize(IDataRecord source)
                 => Value = source.GetInt32(source.GetOrdinal("Value"));
+        }
+
+        public class FooWithDifferentPropertiesAsCtorParams
+        {
+            private string _name;
+
+            public FooWithDifferentPropertiesAsCtorParams(long id, string name)
+            {
+                Id = id;
+                _name = name;
+            }
+
+            public long Id { get; set; }
         }
 
         public interface IService

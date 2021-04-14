@@ -169,6 +169,15 @@ namespace Kros.KORM.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The constructor parameter &apos;{0}&apos; does not match any property in type &apos;{1}&apos;..
+        /// </summary>
+        internal static string ConstructorParameterDoesNotMatchProperty {
+            get {
+                return ResourceManager.GetString("ConstructorParameterDoesNotMatchProperty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Converter type must implement implement IConverter interface..
         /// </summary>
         internal static string ConverterTypeIsNotIConverter {
