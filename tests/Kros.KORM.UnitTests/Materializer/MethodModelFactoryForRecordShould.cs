@@ -163,7 +163,9 @@ namespace Kros.KORM.UnitTests.Materializer
                     = GetFactory<FooWithDifferentPropertiesAsCtorParams>(data);
             };
 
-            action.Should().Throw<InvalidOperationException>().WithMessage("*'name'*'FooWithDifferentPropertiesAsCtorParams'*");
+            action.Should()
+                .Throw<InvalidOperationException>()
+                .WithMessage($"*'name'*'{typeof(FooWithDifferentPropertiesAsCtorParams).FullName}'*");
         }
 
         public record FooWithDifferentPropertyNames(int Id, [property: Alias("FirstName")] string Name, double Salary);
