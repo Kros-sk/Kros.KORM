@@ -550,8 +550,8 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
             yield return new object[] { (Expression<Func<Person, bool>>)(p => (p.IsDeleted == false) || !p.IsDeleted), 1 };
             yield return new object[] { (Expression<Func<Person, bool>>)(p => p.IsDeleted || (p.IsDeleted == true)), 2 };
             yield return new object[] { (Expression<Func<Person, bool>>)(p => !p.IsDeleted && (p.IsDeleted == false)), 1 };
-            yield return new object[] { (Expression<Func<Person, bool>>)(p => (false == p.IsDeleted) && !p.IsDeleted), 1 };
-            yield return new object[] { (Expression<Func<Person, bool>>)(p => (true == p.IsDeleted) && p.IsDeleted), 2 };
+            yield return new object[] { (Expression<Func<Person, bool>>)(p => (p.IsDeleted == false) && !p.IsDeleted), 1 };
+            yield return new object[] { (Expression<Func<Person, bool>>)(p => (p.IsDeleted == true) && p.IsDeleted), 2 };
         }
 
         private void DeleteDataCore()
