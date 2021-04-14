@@ -40,7 +40,7 @@ namespace Kros.KORM.Materializer
                     if (columnInfo is null)
                     {
                         throw new InvalidOperationException(
-                            Properties.Resources.ConstructorParameterDoesNotMatchProperty.Format(param.Name, type.Name));
+                            Properties.Resources.ConstructorParameterDoesNotMatchProperty.Format(param.Name, type.FullName));
                     }
                     FromReader(reader, iLGenerator, columnInfo);
                 }
