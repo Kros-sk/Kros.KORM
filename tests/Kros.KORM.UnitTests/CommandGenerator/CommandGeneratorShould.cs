@@ -36,7 +36,7 @@ namespace Kros.KORM.UnitTests.CommandGenerator
         [Fact]
         public void HaveCorrectInsertCommandTextWhenTableHaveIdentityPrimaryKey()
         {
-            const string expectedQuery = "INSERT INTO [FooIdentity] ([Salary]) OUTPUT INSERTED.IdRow VALUES (@Salary)";
+            const string expectedQuery = "DECLARE @OutputTable TABLE (IdRow int); INSERT INTO [FooIdentity] ([Salary]) OUTPUT INSERTED.IdRow INTO @OutputTable VALUES (@Salary); SELECT * FROM @OutputTable;";
 
             DbCommand insert = GetFooIdentityGenerator().GetInsertCommand();
 
