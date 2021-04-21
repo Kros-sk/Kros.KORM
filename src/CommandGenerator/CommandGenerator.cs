@@ -21,7 +21,10 @@ namespace Kros.KORM.CommandGenerator
     {
         #region Constants
 
-        private const string INSERT_QUERY_WITH_OUTPUT = "DECLARE @OutputTable TABLE ({0}); INSERT INTO [{1}] ({2}){3} INTO @OutputTable VALUES ({4}); SELECT * FROM @OutputTable;";
+        private const string INSERT_QUERY_WITH_OUTPUT =
+@"DECLARE @OutputTable TABLE ({0});
+INSERT INTO [{1}] ({2}){3} INTO @OutputTable VALUES ({4});
+SELECT * FROM @OutputTable;";
         private const string INSERT_QUERY_BASE = "INSERT INTO [{0}] ({1}) VALUES ({2})";
         private const string UPDATE_QUERY_BASE = "UPDATE [{0}] SET {1} WHERE {2}";
         private const string UPSERT_QUERY_BASE = "MERGE INTO [{0}] dst USING(SELECT {1}) src ON {2} {3}{4};";
@@ -379,7 +382,7 @@ namespace Kros.KORM.CommandGenerator
 
         private string GetOutputStatementDefinition()
             => _tableInfo.HasIdentityPrimaryKey
-            ? $"{_tableInfo.IdentityPrimaryKey.Name} {_tableInfo.IdentityPrimaryKeySqlType}"
+            ? _tableInfo.IdentityPrimaryKey.Name + " " + _tableInfo.IdentityPrimaryKeySqlType
             : string.Empty;
 
         private string GetUpdateCommandText(IEnumerable<ColumnInfo> columns)

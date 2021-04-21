@@ -112,7 +112,7 @@ namespace Kros.KORM.Metadata
         public Expression  QueryFilter { get; set; }
 
         /// <summary>
-        /// Gets primary key sql data type.
+        /// Gets primary key SQL data type.
         /// </summary>
         public string IdentityPrimaryKeySqlType
         {
