@@ -127,7 +127,7 @@ namespace Kros.KORM.Metadata
                     else if (IdentityPrimaryKey.PropertyInfo.PropertyType == typeof(int))
                     {
                         return "int";
-                    };
+                    }
                 }
                 return string.Empty;
             }
