@@ -251,7 +251,6 @@ END";
             dbSet.CommitChanges();
             dbSet.Clear();
 
-
             item1.Age = item1.Id * 200;
             item2.Age = item2.Id * 200;
             item1.AutoValue = item1.Age / 2;
