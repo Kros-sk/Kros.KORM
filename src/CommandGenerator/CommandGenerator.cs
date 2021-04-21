@@ -21,7 +21,11 @@ namespace Kros.KORM.CommandGenerator
     {
         #region Constants
 
-        private const string INSERT_QUERY_BASE = "INSERT INTO [{0}] ({1}){2} VALUES ({3})";
+        private const string INSERT_QUERY_WITH_OUTPUT =
+@"DECLARE @OutputTable TABLE ({0});
+INSERT INTO [{1}] ({2}){3} INTO @OutputTable VALUES ({4});
+SELECT * FROM @OutputTable;";
+        private const string INSERT_QUERY_BASE = "INSERT INTO [{0}] ({1}) VALUES ({2})";
         private const string UPDATE_QUERY_BASE = "UPDATE [{0}] SET {1} WHERE {2}";
         private const string UPSERT_QUERY_BASE = "MERGE INTO [{0}] dst USING(SELECT {1}) src ON {2} {3}{4};";
         private const string UPSERT_QUERY_UPDATE_PART = "WHEN MATCHED THEN UPDATE SET {0} ";
@@ -41,6 +45,7 @@ namespace Kros.KORM.CommandGenerator
         private List<ColumnInfo> _columnsInfo = null;
         private int _maxParametersForDeleteCommandsInPart = DEFAULT_MAX_PARAMETERS_FOR_DELETE_COMMANDS_IN_PART;
         private readonly Lazy<string> _outputStatement;
+        private readonly Lazy<string> _outputStatementDefinition;
 
         #endregion
 
@@ -75,6 +80,7 @@ namespace Kros.KORM.CommandGenerator
             _provider = provider;
             _query = query;
             _outputStatement = new Lazy<string>(() => GetOutputStatement());
+            _outputStatementDefinition = new Lazy<string>(() => GetOutputStatementDefinition());
         }
 
         #endregion
@@ -350,16 +356,33 @@ namespace Kros.KORM.CommandGenerator
                 paramValues.AppendFormat("@{0}", column.Name);
             }
 
-            return string.Format(INSERT_QUERY_BASE,
-                _tableInfo.Name,
-                paramNames.ToString(),
-                _outputStatement.Value,
-                paramValues.ToString());
+            return _tableInfo.HasIdentityPrimaryKey
+                ? GetInsertCommandTextWithOutput(paramNames.ToString(), paramValues.ToString())
+                : GetInsertCommandText(paramNames.ToString(), paramValues.ToString());
         }
+
+        private string GetInsertCommandTextWithOutput(string paramNames, string paramValues)
+            => string.Format(INSERT_QUERY_WITH_OUTPUT,
+                _outputStatementDefinition.Value,
+               _tableInfo.Name,
+               paramNames,
+               _outputStatement.Value,
+               paramValues);
+
+        private string GetInsertCommandText(string paramNames, string paramValues)
+            => string.Format(INSERT_QUERY_BASE,
+               _tableInfo.Name,
+               paramNames,
+               paramValues);
 
         private string GetOutputStatement()
             => _tableInfo.HasIdentityPrimaryKey
             ? string.Format(OutputStatement, _tableInfo.IdentityPrimaryKey.Name)
+            : string.Empty;
+
+        private string GetOutputStatementDefinition()
+            => _tableInfo.HasIdentityPrimaryKey
+            ? _tableInfo.IdentityPrimaryKey.Name + " " + _tableInfo.IdentityPrimaryKeySqlType
             : string.Empty;
 
         private string GetUpdateCommandText(IEnumerable<ColumnInfo> columns)

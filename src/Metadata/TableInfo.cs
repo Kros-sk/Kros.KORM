@@ -111,6 +111,28 @@ namespace Kros.KORM.Metadata
         /// </summary>
         public Expression  QueryFilter { get; set; }
 
+        /// <summary>
+        /// Gets primary key SQL data type.
+        /// </summary>
+        public string IdentityPrimaryKeySqlType
+        {
+            get
+            {
+                if (IdentityPrimaryKey is not null)
+                {
+                    if (IdentityPrimaryKey.PropertyInfo.PropertyType == typeof(long))
+                    {
+                        return "bigint";
+                    }
+                    else if (IdentityPrimaryKey.PropertyInfo.PropertyType == typeof(int))
+                    {
+                        return "int";
+                    }
+                }
+                return string.Empty;
+            }
+        }
+
         #endregion
 
         #region Public Methods
