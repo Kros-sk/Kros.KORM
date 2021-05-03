@@ -1,5 +1,6 @@
 ﻿using Kros.Extensions;
 using Kros.KORM.Converter;
+using Kros.KORM.Data;
 using Kros.KORM.Injection;
 using Kros.KORM.Metadata;
 using System;
@@ -29,11 +30,15 @@ namespace Kros.KORM.Materializer
         private readonly static MethodInfo _fnInjectorMethodInfo =
             typeof(IInjector).GetMethod(nameof(IInjector.GetValue), new Type[] { typeof(string) });
 
-        public static ILGenerator CallReaderMethod(this ILGenerator iLGenerator, int fieldIndex, MethodInfo methodInfo)
+        public static ILGenerator CallReaderMethod(
+            this ILGenerator iLGenerator,
+            int fieldIndex,
+            MethodInfo methodInfo,
+            bool asVirtual = true)
         {
             iLGenerator.Emit(OpCodes.Ldarg_0);
             iLGenerator.Emit(OpCodes.Ldc_I4, fieldIndex);
-            iLGenerator.Emit(OpCodes.Callvirt, methodInfo);
+            iLGenerator.Emit(asVirtual ? OpCodes.Callvirt : OpCodes.Call, methodInfo);
 
             return iLGenerator;
         }
@@ -51,8 +56,12 @@ namespace Kros.KORM.Materializer
             return truePart;
         }
 
-        public static MethodInfo GetReaderValueGetter(this Type srcType)
-            => _readerValueGetters.ContainsKey(srcType.Name) ? _readerValueGetters[srcType.Name] : null;
+        public static MethodInfo GetReaderValueGetter(this Type srcType, bool isNullable = false)
+        {
+            string name = isNullable ? GetNullableName(srcType.Name) : srcType.Name;
+
+            return _readerValueGetters.ContainsKey(name) ? _readerValueGetters[name] : null;
+        }
 
         public static void CallReaderGetValueWithoutConverter(
             this ILGenerator iLGenerator,
@@ -60,18 +69,18 @@ namespace Kros.KORM.Materializer
             ColumnInfo columnInfo,
             Type srcType)
         {
-            MethodInfo valuegetter = srcType.GetReaderValueGetter();
+            MethodInfo valuegetter = srcType.GetReaderValueGetter(columnInfo.IsNullable);
 
             bool castNeeded;
             if (valuegetter != null
-                && valuegetter.ReturnType == srcType
                 && (valuegetter.ReturnType == columnInfo.PropertyInfo.PropertyType
                 || valuegetter.ReturnType == Nullable.GetUnderlyingType(columnInfo.PropertyInfo.PropertyType)))
             {
                 castNeeded = false;
             }
-            else if ((srcType == columnInfo.PropertyInfo.PropertyType)
-                || (srcType == Nullable.GetUnderlyingType(columnInfo.PropertyInfo.PropertyType)))
+            else if (valuegetter is null
+                && ((srcType == columnInfo.PropertyInfo.PropertyType)
+                || (srcType == Nullable.GetUnderlyingType(columnInfo.PropertyInfo.PropertyType))))
             {
                 valuegetter = _getValueMethodInfo;
                 castNeeded = true;
@@ -81,21 +90,11 @@ namespace Kros.KORM.Materializer
                 throw new InvalidOperationException(
                     Properties.Resources.CannotMaterializeSourceValue.Format(srcType, columnInfo.PropertyInfo.PropertyType));
             }
-
-            iLGenerator.CallReaderMethod(fieldIndex, valuegetter);
+            iLGenerator.CallReaderMethod(fieldIndex, valuegetter, !columnInfo.IsNullable || castNeeded);
 
             if (castNeeded)
             {
                 EmitCastValue(iLGenerator, columnInfo, srcType);
-            }
-            else
-            {
-                if (Nullable.GetUnderlyingType(columnInfo.PropertyInfo.PropertyType) != null)
-                {
-                    iLGenerator.Emit(OpCodes.Newobj,
-                        columnInfo.PropertyInfo.PropertyType.GetConstructor(
-                            new Type[] { Nullable.GetUnderlyingType(columnInfo.PropertyInfo.PropertyType) }));
-                }
             }
         }
 
@@ -176,8 +175,15 @@ namespace Kros.KORM.Materializer
             MethodInfo CreateReaderValueGetter(string typeName)
                 => typeof(IDataRecord).GetMethod($"Get{typeName}", new Type[] { typeof(int) });
 
+            MethodInfo CreateReaderNullableValueGetter(string typeName)
+                => typeof(DataReaderExtensions).GetMethod($"GetNullable{typeName}", new Type[] { typeof(IDataReader), typeof(int) });
+
             void Add<T>()
-                => getters.Add(typeof(T).Name, CreateReaderValueGetter(typeof(T).Name));
+            {
+                string name = typeof(T).Name;
+                getters.Add(name, CreateReaderValueGetter(name));
+                getters.Add(GetNullableName(name), CreateReaderNullableValueGetter(name));
+            }
 
             Add<bool>();
             Add<byte>();
@@ -193,9 +199,13 @@ namespace Kros.KORM.Materializer
             Add<string>();
 
             getters.Add(nameof(Single), CreateReaderValueGetter("Float"));
+            getters.Add(GetNullableName(nameof(Single)), CreateReaderNullableValueGetter("Float"));
 
             return getters;
         }
+
+        private static string GetNullableName(string name)
+            => $"Nullable{name}";
 
         private static int GetInjectorIndex(IInjector injector)
         {
