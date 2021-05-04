@@ -10,7 +10,6 @@ namespace Kros.KORM.Metadata
     public class ColumnInfo
     {
         private PropertyInfo _propertyInfo;
-        private object _defaultValue;
 
         /// <summary>
         /// Column name.
@@ -26,14 +25,14 @@ namespace Kros.KORM.Metadata
             set
             {
                 _propertyInfo = value;
-                _defaultValue = null;
+                DefaultValue = null;
                 if (_propertyInfo is not null)
                 {
                     IsNullable = Nullable.GetUnderlyingType(PropertyInfo.PropertyType) != null;
-                }
-                if (_propertyInfo is not null && _propertyInfo.PropertyType.IsValueType)
-                {
-                    _defaultValue = Activator.CreateInstance(PropertyInfo.PropertyType);
+                    if (_propertyInfo.PropertyType.IsValueType)
+                    {
+                        DefaultValue = Activator.CreateInstance(PropertyInfo.PropertyType);
+                    }
                 }
             }
         }
@@ -41,7 +40,7 @@ namespace Kros.KORM.Metadata
         /// <summary>
         /// Default value for the data type of the column.
         /// </summary>
-        public object DefaultValue => _defaultValue;
+        public object DefaultValue { get; private set; }
 
         /// <summary>
         /// Checks if <paramref name="value"/> is default value of the column.
