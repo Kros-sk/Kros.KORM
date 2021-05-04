@@ -1,4 +1,5 @@
-﻿using Kros.Utils;
+﻿using Kros.KORM.Properties;
+using Kros.Utils;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -19,7 +20,6 @@ namespace Kros.KORM.Data
 
         private class Transaction : ITransaction
         {
-            private readonly TransactionHelper _transactionHelper;
             private readonly DbConnection _connection;
             private readonly bool _closeConnection;
             private readonly Lazy<DbTransaction> _transaction;
