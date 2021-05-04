@@ -25,6 +25,7 @@ namespace Kros.KORM.Metadata
             set
             {
                 _propertyInfo = value;
+                IsNullable = false;
                 DefaultValue = null;
                 if (_propertyInfo is not null)
                 {
