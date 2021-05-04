@@ -272,7 +272,8 @@ namespace Kros.KORM.UnitTests.Query
                     new SqlServerSqlExpressionVisitorFactory(mapper),
                     Substitute.For<IModelBuilder>(),
                     new Logger(),
-                    Substitute.For<IDatabaseMapper>()));
+                    Substitute.For<IDatabaseMapper>(),
+                    null));
 
             return query;
         }

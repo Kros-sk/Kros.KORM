@@ -27,7 +27,8 @@ namespace Kros.KORM.Query
                 new SqlServerSqlExpressionVisitorFactory(databaseMapper),
                 modelBuilder,
                 new Logger(),
-                databaseMapper);
+                databaseMapper,
+                null);
 
         /// <summary>
         /// Creates the SqlServer query provider.
@@ -47,7 +48,8 @@ namespace Kros.KORM.Query
                 new SqlServerSqlExpressionVisitorFactory(databaseMapper),
                 modelBuilder,
                 new Logger(),
-                databaseMapper);
+                databaseMapper,
+                null);
 
         /// <summary>
         /// Registers instance of this type to <see cref="QueryProviderFactories"/>.

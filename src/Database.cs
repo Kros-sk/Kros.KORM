@@ -60,7 +60,13 @@ namespace Kros.KORM
         /// <summary>
         /// Builder for creating <see cref="IDatabase"/> instance.
         /// </summary>
+        [Obsolete("Use CreateBuilder method.")]
         public static IDatabaseBuilder Builder => new DatabaseBuilder();
+
+        /// <summary>
+        /// Creates a builder for creating <see cref="IDatabase"/> instance.
+        /// </summary>
+        public static IDatabaseBuilder CreateBuilder() => new DatabaseBuilder();
 
         #endregion
 
