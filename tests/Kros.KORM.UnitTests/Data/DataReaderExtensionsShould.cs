@@ -44,12 +44,12 @@ namespace Kros.KORM.UnitTests.Data
         }
 
         [Theory]
-        [InlineData("5.4.2021")]
-        [InlineData("6.3.2020")]
+        [InlineData("2021-04-05")]
+        [InlineData("2020-03-06")]
         [InlineData(null)]
         public void GetNullableDateTime(string value)
         {
-            DateTime? dateTime = value.IsNullOrEmpty() ? null : DateTime.Parse(value);
+            DateTime? dateTime = value.IsNullOrEmpty() ? null : value.ParseDateTime();
             InMemoryDataReader dataReader = CreateReader(dateTime);
 
             dataReader.GetNullableDateTime(0).Should().Be(dateTime);

@@ -11,7 +11,6 @@ namespace Kros.KORM.Metadata
     {
         private PropertyInfo _propertyInfo;
         private object _defaultValue;
-        private bool? _isNullable = null;
 
         /// <summary>
         /// Column name.
@@ -28,6 +27,10 @@ namespace Kros.KORM.Metadata
             {
                 _propertyInfo = value;
                 _defaultValue = null;
+                if (_propertyInfo is not null)
+                {
+                    IsNullable = Nullable.GetUnderlyingType(PropertyInfo.PropertyType) != null;
+                }
                 if (_propertyInfo is not null && _propertyInfo.PropertyType.IsValueType)
                 {
                     _defaultValue = Activator.CreateInstance(PropertyInfo.PropertyType);
@@ -102,17 +105,6 @@ namespace Kros.KORM.Metadata
         /// <summary>
         /// Gets a value indicating whether property has nullable type.
         /// </summary>
-        public bool IsNullable
-        {
-            get
-            {
-                if (!_isNullable.HasValue)
-                {
-                    _isNullable = Nullable.GetUnderlyingType(PropertyInfo.PropertyType) != null;
-                }
-
-                return _isNullable.Value;
-            }
-        }
+        public bool IsNullable { get; private set; }
     }
 }

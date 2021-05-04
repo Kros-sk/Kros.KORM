@@ -33,12 +33,11 @@ namespace Kros.KORM.Materializer
         public static ILGenerator CallReaderMethod(
             this ILGenerator iLGenerator,
             int fieldIndex,
-            MethodInfo methodInfo,
-            bool asVirtual = true)
+            MethodInfo methodInfo)
         {
             iLGenerator.Emit(OpCodes.Ldarg_0);
             iLGenerator.Emit(OpCodes.Ldc_I4, fieldIndex);
-            iLGenerator.Emit(asVirtual ? OpCodes.Callvirt : OpCodes.Call, methodInfo);
+            iLGenerator.Emit(methodInfo.IsVirtual ? OpCodes.Callvirt : OpCodes.Call, methodInfo);
 
             return iLGenerator;
         }
@@ -90,7 +89,7 @@ namespace Kros.KORM.Materializer
                 throw new InvalidOperationException(
                     Properties.Resources.CannotMaterializeSourceValue.Format(srcType, columnInfo.PropertyInfo.PropertyType));
             }
-            iLGenerator.CallReaderMethod(fieldIndex, valuegetter, !columnInfo.IsNullable || castNeeded);
+            iLGenerator.CallReaderMethod(fieldIndex, valuegetter);
 
             if (castNeeded)
             {
