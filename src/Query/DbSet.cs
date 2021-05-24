@@ -112,6 +112,14 @@ namespace Kros.KORM.Query
         }
 
         /// <summary>
+        /// Adds the items to the context underlying the set in the Upserted state such that it will be updated or
+        /// inserted in the database when CommitChanges is called.
+        /// </summary>
+        /// <param name="entities">Items to add.</param>
+        public void Upsert(IEnumerable<T> entities)
+            => entities.ForEach(e => Upsert(e));
+
+        /// <summary>
         /// Adds the item to the context underlying the set in the Deleted state such that it will be deleted
         /// from the database when CommitChanges is called.
         /// </summary>
@@ -443,15 +451,16 @@ namespace Kros.KORM.Query
 
         private void GenerateCustomPrimaryKeys(HashSet<T> items)
         {
-            if (CanGeneratePrimaryKeys())
+            if (CanGeneratePrimaryKeys(out ColumnInfo primaryKey))
             {
-                var primaryKey = _tableInfo.PrimaryKey.Single(p => p.AutoIncrementMethodType == AutoIncrementMethodType.Custom);
-
-                using (var generator = _provider.CreateIdGenerator(_tableInfo.Name, items.Count))
+                Type dataType = primaryKey.PropertyInfo.PropertyType;
+                string generatorName = primaryKey.AutoIncrementGeneratorName ?? _tableInfo.Name;
+                using (var generator = _provider.CreateIdGenerator(dataType, generatorName, items.Count))
                 {
                     foreach (T item in items)
                     {
-                        if ((int)primaryKey.GetValue(item) == 0)
+                        var currentValue = primaryKey.GetValue(item);
+                        if (primaryKey.IsDefaultValue(currentValue))
                         {
                             primaryKey.SetValue(item, generator.GetNext());
                         }
@@ -460,8 +469,20 @@ namespace Kros.KORM.Query
             }
         }
 
-        private bool CanGeneratePrimaryKeys() =>
-            _tableInfo.PrimaryKey.Count(p => p.AutoIncrementMethodType == AutoIncrementMethodType.Custom) == 1;
+        private bool CanGeneratePrimaryKeys(out ColumnInfo pkColumn)
+        {
+            var pkColumns = _tableInfo.PrimaryKey
+                .Where(p => p.AutoIncrementMethodType == AutoIncrementMethodType.Custom)
+                .ToList();
+
+            if (pkColumns.Count == 1)
+            {
+                pkColumn = pkColumns[0];
+                return true;
+            }
+            pkColumn = null;
+            return false;
+        }
 
         private async Task CommitChangesEditedItemsAsync(
             HashSet<T> items,
@@ -576,8 +597,9 @@ namespace Kros.KORM.Query
                     const int defaultBatchSize = 100;
                     var batchSize = items is ICollection<T> coll ? coll.Count : defaultBatchSize;
 
-                    var idGenerator = CanGeneratePrimaryKeys()
-                        ? _provider.CreateIdGenerator(_tableInfo.Name, batchSize)
+                    var idGenerator = CanGeneratePrimaryKeys(out ColumnInfo pkColumn)
+                        ? _provider.CreateIdGenerator(pkColumn.PropertyInfo.PropertyType,
+                            pkColumn.AutoIncrementGeneratorName ?? _tableInfo.Name, batchSize)
                         : null;
 
                     using (var reader = new KormBulkInsertDataReader<T>(items, _commandGenerator, idGenerator, _tableInfo))

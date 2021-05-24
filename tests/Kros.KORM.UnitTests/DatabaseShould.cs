@@ -51,7 +51,7 @@ namespace Kros.KORM.UnitTests
             using (var testHelper = new SqlServerTestHelper(IntegrationTestConfig.ConnectionString, dbName))
             using (IDatabase database = new Database(testHelper.Connection))
             {
-                SqlServerIdGeneratorFactory.Register();
+                SqlServerIntIdGeneratorFactory.Register();
                 database.InitDatabaseForIdGenerator();
 
                 var result = database.ExecuteScalar(

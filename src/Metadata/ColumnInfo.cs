@@ -1,4 +1,5 @@
 ﻿using Kros.KORM.Converter;
+using System;
 using System.Reflection;
 
 namespace Kros.KORM.Metadata
@@ -8,7 +9,7 @@ namespace Kros.KORM.Metadata
     /// </summary>
     public class ColumnInfo
     {
-        #region Public Property
+        private PropertyInfo _propertyInfo;
 
         /// <summary>
         /// Column name.
@@ -18,7 +19,37 @@ namespace Kros.KORM.Metadata
         /// <summary>
         /// Gets or sets the property information.
         /// </summary>
-        public PropertyInfo PropertyInfo { get; set; }
+        public PropertyInfo PropertyInfo
+        {
+            get => _propertyInfo;
+            set
+            {
+                _propertyInfo = value;
+                IsNullable = false;
+                DefaultValue = null;
+                if (_propertyInfo is not null)
+                {
+                    IsNullable = Nullable.GetUnderlyingType(PropertyInfo.PropertyType) != null;
+                    if (_propertyInfo.PropertyType.IsValueType)
+                    {
+                        DefaultValue = Activator.CreateInstance(PropertyInfo.PropertyType);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Default value for the data type of the column.
+        /// </summary>
+        public object DefaultValue { get; private set; }
+
+        /// <summary>
+        /// Checks if <paramref name="value"/> is default value of the column.
+        /// </summary>
+        /// <param name="value">Checked value.</param>
+        /// <returns><see langword="true"/> if <paramref name="value"/> is default value for the column,
+        /// otherwise <see langword="false"/>.</returns>
+        public bool IsDefaultValue(object value) => value is null || value.Equals(DefaultValue);
 
         /// <summary>
         /// Gets or sets the data converter.
@@ -46,23 +77,21 @@ namespace Kros.KORM.Metadata
         public int PrimaryKeyOrder { get; set; }
 
         /// <summary>
+        /// Name of the generator. If not set, table name will be used.
+        /// </summary>
+        public string AutoIncrementGeneratorName { get; set; }
+
+        /// <summary>
         /// Type of primary key auto increment method.
         /// </summary>
         public AutoIncrementMethodType AutoIncrementMethodType { get; set; } = AutoIncrementMethodType.None;
-
-        #endregion
-
-        #region Public Methods
 
         /// <summary>
         /// Sets the value.
         /// </summary>
         /// <param name="targetObject">The target object.</param>
         /// <param name="value">The value.</param>
-        public void SetValue(object targetObject, object value)
-        {
-            this.PropertyInfo.SetValue(targetObject, value, null);
-        }
+        public void SetValue(object targetObject, object value) => PropertyInfo.SetValue(targetObject, value, null);
 
         /// <summary>
         /// Gets the value.
@@ -71,11 +100,11 @@ namespace Kros.KORM.Metadata
         /// <returns>
         /// Return value from targetObject.
         /// </returns>
-        public object GetValue(object targetObject)
-        {
-            return this.PropertyInfo.GetValue(targetObject, null);
-        }
+        public object GetValue(object targetObject) => PropertyInfo.GetValue(targetObject, null);
 
-        #endregion
+        /// <summary>
+        /// Gets a value indicating whether property has nullable type.
+        /// </summary>
+        public bool IsNullable { get; private set; }
     }
 }

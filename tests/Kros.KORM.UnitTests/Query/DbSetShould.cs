@@ -324,150 +324,38 @@ namespace Kros.KORM.UnitTests
 
         private class FakeProvider : IQueryProvider
         {
-            public DbProviderFactory DbProviderFactory => throw new NotImplementedException();
+            async Task IQueryProvider.ExecuteInTransactionAsync(Func<Task> action) => await action();
+            int IQueryProvider.ExecuteNonQueryCommand(IDbCommand command) => command.ExecuteNonQuery();
+            bool IQueryProvider.SupportsIdentity() => false;
+            bool IQueryProvider.SupportsPrepareCommand() => true;
+            void IDisposable.Dispose() => throw new NotImplementedException();
 
-            public IBulkInsert CreateBulkInsert()
-            {
-                throw new NotImplementedException();
-            }
-
-            public IBulkUpdate CreateBulkUpdate() => throw new NotImplementedException();
-
-            public IEnumerable<T> Execute<T>(IQuery<T> query)
-            {
-                throw new NotImplementedException();
-            }
-
-            public int ExecuteNonQuery(string query)
-            {
-                throw new NotImplementedException();
-            }
-
-            public int ExecuteNonQuery(string query, CommandParameterCollection parameters)
-            {
-                throw new NotImplementedException();
-            }
-
-            public int ExecuteNonQueryCommand(IDbCommand command)
-            {
-                return command.ExecuteNonQuery();
-            }
-
-            public object ExecuteScalar<T>(IQuery<T> query)
-            {
-                throw new NotImplementedException();
-            }
-
-            public System.Linq.IQueryable CreateQuery(Expression expression)
-            {
-                throw new NotImplementedException();
-            }
-
-            public System.Linq.IQueryable<TElement> CreateQuery<TElement>(Expression expression)
-            {
-                throw new NotImplementedException();
-            }
-
-            public object Execute(Expression expression)
-            {
-                throw new NotImplementedException();
-            }
-
-            public TResult Execute<TResult>(Expression expression)
-            {
-                throw new NotImplementedException();
-            }
-
-            public DbConnection CreateConnection()
-            {
-                throw new NotImplementedException();
-            }
-
-            public TResult ExecuteStoredProcedure<TResult>(string storedProcedureNam)
-            {
-                throw new NotImplementedException();
-            }
-
-            public TResult ExecuteStoredProcedure<TResult>(string storedProcedureName, CommandParameterCollection parameters)
-            {
-                throw new NotImplementedException();
-            }
-
-            public DbCommand GetCommandForCurrentTransaction()
-            {
-                throw new NotImplementedException();
-            }
-
-            public void Dispose()
-            {
-            }
-
-            public void ExecuteInTransaction(Action action)
-            {
-                action();
-            }
-
-            public ITransaction BeginTransaction(IsolationLevel isolationLevel)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void SetParameterDbType(DbParameter parameter, string tableName, string columnName)
-            {
-                throw new NotImplementedException();
-            }
-
-            public IIdGenerator CreateIdGenerator(string tableName, int batchSize)
-            {
-                throw new NotImplementedException();
-            }
-
-            public async Task ExecuteInTransactionAsync(Func<Task> action) => await action();
-
-            public Task<int> ExecuteNonQueryCommandAsync(DbCommand command, CancellationToken cancellationToken = default)
-            {
-                throw new NotImplementedException();
-            }
-
-            public bool SupportsPrepareCommand() => true;
-
-            public Task<int> ExecuteNonQueryAsync(string query, CancellationToken cancellationToken = default)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Task<int> ExecuteNonQueryAsync(
-                string query,
-                CancellationToken cancellationToken = default,
-                params object[] parameters)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Task<int> ExecuteNonQueryAsync(
-                string query,
-                CommandParameterCollection parameters,
-                CancellationToken cancellationToken = default)
-            {
-                throw new NotImplementedException();
-            }
-
-            public bool SupportsIdentity() => false;
-
-            public object ExecuteScalarCommand(IDbCommand command)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Task<object> ExecuteScalarCommandAsync(DbCommand command, CancellationToken cancellationToken = default)
-            {
-                throw new NotImplementedException();
-            }
-
-            public ISqlExpressionVisitor GetExpressionVisitor()
-            {
-                throw new NotImplementedException();
-            }
+            DbProviderFactory IQueryProvider.DbProviderFactory => throw new NotImplementedException();
+            ITransaction IQueryProvider.BeginTransaction(IsolationLevel isolationLevel) => throw new NotImplementedException();
+            IBulkInsert IQueryProvider.CreateBulkInsert() => throw new NotImplementedException();
+            IBulkUpdate IQueryProvider.CreateBulkUpdate() => throw new NotImplementedException();
+            IIdGenerator IQueryProvider.CreateIdGenerator(string tableName, int batchSize) => throw new NotImplementedException();
+            IIdGenerator IQueryProvider.CreateIdGenerator(Type dataType, string tableName, int batchSize) => throw new NotImplementedException();
+            System.Linq.IQueryable System.Linq.IQueryProvider.CreateQuery(Expression expression) => throw new NotImplementedException();
+            System.Linq.IQueryable<TElement> System.Linq.IQueryProvider.CreateQuery<TElement>(Expression expression) => throw new NotImplementedException();
+            IEnumerable<T> IQueryProvider.Execute<T>(IQuery<T> query) => throw new NotImplementedException();
+            object System.Linq.IQueryProvider.Execute(Expression expression) => throw new NotImplementedException();
+            TResult System.Linq.IQueryProvider.Execute<TResult>(Expression expression) => throw new NotImplementedException();
+            int IQueryProvider.ExecuteNonQuery(string query) => throw new NotImplementedException();
+            int IQueryProvider.ExecuteNonQuery(string query, CommandParameterCollection parameters) => throw new NotImplementedException();
+            Task<int> IQueryProvider.ExecuteNonQueryAsync(string query, CancellationToken cancellationToken) => throw new NotImplementedException();
+            Task<int> IQueryProvider.ExecuteNonQueryAsync(string query, CancellationToken cancellationToken, params object[] paramValues) => throw new NotImplementedException();
+            Task<int> IQueryProvider.ExecuteNonQueryAsync(string query, CommandParameterCollection parameters, CancellationToken cancellationToken) => throw new NotImplementedException();
+            Task<int> IQueryProvider.ExecuteNonQueryCommandAsync(DbCommand command, CancellationToken cancellationToken) => throw new NotImplementedException();
+            object IQueryProvider.ExecuteScalar<T>(IQuery<T> query) => throw new NotImplementedException();
+            object IQueryProvider.ExecuteScalarCommand(IDbCommand command) => throw new NotImplementedException();
+            Task<object> IQueryProvider.ExecuteScalarCommandAsync(DbCommand command, CancellationToken cancellationToken) => throw new NotImplementedException();
+            TResult IQueryProvider.ExecuteStoredProcedure<TResult>(string storedProcedureName) => throw new NotImplementedException();
+            TResult IQueryProvider.ExecuteStoredProcedure<TResult>(string storedProcedureName, CommandParameterCollection parameters) => throw new NotImplementedException();
+            DbCommand IQueryProvider.GetCommandForCurrentTransaction() => throw new NotImplementedException();
+            ISqlExpressionVisitor IQueryProvider.GetExpressionVisitor() => throw new NotImplementedException();
+            IIdGeneratorsForDatabaseInit IQueryProvider.GetIdGeneratorsForDatabaseInit() => throw new NotImplementedException();
+            void IQueryProvider.SetParameterDbType(DbParameter parameter, string tableName, string columnName) => throw new NotImplementedException();
         }
 
         #endregion

@@ -460,7 +460,23 @@ $@" CREATE PROCEDURE [dbo].[WaitForTwoSeconds] AS
         }
 
         [Fact]
-        public void ExplicitTransactionShould_ThrowInvalidOperationExceptionWhenCommandTimeoutSetForNestedTransaction()
+        public void ExplicitTransactionShould_CommandTimeoutSetForNestedTransaction()
+        {
+            using (var database = CreateAndInitDatabase(CreateProcedure_WaitForTwoSeconds))
+            using (var korm = new Database(database.ConnectionString))
+            using (var mainTransaction = korm.BeginTransaction())
+            {
+                mainTransaction.CommandTimeout = 1;
+                using (var nestedTransaction = korm.BeginTransaction())
+                {
+                    nestedTransaction.CommandTimeout = 3;
+                    nestedTransaction.CommandTimeout.Should().Be(1);
+                }
+            }
+        }
+
+        [Fact]
+        public void ExplicitTransactionShould_CommandTimeoutSetForNestedTransactionNotChanged()
         {
             using (var database = CreateAndInitDatabase(CreateProcedure_WaitForTwoSeconds))
             using (var korm = new Database(database.ConnectionString))
@@ -469,9 +485,8 @@ $@" CREATE PROCEDURE [dbo].[WaitForTwoSeconds] AS
                 using (var nestedTransaction = korm.BeginTransaction())
                 {
                     mainTransaction.CommandTimeout = 1;
-                    Action setCommandTimeout = () => { nestedTransaction.CommandTimeout = 3; };
-
-                    setCommandTimeout.Should().Throw<InvalidOperationException>();
+                    nestedTransaction.CommandTimeout = 3;
+                    nestedTransaction.CommandTimeout.Should().Be(30);
                 }
             }
         }

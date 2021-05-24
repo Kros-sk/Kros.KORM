@@ -149,5 +149,75 @@ INSERT INTO {Table_TestTable} VALUES (2, 22, 'Kilie', 'Bistrol');";
                 actual.LastName.Should().Be("Bistrol");
             }
         }
+
+        [Fact]
+        public async Task InsertEntityWithUpsertCommand()
+        {
+            using (IDatabase database = CreateDatabase(CreateTable_TestTable, InsertDataScript))
+            {
+                var person = new Person { Id = 101, Age = 18, FirstName = "Bob", LastName = "Bobek" };
+                await database.UpsertAsync(person);
+
+                Person actual = database
+                    .Query<Person>()
+                    .FirstOrDefault(p => p.Id == person.Id);
+
+                actual.Age.Should().Be(18);
+                actual.FirstName.Should().Be("Bob");
+                actual.LastName.Should().Be("Bobek");
+            }
+        }
+
+        [Fact]
+        public async Task UpdateExistingEntityWithUpsertCommand()
+        {
+            using (IDatabase database = CreateDatabase(CreateTable_TestTable, InsertDataScript))
+            {
+                var person = new Person { Id = 102, Age = 18, FirstName = "Bob", LastName = "Bobek" };
+                await database.AddAsync(person);
+
+                person = new Person { Id = 102, Age = 99, FirstName = "Marlyn", LastName = "Manson" };
+                await database.UpsertAsync(person, columns: new string[] { "Id", "Age" });
+
+                Person actual = database
+                    .Query<Person>()
+                    .FirstOrDefault(p => p.Id == person.Id);
+
+                actual.Age.Should().Be(99);
+                actual.FirstName.Should().Be("Bob");
+                actual.LastName.Should().Be("Bobek");
+            }
+        }
+
+        [Fact]
+        public async Task UpsertMultipleEntities()
+        {
+            using (IDatabase database = CreateDatabase(CreateTable_TestTable, InsertDataScript))
+            {
+                var pat = new Person { Id = 103, Age = 18, FirstName = "Pat" };
+                var mat = new Person { Id = 104, Age = 19, FirstName = "Mat" };
+                await database.AddAsync(pat);
+
+                pat.LastName = "Handy";
+                mat.LastName = "Handy";
+
+                await database.UpsertAsync<Person>(new Person[] { pat, mat });
+
+                Person actualPat = database
+                    .Query<Person>()
+                    .FirstOrDefault(p => p.Id == pat.Id);
+                Person actualMat = database
+                    .Query<Person>()
+                    .FirstOrDefault(p => p.Id == mat.Id);
+
+                actualPat.Age.Should().Be(18);
+                actualPat.FirstName.Should().Be("Pat");
+                actualPat.LastName.Should().Be("Handy");
+
+                actualMat.Age.Should().Be(19);
+                actualMat.FirstName.Should().Be("Mat");
+                actualMat.LastName.Should().Be("Handy");
+            }
+        }
     }
 }

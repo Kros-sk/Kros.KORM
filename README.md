@@ -40,6 +40,7 @@ To contribute with new topics/information or make changes, see [contributing](ht
 * [Model builder](#model-builder)
 * [Committing of changes](#committing-of-changes)
 * [SQL commands executing](#sql-commands-executing)
+* [Record types](#record-types)
 * [Logging](#logging)
 * [Supported database types](#supported-database-types)
 * [ASP.NET Core extensions](#aspnet-core-extensions)
@@ -509,14 +510,43 @@ Support two types of generating:
 
 1. Custom
 
-Primary key must be simple `Int32` column. Primary key property in POCO class must be decorated by `Key` attribute and its property `AutoIncrementMethodType` must be set to `Custom`.
+KORM supports 'Int32' and 'Int64' generators. Primary key property in POCO class must be decorated by `Key` attribute
+and its property `AutoIncrementMethodType` must be set to `Custom`.
 
 ```CSharp
-[Key(autoIncrementMethodType: AutoIncrementMethodType.Custom)]
-public int Id { get; set; }
+public class User
+{
+    [Key(autoIncrementMethodType: AutoIncrementMethodType.Custom)]
+    public int Id { get; set; }
+}
 ```
 
-Kros.KORM generates primary key for every inserted record, that does not have value for primary key property. For generating primary keys implementations of [IIdGenerator](https://kros-sk.github.io/Kros.Libs.Documentation/api/Kros.Utils/Kros.Data.IIdGenerator.html) are used.
+Kros.KORM generates primary key for every inserted record, that does not have value for primary key property.
+For generating primary keys implementations of [IIdGenerator](https://kros-sk.github.io/Kros.Libs.Documentation/api/Kros.Utils/Kros.Data.IIdGenerator.html)
+are used.
+
+The names of internal generators are the same as table names, for which the values are generated. But this can be explicitly
+set to some other name. It can be used for example when one generated sequence of numbers need to be used in two tables.
+
+```CSharp
+public class User
+{
+    [Key(autoIncrementMethodType: AutoIncrementMethodType.Custom, generatorName: "CustomGeneratorName")]
+    public int Id { get; set; }
+}
+
+// Or using fluent database configuration.
+
+public class DatabaseConfiguration : DatabaseConfigurationBase
+{
+    public override void OnModelCreating(ModelConfigurationBuilder modelBuilder)
+    {
+        modelBuilder.Entity<User>()
+            .HasPrimaryKey(entity => entity.Id).AutoIncrement(AutoIncrementMethodType.Custom, "CustomGeneratorName");
+    }
+}
+```
+
 
 2. Identity
 
@@ -615,9 +645,9 @@ using (var database = new Database(_connection))
 
     var userRoles = database.Query<UserRole>().AsDbSet();
 
-    people.Upsert(owner); // this will update admins UserRole to owner
-    people.Upsert(user); // this will insert user
-    people.CommitChanges();
+    userRoles.Upsert(owner); // this will update admins UserRole to owner
+    userRoles.Upsert(user); // this will insert user
+    userRoles.CommitChanges();
 }
 ```
 
@@ -667,6 +697,9 @@ await database.EditAsync(person);
 await database.EditAsync(person, "Id", "Age");
 await database.EditAsync(people);
 await database.BulkEditAsync(people);
+await database.UpsertAsync(person);
+await database.UpsertAsync(people);
+
 ```
 
 ### SQL commands executing
@@ -754,6 +787,38 @@ using (var transaction = database.BeginTransaction(IsolationLevel.Chaos))
     }
 }
 ```
+
+### Record types
+
+KORM supports a new `record` type for model definition.
+
+```csharp
+public record Person(int Id, string FirstName, string LastName);
+
+using var database = new Database(new SqlConnection("connection string"));
+
+foreach (Person person = database.Query<Person>())
+{
+    Console.WriteLine($"{person.Id}: {person.FirstName} - {person.LastName}");
+}
+```
+
+The same features as for "standard" `class`-es are supported. Converters, name mapping and value injection. It is possible to use [fluent notation](#Configure-model-mapping-by-fluent-api), but also using attributes.
+
+To use attribute notation, you must use syntax with `property:` keyword.
+
+```csharp
+public record Person(int Id, [property: Alias("FirstName")]string Name);
+```
+
+Materializing `record` types is a bit faster than with property-filled classes.
+
+1000 rows of `InMemoryDbReader`:
+
+| Method      | Mean      | Error   | StdDev  |
+| ----------- | --------- | ------- | ------- |
+| RecordTypes | 301.50 μs | 5.07 μs | 7.11 μs |
+| ClassTypes  | 458.10 μs | 7.13 μs | 6.68 μs |
 
 ### Logging
 

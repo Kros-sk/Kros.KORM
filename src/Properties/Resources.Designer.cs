@@ -169,6 +169,15 @@ namespace Kros.KORM.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The constructor parameter &apos;{0}&apos; does not match any property in type &apos;{1}&apos;..
+        /// </summary>
+        internal static string ConstructorParameterDoesNotMatchProperty {
+            get {
+                return ResourceManager.GetString("ConstructorParameterDoesNotMatchProperty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Converter type must implement implement IConverter interface..
         /// </summary>
         internal static string ConverterTypeIsNotIConverter {
@@ -196,11 +205,30 @@ namespace Kros.KORM.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Column &apos;{0}.{1}&apos; has generator name &apos;{2}&apos; and auto increment method type &apos;{3}&apos;. Generator name can be set only when auto increment method type is &apos;Custom&apos;..
+        /// </summary>
+        internal static string Error_GeneratorNameCanBeSetOnlyWithCustomAutoIncrementType {
+            get {
+                return ResourceManager.GetString("Error_GeneratorNameCanBeSetOnlyWithCustomAutoIncrementType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to KORM provider is not set..
         /// </summary>
         internal static string Error_KormProviderNotSet {
             get {
                 return ResourceManager.GetString("Error_KormProviderNotSet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Type &apos;{0}&apos; should have only one public or non-public default constructor
+        ///or only one public parametrized constructor..
+        /// </summary>
+        internal static string Error_TooManyConstructors {
+            get {
+                return ResourceManager.GetString("Error_TooManyConstructors", resourceCulture);
             }
         }
         
@@ -334,9 +362,9 @@ namespace Kros.KORM.Properties {
         /// <summary>
         ///   Looks up a localized string similar to ModelBuilder instance ({0}) does not have method {1}({2})..
         /// </summary>
-        internal static string MissongMethodInModelBuilder {
+        internal static string MissingMethodInModelBuilder {
             get {
-                return ResourceManager.GetString("MissongMethodInModelBuilder", resourceCulture);
+                return ResourceManager.GetString("MissingMethodInModelBuilder", resourceCulture);
             }
         }
         
