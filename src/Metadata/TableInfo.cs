@@ -170,5 +170,19 @@ namespace Kros.KORM.Metadata
             => _properties.Value.TryGetValue(propertyName, out ColumnInfo column) ? column : null;
 
         #endregion
+
+        /// <summary>
+        /// Gets the starting quota.
+        /// </summary>
+        internal Quota NamingQuota { get; private set; } = Quota.Empty;
+
+        /// <summary>
+        /// Quotes the table and columns in the generated query.
+        /// </summary>
+        /// <param name="namingQuota">Naming quota.</param>
+        internal void QuoteTableAndColumns(Quota namingQuota)
+        {
+            NamingQuota = namingQuota;
+        }
     }
 }

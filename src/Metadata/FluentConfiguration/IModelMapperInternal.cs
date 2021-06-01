@@ -82,5 +82,11 @@ namespace Kros.KORM.Metadata
             string propertyName,
             AutoIncrementMethodType autoIncrementType,
             string generatorName) where TEntity : class;
+
+        /// <summary>
+        /// Quotes the table and columns in the generated query.
+        /// </summary>
+        /// <param name="namingQuota">The naming quota.</param>
+        void QuoteTableAndColumns(Quota namingQuota);
     }
 }

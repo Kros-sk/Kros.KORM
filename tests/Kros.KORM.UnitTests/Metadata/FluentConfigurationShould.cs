@@ -280,6 +280,37 @@ namespace Kros.KORM.UnitTests.Metadata
                 .WithMessage("*Foo*");
         }
 
+        [Fact]
+        public void UseEmptyQuota()
+        {
+            var modelBuilder = new ModelConfigurationBuilder();
+            var modelMapper = new ConventionModelMapper();
+
+            modelBuilder.Entity<BuilderTestEntity>()
+                .HasTableName("BuilderTest");
+
+            modelBuilder.Build(modelMapper);
+
+            TableInfo tableInfo = modelMapper.GetTableInfo<BuilderTestEntity>();
+            tableInfo.NamingQuota.Should().Be(Quota.Empty);
+        }
+
+        [Fact]
+        public void SetNamingQuota()
+        {
+            var modelBuilder = new ModelConfigurationBuilder();
+            var modelMapper = new ConventionModelMapper();
+
+            modelBuilder.QuoteTableAndColumns(Quota.SquareBrackets);
+            modelBuilder.Entity<BuilderTestEntity>()
+                .HasTableName("BuilderTest");
+
+            modelBuilder.Build(modelMapper);
+
+            TableInfo tableInfo = modelMapper.GetTableInfo<BuilderTestEntity>();
+            tableInfo.NamingQuota.Should().Be(Quota.SquareBrackets);
+        }
+
         private static TableInfo CreateExpectedTableInfo(List<ColumnInfo> columns, string tableName)
         {
             var tableInfoExpected = new TableInfo(columns, Enumerable.Empty<PropertyInfo>(), null)

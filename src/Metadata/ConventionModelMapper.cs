@@ -25,6 +25,7 @@ namespace Kros.KORM.Metadata
         private readonly Dictionary<Type, EntityMapper> _entities = new Dictionary<Type, EntityMapper>();
         private readonly Dictionary<string, Expression> _queryFilters
             = new Dictionary<string, Expression>(StringComparer.OrdinalIgnoreCase);
+        private Quota _namingQuota = Quota.Empty;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ConventionModelMapper"/> class.
@@ -167,6 +168,7 @@ namespace Kros.KORM.Metadata
 
             SetQueryFilter(tableInfo);
             SetPrimaryKey(tableInfo, modelType);
+            tableInfo.QuoteTableAndColumns(_namingQuota);
 
             return tableInfo;
         }
@@ -485,6 +487,9 @@ namespace Kros.KORM.Metadata
 
             _queryFilters[tableName] = queryFilter;
         }
+
+        void IModelMapperInternal.QuoteTableAndColumns(Quota namingQuota)
+            => _namingQuota = Check.NotNull(namingQuota, nameof(namingQuota));
 
         #endregion
     }

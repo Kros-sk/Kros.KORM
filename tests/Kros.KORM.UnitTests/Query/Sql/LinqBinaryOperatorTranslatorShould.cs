@@ -151,6 +151,15 @@ namespace Kros.KORM.UnitTests.Query.Sql
                            " WHERE ((PaymentId IS NOT NULL))");
         }
 
+        [Fact]
+        public void TranslateWithQuotas()
+        {
+            var query = QueryWithQuotas<Person>().Where(p => p.Id == 5 && p.Name == "John");
+
+            AreSame(query, "SELECT [Id], [FirstName], [LastName], [PaymentId] FROM [People]" +
+                           " WHERE ((([Id] = @1) AND ([FirstName] = @2)))", 5, "John");
+        }
+
         [Alias("People")]
         public new class Person
         {

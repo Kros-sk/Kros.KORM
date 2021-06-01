@@ -377,6 +377,19 @@ namespace Kros.KORM.UnitTests.Query.Sql
         }
 
         [Fact]
+        public void CreateCorrectOrderByWithQuotas()
+        {
+            var query = QueryWithQuotas<Person>()
+                .OrderBy("[Id] DESC")
+                .OrderByDescending(p => p.FirstName)
+                .OrderBy(p => p.LastName);
+
+            AreSame(
+                query,
+                "SELECT [Id], [FirstName], [LastName], [PostAddress] FROM [People] ORDER BY [Id] DESC, [FirstName] DESC, [LastName] ASC");
+        }
+
+        [Fact]
         public void NotThrowWhenUsedSkipWithStringOrderBy()
         {
             var visitor = CreateVisitor();
