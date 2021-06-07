@@ -129,17 +129,13 @@ SELECT * FROM @OutputTable;";
         /// <returns>
         /// Upsert command.
         /// </returns>
-        public DbCommand GetUpsertCommand()
-            => GetUpsertCommandInternal(GetQueryColumns().Where(c => c.IsPrimaryKey));
-
-        /// <summary>
-        /// Gets the upsert command.
-        /// </summary>
-        /// <returns>
-        /// Upsert command.
-        /// </returns>
-        public DbCommand GetUpsertCommand(IEnumerable<string> conditionColumnNames)
-            => GetUpsertCommandInternal(GetQueryColumns().Where(c => conditionColumnNames.Contains(c.Name)));
+        public DbCommand GetUpsertCommand(IEnumerable<string> conditionColumnNames = null)
+        {
+            IEnumerable<ColumnInfo> conditonColumns = conditionColumnNames?.Any() == true
+                ? GetQueryColumns().Where(c => conditionColumnNames.Contains(c.Name))
+                : GetQueryColumns().Where(c => c.IsPrimaryKey);
+            return GetUpsertCommandInternal(conditonColumns);
+        }
 
         /// <summary>
         /// Gets the automatically generated DbCommand object required to perform deletions on the database.

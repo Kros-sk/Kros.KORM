@@ -37,6 +37,7 @@ namespace Kros.KORM.Query
         private List<WhereExpression> _deleteExpressions = new List<WhereExpression>();
         private readonly TableInfo _tableInfo;
         private Lazy<Type> _primaryKeyPropertyType;
+        private IEnumerable<string> _upsertConditionColumnNames;
 
         #endregion
 
@@ -368,6 +369,16 @@ namespace Kros.KORM.Query
         /// </summary>
         public IEnumerable<T> UpsertedItems { get { return _upsertedItems; } }
 
+        /// <summary>
+        /// IDbSet with custom upsert condition columns.
+        /// </summary>
+        /// <param name="columnNames">The column names.</param>
+        public IDbSet<T> WithCustomUpsertConditionColumns(params string[] columnNames)
+        {
+            _upsertConditionColumnNames = columnNames;
+            return this;
+        }
+
         #endregion
 
         #region Private Helpers
@@ -510,7 +521,7 @@ namespace Kros.KORM.Query
         {
             if (items.Count > 0)
             {
-                using (DbCommand command = _commandGenerator.GetUpsertCommand())
+                using (DbCommand command = _commandGenerator.GetUpsertCommand(_upsertConditionColumnNames))
                 {
                     PrepareCommand(command);
                     foreach (T item in items)

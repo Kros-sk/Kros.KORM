@@ -27,12 +27,6 @@ namespace Kros.KORM.CommandGenerator
         DbCommand GetUpdateCommand();
 
         /// <summary>
-        /// Gets the upsert command.
-        /// </summary>
-        /// <returns>Upsert command.</returns>
-        DbCommand GetUpsertCommand();
-
-        /// <summary>
         /// Gets the upsert command with custom condition columns.
         /// </summary>
         /// <returns>Upsert command.</returns>
