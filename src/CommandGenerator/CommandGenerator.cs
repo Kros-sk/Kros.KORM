@@ -130,16 +130,16 @@ SELECT * FROM @OutputTable;";
         /// Upsert command.
         /// </returns>
         public DbCommand GetUpsertCommand()
-        {
-            ThrowHelper.CheckAndThrowMethodNotSupportedWhenNoPrimaryKey(_tableInfo);
+            => GetUpsertCommandInternal(GetQueryColumns().Where(c => c.IsPrimaryKey));
 
-            IEnumerable<ColumnInfo> columns = GetQueryColumns(ValueGenerated.OnUpdate);
-            DbCommand cmd = _provider.GetCommandForCurrentTransaction();
-            AddParametersToCommand(cmd, columns.Where(x => !x.IsPrimaryKey));
-            AddParametersToCommand(cmd, columns.Where(x => x.IsPrimaryKey));
-            cmd.CommandText = GetUpsertCommandText();
-            return cmd;
-        }
+        /// <summary>
+        /// Gets the upsert command.
+        /// </summary>
+        /// <returns>
+        /// Upsert command.
+        /// </returns>
+        public DbCommand GetUpsertCommand(IEnumerable<string> conditionColumnNames)
+            => GetUpsertCommandInternal(GetQueryColumns().Where(c => conditionColumnNames.Contains(c.Name)));
 
         /// <summary>
         /// Gets the automatically generated DbCommand object required to perform deletions on the database.
@@ -412,17 +412,30 @@ SELECT * FROM @OutputTable;";
             return string.Format(UPDATE_QUERY_BASE, _tableInfo.Name, paramSetPart.ToString(), paramWherePart.ToString());
         }
 
-        private string GetUpsertCommandText()
+        private DbCommand GetUpsertCommandInternal(IEnumerable<ColumnInfo> conditionColumns)
         {
-            IEnumerable<ColumnInfo> keyColumns = GetQueryColumns().Where(c => c.IsPrimaryKey);
+            ThrowHelper.CheckAndThrowMethodNotSupportedWhenNoPrimaryKey(_tableInfo);
+
+            IEnumerable<ColumnInfo> columns = GetQueryColumns(ValueGenerated.OnUpdate);
+            DbCommand cmd = _provider.GetCommandForCurrentTransaction();
+            AddParametersToCommand(cmd, columns.Where(x => !x.IsPrimaryKey));
+            AddParametersToCommand(cmd, columns.Where(x => x.IsPrimaryKey));
+
+            cmd.CommandText = GetUpsertCommandText(conditionColumns);
+            return cmd;
+        }
+
+        private string GetUpsertCommandText(IEnumerable<ColumnInfo> conditionColumns)
+        {
             IEnumerable<ColumnInfo> updateColumns = GetQueryColumns(ValueGenerated.OnUpdate);
             IEnumerable<ColumnInfo> insertColumns = GetQueryColumns(ValueGenerated.OnInsert);
 
-            IEnumerable<string> sourceSelectPart = keyColumns.Select(c => $"@{c.Name} {c.Name}");
-            IEnumerable<string> sourceConditionPart = keyColumns.Select(c => $"src.[{c.Name}] = dst.[{c.Name}]");
+            IEnumerable<string> sourceSelectPart = conditionColumns.Select(c => $"@{c.Name} {c.Name}");
+            IEnumerable<string> sourceConditionPart = conditionColumns.Select(c => $"src.[{c.Name}] = dst.[{c.Name}]");
             IEnumerable<string> insertColumnsPart = insertColumns.Select(c => $"[{c.Name}]");
             IEnumerable<string> insertValuesPart = insertColumns.Select(c => $"@{c.Name}");
-            IEnumerable<string> updateSetPart = updateColumns.Where(c => !c.IsPrimaryKey).Select(c => $"[{c.Name}] = @{c.Name}");
+            IEnumerable<string> updateSetPart = updateColumns.Where(c =>
+                !c.IsPrimaryKey && !conditionColumns.Contains(c)).Select(c => $"[{c.Name}] = @{c.Name}");
 
             string updatePart = string.Join(", ", updateSetPart);
             if (!string.IsNullOrEmpty(updatePart))

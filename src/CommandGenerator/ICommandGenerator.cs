@@ -33,6 +33,12 @@ namespace Kros.KORM.CommandGenerator
         DbCommand GetUpsertCommand();
 
         /// <summary>
+        /// Gets the upsert command with custom condition columns.
+        /// </summary>
+        /// <returns>Upsert command.</returns>
+        DbCommand GetUpsertCommand(IEnumerable<string> conditionColumnNames = null);
+
+        /// <summary>
         /// Gets the automatically generated DbCommand object required to perform deletions on the database.
         /// </summary>
         /// <exception cref="Exceptions.MissingPrimaryKeyException">GetDeleteCommand doesn't supported when entity doesn't have primary key.</exception>
