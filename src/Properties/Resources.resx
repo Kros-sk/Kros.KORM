@@ -284,6 +284,10 @@ or only one public parametrized constructor.</value>
   <data name="ThisCallOfTakeMethodIsNotSupported" xml:space="preserve">
     <value>This call of Take() method is not supported.</value>
   </data>
+  <data name="ThrowHelper_ColumnDoesNotExists" xml:space="preserve">
+    <value>Column [{1}] does not exist in table [{0}].</value>
+    <comment>0 - table name, 1 - column name</comment>
+  </data>
   <data name="ThrowHelper_ColumnMappingAlreadyConfigured" xml:space="preserve">
     <value>Trying to set column mapping "{0}" for property "{1}" of entity "{2}". Column mapping is already set as "{3}".</value>
     <comment>0 - column name

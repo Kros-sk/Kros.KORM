@@ -131,9 +131,19 @@ SELECT * FROM @OutputTable;";
         /// </returns>
         public DbCommand GetUpsertCommand(IEnumerable<string> conditionColumnNames = null)
         {
-            IEnumerable<ColumnInfo> conditonColumns = conditionColumnNames?.Any() == true
-                ? GetQueryColumns().Where(c => conditionColumnNames.Contains(c.Name))
-                : GetQueryColumns().Where(c => c.IsPrimaryKey);
+            IEnumerable<ColumnInfo> conditonColumns;    
+            if (conditionColumnNames?.Any() == true)
+            {
+                ThrowHelper.CheckAndThrowColumnDoesNotExists(_tableInfo, conditionColumnNames);
+                HashSet<string> columnNamesSet = conditionColumnNames.ToHashSet(StringComparer.OrdinalIgnoreCase);
+                conditonColumns = GetQueryColumns().Where(c => columnNamesSet.Contains(c.Name));
+            }
+            else
+            {
+                ThrowHelper.CheckAndThrowMethodNotSupportedWhenNoPrimaryKey(_tableInfo);
+                conditonColumns = GetQueryColumns().Where(c => c.IsPrimaryKey);
+            }
+
             return GetUpsertCommandInternal(conditonColumns);
         }
 
@@ -410,8 +420,6 @@ SELECT * FROM @OutputTable;";
 
         private DbCommand GetUpsertCommandInternal(IEnumerable<ColumnInfo> conditionColumns)
         {
-            ThrowHelper.CheckAndThrowMethodNotSupportedWhenNoPrimaryKey(_tableInfo);
-
             IEnumerable<ColumnInfo> columns = GetQueryColumns(ValueGenerated.OnUpdate);
             DbCommand cmd = _provider.GetCommandForCurrentTransaction();
             AddParametersToCommand(cmd, columns.Where(x => !x.IsPrimaryKey));

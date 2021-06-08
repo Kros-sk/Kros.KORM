@@ -1,5 +1,6 @@
 ﻿using Kros.KORM.Metadata;
 using Kros.KORM.Query.Expressions;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data.Common;
@@ -29,6 +30,10 @@ namespace Kros.KORM.CommandGenerator
         /// <summary>
         /// Gets the upsert command with custom condition columns.
         /// </summary>
+        /// <param name="conditionColumnNames">Collection of column names to match for record update.</param>
+        /// <exception cref="Exceptions.MissingPrimaryKeyException">
+        /// When no condition column names provided, GetUpsertCommand doesn't supported when entities without primary key.</exception>
+        /// <exception cref="ArgumentException">All condition column names must be present in the table.</exception>
         /// <returns>Upsert command.</returns>
         DbCommand GetUpsertCommand(IEnumerable<string> conditionColumnNames = null);
 

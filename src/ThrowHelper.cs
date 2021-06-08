@@ -2,6 +2,7 @@
 using Kros.KORM.Metadata;
 using Kros.KORM.Properties;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
@@ -64,5 +65,19 @@ namespace Kros.KORM
         public static void QueryFilterAlreadyConfigured(string tableName)
             => throw new InvalidOperationException(
                 string.Format(Resources.ThrowHelper_QueryFilterAlreadyConfigured, tableName));
-    }
-}
+
+        public static void CheckAndThrowColumnDoesNotExists(TableInfo tableInfo, IEnumerable<string> columnNames)
+        {
+            var existingColumnNames = tableInfo.Columns.Select(c => c.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
+            columnNames.ForEach(colName =>
+            {
+                if (!existingColumnNames.Contains(colName))
+                {
+                    throw new ArgumentException(
+                        string.Format(Resources.ThrowHelper_ColumnDoesNotExists,
+                        tableInfo.Name,
+                        colName));
+                }
+            });
+        }
+    }}
