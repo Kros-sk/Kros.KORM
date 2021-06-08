@@ -68,7 +68,7 @@ namespace Kros.KORM
 
         public static void CheckAndThrowColumnDoesNotExists(TableInfo tableInfo, IEnumerable<string> columnNames)
         {
-            var existingColumnNames = tableInfo.Columns.Select(c => c.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
+            var existingColumnNames = new HashSet<string>(tableInfo.Columns.Select(c => c.Name), StringComparer.OrdinalIgnoreCase);
             columnNames.ForEach(colName =>
             {
                 if (!existingColumnNames.Contains(colName))

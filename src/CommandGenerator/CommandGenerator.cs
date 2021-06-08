@@ -131,11 +131,11 @@ SELECT * FROM @OutputTable;";
         /// </returns>
         public DbCommand GetUpsertCommand(IEnumerable<string> conditionColumnNames = null)
         {
-            IEnumerable<ColumnInfo> conditonColumns;    
+            IEnumerable<ColumnInfo> conditonColumns;
             if (conditionColumnNames?.Any() == true)
             {
                 ThrowHelper.CheckAndThrowColumnDoesNotExists(_tableInfo, conditionColumnNames);
-                HashSet<string> columnNamesSet = conditionColumnNames.ToHashSet(StringComparer.OrdinalIgnoreCase);
+                var columnNamesSet = new HashSet<string>(conditionColumnNames, StringComparer.OrdinalIgnoreCase);
                 conditonColumns = GetQueryColumns().Where(c => columnNamesSet.Contains(c.Name));
             }
             else
