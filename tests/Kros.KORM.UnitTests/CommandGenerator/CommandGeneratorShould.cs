@@ -99,6 +99,17 @@ SELECT * FROM @OutputTable;";
         }
 
         [Fact]
+        public void ThrowArgumentExceptionOnMissingColumnForUpsertCommand()
+        {
+            var generator = GetUpsertFooGenerator();
+            Action action = () =>
+            {
+                DbCommand update = generator.GetUpsertCommand(new[] { "FirstName", "MissingColumn" });
+            };
+            action.Should().Throw<ArgumentException>();
+        }
+
+        [Fact]
         public void HaveCorrectDeleteCommandText()
         {
             const string expectedQuery = "DELETE FROM [Foo] WHERE ([IdRow] = @IdRow)";
