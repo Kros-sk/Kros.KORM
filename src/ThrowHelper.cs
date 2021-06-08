@@ -73,11 +73,10 @@ namespace Kros.KORM
             {
                 if (!existingColumnNames.Contains(colName))
                 {
-                    throw new ArgumentException(
-                        string.Format(Resources.ThrowHelper_ColumnDoesNotExists,
-                        tableInfo.Name,
-                        colName));
+                    throw new InvalidOperationException(
+                        string.Format(Resources.ThrowHelper_ColumnDoesNotExists, tableInfo.Name, colName));
                 }
             });
         }
-    }}
+    }
+}

@@ -131,20 +131,20 @@ SELECT * FROM @OutputTable;";
         /// </returns>
         public DbCommand GetUpsertCommand(IEnumerable<string> conditionColumnNames = null)
         {
-            IEnumerable<ColumnInfo> conditonColumns;
+            IEnumerable<ColumnInfo> conditionColumns;
             if (conditionColumnNames?.Any() == true)
             {
                 ThrowHelper.CheckAndThrowColumnDoesNotExists(_tableInfo, conditionColumnNames);
                 var columnNamesSet = new HashSet<string>(conditionColumnNames, StringComparer.OrdinalIgnoreCase);
-                conditonColumns = GetQueryColumns().Where(c => columnNamesSet.Contains(c.Name));
+                conditionColumns = GetQueryColumns().Where(c => columnNamesSet.Contains(c.Name));
             }
             else
             {
                 ThrowHelper.CheckAndThrowMethodNotSupportedWhenNoPrimaryKey(_tableInfo);
-                conditonColumns = GetQueryColumns().Where(c => c.IsPrimaryKey);
+                conditionColumns = GetQueryColumns().Where(c => c.IsPrimaryKey);
             }
 
-            return GetUpsertCommandInternal(conditonColumns);
+            return GetUpsertCommandInternal(conditionColumns);
         }
 
         /// <summary>

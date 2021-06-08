@@ -106,7 +106,7 @@ SELECT * FROM @OutputTable;";
             {
                 DbCommand update = generator.GetUpsertCommand(new[] { "FirstName", "MissingColumn" });
             };
-            action.Should().Throw<ArgumentException>();
+            action.Should().Throw<InvalidOperationException>();
         }
 
         [Fact]
