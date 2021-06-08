@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+using FluentAssertions.Execution;
 using Kros.Data.SqlServer;
 using Kros.KORM.Converter;
 using Kros.KORM.Metadata;
@@ -304,19 +305,22 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
                     .Query<Person>()
                     .FirstOrDefault(p => p.Id == olderPat.Id);
 
-                actualPat.Age.Should().Be(19);
-                actualPat.FirstName.Should().Be("Pat");
-                actualPat.LastName.Should().Be("Lefty");
+                using (new AssertionScope())
+                {
+                    actualPat.Age.Should().Be(19);
+                    actualPat.FirstName.Should().Be("Pat");
+                    actualPat.LastName.Should().Be("Lefty");
 
-                actualMat.Age.Should().Be(19);
-                actualMat.FirstName.Should().Be("Mat");
-                actualMat.LastName.Should().Be("Righty");
+                    actualMat.Age.Should().Be(19);
+                    actualMat.FirstName.Should().Be("Mat");
+                    actualMat.LastName.Should().Be("Righty");
 
-                actualMatJunior.Age.Should().Be(0);
-                actualMatJunior.FirstName.Should().Be("Mat Junior");
-                actualMatJunior.LastName.Should().Be("Righty");
+                    actualMatJunior.Age.Should().Be(0);
+                    actualMatJunior.FirstName.Should().Be("Mat Junior");
+                    actualMatJunior.LastName.Should().Be("Righty");
 
-                actualOlderPat.Should().BeNull();
+                    actualOlderPat.Should().BeNull();
+                }
             }
         }
 
