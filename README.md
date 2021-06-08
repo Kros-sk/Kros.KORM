@@ -663,13 +663,13 @@ var owner1 = new UserRole { Id = 3, InternalUserNo = 11, Role = "Owner" };
 
 using (var database = new Database(_connection))
 {
-    var userRoles = database.Query<UserRole>().AsDbSet()
-        .WithCustomUpsertConditionColumns(nameof(UserRole.InternalUserNo));;
+    var userRoles = database.Query<UserRole>().AsDbSet();
 
     userRoles.Add(admin1);
     userRoles.CommitChanges();
 
-    var userRoles = database.Query<UserRole>().AsDbSet();
+    var userRoles = database.Query<UserRole>().AsDbSet()
+        .WithCustomUpsertConditionColumns(nameof(UserRole.InternalUserNo));
 
     userRoles.Upsert(admin2); // this will insert new admin with internalUserNo = 12
     userRoles.Upsert(owner1); // this will update user with internalUserNo = 11 to Owner
