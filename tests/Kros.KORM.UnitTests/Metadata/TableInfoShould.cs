@@ -174,7 +174,7 @@ namespace Kros.KORM.UnitTests.Metadata
         {
             TableInfo tableInfo = CreateTableInfo();
 
-            tableInfo.NamingQuota.Should().Be(Quota.Empty);
+            tableInfo.Delimiters.Should().Be(Delimiters.Empty);
         }
 
         [Fact]
@@ -182,8 +182,8 @@ namespace Kros.KORM.UnitTests.Metadata
         {
             TableInfo tableInfo = CreateTableInfo();
 
-            tableInfo.QuoteTableAndColumns(Quota.SquareBrackets);
-            tableInfo.NamingQuota.Should().Be(Quota.SquareBrackets);
+            tableInfo.UseIdentifierDelimiters(Delimiters.SquareBrackets);
+            tableInfo.Delimiters.Should().Be(Delimiters.SquareBrackets);
         }
 
         private static TableInfo CreateTableInfo()

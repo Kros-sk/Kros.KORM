@@ -10,7 +10,7 @@ namespace Kros.KORM.Metadata
     /// </summary>
     public class ModelConfigurationBuilder
     {
-        private Quota _namingQuota = Quota.Empty;
+        private Delimiters _delimiters = Delimiters.Empty;
         private readonly Dictionary<Type, EntityTypeBuilderBase> _entityBuilders = new Dictionary<Type, EntityTypeBuilderBase>();
         private readonly Dictionary<string, TableBuilder> _tableBuilders
             = new Dictionary<string, TableBuilder>(StringComparer.OrdinalIgnoreCase);
@@ -55,11 +55,11 @@ namespace Kros.KORM.Metadata
         }
 
         /// <summary>
-        /// Quotes the table and columns in the generated query.
+        /// Use delimieters for identifiers in the generated query.
         /// </summary>
-        /// <param name="namingQuota">Naming quota.</param>
-        public void QuoteTableAndColumns(Quota namingQuota)
-            => _namingQuota = Check.NotNull(namingQuota, nameof(namingQuota));
+        /// <param name="delimiters">The delimiters.</param>
+        public void UseIdentifierDelimiters(Delimiters delimiters)
+            => _delimiters = Check.NotNull(delimiters, nameof(delimiters));
 
         /// <summary>
         /// Builds model configuration.
@@ -67,7 +67,7 @@ namespace Kros.KORM.Metadata
         /// <param name="modelMapper">Model mapper.</param>
         internal void Build(IModelMapperInternal modelMapper)
         {
-            modelMapper.QuoteTableAndColumns(_namingQuota);
+            modelMapper.UseIdentifierDelimiters(_delimiters);
             foreach (EntityTypeBuilderBase entityBuilder in _entityBuilders.Values)
             {
                 entityBuilder.Build(modelMapper);

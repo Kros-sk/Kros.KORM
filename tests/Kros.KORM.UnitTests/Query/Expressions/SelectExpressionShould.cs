@@ -33,7 +33,7 @@ namespace Kros.KORM.UnitTests.Query.Expressions
         public void GetColumnsExpressionWithQuotas()
         {
             TableInfo tableInfo = new DatabaseMapper(new ConventionModelMapper()).GetTableInfo<Person>();
-            tableInfo.QuoteTableAndColumns(Quota.SquareBrackets);
+            tableInfo.UseIdentifierDelimiters(Delimiters.SquareBrackets);
             var selectExpression = new SelectExpression(tableInfo);
 
             selectExpression.ColumnsExpression.ColumnsPart.Should().Be("[Id], [Name], [LastName]");
@@ -64,7 +64,7 @@ namespace Kros.KORM.UnitTests.Query.Expressions
         public void GetTableExpressionWithQuota()
         {
             TableInfo tableInfo = new DatabaseMapper(new ConventionModelMapper()).GetTableInfo<Person>();
-            tableInfo.QuoteTableAndColumns(Quota.SquareBrackets);
+            tableInfo.UseIdentifierDelimiters(Delimiters.SquareBrackets);
             var selectExpression = new SelectExpression(tableInfo);
 
             selectExpression.TableExpression.TablePart.Should().Be("[TPerson]");

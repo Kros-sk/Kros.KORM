@@ -336,7 +336,7 @@ namespace Kros.KORM.Query.Sql
             TableInfo tableInfo = DatabaseMapper.GetTableInfo(node.Member.DeclaringType);
             ColumnInfo columnInfo = tableInfo.GetColumnInfoByPropertyName(node.Member.Name);
 
-            return tableInfo.NamingQuota.QuoteName(columnInfo.Name);
+            return tableInfo.Delimiters.QuoteIdentifier(columnInfo.Name);
         }
 
         private void AppendMemberColumnName(MemberExpression node) => LinqStringBuilder.Append(GetColumnNameFromMember(node));

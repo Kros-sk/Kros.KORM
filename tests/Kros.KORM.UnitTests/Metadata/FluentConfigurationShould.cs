@@ -292,7 +292,7 @@ namespace Kros.KORM.UnitTests.Metadata
             modelBuilder.Build(modelMapper);
 
             TableInfo tableInfo = modelMapper.GetTableInfo<BuilderTestEntity>();
-            tableInfo.NamingQuota.Should().Be(Quota.Empty);
+            tableInfo.Delimiters.Should().Be(Delimiters.Empty);
         }
 
         [Fact]
@@ -301,14 +301,14 @@ namespace Kros.KORM.UnitTests.Metadata
             var modelBuilder = new ModelConfigurationBuilder();
             var modelMapper = new ConventionModelMapper();
 
-            modelBuilder.QuoteTableAndColumns(Quota.SquareBrackets);
+            modelBuilder.UseIdentifierDelimiters(Delimiters.SquareBrackets);
             modelBuilder.Entity<BuilderTestEntity>()
                 .HasTableName("BuilderTest");
 
             modelBuilder.Build(modelMapper);
 
             TableInfo tableInfo = modelMapper.GetTableInfo<BuilderTestEntity>();
-            tableInfo.NamingQuota.Should().Be(Quota.SquareBrackets);
+            tableInfo.Delimiters.Should().Be(Delimiters.SquareBrackets);
         }
 
         private static TableInfo CreateExpectedTableInfo(List<ColumnInfo> columns, string tableName)

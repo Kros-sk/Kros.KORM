@@ -84,9 +84,9 @@ namespace Kros.KORM.Metadata
             string generatorName) where TEntity : class;
 
         /// <summary>
-        /// Quotes the table and columns in the generated query.
+        /// Use delimieters for identifiers in the generated query.
         /// </summary>
-        /// <param name="namingQuota">The naming quota.</param>
-        void QuoteTableAndColumns(Quota namingQuota);
+        /// <param name="delimiters">The delimiters.</param>
+        void UseIdentifierDelimiters(Delimiters delimiters);
     }
 }

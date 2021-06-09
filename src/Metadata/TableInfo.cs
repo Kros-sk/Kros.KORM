@@ -172,17 +172,17 @@ namespace Kros.KORM.Metadata
         #endregion
 
         /// <summary>
-        /// Gets the starting quota.
+        /// Gets the delimiters.
         /// </summary>
-        internal Quota NamingQuota { get; private set; } = Quota.Empty;
+        internal Delimiters Delimiters { get; private set; } = Delimiters.Empty;
 
         /// <summary>
-        /// Quotes the table and columns in the generated query.
+        /// Use delimieters for identifiers in the generated query.
         /// </summary>
-        /// <param name="namingQuota">Naming quota.</param>
-        internal void QuoteTableAndColumns(Quota namingQuota)
+        /// <param name="delimiters">The Delimiters.</param>
+        internal void UseIdentifierDelimiters(Delimiters delimiters)
         {
-            NamingQuota = namingQuota;
+            Delimiters = delimiters;
         }
     }
 }

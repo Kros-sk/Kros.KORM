@@ -55,7 +55,7 @@ namespace Kros.KORM.UnitTests.Query.Sql
         /// <typeparam name="T">Model type</typeparam>
         /// <returns>Query for testing.</returns>
         public virtual IQuery<T> Query<T>()
-            => CreateQuery<T>(Quota.Empty);
+            => CreateQuery<T>(Delimiters.Empty);
 
         /// <summary>
         /// Create query for testing.
@@ -63,12 +63,12 @@ namespace Kros.KORM.UnitTests.Query.Sql
         /// <typeparam name="T">Model type</typeparam>
         /// <returns>Query for testing.</returns>
         public virtual IQuery<T> QueryWithQuotas<T>()
-            => CreateQuery<T>(Quota.SquareBrackets);
+            => CreateQuery<T>(Delimiters.SquareBrackets);
 
-        private IQuery<T> CreateQuery<T>(Quota quota)
+        private IQuery<T> CreateQuery<T>(Delimiters quota)
         {
             var modelMapper = new ConventionModelMapper();
-            (modelMapper as IModelMapperInternal).QuoteTableAndColumns(quota);
+            (modelMapper as IModelMapperInternal).UseIdentifierDelimiters(quota);
             _databaseMapper = new DatabaseMapper(modelMapper);
 
             return Database
@@ -258,9 +258,9 @@ namespace Kros.KORM.UnitTests.Query.Sql
 
         public class DatabaseConfiguration : DatabaseConfigurationBase
         {
-            private readonly Quota _quota;
+            private readonly Delimiters _quota;
 
-            public DatabaseConfiguration(Quota quota)
+            public DatabaseConfiguration(Delimiters quota)
             {
                 _quota = quota;
             }
@@ -268,7 +268,7 @@ namespace Kros.KORM.UnitTests.Query.Sql
             public override void OnModelCreating(ModelConfigurationBuilder modelBuilder)
             {
                 base.OnModelCreating(modelBuilder);
-                modelBuilder.QuoteTableAndColumns(_quota);
+                modelBuilder.UseIdentifierDelimiters(_quota);
             }
         }
     }
