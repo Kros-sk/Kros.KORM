@@ -47,7 +47,7 @@ namespace Kros.KORM.UnitTests.Query.Sql
 
         #endregion
 
-        //Dátumové funkcie
+        private DatabaseMapper _databaseMapper;
 
         /// <summary>
         /// Create query for testing.
@@ -55,13 +55,35 @@ namespace Kros.KORM.UnitTests.Query.Sql
         /// <typeparam name="T">Model type</typeparam>
         /// <returns>Query for testing.</returns>
         public virtual IQuery<T> Query<T>()
-            => new Database(new SqlConnection(), new FakeQueryProviderFactory()).Query<T>();
+            => CreateQuery<T>(Delimiters.Empty);
+
+        /// <summary>
+        /// Create query for testing.
+        /// </summary>
+        /// <typeparam name="T">Model type</typeparam>
+        /// <returns>Query for testing.</returns>
+        public virtual IQuery<T> QueryWithQuotas<T>()
+            => CreateQuery<T>(Delimiters.SquareBrackets);
+
+        private IQuery<T> CreateQuery<T>(Delimiters quota)
+        {
+            var modelMapper = new ConventionModelMapper();
+            (modelMapper as IModelMapperInternal).UseIdentifierDelimiters(quota);
+            _databaseMapper = new DatabaseMapper(modelMapper);
+
+            return Database
+                .Builder
+                .UseConnection(new SqlConnection())
+                .UseQueryProviderFactory(new FakeQueryProviderFactory())
+                .UseDatabaseConfiguration(new DatabaseConfiguration(quota))
+                .Build().Query<T>();
+        }
 
         /// <summary>
         /// Create visitor for translate query to SQL.
         /// </summary>
         protected virtual ISqlExpressionVisitor CreateVisitor()
-            => new DefaultQuerySqlGenerator(Database.DatabaseMapper);
+            => new DefaultQuerySqlGenerator(_databaseMapper ?? Database.DatabaseMapper);
 
         /// <summary>
         /// Query should be equal to <paramref name="expectedSql"/>.
@@ -232,6 +254,22 @@ namespace Kros.KORM.UnitTests.Query.Sql
 
             public ISqlExpressionVisitor CreateVisitor(IDbConnection connection)
                 => new SqlServer2012SqlGenerator(_databaseMapper);
+        }
+
+        public class DatabaseConfiguration : DatabaseConfigurationBase
+        {
+            private readonly Delimiters _quota;
+
+            public DatabaseConfiguration(Delimiters quota)
+            {
+                _quota = quota;
+            }
+
+            public override void OnModelCreating(ModelConfigurationBuilder modelBuilder)
+            {
+                base.OnModelCreating(modelBuilder);
+                modelBuilder.UseIdentifierDelimiters(_quota);
+            }
         }
     }
 }

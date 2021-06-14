@@ -10,6 +10,7 @@ namespace Kros.KORM.Metadata
     /// </summary>
     public class ModelConfigurationBuilder
     {
+        private Delimiters _delimiters = Delimiters.Empty;
         private readonly Dictionary<Type, EntityTypeBuilderBase> _entityBuilders = new Dictionary<Type, EntityTypeBuilderBase>();
         private readonly Dictionary<string, TableBuilder> _tableBuilders
             = new Dictionary<string, TableBuilder>(StringComparer.OrdinalIgnoreCase);
@@ -54,11 +55,25 @@ namespace Kros.KORM.Metadata
         }
 
         /// <summary>
+        /// Use delimieters for identifiers in the generated query.
+        /// </summary>
+        /// <param name="delimiters">The delimiters.</param>
+        public void UseIdentifierDelimiters(Delimiters delimiters)
+            => _delimiters = Check.NotNull(delimiters, nameof(delimiters));
+
+        /// <summary>
+        /// Uses the square brackets delimiteres for identifiers in the generated query.
+        /// </summary>
+        public void UseSquareBracketsDelimiteres()
+            => _delimiters = Delimiters.SquareBrackets;
+
+        /// <summary>
         /// Builds model configuration.
         /// </summary>
         /// <param name="modelMapper">Model mapper.</param>
         internal void Build(IModelMapperInternal modelMapper)
         {
+            modelMapper.UseIdentifierDelimiters(_delimiters);
             foreach (EntityTypeBuilderBase entityBuilder in _entityBuilders.Values)
             {
                 entityBuilder.Build(modelMapper);

@@ -25,6 +25,7 @@ namespace Kros.KORM.Metadata
         private readonly Dictionary<Type, EntityMapper> _entities = new Dictionary<Type, EntityMapper>();
         private readonly Dictionary<string, Expression> _queryFilters
             = new Dictionary<string, Expression>(StringComparer.OrdinalIgnoreCase);
+        private Delimiters _delimiters = Delimiters.Empty;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ConventionModelMapper"/> class.
@@ -167,6 +168,7 @@ namespace Kros.KORM.Metadata
 
             SetQueryFilter(tableInfo);
             SetPrimaryKey(tableInfo, modelType);
+            tableInfo.UseIdentifierDelimiters(_delimiters);
 
             return tableInfo;
         }
@@ -485,6 +487,9 @@ namespace Kros.KORM.Metadata
 
             _queryFilters[tableName] = queryFilter;
         }
+
+        void IModelMapperInternal.UseIdentifierDelimiters(Delimiters delimiters)
+            => _delimiters = Check.NotNull(delimiters, nameof(delimiters));
 
         #endregion
     }

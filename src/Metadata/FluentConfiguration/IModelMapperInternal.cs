@@ -82,5 +82,11 @@ namespace Kros.KORM.Metadata
             string propertyName,
             AutoIncrementMethodType autoIncrementType,
             string generatorName) where TEntity : class;
+
+        /// <summary>
+        /// Use delimieters for identifiers in the generated query.
+        /// </summary>
+        /// <param name="delimiters">The delimiters.</param>
+        void UseIdentifierDelimiters(Delimiters delimiters);
     }
 }

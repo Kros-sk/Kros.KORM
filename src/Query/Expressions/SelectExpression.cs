@@ -55,7 +55,7 @@ namespace Kros.KORM.Query.Expressions
             {
                 if (_columnsExpression == null)
                 {
-                    var columns = _tableInfo.Columns.Select(p => p.Name).ToArray();
+                    string[] columns = _tableInfo.Columns.Select(p => _tableInfo.Delimiters.QuoteIdentifier(p.Name)).ToArray();
                     _columnsExpression = new ColumnsExpression(columns);
                 }
 
@@ -72,7 +72,7 @@ namespace Kros.KORM.Query.Expressions
             {
                 if (_tableExpression == null)
                 {
-                    _tableExpression = new TableExpression(_tableInfo.Name);
+                    _tableExpression = new TableExpression(_tableInfo.Delimiters.QuoteIdentifier(_tableInfo.Name));
                 }
                 return _tableExpression;
             }

@@ -169,6 +169,39 @@ namespace Kros.KORM.UnitTests.Metadata
             actual.Should().Be(expected);
         }
 
+        [Fact]
+        public void HaveEmptyNamingQuota()
+        {
+            TableInfo tableInfo = CreateTableInfo();
+
+            tableInfo.Delimiters.Should().Be(Delimiters.Empty);
+        }
+
+        [Fact]
+        public void SetNamingQuota()
+        {
+            TableInfo tableInfo = CreateTableInfo();
+
+            tableInfo.UseIdentifierDelimiters(Delimiters.SquareBrackets);
+            tableInfo.Delimiters.Should().Be(Delimiters.SquareBrackets);
+        }
+
+        private static TableInfo CreateTableInfo()
+        {
+            var columns = new List<ColumnInfo>();
+
+            var name = new ColumnInfo() { Name = "Name", IsPrimaryKey = true };
+            var type = new ColumnInfo() { Name = "Type", IsPrimaryKey = false };
+            var surname = new ColumnInfo() { Name = "Surname", IsPrimaryKey = false };
+
+            columns.Add(name);
+            columns.Add(type);
+            columns.Add(surname);
+
+            var tableInfo = new TableInfo(columns, new List<PropertyInfo>(), null);
+            return tableInfo;
+        }
+
         public class Person
         {
             public int Id { get; set; }

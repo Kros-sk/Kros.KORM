@@ -170,5 +170,19 @@ namespace Kros.KORM.Metadata
             => _properties.Value.TryGetValue(propertyName, out ColumnInfo column) ? column : null;
 
         #endregion
+
+        /// <summary>
+        /// Gets the delimiters.
+        /// </summary>
+        internal Delimiters Delimiters { get; private set; } = Delimiters.Empty;
+
+        /// <summary>
+        /// Use delimieters for identifiers in the generated query.
+        /// </summary>
+        /// <param name="delimiters">The Delimiters.</param>
+        internal void UseIdentifierDelimiters(Delimiters delimiters)
+        {
+            Delimiters = delimiters;
+        }
     }
 }
