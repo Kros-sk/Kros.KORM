@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+using FluentAssertions.Execution;
 using Kros.Data.SqlServer;
 using Kros.KORM.Converter;
 using Kros.KORM.Metadata;
@@ -264,6 +265,63 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
 
             dbSet.Edit(GetPersonData());
             return dbSet;
+        }
+
+        #endregion
+
+        #region Upsert data
+
+        [Fact]
+        public async Task UpsertWithCustomCondition()
+        {
+            using (IDatabase database = CreateDatabase(CreateTable_TestTable, InsertDataScript))
+            {
+                var pat = new Person { Id = 103, Age = 18, FirstName = "Pat", LastName = "Lefty" };
+                var mat = new Person { Id = 104, Age = 19, FirstName = "Mat", LastName = "Righty" };
+
+                var olderPat = new Person { Id = 105, Age = 19, FirstName = "Pat", LastName = "Lefty" };
+                var matJunior = new Person { Id = 106, Age = 0, FirstName = "Mat Junior", LastName = "Righty" };
+
+                await database.UpsertAsync<Person>(new Person[] { pat, mat });
+
+                IDbSet<Person> people = database.Query<Person>().AsDbSet()
+                    .WithCustomUpsertConditionColumns(nameof(Person.FirstName), nameof(Person.LastName));
+
+                people.Upsert(olderPat);
+                people.Upsert(matJunior);
+
+                await people.CommitChangesAsync();
+
+                Person actualPat = database
+                    .Query<Person>()
+                    .FirstOrDefault(p => p.Id == pat.Id);
+                Person actualMat = database
+                    .Query<Person>()
+                    .FirstOrDefault(p => p.Id == mat.Id);
+                Person actualMatJunior = database
+                    .Query<Person>()
+                    .FirstOrDefault(p => p.Id == matJunior.Id);
+                Person actualOlderPat = database
+                    .Query<Person>()
+                    .FirstOrDefault(p => p.Id == olderPat.Id);
+
+                using (new AssertionScope())
+                {
+                    actualPat.Age.Should().Be(19);
+                    actualPat.FirstName.Should().Be("Pat");
+                    actualPat.LastName.Should().Be("Lefty");
+
+                    actualMat.Age.Should().Be(19);
+                    actualMat.FirstName.Should().Be("Mat");
+                    actualMat.LastName.Should().Be("Righty");
+
+                    actualMatJunior.Age.Should().Be(0);
+                    actualMatJunior.FirstName.Should().Be("Mat Junior");
+                    actualMatJunior.LastName.Should().Be("Righty");
+
+                    actualOlderPat.Should().BeNull();
+                }
+            }
         }
 
         #endregion

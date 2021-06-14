@@ -667,6 +667,32 @@ using (var database = new Database(_connection))
 }
 ```
 
+#### Upsert record by custom columns match
+
+It is possible to upsert records by match of non PK columns.
+!!! Use this with caution. This updates all records with matching provided columns !!!
+
+```CSharp
+var admin1 = new UserRole { Id = 1, InternalUserNo = 11, Role = "Admin" };
+var admin2 = new UserRole { Id = 2, InternalUserNo = 12, Role = "Admin" };
+var owner1 = new UserRole { Id = 3, InternalUserNo = 11, Role = "Owner" };
+
+using (var database = new Database(_connection))
+{
+    var userRoles = database.Query<UserRole>().AsDbSet();
+
+    userRoles.Add(admin1);
+    userRoles.CommitChanges();
+
+    var userRoles = database.Query<UserRole>().AsDbSet()
+        .WithCustomUpsertConditionColumns(nameof(UserRole.InternalUserNo));
+
+    userRoles.Upsert(admin2); // this will insert new admin with internalUserNo = 12
+    userRoles.Upsert(owner1); // this will update user with internalUserNo = 11 to Owner
+    userRoles.CommitChanges();
+}
+```
+
 #### Explicit transactions
 
 By default, changes of a `DbSet` are committed to database in a transaction. If committing of one record fails, rollback of transaction is executed.

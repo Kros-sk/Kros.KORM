@@ -85,6 +85,31 @@ SELECT * FROM @OutputTable;";
         }
 
         [Fact]
+        public void HaveCorrectUpsertCommandTextForCustomCondition()
+        {
+            const string expectedQuery = "MERGE INTO [Foo] dst " +
+                "USING(SELECT @FirstName FirstName, @PropertyEnum PropertyEnum) src " +
+                "ON src.[FirstName] = dst.[FirstName] AND src.[PropertyEnum] = dst.[PropertyEnum] " +
+                "WHEN MATCHED THEN UPDATE SET [Salary] = @Salary, [PropertyValueGenerator] = @PropertyValueGenerator " +
+                "WHEN NOT MATCHED THEN INSERT([IdRow], [FirstName], [PropertyEnum], [Salary]) VALUES (@IdRow, @FirstName, @PropertyEnum, @Salary) ;";
+
+            DbCommand upsert = GetUpsertFooGenerator().GetUpsertCommand(new[] { "FirstName", "PropertyEnum" });
+
+            upsert.CommandText.Should().Be(expectedQuery);
+        }
+
+        [Fact]
+        public void ThrowArgumentExceptionOnMissingColumnForUpsertCommand()
+        {
+            var generator = GetUpsertFooGenerator();
+            Action action = () =>
+            {
+                DbCommand update = generator.GetUpsertCommand(new[] { "FirstName", "MissingColumn" });
+            };
+            action.Should().Throw<InvalidOperationException>();
+        }
+
+        [Fact]
         public void HaveCorrectDeleteCommandText()
         {
             const string expectedQuery = "DELETE FROM [Foo] WHERE ([IdRow] = @IdRow)";
@@ -269,6 +294,16 @@ SELECT * FROM @OutputTable;";
 
             IQuery<Foo> query = CreateFooQuery();
             query.Select(p => new { p.Id, p.Plat, p.PropertyValueGenerator });
+            return new CommandGenerator<Foo>(GetFooTableInfo(), provider, query);
+        }
+
+        private CommandGenerator<Foo> GetUpsertFooGenerator()
+        {
+            KORM.Query.IQueryProvider provider = Substitute.For<KORM.Query.IQueryProvider>();
+            provider.GetCommandForCurrentTransaction().Returns(a => { return new SqlCommand(); });
+
+            IQuery<Foo> query = CreateFooQuery();
+            query.Select(p => new { p.Id, p.KrstneMeno, p.PropertyEnum, p.Plat, p.PropertyValueGenerator });
             return new CommandGenerator<Foo>(GetFooTableInfo(), provider, query);
         }
 

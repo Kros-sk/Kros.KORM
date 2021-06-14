@@ -540,6 +540,15 @@ namespace Kros.KORM.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Column [{1}] does not exist in table [{0}]..
+        /// </summary>
+        internal static string ThrowHelper_ColumnDoesNotExists {
+            get {
+                return ResourceManager.GetString("ThrowHelper_ColumnDoesNotExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Trying to set column mapping &quot;{0}&quot; for property &quot;{1}&quot; of entity &quot;{2}&quot;. Column mapping is already set as &quot;{3}&quot;..
         /// </summary>
         internal static string ThrowHelper_ColumnMappingAlreadyConfigured {
