@@ -62,6 +62,12 @@ namespace Kros.KORM.Metadata
             => _delimiters = Check.NotNull(delimiters, nameof(delimiters));
 
         /// <summary>
+        /// Uses the square brackets delimiteres for identifiers in the generated query.
+        /// </summary>
+        public void UseSquareBracketsDelimiteres()
+            => _delimiters = Delimiters.SquareBrackets;
+
+        /// <summary>
         /// Builds model configuration.
         /// </summary>
         /// <param name="modelMapper">Model mapper.</param>
