@@ -11,7 +11,7 @@ namespace Kros.KORM
     /// <summary>
     /// Extensions over <see cref="IDatabase"/>.
     /// </summary>
-    public static class IDatabaseExtensions
+    public static partial class IDatabaseExtensions
     {
         /// <summary>
         /// Adds the <paramref name="entity"/> to the database.

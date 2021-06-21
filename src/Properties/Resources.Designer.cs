@@ -178,6 +178,15 @@ namespace Kros.KORM.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Conversion from type: &apos;{0}&apos; is not supported..
+        /// </summary>
+        internal static string ConversionFromTypeIsNotSupported {
+            get {
+                return ResourceManager.GetString("ConversionFromTypeIsNotSupported", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Converter type must implement implement IConverter interface..
         /// </summary>
         internal static string ConverterTypeIsNotIConverter {
