@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 
 namespace Kros.KORM
 {
-
     public partial class IDatabaseExtensions
     {
         /// <summary>
@@ -228,7 +227,7 @@ namespace Kros.KORM
         }
 
         private static string GetTempTableName()
-            => $"#tt_{Guid.NewGuid().ToString().Replace("-", "")}";
+            => $"#tt_{Guid.NewGuid():N}";
 
         private static void InsertValuesIntoTempTable<TValue>(
             IDatabase database,

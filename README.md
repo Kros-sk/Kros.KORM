@@ -744,6 +744,27 @@ await database.UpsertAsync(people);
 
 ```
 
+
+#### Execute with temp table
+
+Kros.KORM offers special execute commands for SQL databases, that inserts provided simple data into temp table and
+then executes some specified action using those temporary data.
+You can find these extension methods in `IDatabaseExtensions` class.
+
+```CSharp
+database.ExecuteWithTempTable<TValue>(IEnumerable<TValue> values, action);
+await database.ExecuteWithTempTableAsync<TValue>(IEnumerable<TValue> values, function);
+
+database.ExecuteWithTempTable<TKey, TValue>(IDictionary<TKey, TValue> values, action);
+await database.ExecuteWithTempTable<TKey, TValue>(IDictionary<TKey, TValue> values, function);
+
+T database.ExecuteWithTempTable<T, TValue> (IEnumerable<TValue> values, action);
+await T database.ExecuteWithTempTable<T, TValue> (IEnumerable<TValue> values, function);
+
+T database.ExecuteWithTempTable<T, TKey, TValue> (IDictionary<TKey, TValue> values, action);
+await T database.ExecuteWithTempTable<T,TKey, TValue> (IDictionary<TKey, TValue> values, function);
+```
+
 ### SQL commands executing
 
 Kros.KORM supports SQL commands execution. There are three types of commands:
