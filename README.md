@@ -771,7 +771,6 @@ public class Person
     public string LastName { get; set; }
 }
 
-//Ids is collection of Person ids.
 var ids = new List<int>(){ 0, 1, 2, 3 };
 
 _database.ExecuteWithTempTable(ids, (database, tableName)
