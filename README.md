@@ -763,6 +763,21 @@ await T database.ExecuteWithTempTable<T, TValue> (IEnumerable<TValue> values, fu
 
 T database.ExecuteWithTempTable<T, TKey, TValue> (IDictionary<TKey, TValue> values, action);
 await T database.ExecuteWithTempTable<T,TKey, TValue> (IDictionary<TKey, TValue> values, function);
+
+public class Person
+{
+    public int Id { get; set; }
+    public string FirstName { get; set; }
+    public string LastName { get; set; }
+}
+
+//Ids is collection of Person ids.
+//for example: new List<int>(){0,1,2,3}
+
+_database.ExecuteWithTempTable(Ids, (database, tableName)
+    => database.Query<Person>()
+        .From($"PERSON AS P INNER JOIN {tableName} AS T ON (P.Id = T.Value)")
+        .ToList());
 ```
 
 ### SQL commands executing
