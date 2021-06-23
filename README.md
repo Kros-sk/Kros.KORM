@@ -774,7 +774,7 @@ public class Person
 //Ids is collection of Person ids.
 //for example: new List<int>(){0,1,2,3}
 
-_database.ExecuteWithTempTable(Ids, (database, tableName)
+_database.ExecuteWithTempTable(ids, (database, tableName)
     => database.Query<Person>()
         .From($"PERSON AS P INNER JOIN {tableName} AS T ON (P.Id = T.Value)")
         .ToList());
