@@ -160,6 +160,10 @@
     <comment>0 - constructor parameter name
 1 - model type</comment>
   </data>
+  <data name="ConversionFromTypeIsNotSupported" xml:space="preserve">
+    <value>Conversion from type: '{0}' is not supported.</value>
+    <comment>0 - type name</comment>
+  </data>
   <data name="ConverterTypeIsNotIConverter" xml:space="preserve">
     <value>Converter type must implement implement IConverter interface.</value>
   </data>
