@@ -772,7 +772,7 @@ public class Person
 }
 
 //Ids is collection of Person ids.
-//for example: new List<int>(){0,1,2,3}
+var ids = new List<int>(){ 0, 1, 2, 3 };
 
 _database.ExecuteWithTempTable(ids, (database, tableName)
     => database.Query<Person>()
