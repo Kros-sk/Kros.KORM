@@ -148,7 +148,8 @@ namespace Kros.KORM.Metadata
         public ColumnInfo GetColumnInfo(string columnName)
         {
             Check.NotNull(columnName, nameof(columnName));
-            return _columns.TryGetValue(columnName, out ColumnInfo column) ? column : null;
+            return _columns
+                .TryGetValue(Delimiters.RemoveDelimiters(columnName), out ColumnInfo column) ? column : null;
         }
 
         /// <summary>

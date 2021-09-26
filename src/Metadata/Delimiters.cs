@@ -14,17 +14,17 @@ namespace Kros.KORM.Metadata
         /// <param name="closing">The closing.</param>
         public Delimiters(string opening, string closing)
         {
-            Openin = Check.NotNull(opening, nameof(opening));
+            Opening = Check.NotNull(opening, nameof(opening));
             Closing = Check.NotNull(closing, nameof(closing));
         }
 
         /// <summary>
-        /// Gets the closing.
+        /// Gets the opening.
         /// </summary>
-        public string Openin { get; }
+        public string Opening { get; }
 
         /// <summary>
-        /// Gets the opening.
+        /// Gets the closing.
         /// </summary>
         public string Closing { get; }
 
@@ -33,7 +33,14 @@ namespace Kros.KORM.Metadata
         /// </summary>
         /// <param name="identifier">The identifier.</param>
         public string QuoteIdentifier(string identifier)
-            => Openin + identifier + Closing;
+            => Opening + identifier + Closing;
+
+        /// <summary>
+        /// Removes the delimiters from identifier.
+        /// </summary>
+        /// <param name="identifier">The identifier.</param>
+        public string RemoveDelimiters(string identifier)
+            => identifier?.TrimStart(Opening.ToCharArray()).TrimEnd(Closing.ToCharArray());
 
         /// <summary>
         /// The square brackets.
@@ -48,6 +55,6 @@ namespace Kros.KORM.Metadata
         /// <summary>
         /// Converts to string.
         /// </summary>
-        public override string ToString() => $"{Openin} {Closing}";
+        public override string ToString() => $"{Opening} {Closing}";
     }
 }
