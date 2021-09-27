@@ -186,6 +186,19 @@ namespace Kros.KORM.UnitTests.Metadata
             tableInfo.Delimiters.Should().Be(Delimiters.SquareBrackets);
         }
 
+        [Theory]
+        [InlineData("Name", "Name")]
+        [InlineData("[Name]", "Name")]
+        public void GetColumnInfoWithDelimiters(string columnName, string expected)
+        {
+            TableInfo tableInfo = CreateTableInfo();
+
+            tableInfo.UseIdentifierDelimiters(Delimiters.SquareBrackets);
+            ColumnInfo columnInfo = tableInfo.GetColumnInfo(columnName);
+
+            columnInfo.Name.Should().Be(expected);
+        }
+
         private static TableInfo CreateTableInfo()
         {
             var columns = new List<ColumnInfo>();

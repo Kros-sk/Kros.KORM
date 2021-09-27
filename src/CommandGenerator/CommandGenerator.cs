@@ -278,7 +278,7 @@ SELECT * FROM @OutputTable;";
 
                 foreach (string column in columns)
                 {
-                    ColumnInfo columnInfo = _tableInfo.Columns.Where(p => p.Name == column.Trim()).FirstOrDefault();
+                    ColumnInfo columnInfo = _tableInfo.GetColumnInfo(column.Trim());
 
                     if (columnInfo != null)
                     {
