@@ -2,6 +2,7 @@
 using Kros.UnitTests;
 using Microsoft.Data.SqlClient;
 using System;
+using System.Collections.Generic;
 
 namespace Kros.KORM.UnitTests.Base
 {
@@ -28,8 +29,11 @@ namespace Kros.KORM.UnitTests.Base
         protected virtual IDatabase CreateDatabase(string initScript)
             => new TestDatabase(new SqlServerTestHelper(BaseConnectionString, BaseDatabaseName, initScript));
 
-        protected virtual TestDatabase CreateDatabase(params string[] initDatabaseScripts)
-           => new TestDatabase(new SqlServerTestHelper(BaseConnectionString, BaseDatabaseName, initDatabaseScripts));
+        protected virtual TestDatabase CreateDatabase(string initScript1, string initScript2)
+            => new TestDatabase(new SqlServerTestHelper(BaseConnectionString, BaseDatabaseName, new string[] { initScript1, initScript2 }));
+
+        protected virtual TestDatabase CreateDatabase(IEnumerable<string> initDatabaseScripts)
+            => new TestDatabase(new SqlServerTestHelper(BaseConnectionString, BaseDatabaseName, initDatabaseScripts));
 
         protected bool IsAnyReaderOpened(SqlConnection connection, string tableName)
         {
@@ -41,7 +45,7 @@ namespace Kros.KORM.UnitTests.Base
                     nameof(connection));
             }
 
-            using(ConnectionHelper.OpenConnection(connection))
+            using (ConnectionHelper.OpenConnection(connection))
             using (var command = connection.CreateCommand())
             {
                 command.CommandText = $"SELECT * FROM {tableName}";

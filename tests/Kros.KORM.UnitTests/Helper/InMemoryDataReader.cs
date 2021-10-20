@@ -19,13 +19,18 @@ namespace Kros.KORM.UnitTests.Helper
         private int _fieldCount = 0;
 
         public InMemoryDataReader(IEnumerable<Dictionary<string, object>> data)
+            : this(data, data.Any() ? data.First().Values.Select(p => p.GetType()).ToList() : Enumerable.Empty<Type>())
+        {
+        }
+
+        public InMemoryDataReader(IEnumerable<Dictionary<string, object>> data, IEnumerable<Type> types)
         {
             _data = data.GetEnumerator();
             _originData = data;
-            if (_originData.Count() > 0)
+            if (_originData.Any())
             {
                 _keys = _originData.First().Keys.ToList();
-                _types = _originData.First().Values.Select(p => p.GetType()).ToList();
+                _types = types.ToList();
                 _fieldCount = _originData.First().Count;
             }
         }

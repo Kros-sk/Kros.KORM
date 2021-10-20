@@ -269,5 +269,12 @@ namespace Kros.KORM.Query
         /// A task that represents the asynchronous bulk update operation.
         /// </returns>
         Task BulkUpdateAsync(IEnumerable<T> items, Action<IDbConnection, IDbTransaction, string> tempTableAction);
+
+        /// <summary>
+        /// IDbSet with custom upsert condition columns.
+        /// </summary>
+        /// <param name="columnNames">The column names.</param>
+        /// <returns></returns>
+        IDbSet<T> WithCustomUpsertConditionColumns(params string[] columnNames);
     }
 }

@@ -77,6 +77,16 @@ namespace Kros.KORM.Metadata
         /// <typeparam name="TEntity">Entity type.</typeparam>
         /// <param name="propertyName">Property name, which represent primary key.</param>
         /// <param name="autoIncrementType">Autoincrement method type.</param>
-        void SetPrimaryKey<TEntity>(string propertyName, AutoIncrementMethodType autoIncrementType) where TEntity : class;
+        /// <param name="generatorName">Name of the ID generator for column.</param>
+        void SetPrimaryKey<TEntity>(
+            string propertyName,
+            AutoIncrementMethodType autoIncrementType,
+            string generatorName) where TEntity : class;
+
+        /// <summary>
+        /// Use delimieters for identifiers in the generated query.
+        /// </summary>
+        /// <param name="delimiters">The delimiters.</param>
+        void UseIdentifierDelimiters(Delimiters delimiters);
     }
 }

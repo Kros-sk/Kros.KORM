@@ -267,7 +267,23 @@ namespace Kros.KORM.Query
         /// <param name="tableName">Name of the database table.</param>
         /// <param name="batchSize">Size of inserting the batch.</param>
         /// <returns>The identifier generator.</returns>
+        [Obsolete("Method is deprecated. Use CreateIdGenerator(Type, string, int).")]
         IIdGenerator CreateIdGenerator(string tableName, int batchSize);
+
+        /// <summary>
+        /// Get all ID generators.
+        /// </summary>
+        /// <returns>Collection of ID generators.</returns>
+        public IIdGeneratorsForDatabaseInit GetIdGeneratorsForDatabaseInit();
+
+        /// <summary>
+        /// Creates the identifier generator.
+        /// </summary>
+        /// <param name="dataType">ID generator data type.</param>
+        /// <param name="tableName">Name of the database table.</param>
+        /// <param name="batchSize">Size of inserting the batch.</param>
+        /// <returns>The identifier generator.</returns>
+        IIdGenerator CreateIdGenerator(Type dataType, string tableName, int batchSize);
 
         /// <summary>
         /// Get expression visitor for generating sql.

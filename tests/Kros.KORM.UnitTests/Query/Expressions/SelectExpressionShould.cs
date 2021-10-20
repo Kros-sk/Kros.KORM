@@ -11,7 +11,7 @@ namespace Kros.KORM.UnitTests.Query.Expressions
         [Fact]
         public void SetColumnsExpression()
         {
-            var tableInfo = new DatabaseMapper(new ConventionModelMapper()).GetTableInfo<Person>();
+            TableInfo tableInfo = new DatabaseMapper(new ConventionModelMapper()).GetTableInfo<Person>();
             var selectExpression = new SelectExpression(tableInfo);
 
             var expression = new ColumnsExpression("Id");
@@ -23,16 +23,26 @@ namespace Kros.KORM.UnitTests.Query.Expressions
         [Fact]
         public void GetColumnsExpressionIfWasNotSet()
         {
-            var tableInfo = new DatabaseMapper(new ConventionModelMapper()).GetTableInfo<Person>();
+            TableInfo tableInfo = new DatabaseMapper(new ConventionModelMapper()).GetTableInfo<Person>();
             var selectExpression = new SelectExpression(tableInfo);
 
             selectExpression.ColumnsExpression.ColumnsPart.Should().Be("Id, Name, LastName");
         }
 
         [Fact]
+        public void GetColumnsExpressionWithQuotas()
+        {
+            TableInfo tableInfo = new DatabaseMapper(new ConventionModelMapper()).GetTableInfo<Person>();
+            tableInfo.UseIdentifierDelimiters(Delimiters.SquareBrackets);
+            var selectExpression = new SelectExpression(tableInfo);
+
+            selectExpression.ColumnsExpression.ColumnsPart.Should().Be("[Id], [Name], [LastName]");
+        }
+
+        [Fact]
         public void SetTableExpression()
         {
-            var tableInfo = new DatabaseMapper(new ConventionModelMapper()).GetTableInfo<Person>();
+            TableInfo tableInfo = new DatabaseMapper(new ConventionModelMapper()).GetTableInfo<Person>();
             var selectExpression = new SelectExpression(tableInfo);
 
             var expression = new TableExpression("Person");
@@ -44,16 +54,26 @@ namespace Kros.KORM.UnitTests.Query.Expressions
         [Fact]
         public void GetTableExpressionIfWasNotSet()
         {
-            var tableInfo = new DatabaseMapper(new ConventionModelMapper()).GetTableInfo<Person>();
+            TableInfo tableInfo = new DatabaseMapper(new ConventionModelMapper()).GetTableInfo<Person>();
             var selectExpression = new SelectExpression(tableInfo);
 
             selectExpression.TableExpression.TablePart.Should().Be("TPerson");
         }
 
         [Fact]
+        public void GetTableExpressionWithQuota()
+        {
+            TableInfo tableInfo = new DatabaseMapper(new ConventionModelMapper()).GetTableInfo<Person>();
+            tableInfo.UseIdentifierDelimiters(Delimiters.SquareBrackets);
+            var selectExpression = new SelectExpression(tableInfo);
+
+            selectExpression.TableExpression.TablePart.Should().Be("[TPerson]");
+        }
+
+        [Fact]
         public void SetOrderByExpression()
         {
-            var tableInfo = new DatabaseMapper(new ConventionModelMapper()).GetTableInfo<Person>();
+            TableInfo tableInfo = new DatabaseMapper(new ConventionModelMapper()).GetTableInfo<Person>();
             var selectExpression = new SelectExpression(tableInfo);
 
             var expression = new OrderByExpression("FirstName");
@@ -65,7 +85,7 @@ namespace Kros.KORM.UnitTests.Query.Expressions
         [Fact]
         public void SetGroupByExpression()
         {
-            var tableInfo = new DatabaseMapper(new ConventionModelMapper()).GetTableInfo<Person>();
+            TableInfo tableInfo = new DatabaseMapper(new ConventionModelMapper()).GetTableInfo<Person>();
             var selectExpression = new SelectExpression(tableInfo);
 
             var expression = new GroupByExpression("FirstName");
@@ -77,7 +97,7 @@ namespace Kros.KORM.UnitTests.Query.Expressions
         [Fact]
         public void SetWhereConditionMoreTimes()
         {
-            var tableInfo = new DatabaseMapper(new ConventionModelMapper()).GetTableInfo<Person>();
+            TableInfo tableInfo = new DatabaseMapper(new ConventionModelMapper()).GetTableInfo<Person>();
             var selectExpression = new SelectExpression(tableInfo);
 
             selectExpression.SetWhereExpression(new WhereExpression("PersonId > @1", 11));

@@ -1,7 +1,6 @@
 ﻿using Kros.Data;
 using Kros.KORM.CommandGenerator;
 using Kros.KORM.Metadata;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -11,7 +10,8 @@ namespace Kros.KORM.Data
     {
         private IIdGenerator _idGenerator;
         private readonly TableInfo _tableInfo;
-        private readonly Lazy<ColumnInfo> _primaryKey;
+        private readonly ColumnInfo _primaryKey;
+        private readonly int _primaryKeyOrdinal = -1;
 
         public KormBulkInsertDataReader(IEnumerable<T> data,
             ICommandGenerator<T> generator,
@@ -22,10 +22,11 @@ namespace Kros.KORM.Data
             _tableInfo = tableInfo;
             _idGenerator = idGenerator;
 
-            _primaryKey = new Lazy<ColumnInfo>(() =>
+            if (_idGenerator is not null)
             {
-                return _tableInfo.PrimaryKey.Single(p => p.AutoIncrementMethodType == AutoIncrementMethodType.Custom);
-            });
+                _primaryKey = _tableInfo.PrimaryKey.Single(p => p.AutoIncrementMethodType == AutoIncrementMethodType.Custom);
+                _primaryKeyOrdinal = GetOrdinal(_primaryKey.Name);
+            }
         }
 
         public override object GetValue(int i)
@@ -42,28 +43,22 @@ namespace Kros.KORM.Data
             }
         }
 
-        private int GenerateId()
+        private object GenerateId()
         {
             var id = _idGenerator.GetNext();
-            _primaryKey.Value.SetValue(DataEnumerator.Current, id);
+            _primaryKey.SetValue(DataEnumerator.Current, id);
 
             return id;
         }
 
-        private bool CanGenerateId(int i, object value) =>
-            _idGenerator != null && IsPrimaryKey(i) && (int)value == 0;
-
-        private bool IsPrimaryKey(int i) =>
-            i == GetOrdinal(_primaryKey.Value.Name);
+        private bool CanGenerateId(int i, object value)
+            => (i == _primaryKeyOrdinal) && _primaryKey.IsDefaultValue(value);
 
         protected override void Dispose(bool disposing)
         {
             base.Dispose(disposing);
-            if (disposing)
-            {
-                _idGenerator?.Dispose();
-                _idGenerator = null;
-            }
+            _idGenerator?.Dispose();
+            _idGenerator = null;
         }
     }
 }

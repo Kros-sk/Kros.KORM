@@ -111,6 +111,28 @@ namespace Kros.KORM.Metadata
         /// </summary>
         public Expression  QueryFilter { get; set; }
 
+        /// <summary>
+        /// Gets primary key SQL data type.
+        /// </summary>
+        public string IdentityPrimaryKeySqlType
+        {
+            get
+            {
+                if (IdentityPrimaryKey is not null)
+                {
+                    if (IdentityPrimaryKey.PropertyInfo.PropertyType == typeof(long))
+                    {
+                        return "bigint";
+                    }
+                    else if (IdentityPrimaryKey.PropertyInfo.PropertyType == typeof(int))
+                    {
+                        return "int";
+                    }
+                }
+                return string.Empty;
+            }
+        }
+
         #endregion
 
         #region Public Methods
@@ -126,7 +148,8 @@ namespace Kros.KORM.Metadata
         public ColumnInfo GetColumnInfo(string columnName)
         {
             Check.NotNull(columnName, nameof(columnName));
-            return _columns.TryGetValue(columnName, out ColumnInfo column) ? column : null;
+            return _columns
+                .TryGetValue(Delimiters.RemoveDelimiters(columnName), out ColumnInfo column) ? column : null;
         }
 
         /// <summary>
@@ -148,5 +171,19 @@ namespace Kros.KORM.Metadata
             => _properties.Value.TryGetValue(propertyName, out ColumnInfo column) ? column : null;
 
         #endregion
+
+        /// <summary>
+        /// Gets the delimiters.
+        /// </summary>
+        internal Delimiters Delimiters { get; private set; } = Delimiters.Empty;
+
+        /// <summary>
+        /// Use delimieters for identifiers in the generated query.
+        /// </summary>
+        /// <param name="delimiters">The Delimiters.</param>
+        internal void UseIdentifierDelimiters(Delimiters delimiters)
+        {
+            Delimiters = delimiters;
+        }
     }
 }

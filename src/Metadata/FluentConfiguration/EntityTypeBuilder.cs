@@ -15,6 +15,7 @@ namespace Kros.KORM.Metadata
         private string _tableName;
         private string _primaryKeyPropertyName;
         private AutoIncrementMethodType _autoIncrementType = AutoIncrementMethodType.None;
+        private string _generatorName = null;
         private readonly Dictionary<Type, IConverter> _propertyConverters = new Dictionary<Type, IConverter>();
         private readonly Dictionary<string, PropertyBuilder<TEntity>> _propertyBuilders
             = new Dictionary<string, PropertyBuilder<TEntity>>(StringComparer.OrdinalIgnoreCase);
@@ -36,6 +37,14 @@ namespace Kros.KORM.Metadata
         IEntityTypeConvertersBuilder<TEntity> IPrimaryKeyBuilder<TEntity>.AutoIncrement(AutoIncrementMethodType autoIncrementType)
         {
             _autoIncrementType = autoIncrementType;
+            return this;
+        }
+
+        IEntityTypeConvertersBuilder<TEntity> IPrimaryKeyBuilder<TEntity>.AutoIncrement(
+            AutoIncrementMethodType autoIncrementType, string generatoraName)
+        {
+            _autoIncrementType = autoIncrementType;
+            _generatorName = generatoraName;
             return this;
         }
 
@@ -77,7 +86,7 @@ namespace Kros.KORM.Metadata
             }
             if (!_primaryKeyPropertyName.IsNullOrWhiteSpace())
             {
-                modelMapper.SetPrimaryKey<TEntity>(_primaryKeyPropertyName, _autoIncrementType);
+                modelMapper.SetPrimaryKey<TEntity>(_primaryKeyPropertyName, _autoIncrementType, _generatorName);
             }
             foreach (KeyValuePair<Type, IConverter> item in _propertyConverters)
             {

@@ -25,6 +25,7 @@ namespace Kros.KORM.Metadata
         private readonly Dictionary<Type, EntityMapper> _entities = new Dictionary<Type, EntityMapper>();
         private readonly Dictionary<string, Expression> _queryFilters
             = new Dictionary<string, Expression>(StringComparer.OrdinalIgnoreCase);
+        private Delimiters _delimiters = Delimiters.Empty;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ConventionModelMapper"/> class.
@@ -167,6 +168,7 @@ namespace Kros.KORM.Metadata
 
             SetQueryFilter(tableInfo);
             SetPrimaryKey(tableInfo, modelType);
+            tableInfo.UseIdentifierDelimiters(_delimiters);
 
             return tableInfo;
         }
@@ -186,6 +188,7 @@ namespace Kros.KORM.Metadata
                 ColumnInfo columnInfo = tableInfo.GetColumnInfoByPropertyName(entity.PrimaryKeyPropertyName);
                 columnInfo.IsPrimaryKey = true;
                 columnInfo.AutoIncrementMethodType = entity.PrimaryKeyAutoIncrementType;
+                columnInfo.AutoIncrementGeneratorName = entity.PrimaryKeyGeneratorName;
             }
             else
             {
@@ -334,8 +337,10 @@ namespace Kros.KORM.Metadata
             var ret = new List<ColumnInfo>();
             if (pkByAttributes.Count == 1)
             {
+                CheckGeneratorName(tableInfo.Name, pkByAttributes[0].Column, pkByAttributes[0].Attribute);
                 ret.Add(pkByAttributes[0].Column);
                 ret[0].AutoIncrementMethodType = pkByAttributes[0].Attribute.AutoIncrementMethodType;
+                ret[0].AutoIncrementGeneratorName = pkByAttributes[0].Attribute.GeneratorName;
             }
             else if (pkByAttributes.Count > 1)
             {
@@ -353,6 +358,17 @@ namespace Kros.KORM.Metadata
             }
 
             return ret;
+        }
+
+        private static void CheckGeneratorName(string tableName, ColumnInfo column, KeyAttribute keyInfo)
+        {
+            if (!string.IsNullOrEmpty(keyInfo.GeneratorName)
+                && (keyInfo.AutoIncrementMethodType != AutoIncrementMethodType.Custom))
+            {
+                throw new InvalidOperationException(
+                    string.Format(Resources.Error_GeneratorNameCanBeSetOnlyWithCustomAutoIncrementType,
+                    tableName, column.Name, keyInfo.GeneratorName, keyInfo.AutoIncrementMethodType));
+            }
         }
 
         private static void CheckPrimaryKeyColumns(
@@ -454,11 +470,15 @@ namespace Kros.KORM.Metadata
 
         void IModelMapperInternal.SetInjector<TEntity>(IInjector injector) => GetEntity<TEntity>().Injector = injector;
 
-        void IModelMapperInternal.SetPrimaryKey<TEntity>(string propertyName, AutoIncrementMethodType autoIncrementType)
+        void IModelMapperInternal.SetPrimaryKey<TEntity>(
+            string propertyName,
+            AutoIncrementMethodType autoIncrementType,
+            string generatorName)
         {
             EntityMapper entity = GetEntity<TEntity>();
             entity.PrimaryKeyPropertyName = propertyName;
             entity.PrimaryKeyAutoIncrementType = autoIncrementType;
+            entity.PrimaryKeyGeneratorName = generatorName;
         }
 
         void IModelMapperInternal.SetQueryFilter(string tableName, Expression queryFilter)
@@ -467,6 +487,9 @@ namespace Kros.KORM.Metadata
 
             _queryFilters[tableName] = queryFilter;
         }
+
+        void IModelMapperInternal.UseIdentifierDelimiters(Delimiters delimiters)
+            => _delimiters = Check.NotNull(delimiters, nameof(delimiters));
 
         #endregion
     }

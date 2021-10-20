@@ -12,7 +12,7 @@ namespace Kros.KORM.Metadata.Attribute
         /// Initializes a new instance of the <see cref="KeyAttribute"/> class.
         /// </summary>
         public KeyAttribute()
-            : this(null, AutoIncrementMethodType.None)
+            : this(null, 0, AutoIncrementMethodType.None, null)
         {
         }
 
@@ -21,7 +21,7 @@ namespace Kros.KORM.Metadata.Attribute
         /// </summary>
         /// <param name="order">The order of the column in composite primary key.</param>
         public KeyAttribute(int order)
-            : this(null, order, AutoIncrementMethodType.None)
+            : this(null, order, AutoIncrementMethodType.None, null)
         {
         }
 
@@ -30,7 +30,7 @@ namespace Kros.KORM.Metadata.Attribute
         /// </summary>
         /// <param name="name">The key name.</param>
         public KeyAttribute(string name)
-            : this(name, 0, AutoIncrementMethodType.None)
+            : this(name, 0, AutoIncrementMethodType.None, null)
         {
         }
 
@@ -40,7 +40,7 @@ namespace Kros.KORM.Metadata.Attribute
         /// <param name="name">The key name.</param>
         /// <param name="order">The order of the column in composite primary key.</param>
         public KeyAttribute(string name, int order)
-            : this(name, order, AutoIncrementMethodType.None)
+            : this(name, order, AutoIncrementMethodType.None, null)
         {
         }
 
@@ -49,7 +49,17 @@ namespace Kros.KORM.Metadata.Attribute
         /// </summary>
         /// <param name="autoIncrementMethodType">Type of primary key auto increment method.</param>
         public KeyAttribute(AutoIncrementMethodType autoIncrementMethodType)
-            : this(null, 0, autoIncrementMethodType)
+            : this(null, 0, autoIncrementMethodType, null)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="KeyAttribute"/> class.
+        /// </summary>
+        /// <param name="autoIncrementMethodType">Type of primary key auto increment method.</param>
+        /// <param name="generatorName">Name of the value generator. If not set, table name will be used.</param>
+        public KeyAttribute(AutoIncrementMethodType autoIncrementMethodType, string generatorName)
+            : this(null, 0, autoIncrementMethodType, generatorName)
         {
         }
 
@@ -59,7 +69,7 @@ namespace Kros.KORM.Metadata.Attribute
         /// <param name="name">The key name.</param>
         /// <param name="autoIncrementMethodType">Type of primary key auto increment method.</param>
         public KeyAttribute(string name, AutoIncrementMethodType autoIncrementMethodType)
-            : this (name, 0, autoIncrementMethodType)
+            : this(name, 0, autoIncrementMethodType, null)
         {
         }
 
@@ -67,11 +77,17 @@ namespace Kros.KORM.Metadata.Attribute
         /// Initializes a new instance of the <see cref="KeyAttribute"/> class.
         /// </summary>
         /// <param name="name">The key name.</param>
-        /// <param name="order">The order of the column in composite primary key.</param>
         /// <param name="autoIncrementMethodType">Type of primary key auto increment method.</param>
-        private KeyAttribute(string name, int order, AutoIncrementMethodType autoIncrementMethodType)
+        /// <param name="generatorName">Name of the value generator. If not set, table name will be used.</param>
+        public KeyAttribute(string name, AutoIncrementMethodType autoIncrementMethodType, string generatorName)
+            : this(name, 0, autoIncrementMethodType, generatorName)
+        {
+        }
+
+        private KeyAttribute(string name, int order, AutoIncrementMethodType autoIncrementMethodType, string generatorName)
         {
             AutoIncrementMethodType = autoIncrementMethodType;
+            GeneratorName = generatorName;
             Name = name;
             Order = order;
         }
@@ -79,7 +95,13 @@ namespace Kros.KORM.Metadata.Attribute
         /// <summary>
         /// Type of primary key auto increment method.
         /// </summary>
-        public AutoIncrementMethodType AutoIncrementMethodType { get; private set; }
+        public AutoIncrementMethodType AutoIncrementMethodType { get; }
+
+        /// <summary>
+        /// Name of the generator when <see cref="AutoIncrementMethodType"/> is <c>Custom</c>.
+        /// If not set, table name will be used.
+        /// </summary>
+        public string GeneratorName { get; }
 
         /// <summary>
         /// The order of the column in composite primary key.

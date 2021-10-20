@@ -272,7 +272,8 @@ namespace Kros.KORM.UnitTests.Metadata
         public void GetTableInfoWithPrimaryKeyFluentDefinition()
         {
             var modelMapper = new ConventionModelMapper();
-            ((IModelMapperInternal)modelMapper).SetPrimaryKey<FluentPrivateKey>("RecordId", AutoIncrementMethodType.Identity);
+            ((IModelMapperInternal)modelMapper)
+                .SetPrimaryKey<FluentPrivateKey>("RecordId", AutoIncrementMethodType.Identity, null);
 
             var tableInfo = modelMapper.GetTableInfo<FluentPrivateKey>();
             tableInfo.PrimaryKey
@@ -280,6 +281,23 @@ namespace Kros.KORM.UnitTests.Metadata
                 .HaveCount(1)
                 .And
                 .ContainSingle((c) => c.Name == "RecordId" && c.AutoIncrementMethodType == AutoIncrementMethodType.Identity);
+        }
+
+        [Fact]
+        public void GetTableInfoWithPrimaryKeyFluentDefinitionWithGeneratorName()
+        {
+            var modelMapper = new ConventionModelMapper();
+            ((IModelMapperInternal)modelMapper)
+                .SetPrimaryKey<FluentPrivateKey>("RecordId", AutoIncrementMethodType.Identity, "LoremIpsum");
+
+            var tableInfo = modelMapper.GetTableInfo<FluentPrivateKey>();
+            tableInfo.PrimaryKey
+                .Should()
+                .HaveCount(1)
+                .And
+                .ContainSingle((c) => c.Name == "RecordId"
+                    && c.AutoIncrementMethodType == AutoIncrementMethodType.Identity
+                    && c.AutoIncrementGeneratorName == "LoremIpsum");
         }
 
         [Fact]
