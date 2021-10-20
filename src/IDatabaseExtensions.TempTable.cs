@@ -1,8 +1,10 @@
 ﻿using Kros.Data.BulkActions;
 using Kros.KORM.Data;
 using Kros.KORM.Extensions;
+using Kros.KORM.Metadata;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Kros.KORM
@@ -234,25 +236,38 @@ namespace Kros.KORM
             IEnumerable<TValue> values,
             string tempTableName)
         {
-            database.ExecuteNonQuery($"CREATE TABLE {tempTableName} ( Value {typeof(TValue).ToSqlDataType()} )");
+            TableInfo tableInfo = Database.DatabaseMapper.GetTableInfo<TValue>();
+            string columns = GetColumnsWithSqlTypes(tableInfo, typeof(TValue));
+            database.ExecuteNonQuery($"CREATE TABLE {tempTableName} ( {columns} )");
 
             using IBulkInsert bulkInsert = database.CreateBulkInsert();
 
             bulkInsert.DestinationTableName = tempTableName;
 
-            using var reader = new EnumerableDataReader<TValue>(values, new string[] { "Value" });
+            using var reader = new EnumerableDataReader<TValue>(values, GetColumns(tableInfo, typeof(TValue)));
 
             bulkInsert.Insert(reader);
         }
+
+        private static string GetColumnsWithSqlTypes(TableInfo tableInfo, Type type)
+            => (type.IsPrimitive || type == typeof(string))
+                ? $"Value {type.ToSqlDataType()}"
+                : string.Join(
+                    ",",
+                    tableInfo.Columns.Select(c => $"[{c.PropertyInfo.Name}] {c.PropertyInfo.PropertyType.ToSqlDataType()}"));
+
+        private static IEnumerable<string> GetColumns(TableInfo tableInfo, Type type)
+            => (type.IsPrimitive || type == typeof(string))
+                ? new string[] { "Value" }
+                : tableInfo.Columns.Select(c => c.PropertyInfo.Name);
 
         private static void InsertValuesIntoTempTable<TKey, TValue>(
             IDatabase database,
             IDictionary<TKey, TValue> values,
             string tempTableName)
         {
-            database.ExecuteNonQuery($"CREATE TABLE {tempTableName} " +
-                                     $"( [Key] {typeof(TKey).ToSqlDataType()}, " +
-                                     $"  [Value] {typeof(TValue).ToSqlDataType()} )");
+            database.ExecuteNonQuery(
+                $"CREATE TABLE {tempTableName}([Key] {typeof(TKey).ToSqlDataType()}, [Value] {typeof(TValue).ToSqlDataType()})");
 
             using IBulkInsert bulkInsert = database.CreateBulkInsert();
             bulkInsert.DestinationTableName = tempTableName;

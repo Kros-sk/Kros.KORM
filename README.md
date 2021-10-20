@@ -374,7 +374,7 @@ For this purpose exists `IValueGenerator` interface which your class must implem
 ```c#
 public interface IValueGenerator
 {
-	object GetValue();
+    object GetValue();
 }
 ```
 
@@ -383,7 +383,7 @@ Here is an example of custom value generator:
 ```c#
 private class AutoIncrementValueGenerator : IValueGenerator
 {
-	  public object GetValue() => 123;
+      public object GetValue() => 123;
 }
 ```
 
@@ -776,6 +776,24 @@ var ids = new List<int>(){ 0, 1, 2, 3 };
 _database.ExecuteWithTempTable(ids, (database, tableName)
     => database.Query<Person>()
         .From($"PERSON AS P INNER JOIN {tableName} AS T ON (P.Id = T.Value)")
+        .ToList());
+        
+public class IdDto
+{
+    public IdDto(int id)
+    {
+        Id = id;
+    }
+    
+    public int Id { get; set; }
+}
+
+var ids = new List<IdDto>(){ new IdDto(0), new IdDto(1), new IdDto(2), new IdDto(3) };
+
+_database.ExecuteWithTempTable(ids, (database, tableName)
+    => database.Query<Person>()
+        .Select("P.*")
+        .From($"PERSON AS P INNER JOIN {tableName} AS T ON (P.Id = T.Id)")
         .ToList());
 ```
 
