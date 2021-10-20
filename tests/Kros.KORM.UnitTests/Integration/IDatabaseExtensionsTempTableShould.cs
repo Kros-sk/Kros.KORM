@@ -311,8 +311,8 @@ namespace Kros.KORM.UnitTests.Integration
         private static List<TestDto> CreateTestData()
             => new List<TestDto>()
             {
-                new TestDto(1,1),
-                new TestDto(789,789)
+                new TestDto(1, 1),
+                new TestDto(789, 789)
             };
 
         private record IdDto(int Id);

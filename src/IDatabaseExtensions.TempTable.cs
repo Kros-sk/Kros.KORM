@@ -253,7 +253,7 @@ namespace Kros.KORM
             => (type.IsPrimitive || type == typeof(string))
                 ? $"Value {type.ToSqlDataType()}"
                 : string.Join(
-                    ',',
+                    ",",
                     tableInfo.Columns.Select(c => $"[{c.PropertyInfo.Name}] {c.PropertyInfo.PropertyType.ToSqlDataType()}"));
 
         private static IEnumerable<string> GetColumns(TableInfo tableInfo, Type type)
