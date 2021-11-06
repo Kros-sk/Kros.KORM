@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+using Kros.KORM.Metadata;
 using Kros.KORM.Metadata.Attribute;
 using Kros.KORM.Query;
 using Kros.KORM.UnitTests.Base;
@@ -20,14 +21,13 @@ $@"CREATE TABLE [dbo].[{Table_TestTable}] (
     [Id] [uniqueidentifier] NOT NULL,
     [Age] [int] NULL,
     [FirstName] [nvarchar](50) NULL,
-    [LastName] [nvarchar](50) NULL,
-    CONSTRAINT [PK_{Table_TestTable}] PRIMARY KEY NONCLUSTERED ([Id])
+    [LastName] [nvarchar](50) NULL
 ) ON [PRIMARY];";
 
         [Alias(Table_TestTable)]
         public class Person
         {
-            [Key]
+            [Key(AutoIncrementMethodType.Custom)]
             public Guid Id { get; set; }
 
             public int Age { get; set; }
@@ -40,7 +40,7 @@ $@"CREATE TABLE [dbo].[{Table_TestTable}] (
         [Alias(Table_TestTable)]
         private class Foo
         {
-            [Key]
+            [Key(AutoIncrementMethodType.None)]
             public Guid Id { get; set; }
         }
 
@@ -123,6 +123,28 @@ $@"CREATE TABLE [dbo].[{Table_TestTable}] (
                     item.Id.Should().Be(source.Id);
                     item.FirstName.Should().Be(source.FirstName);
                 }
+            }
+        }
+
+        [Fact]
+        public void DoNotGeneratePrimaryKeyIfKeyIsNotAutoIncrement()
+        {
+            using (var korm = CreateTestDatabase())
+            {
+                var dbSet = korm.Query<Foo>().AsDbSet();
+                var sourcePeople = new List<Foo>() {
+                    new Foo(),
+                    new Foo(),
+                    new Foo(),
+                };
+
+                dbSet.Add(sourcePeople);
+                dbSet.CommitChanges();
+
+                sourcePeople.Select(p => p.Id).Should().BeEquivalentTo(new[] { Guid.Empty, Guid.Empty, Guid.Empty });
+
+                var people = korm.Query<Person>().AsEnumerable();
+                people.Select(p => p.Id).Should().BeEquivalentTo(new[] { Guid.Empty, Guid.Empty, Guid.Empty });
             }
         }
     }
