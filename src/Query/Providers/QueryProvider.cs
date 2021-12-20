@@ -506,6 +506,13 @@ namespace Kros.KORM.Query
         public abstract IBulkInsert CreateBulkInsert();
 
         /// <summary>
+        /// Creates instance of <see cref="IBulkInsert"/>.
+        /// </summary>
+        /// <param name="options">Options <see cref="SqlBulkCopyOptions"/>.</param>
+        /// <returns>Instance of <see cref="IBulkInsert"/>.</returns>
+        public abstract IBulkInsert CreateBulkInsert(SqlBulkCopyOptions options);
+
+        /// <summary>
         /// Creates instance of <see cref="IBulkUpdate"/>.
         /// </summary>
         /// <returns>Instance of <see cref="IBulkUpdate"/>.</returns>

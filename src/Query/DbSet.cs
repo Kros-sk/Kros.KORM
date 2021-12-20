@@ -1,4 +1,5 @@
-﻿using Kros.KORM.CommandGenerator;
+﻿using Kros.Data.BulkActions;
+using Kros.KORM.CommandGenerator;
 using Kros.KORM.Data;
 using Kros.KORM.Exceptions;
 using Kros.KORM.Metadata;
@@ -6,6 +7,7 @@ using Kros.KORM.Properties;
 using Kros.KORM.Query.Expressions;
 using Kros.KORM.Query.Sql;
 using Kros.Utils;
+using Microsoft.Data.SqlClient;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -237,17 +239,24 @@ namespace Kros.KORM.Query
         /// <inheritdoc />
         public void BulkInsert()
         {
-            BulkInsertCoreAsync(_addedItems, false).GetAwaiter().GetResult();
+            BulkInsertCoreAsync(_addedItems, false, null).GetAwaiter().GetResult();
+            _addedItems?.Clear();
+        }
+
+        /// <inheritdoc />
+        public void BulkInsert(SqlBulkCopyOptions options)
+        {
+            BulkInsertCoreAsync(_addedItems, false, options).GetAwaiter().GetResult();
             _addedItems?.Clear();
         }
 
         /// <inheritdoc />
         public void BulkInsert(IEnumerable<T> items)
-        {
-            Check.NotNull(items, nameof(items));
+            => BulkInsertCoreAsync(Check.NotNull(items, nameof(items)), false).GetAwaiter().GetResult();
 
-            BulkInsertCoreAsync(items, false).GetAwaiter().GetResult();
-        }
+        /// <inheritdoc />
+        public void BulkInsert(IEnumerable<T> items, SqlBulkCopyOptions options)
+            => BulkInsertCoreAsync(Check.NotNull(items, nameof(items)), false, options).GetAwaiter().GetResult();
 
         /// <inheritdoc />
         public async Task BulkInsertAsync()
@@ -258,12 +267,20 @@ namespace Kros.KORM.Query
         }
 
         /// <inheritdoc />
-        public Task BulkInsertAsync(IEnumerable<T> items)
+        public async Task BulkInsertAsync(SqlBulkCopyOptions options)
         {
-            Check.NotNull(items, nameof(items));
+            await BulkInsertCoreAsync(_addedItems, true, options);
 
-            return BulkInsertCoreAsync(items, true);
+            _addedItems?.Clear();
         }
+
+        /// <inheritdoc />
+        public Task BulkInsertAsync(IEnumerable<T> items)
+            => BulkInsertCoreAsync(Check.NotNull(items, nameof(items)), true);
+
+        /// <inheritdoc />
+        public Task BulkInsertAsync(IEnumerable<T> items, SqlBulkCopyOptions options)
+            => BulkInsertCoreAsync(Check.NotNull(items, nameof(items)), true, options);
 
         /// <inheritdoc />
         public void BulkUpdate()
@@ -597,11 +614,11 @@ namespace Kros.KORM.Query
             }
         }
 
-        private async Task BulkInsertCoreAsync(IEnumerable<T> items, bool useAsync)
+        private async Task BulkInsertCoreAsync(IEnumerable<T> items, bool useAsync, SqlBulkCopyOptions? options = null)
         {
             if (items != null)
             {
-                using (var bulkInsert = _provider.CreateBulkInsert())
+                using (var bulkInsert = GetBulkInsert(options))
                 {
                     bulkInsert.DestinationTableName = _tableInfo.Name;
 
@@ -627,6 +644,9 @@ namespace Kros.KORM.Query
                 }
             }
         }
+
+        private IBulkInsert GetBulkInsert(SqlBulkCopyOptions? options = null)
+            => options is null ? _provider.CreateBulkInsert() : _provider.CreateBulkInsert(options.Value);
 
         private async Task BulkUpdateCoreAsync(
             IEnumerable<T> items,

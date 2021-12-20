@@ -5,6 +5,7 @@ using Kros.KORM.Metadata;
 using Kros.KORM.Properties;
 using Kros.KORM.Query;
 using Kros.Utils;
+using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -187,6 +188,13 @@ namespace Kros.KORM
         /// </summary>
         /// <returns>Instance of <see cref="IBulkInsert"/>.</returns>
         public IBulkInsert CreateBulkInsert() => _queryProvider.CreateBulkInsert();
+
+        /// <summary>
+        /// Creates instance of <see cref="IBulkInsert"/>.
+        /// </summary>
+        /// <param name="options">Options <see cref="SqlBulkCopyOptions"/>.</param>
+        /// <returns>Instance of <see cref="IBulkInsert"/>.</returns>
+        public IBulkInsert CreateBulkInsert(SqlBulkCopyOptions options) => _queryProvider.CreateBulkInsert(options);
 
         /// <summary>
         /// Creates instance of <see cref="IBulkUpdate"/>.

@@ -201,15 +201,11 @@ namespace Kros.KORM.UnitTests.Query.Sql
 
             public override DbProviderFactory DbProviderFactory => throw new NotImplementedException();
 
-            public override IBulkInsert CreateBulkInsert()
-            {
-                throw new NotImplementedException();
-            }
+            public override IBulkInsert CreateBulkInsert() => throw new NotImplementedException();
 
-            public override IBulkUpdate CreateBulkUpdate()
-            {
-                throw new NotImplementedException();
-            }
+            public override IBulkInsert CreateBulkInsert(SqlBulkCopyOptions options) => throw new NotImplementedException();
+
+            public override IBulkUpdate CreateBulkUpdate() => throw new NotImplementedException();
 
             public override IEnumerable<T> Execute<T>(IQuery<T> query)
             {

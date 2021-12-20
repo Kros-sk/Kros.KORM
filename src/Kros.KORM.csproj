@@ -1,78 +1,78 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.1;net46</TargetFrameworks>
-    <Version>4.3.2</Version>
-    <Authors>KROS a. s.</Authors>
-    <Company>KROS a. s.</Company>
-    <Description>KORM is fast, easy to use, micro ORM tool (Kros Object Relation Mapper).</Description>
-    <Title>Kros.KORM</Title>
-    <Copyright>Copyright © KROS a. s.</Copyright>
-    <RootNamespace>Kros.KORM</RootNamespace>
-    <ApplicationIcon>icon.ico</ApplicationIcon>
-    <Product>Kros.KORM</Product>
-    <AssemblyName>Kros.KORM</AssemblyName>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFrameworks>netcoreapp2.1;net46</TargetFrameworks>
+        <Version>4.3.3</Version>
+        <Authors>KROS a. s.</Authors>
+        <Company>KROS a. s.</Company>
+        <Description>KORM is fast, easy to use, micro ORM tool (Kros Object Relation Mapper).</Description>
+        <Title>Kros.KORM</Title>
+        <Copyright>Copyright © KROS a. s.</Copyright>
+        <RootNamespace>Kros.KORM</RootNamespace>
+        <ApplicationIcon>icon.ico</ApplicationIcon>
+        <Product>Kros.KORM</Product>
+        <AssemblyName>Kros.KORM</AssemblyName>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    </PropertyGroup>
 
-  <PropertyGroup>
-    <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <EmbedUntrackedSources>true</EmbedUntrackedSources>
-    <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-  </PropertyGroup>
+    <PropertyGroup>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <EmbedUntrackedSources>true</EmbedUntrackedSources>
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    </PropertyGroup>
 
-  <PropertyGroup Condition="'$(TF_BUILD)' == 'true'">
-    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
-    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
-  </PropertyGroup>
+    <PropertyGroup Condition="'$(TF_BUILD)' == 'true'">
+        <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
+        <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+    </PropertyGroup>
 
-  <PropertyGroup>
-    <PackageIcon>icon.png</PackageIcon>
-    <PackageId>Kros.KORM</PackageId>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/Kros-sk/Kros.KORM</PackageProjectUrl>
-    <PackageReleaseNotes>https://github.com/Kros-sk/Kros.KORM/releases</PackageReleaseNotes>
-    <PackageTags>Kros;KORM;ORM;Database;DAL;SQL;Database;MSSQL;Data;BulkInsert;BulkOperation;BulkCopy;BulkUpdate;Bulk Insert;Bulk Update</PackageTags>
-    <RepositoryType>git</RepositoryType>
-    <RepositoryUrl>https://github.com/Kros-sk/Kros.KORM</RepositoryUrl>
-  </PropertyGroup>
+    <PropertyGroup>
+        <PackageIcon>icon.png</PackageIcon>
+        <PackageId>Kros.KORM</PackageId>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageProjectUrl>https://github.com/Kros-sk/Kros.KORM</PackageProjectUrl>
+        <PackageReleaseNotes>https://github.com/Kros-sk/Kros.KORM/releases</PackageReleaseNotes>
+        <PackageTags>Kros;KORM;ORM;Database;DAL;SQL;Database;MSSQL;Data;BulkInsert;BulkOperation;BulkCopy;BulkUpdate;Bulk Insert;Bulk Update</PackageTags>
+        <RepositoryType>git</RepositoryType>
+        <RepositoryUrl>https://github.com/Kros-sk/Kros.KORM</RepositoryUrl>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Kros.Utils" Version="1.18.0" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
-    <PackageReference Include="System.Reflection.Emit.Lightweight" Version="4.7.0" />
-    <PackageReference Include="System.ValueTuple" Version="4.5.0" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Kros.Utils" Version="1.18.0" />
+        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
+        <PackageReference Include="System.Reflection.Emit.Lightweight" Version="4.7.0" />
+        <PackageReference Include="System.ValueTuple" Version="4.5.0" />
+    </ItemGroup>
 
-  <PropertyGroup>
-    <LangVersion>latest</LangVersion>
-  </PropertyGroup>
+    <PropertyGroup>
+        <LangVersion>latest</LangVersion>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <None Include="Resources\icon.png" Pack="true" PackagePath="" />
-  </ItemGroup>
+    <ItemGroup>
+        <None Include="Resources\icon.png" Pack="true" PackagePath="" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <None Remove="Resources\MigrationsHistoryTableScript.sql" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Resources\MigrationsHistoryTableScript.sql" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Update="Properties\Resources.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Update="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-  </ItemGroup>
+    <ItemGroup>
+        <None Remove="Resources\MigrationsHistoryTableScript.sql" />
+    </ItemGroup>
+    <ItemGroup>
+        <EmbeddedResource Include="Resources\MigrationsHistoryTableScript.sql" />
+    </ItemGroup>
+    <ItemGroup>
+        <Compile Update="Properties\Resources.Designer.cs">
+            <DesignTime>True</DesignTime>
+            <AutoGen>True</AutoGen>
+            <DependentUpon>Resources.resx</DependentUpon>
+        </Compile>
+    </ItemGroup>
+    <ItemGroup>
+        <EmbeddedResource Update="Properties\Resources.resx">
+            <Generator>ResXFileCodeGenerator</Generator>
+            <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+    </ItemGroup>
 </Project>

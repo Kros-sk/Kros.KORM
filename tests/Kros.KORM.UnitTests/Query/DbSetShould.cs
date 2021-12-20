@@ -7,6 +7,7 @@ using Kros.KORM.Exceptions;
 using Kros.KORM.Metadata;
 using Kros.KORM.Query;
 using Kros.KORM.Query.Sql;
+using Microsoft.Data.SqlClient;
 using NSubstitute;
 using System;
 using System.Collections.Generic;
@@ -333,6 +334,7 @@ namespace Kros.KORM.UnitTests
             DbProviderFactory IQueryProvider.DbProviderFactory => throw new NotImplementedException();
             ITransaction IQueryProvider.BeginTransaction(IsolationLevel isolationLevel) => throw new NotImplementedException();
             IBulkInsert IQueryProvider.CreateBulkInsert() => throw new NotImplementedException();
+            IBulkInsert IQueryProvider.CreateBulkInsert(SqlBulkCopyOptions options) => throw new NotImplementedException();
             IBulkUpdate IQueryProvider.CreateBulkUpdate() => throw new NotImplementedException();
             IIdGenerator IQueryProvider.CreateIdGenerator(string tableName, int batchSize) => throw new NotImplementedException();
             IIdGenerator IQueryProvider.CreateIdGenerator(Type dataType, string tableName, int batchSize) => throw new NotImplementedException();
