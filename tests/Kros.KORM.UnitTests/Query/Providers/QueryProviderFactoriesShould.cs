@@ -85,9 +85,7 @@ namespace Kros.KORM.UnitTests.Query.Providers
 
             public override DbProviderFactory DbProviderFactory => SqlClientFactory.Instance;
 
-            public override IBulkInsert CreateBulkInsert() => throw new NotImplementedException();
-
-            public override IBulkInsert CreateBulkInsert(SqlBulkCopyOptions options) => throw new NotImplementedException();
+            public override IBulkInsert CreateBulkInsert(object  options) => throw new NotImplementedException();
 
             public override IBulkUpdate CreateBulkUpdate() => throw new NotImplementedException();
 

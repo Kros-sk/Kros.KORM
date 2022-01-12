@@ -3,7 +3,6 @@ using Kros.Data.BulkActions;
 using Kros.KORM.Data;
 using Kros.KORM.Materializer;
 using Kros.KORM.Query.Sql;
-using Microsoft.Data.SqlClient;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -125,14 +124,7 @@ namespace Kros.KORM.Query
         /// Creates instance of <see cref="IBulkInsert"/>.
         /// </summary>
         /// <returns>Instance of <see cref="IBulkInsert"/>.</returns>
-        IBulkInsert CreateBulkInsert();
-
-        /// <summary>
-        /// Creates instance of <see cref="IBulkInsert"/>.
-        /// </summary>
-        /// <param name="options">Options <see cref="SqlBulkCopyOptions"/>.</param>
-        /// <returns>Instance of <see cref="IBulkInsert"/>.</returns>
-        IBulkInsert CreateBulkInsert(SqlBulkCopyOptions options);
+        IBulkInsert CreateBulkInsert(object options);
 
         /// <summary>
         /// Creates instance of <see cref="IBulkUpdate"/>.

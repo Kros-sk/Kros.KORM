@@ -64,25 +64,22 @@ namespace Kros.KORM.Query
         /// <returns>
         /// Instance of <see cref="IBulkInsert" />.
         /// </returns>
-        public override IBulkInsert CreateBulkInsert()
+        public override IBulkInsert CreateBulkInsert(object options)
         {
+            SqlServerProviderOptions sqlOptions = (SqlServerProviderOptions)options;
             var transaction = GetCurrentTransaction();
-            return (IsExternalConnection || transaction != null)
-                ? new SqlServerBulkInsert(Connection as SqlConnection, transaction as SqlTransaction)
-                : new SqlServerBulkInsert(ConnectionString);
-        }
-
-        /// <summary>
-        /// Creates instance of <see cref="IBulkInsert"/>.
-        /// </summary>
-        /// <param name="options">Options <see cref="SqlBulkCopyOptions"/>.</param>
-        /// <returns>Instance of <see cref="IBulkInsert"/>.</returns>
-        public override IBulkInsert CreateBulkInsert(SqlBulkCopyOptions options)
-        {
-            var transaction = GetCurrentTransaction();
-            return (IsExternalConnection || transaction != null)
-                ? new SqlServerBulkInsert(Connection as SqlConnection, transaction as SqlTransaction, options)
-                : new SqlServerBulkInsert(ConnectionString, options | SqlBulkCopyOptions.UseInternalTransaction);
+            if (sqlOptions is null)
+            {
+                return (IsExternalConnection || transaction != null)
+                    ? new SqlServerBulkInsert(Connection as SqlConnection, transaction as SqlTransaction)
+                    : new SqlServerBulkInsert(ConnectionString);
+            }
+            else
+            {
+                return (IsExternalConnection || transaction != null)
+                    ? new SqlServerBulkInsert(Connection as SqlConnection, transaction as SqlTransaction, sqlOptions.BulkCopy)
+                    : new SqlServerBulkInsert(ConnectionString, sqlOptions.BulkCopy);
+            }
         }
 
         /// <summary>

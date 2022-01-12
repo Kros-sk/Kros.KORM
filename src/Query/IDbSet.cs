@@ -1,5 +1,4 @@
 ﻿using Kros.KORM.Query.Sql;
-using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -144,11 +143,13 @@ namespace Kros.KORM.Query
         /// <summary>
         /// Bulk inserts pending added items.
         /// </summary>
-        /// <param name="options">Options <see cref="SqlBulkCopyOptions"/>.</param>
+        /// <param name="options">
+        /// Database specific provider options. For SQL Server use <see cref="SqlServerProviderOptions"/>.
+        /// </param>
         /// <example>
         ///   <code source="..\..\Documentation\Examples\Kros.KORM.Examples\WelcomeExample.cs" title="Bulk insert" region="BulkInsert" language="cs" />
         /// </example>
-        void BulkInsert(SqlBulkCopyOptions options);
+        void BulkInsert(object options);
 
         /// <summary>
         /// Asynchronously bulk inserts pending added items.
@@ -161,11 +162,13 @@ namespace Kros.KORM.Query
         /// <summary>
         /// Asynchronously bulk inserts pending added items.
         /// </summary>
-        /// <param name="options">Options <see cref="SqlBulkCopyOptions"/>.</param>
+        /// <param name="options">
+        /// Database specific provider options. For SQL Server use <see cref="SqlServerProviderOptions"/>.
+        /// </param>
         /// <returns>
         /// A task that represents the asynchronous bulk insert operation.
         /// </returns>
-        Task BulkInsertAsync(SqlBulkCopyOptions options);
+        Task BulkInsertAsync(object options);
 
         /// <summary>
         /// Bulk inserts <paramref name="items"/>.
@@ -177,8 +180,10 @@ namespace Kros.KORM.Query
         /// Bulk inserts <paramref name="items"/>.
         /// </summary>
         /// <param name="items">The items to insert.</param>
-        /// <param name="options">Options <see cref="SqlBulkCopyOptions"/>.</param>
-        void BulkInsert(IEnumerable<T> items, SqlBulkCopyOptions options);
+        /// <param name="options">
+        /// Database specific provider options. For SQL Server use <see cref="SqlServerProviderOptions"/>.
+        /// </param>
+        void BulkInsert(IEnumerable<T> items, object options);
 
         /// <summary>
         /// Asynchronously bulk inserts <paramref name="items"/>.
@@ -193,11 +198,13 @@ namespace Kros.KORM.Query
         /// Asynchronously bulk inserts <paramref name="items"/>.
         /// </summary>
         /// <param name="items">The items to insert.</param>
-        /// <param name="options">Options <see cref="SqlBulkCopyOptions"/>.</param>
+        /// <param name="options">
+        /// Database specific provider options. For SQL Server use <see cref="SqlServerProviderOptions"/>.
+        /// </param>
         /// <returns>
         /// A task that represents the asynchronous bulk insert operation.
         /// </returns>
-        Task BulkInsertAsync(IEnumerable<T> items, SqlBulkCopyOptions options);
+        Task BulkInsertAsync(IEnumerable<T> items, object options);
 
         /// <summary>
         /// Bulk updates pending edited items.
