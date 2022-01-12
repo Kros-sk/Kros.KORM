@@ -192,7 +192,9 @@ namespace Kros.KORM
         /// <summary>
         /// Creates instance of <see cref="IBulkInsert"/>.
         /// </summary>
-        /// <param name="options">Options <see cref="SqlBulkCopyOptions"/>.</param>
+        /// <param name="options">
+        /// Database specific provider options. For SQL Server use <see cref="SqlServerProviderOptions"/>.
+        /// </param>
         /// <returns>Instance of <see cref="IBulkInsert"/>.</returns>
         public IBulkInsert CreateBulkInsert(object options) => _queryProvider.CreateBulkInsert(options);
 

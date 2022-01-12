@@ -1,6 +1,5 @@
 ﻿using Kros.KORM.Query;
 using Kros.KORM.Query.Sql;
-using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
@@ -53,11 +52,13 @@ namespace Kros.KORM
         /// <typeparam name="TEntity">Entities type.</typeparam>
         /// <param name="database"><see cref="IDatabase"/> instance.</param>
         /// <param name="entities">Entities to add.</param>
-        /// <param name="options">Options <see cref="SqlBulkCopyOptions"/>.</param>
+        /// <param name="options">
+        /// Database specific provider options. For SQL Server use <see cref="SqlServerProviderOptions"/>.
+        /// </param>
         public static async Task BulkAddAsync<TEntity>(
             this IDatabase database,
             IEnumerable<TEntity> entities,
-            SqlBulkCopyOptions options) where TEntity : class
+            object options) where TEntity : class
             => await ProcessBulkOperationAsync(
                 database,
                 async (IDbSet<TEntity> dbSet) => await dbSet.BulkInsertAsync(entities, options));
