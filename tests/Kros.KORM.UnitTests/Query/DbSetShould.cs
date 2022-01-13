@@ -332,7 +332,7 @@ namespace Kros.KORM.UnitTests
 
             DbProviderFactory IQueryProvider.DbProviderFactory => throw new NotImplementedException();
             ITransaction IQueryProvider.BeginTransaction(IsolationLevel isolationLevel) => throw new NotImplementedException();
-            IBulkInsert IQueryProvider.CreateBulkInsert() => throw new NotImplementedException();
+            IBulkInsert IQueryProvider.CreateBulkInsert(object options) => throw new NotImplementedException();
             IBulkUpdate IQueryProvider.CreateBulkUpdate() => throw new NotImplementedException();
             IIdGenerator IQueryProvider.CreateIdGenerator(string tableName, int batchSize) => throw new NotImplementedException();
             IIdGenerator IQueryProvider.CreateIdGenerator(Type dataType, string tableName, int batchSize) => throw new NotImplementedException();

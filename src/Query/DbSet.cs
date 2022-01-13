@@ -237,33 +237,48 @@ namespace Kros.KORM.Query
         /// <inheritdoc />
         public void BulkInsert()
         {
-            BulkInsertCoreAsync(_addedItems, false).GetAwaiter().GetResult();
+            BulkInsertCoreAsync(_addedItems, false, null).GetAwaiter().GetResult();
+            _addedItems?.Clear();
+        }
+
+        /// <inheritdoc />
+        public void BulkInsert(object options)
+        {
+            BulkInsertCoreAsync(_addedItems, false, options).GetAwaiter().GetResult();
             _addedItems?.Clear();
         }
 
         /// <inheritdoc />
         public void BulkInsert(IEnumerable<T> items)
-        {
-            Check.NotNull(items, nameof(items));
+            => BulkInsertCoreAsync(Check.NotNull(items, nameof(items)), false, null).GetAwaiter().GetResult();
 
-            BulkInsertCoreAsync(items, false).GetAwaiter().GetResult();
-        }
+        /// <inheritdoc />
+        public void BulkInsert(IEnumerable<T> items, object options)
+            => BulkInsertCoreAsync(Check.NotNull(items, nameof(items)), false, options).GetAwaiter().GetResult();
 
         /// <inheritdoc />
         public async Task BulkInsertAsync()
         {
-            await BulkInsertCoreAsync(_addedItems, true);
+            await BulkInsertCoreAsync(_addedItems, true, null);
+
+            _addedItems?.Clear();
+        }
+
+        /// <inheritdoc />
+        public async Task BulkInsertAsync(object options)
+        {
+            await BulkInsertCoreAsync(_addedItems, true, options);
 
             _addedItems?.Clear();
         }
 
         /// <inheritdoc />
         public Task BulkInsertAsync(IEnumerable<T> items)
-        {
-            Check.NotNull(items, nameof(items));
+            => BulkInsertCoreAsync(Check.NotNull(items, nameof(items)), true, null);
 
-            return BulkInsertCoreAsync(items, true);
-        }
+        /// <inheritdoc />
+        public Task BulkInsertAsync(IEnumerable<T> items, object options)
+            => BulkInsertCoreAsync(Check.NotNull(items, nameof(items)), true, options);
 
         /// <inheritdoc />
         public void BulkUpdate()
@@ -597,11 +612,11 @@ namespace Kros.KORM.Query
             }
         }
 
-        private async Task BulkInsertCoreAsync(IEnumerable<T> items, bool useAsync)
+        private async Task BulkInsertCoreAsync(IEnumerable<T> items, bool useAsync, object options)
         {
             if (items != null)
             {
-                using (var bulkInsert = _provider.CreateBulkInsert())
+                using (var bulkInsert = _provider.CreateBulkInsert(options))
                 {
                     bulkInsert.DestinationTableName = _tableInfo.Name;
 

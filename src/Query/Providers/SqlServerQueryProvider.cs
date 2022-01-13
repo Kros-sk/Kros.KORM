@@ -64,16 +64,21 @@ namespace Kros.KORM.Query
         /// <returns>
         /// Instance of <see cref="IBulkInsert" />.
         /// </returns>
-        public override IBulkInsert CreateBulkInsert()
+        public override IBulkInsert CreateBulkInsert(object options)
         {
+            SqlServerProviderOptions sqlOptions = (SqlServerProviderOptions)options;
             var transaction = GetCurrentTransaction();
-            if (IsExternalConnection || transaction != null)
+            if (sqlOptions is null)
             {
-                return new SqlServerBulkInsert(Connection as SqlConnection, transaction as SqlTransaction);
+                return (IsExternalConnection || transaction != null)
+                    ? new SqlServerBulkInsert(Connection as SqlConnection, transaction as SqlTransaction)
+                    : new SqlServerBulkInsert(ConnectionString);
             }
             else
             {
-                return new SqlServerBulkInsert(ConnectionString);
+                return (IsExternalConnection || transaction != null)
+                    ? new SqlServerBulkInsert(Connection as SqlConnection, transaction as SqlTransaction, sqlOptions.BulkCopy)
+                    : new SqlServerBulkInsert(ConnectionString, sqlOptions.BulkCopy);
             }
         }
 

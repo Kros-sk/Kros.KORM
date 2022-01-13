@@ -47,6 +47,23 @@ namespace Kros.KORM
             => await ProcessBulkOperationAsync(database, async (IDbSet<TEntity> dbSet) => await dbSet.BulkInsertAsync(entities));
 
         /// <summary>
+        /// Adds <paramref name="entities"/> to the database via bulk insert.
+        /// </summary>
+        /// <typeparam name="TEntity">Entities type.</typeparam>
+        /// <param name="database"><see cref="IDatabase"/> instance.</param>
+        /// <param name="entities">Entities to add.</param>
+        /// <param name="options">
+        /// Database specific provider options. For SQL Server use <see cref="SqlServerProviderOptions"/>.
+        /// </param>
+        public static async Task BulkAddAsync<TEntity>(
+            this IDatabase database,
+            IEnumerable<TEntity> entities,
+            object options) where TEntity : class
+            => await ProcessBulkOperationAsync(
+                database,
+                async (IDbSet<TEntity> dbSet) => await dbSet.BulkInsertAsync(entities, options));
+
+        /// <summary>
         /// Deletes the <paramref name="entity"/> from the database.
         /// </summary>
         /// <typeparam name="TEntity">Entity type.</typeparam>
