@@ -659,13 +659,29 @@ namespace Kros.KORM.Query.Sql
 
         private Expression VisitOrderBy(MethodCallExpression expression, OrderType orderType)
         {
-            var lambda = (LambdaExpression)StripQuotes(expression.Arguments[1]);
+            var lambda = FixOrderByNullableColumnInODataQuery((LambdaExpression)StripQuotes(expression.Arguments[1]));
 
             var ret = Visit(lambda);
             Orders.Add(LinqStringBuilder.ToString() + " " + (orderType == OrderType.Ascending ? "ASC" : "DESC"));
             LinqStringBuilder.Clear();
 
             return ret;
+        }
+
+        /// <summary>
+        /// Fixes generating <c>ORDER BY</c> in SQL query based on OData query when the <c>ORDER BY</c> field is nullable.
+        /// We use <c>ODataQueryOptions&lt;TEntity&gt;.ApplyTo</c> .NET method to apply OData query parameters to KORM query.
+        /// If <c>ORDER BY</c> clause in OData query is using nullable field (column), the condition is generated
+        /// this way: <c>IIF(($item.Field == null), null, $item.Field)</c>. This cannot be used as <c>ORDER BY</c> for SQL query.
+        /// </summary>
+        private Expression FixOrderByNullableColumnInODataQuery(LambdaExpression lambda)
+        {
+            if ((lambda.Body is ConditionalExpression conditionalExp)
+                && (conditionalExp.IfFalse.NodeType == ExpressionType.MemberAccess))
+            {
+                return conditionalExp.IfFalse;
+            }
+            return lambda;
         }
 
         private Expression VisitSelect(MethodCallExpression expression)
