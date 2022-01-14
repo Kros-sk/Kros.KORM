@@ -32,6 +32,21 @@ namespace Kros.KORM
         #region Static
 
         /// <summary>
+        /// <para>
+        /// Fixes generating <c>ORDER BY</c> in SQL query based on OData query when the <c>ORDER BY</c> field is nullable.
+        /// </para>
+        /// <para>
+        /// We use <c>ODataQueryOptions&lt;TEntity&gt;.ApplyTo</c> .NET method to apply OData query parameters to KORM query.
+        /// If <c>ORDER BY</c> clause in OData query is using nullable field (column), the condition is generated
+        /// this way: <c>IIF(($item.Field == null), null, $item.Field)</c>. This cannot be used as <c>ORDER BY</c> for SQL query.
+        /// When the value of <c>FixOrderByNullableColumnInODataQuery</c> is <see langword="true"/>, this case is fixed
+        /// when generating SQL. Only <c>$item.Field</c> is used in SQL's <c>ORDER BY</c>.
+        /// Default value is <see langword="false"/>.
+        /// </para>
+        /// </summary>
+        public static bool FixOrderByNullableColumnInODataQuery { get; set; } = false;
+
+        /// <summary>
         /// Gets or sets the default model mapper, which will be used for mapping Object to Relation database.
         /// </summary>
         /// <value>

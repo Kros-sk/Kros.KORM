@@ -659,13 +659,24 @@ namespace Kros.KORM.Query.Sql
 
         private Expression VisitOrderBy(MethodCallExpression expression, OrderType orderType)
         {
-            var lambda = (LambdaExpression)StripQuotes(expression.Arguments[1]);
+            var lambda = FixOrderByNullableColumnInODataQuery((LambdaExpression)StripQuotes(expression.Arguments[1]));
 
             var ret = Visit(lambda);
             Orders.Add(LinqStringBuilder.ToString() + " " + (orderType == OrderType.Ascending ? "ASC" : "DESC"));
             LinqStringBuilder.Clear();
 
             return ret;
+        }
+
+        private Expression FixOrderByNullableColumnInODataQuery(LambdaExpression lambda)
+        {
+            if (Database.FixOrderByNullableColumnInODataQuery
+                && (lambda.Body is ConditionalExpression conditionalExp)
+                && (conditionalExp.IfFalse.NodeType == ExpressionType.MemberAccess))
+            {
+                return conditionalExp.IfFalse;
+            }
+            return lambda;
         }
 
         private Expression VisitSelect(MethodCallExpression expression)
