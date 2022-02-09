@@ -186,7 +186,16 @@ namespace Kros.KORM
         /// Creates instance of <see cref="IBulkInsert"/>.
         /// </summary>
         /// <returns>Instance of <see cref="IBulkInsert"/>.</returns>
-        public IBulkInsert CreateBulkInsert() => _queryProvider.CreateBulkInsert();
+        public IBulkInsert CreateBulkInsert() => _queryProvider.CreateBulkInsert(null);
+
+        /// <summary>
+        /// Creates instance of <see cref="IBulkInsert"/>.
+        /// </summary>
+        /// <param name="options">
+        /// Database specific provider options. For SQL Server use <see cref="SqlServerProviderOptions"/>.
+        /// </param>
+        /// <returns>Instance of <see cref="IBulkInsert"/>.</returns>
+        public IBulkInsert CreateBulkInsert(object options) => _queryProvider.CreateBulkInsert(options);
 
         /// <summary>
         /// Creates instance of <see cref="IBulkUpdate"/>.

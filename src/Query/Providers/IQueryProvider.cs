@@ -124,7 +124,7 @@ namespace Kros.KORM.Query
         /// Creates instance of <see cref="IBulkInsert"/>.
         /// </summary>
         /// <returns>Instance of <see cref="IBulkInsert"/>.</returns>
-        IBulkInsert CreateBulkInsert();
+        IBulkInsert CreateBulkInsert(object options);
 
         /// <summary>
         /// Creates instance of <see cref="IBulkUpdate"/>.

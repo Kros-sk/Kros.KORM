@@ -141,6 +141,17 @@ namespace Kros.KORM.Query
         void BulkInsert();
 
         /// <summary>
+        /// Bulk inserts pending added items.
+        /// </summary>
+        /// <param name="options">
+        /// Database specific provider options. For SQL Server use <see cref="SqlServerProviderOptions"/>.
+        /// </param>
+        /// <example>
+        ///   <code source="..\..\Documentation\Examples\Kros.KORM.Examples\WelcomeExample.cs" title="Bulk insert" region="BulkInsert" language="cs" />
+        /// </example>
+        void BulkInsert(object options);
+
+        /// <summary>
         /// Asynchronously bulk inserts pending added items.
         /// </summary>
         /// <returns>
@@ -149,10 +160,30 @@ namespace Kros.KORM.Query
         Task BulkInsertAsync();
 
         /// <summary>
+        /// Asynchronously bulk inserts pending added items.
+        /// </summary>
+        /// <param name="options">
+        /// Database specific provider options. For SQL Server use <see cref="SqlServerProviderOptions"/>.
+        /// </param>
+        /// <returns>
+        /// A task that represents the asynchronous bulk insert operation.
+        /// </returns>
+        Task BulkInsertAsync(object options);
+
+        /// <summary>
         /// Bulk inserts <paramref name="items"/>.
         /// </summary>
         /// <param name="items">The items to insert.</param>
         void BulkInsert(IEnumerable<T> items);
+
+        /// <summary>
+        /// Bulk inserts <paramref name="items"/>.
+        /// </summary>
+        /// <param name="items">The items to insert.</param>
+        /// <param name="options">
+        /// Database specific provider options. For SQL Server use <see cref="SqlServerProviderOptions"/>.
+        /// </param>
+        void BulkInsert(IEnumerable<T> items, object options);
 
         /// <summary>
         /// Asynchronously bulk inserts <paramref name="items"/>.
@@ -162,6 +193,18 @@ namespace Kros.KORM.Query
         /// A task that represents the asynchronous bulk insert operation.
         /// </returns>
         Task BulkInsertAsync(IEnumerable<T> items);
+
+        /// <summary>
+        /// Asynchronously bulk inserts <paramref name="items"/>.
+        /// </summary>
+        /// <param name="items">The items to insert.</param>
+        /// <param name="options">
+        /// Database specific provider options. For SQL Server use <see cref="SqlServerProviderOptions"/>.
+        /// </param>
+        /// <returns>
+        /// A task that represents the asynchronous bulk insert operation.
+        /// </returns>
+        Task BulkInsertAsync(IEnumerable<T> items, object options);
 
         /// <summary>
         /// Bulk updates pending edited items.

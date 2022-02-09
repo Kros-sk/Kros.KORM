@@ -81,10 +81,7 @@ namespace Kros.KORM.UnitTests.Query.Providers
                 var connection = Connection;
             }
 
-            public override IBulkInsert CreateBulkInsert()
-            {
-                throw new NotImplementedException();
-            }
+            public override IBulkInsert CreateBulkInsert(object options) => throw new NotImplementedException();
 
             public override IBulkUpdate CreateBulkUpdate() => throw new NotImplementedException();
 
