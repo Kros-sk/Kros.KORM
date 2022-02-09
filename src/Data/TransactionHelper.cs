@@ -13,7 +13,7 @@ namespace Kros.KORM.Data
     internal class TransactionHelper
     {
         public const IsolationLevel DefaultIsolationLevel = IsolationLevel.ReadCommitted;
-        private const int TIMEOUT_DEFAULT = 30;
+        public const int TIMEOUT_DEFAULT = 30;
 
         private readonly DbConnection _connection;
         private Transaction _topTransaction;
