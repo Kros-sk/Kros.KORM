@@ -19,13 +19,16 @@ namespace Kros.KORM
         /// <param name="database">Korm database access.</param>
         /// <param name="values">Values for inserting into temp table.</param>
         /// <param name="action">Execute action.</param>
+        /// <param name="commandTimeout">Command timeount in seconds. A value of 0 indicates no limit.</param>
         /// <remarks>Whole action is executed in transaction.</remarks>
         public static void ExecuteWithTempTable<TValue>(
             this IDatabase database,
             IEnumerable<TValue> values,
-            Action<IDatabase, string> action)
+            Action<IDatabase, string> action,
+            int commandTimeout = TransactionHelper.TIMEOUT_DEFAULT)
         {
             using ITransaction transaction = database.BeginTransaction();
+            transaction.CommandTimeout = commandTimeout;
 
             action(database, CreateTempTable(database, values));
 
@@ -40,13 +43,16 @@ namespace Kros.KORM
         /// <param name="database">Korm database access.</param>
         /// <param name="values">Values for inserting into temp table.</param>
         /// <param name="actionAsync">Execute action.</param>
+        /// <param name="commandTimeout">Command timeount in seconds. A value of 0 indicates no limit.</param>
         /// <remarks>Whole action is executed in transaction and is asynchronous.</remarks>
         public static async Task ExecuteWithTempTableAsync<TValue>(
             this IDatabase database,
             IEnumerable<TValue> values,
-            Func<IDatabase, string, Task> actionAsync)
+            Func<IDatabase, string, Task> actionAsync,
+            int commandTimeout = TransactionHelper.TIMEOUT_DEFAULT)
         {
             using ITransaction transaction = database.BeginTransaction();
+            transaction.CommandTimeout = commandTimeout;
 
             await actionAsync(database, CreateTempTable(database, values));
 
@@ -62,13 +68,16 @@ namespace Kros.KORM
         /// <param name="database">Korm database access.</param>
         /// <param name="values">Values for inserting into temp table.</param>
         /// <param name="action">Execute action.</param>
+        /// <param name="commandTimeout">Command timeount in seconds. A value of 0 indicates no limit.</param>
         /// <remarks>Whole action is executed in transaction.</remarks>
         public static void ExecuteWithTempTable<TKey, TValue>(
             this IDatabase database,
             IDictionary<TKey, TValue> values,
-            Action<IDatabase, string> action)
+            Action<IDatabase, string> action,
+            int commandTimeout = TransactionHelper.TIMEOUT_DEFAULT)
         {
             using ITransaction transaction = database.BeginTransaction();
+            transaction.CommandTimeout = commandTimeout;
 
             action(database, CreateTempTable(database, values));
 
@@ -84,13 +93,16 @@ namespace Kros.KORM
         /// <param name="database">Korm database access.</param>
         /// <param name="values">Values for inserting into temp table.</param>
         /// <param name="actionAsync">Execute action.</param>
+        /// <param name="commandTimeout">Command timeount in seconds. A value of 0 indicates no limit.</param>
         /// <remarks>Whole action is executed in transaction and is asynchronous.</remarks>
         public static async Task ExecuteWithTempTableAsync<TKey, TValue>(
             this IDatabase database,
             IDictionary<TKey, TValue> values,
-            Func<IDatabase, string, Task> actionAsync)
+            Func<IDatabase, string, Task> actionAsync,
+            int commandTimeout = TransactionHelper.TIMEOUT_DEFAULT)
         {
             using ITransaction transaction = database.BeginTransaction();
+            transaction.CommandTimeout = commandTimeout;
 
             await actionAsync(database, CreateTempTable(database, values));
 
@@ -106,14 +118,17 @@ namespace Kros.KORM
         /// <param name="database">Korm database access.</param>
         /// <param name="values">Values for inserting into temp table.</param>
         /// <param name="action">Execute action.</param>
+        /// <param name="commandTimeout">Command timeount in seconds. A value of 0 indicates no limit.</param>
         /// <returns>User defined type <typeparamref name="T"/>.</returns>
         /// <remarks>Whole action is executed in transaction.</remarks>
         public static T ExecuteWithTempTable<T, TValue>(
             this IDatabase database,
             IEnumerable<TValue> values,
-            Func<IDatabase, string, T> action)
+            Func<IDatabase, string, T> action,
+            int commandTimeout = TransactionHelper.TIMEOUT_DEFAULT)
         {
             using ITransaction transaction = database.BeginTransaction();
+            transaction.CommandTimeout = commandTimeout;
 
             T ret = action(database, CreateTempTable(database, values));
 
@@ -131,14 +146,17 @@ namespace Kros.KORM
         /// <param name="database">Korm database access.</param>
         /// <param name="values">Values for inserting into temp table.</param>
         /// <param name="actionAsync">Execute action.</param>
+        /// <param name="commandTimeout">Command timeount in seconds. A value of 0 indicates no limit.</param>
         /// <returns>User defined type <typeparamref name="T"/>.</returns>
         /// <remarks>Whole action is executed in transaction and is asynchronous.</remarks>
         public static async Task<T> ExecuteWithTempTableAsync<T, TValue>(
             this IDatabase database,
             IEnumerable<TValue> values,
-            Func<IDatabase, string, Task<T>> actionAsync)
+            Func<IDatabase, string, Task<T>> actionAsync,
+            int commandTimeout = TransactionHelper.TIMEOUT_DEFAULT)
         {
             using ITransaction transaction = database.BeginTransaction();
+            transaction.CommandTimeout = commandTimeout;
 
             T ret = await actionAsync(database, CreateTempTable(database, values));
 
@@ -157,14 +175,17 @@ namespace Kros.KORM
         /// <param name="database">Korm database access.</param>
         /// <param name="values">Values for inserting into temp table.</param>
         /// <param name="action">Execute action.</param>
+        /// <param name="commandTimeout">Command timeount in seconds. A value of 0 indicates no limit.</param>
         /// <returns>User defined type <typeparamref name="T"/>.</returns>
         /// <remarks>Whole action is executed in transaction.</remarks>
         public static T ExecuteWithTempTable<T, TKey, TValue>(
             this IDatabase database,
             IDictionary<TKey, TValue> values,
-            Func<IDatabase, string, T> action)
+            Func<IDatabase, string, T> action,
+            int commandTimeout = TransactionHelper.TIMEOUT_DEFAULT)
         {
             using ITransaction transaction = database.BeginTransaction();
+            transaction.CommandTimeout = commandTimeout;
 
             T ret = action(database, CreateTempTable(database, values));
 
@@ -183,14 +204,17 @@ namespace Kros.KORM
         /// <param name="database">Korm database access.</param>
         /// <param name="values">Values for inserting into temp table.</param>
         /// <param name="actionAsync">Execute action.</param>
+        /// <param name="commandTimeout">Command timeount in seconds. A value of 0 indicates no limit.</param>
         /// <returns>User defined type <typeparamref name="T"/>.</returns>
         /// <remarks>Whole action is executed in transaction and is asynchronous.</remarks>
         public static async Task<T> ExecuteWithTempTableAsync<T, TKey, TValue>(
             this IDatabase database,
             IDictionary<TKey, TValue> values,
-            Func<IDatabase, string, Task<T>> actionAsync)
+            Func<IDatabase, string, Task<T>> actionAsync,
+            int commandTimeout = TransactionHelper.TIMEOUT_DEFAULT)
         {
             using ITransaction transaction = database.BeginTransaction();
+            transaction.CommandTimeout = commandTimeout;
 
             T ret = await actionAsync(database, CreateTempTable(database, values));
 
