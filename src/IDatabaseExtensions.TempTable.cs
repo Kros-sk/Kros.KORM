@@ -295,9 +295,11 @@ namespace Kros.KORM
         private static ITransaction BeginTransaction(IDatabase database, int commandTimeout)
         {
             ITransaction transaction = database.BeginTransaction();
-            transaction.CommandTimeout = commandTimeout == TransactionHelper.TIMEOUT_DEFAULT
-                ? transaction.CommandTimeout
-                : commandTimeout;
+
+            if (commandTimeout != TransactionHelper.TIMEOUT_DEFAULT)
+            {
+                transaction.CommandTimeout = commandTimeout;
+            }
 
             return transaction;
         }
