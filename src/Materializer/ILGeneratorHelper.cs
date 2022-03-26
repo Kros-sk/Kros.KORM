@@ -175,7 +175,8 @@ namespace Kros.KORM.Materializer
                 => typeof(IDataRecord).GetMethod($"Get{typeName}", new Type[] { typeof(int) });
 
             MethodInfo CreateReaderNullableValueGetter(string typeName)
-                => typeof(DataReaderExtensions).GetMethod($"GetNullable{typeName}", new Type[] { typeof(IDataReader), typeof(int) });
+                => typeof(Kros.KORM.Data.DataReaderExtensions)
+                    .GetMethod($"GetNullable{typeName}", new Type[] { typeof(IDataReader), typeof(int) });
 
             void Add<T>()
             {
