@@ -9,7 +9,7 @@ using Xunit;
 
 namespace Kros.KORM.UnitTests.Converter
 {
-    public class UseConvertForNullValues : DatabaseTestBase
+    public class LoadAndSetNullValuesTests : DatabaseTestBase
     {
         #region Database schema
 
@@ -25,17 +25,32 @@ $@"CREATE TABLE [dbo].[{TableName}] (
 $@"INSERT INTO [{TableName}] VALUES (1, '[]');
 INSERT INTO [{TableName}] VALUES (2, '[""lorem""]');
 INSERT INTO [{TableName}] VALUES (3, '[""lorem"", ""ipsum""]');
-INSERT INTO [{TableName}] VALUES (4, NULL);
-INSERT INTO [{TableName}] VALUES (5, '');";
+INSERT INTO [{TableName}] VALUES (4, '');
+INSERT INTO [{TableName}] VALUES (5, NULL);
+INSERT INTO [{TableName}] VALUES (10, 'Ipsum');
+INSERT INTO [{TableName}] VALUES (11, '');
+INSERT INTO [{TableName}] VALUES (12, NULL);";
 
         #endregion
 
         #region Helpers
 
-        private class DataItem
+        private class DataItemWithConverter
         {
             public int Id { get; set; }
             public List<string> Data { get; set; }
+        }
+
+        private class DataItemWithDefaultValue
+        {
+            public DataItemWithDefaultValue()
+            {
+                Id = -1;
+                Data = "Lorem";
+            }
+
+            public int Id { get; set; }
+            public string Data { get; set; }
         }
 
         private class JsonToListConverter<T> : IConverter
@@ -43,7 +58,6 @@ INSERT INTO [{TableName}] VALUES (5, '');";
             public object Convert(object value)
             {
                 string json = (string)value;
-                System.Console.WriteLine($"*** {json}");
                 return string.IsNullOrEmpty(json)
                     ? new List<T>()
                     : JsonConvert.DeserializeObject<List<T>>(json);
@@ -56,10 +70,12 @@ INSERT INTO [{TableName}] VALUES (5, '');";
         {
             public override void OnModelCreating(ModelConfigurationBuilder modelBuilder)
             {
-                modelBuilder.Entity<DataItem>()
+                modelBuilder.Entity<DataItemWithConverter>()
                     .HasTableName(TableName)
                     .UseConverterForProperties<string>(NullAndTrimStringConverter.ConvertNullAndTrimString)
                     .Property(u => u.Data).UseConverter<JsonToListConverter<string>>();
+                modelBuilder.Entity<DataItemWithDefaultValue>()
+                    .HasTableName(TableName);
             }
         }
 
@@ -90,12 +106,36 @@ INSERT INTO [{TableName}] VALUES (5, '');";
             using TestDatabase testDb = CreateDatabase(new[] { CreateTableScript, InsertDataScript });
             using IDatabase db = CreateDatabaseWithConfiguration(testDb);
 
-            DataItem expectedItem = new()
+            DataItemWithConverter expectedItem = new()
             {
                 Id = id,
                 Data = expectedData
             };
-            DataItem actualItem = db.Query<DataItem>().Where(item => item.Id == id).ToList()[0];
+            DataItemWithConverter actualItem = db.Query<DataItemWithConverter>().Where(item => item.Id == id).Single();
+
+            actualItem.Should().BeEquivalentTo(expectedItem);
+        }
+
+        public static IEnumerable<object[]> SetNullValueFromDatabase_Data()
+        {
+            yield return new object[] { 10, "Ipsum" };
+            yield return new object[] { 11, "" };
+            yield return new object[] { 12, null };
+        }
+
+        [Theory]
+        [MemberData(nameof(SetNullValueFromDatabase_Data))]
+        public void SetNullValueFromDatabase(int id, string expectedData)
+        {
+            using TestDatabase testDb = CreateDatabase(new[] { CreateTableScript, InsertDataScript });
+            using IDatabase db = CreateDatabaseWithConfiguration(testDb);
+
+            DataItemWithDefaultValue expectedItem = new()
+            {
+                Id = id,
+                Data = expectedData
+            };
+            DataItemWithDefaultValue actualItem = db.Query<DataItemWithDefaultValue>().Where(item => item.Id == id).Single();
 
             actualItem.Should().BeEquivalentTo(expectedItem);
         }
