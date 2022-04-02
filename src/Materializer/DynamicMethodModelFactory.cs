@@ -158,7 +158,8 @@ namespace Kros.KORM.Materializer
             }
         }
 
-        private static void EmitField(IDataReader reader,
+        private static void EmitField(
+            IDataReader reader,
             TableInfo tableInfo,
             ILGenerator ilGenerator,
             int columnIndex)
@@ -167,22 +168,40 @@ namespace Kros.KORM.Materializer
             if (columnInfo != null)
             {
                 Type srcType = reader.GetFieldType(columnIndex);
-
-                Label truePart = ilGenerator.CallReaderIsDbNull(columnIndex);
                 IConverter converter = ConverterHelper.GetConverter(columnInfo, srcType);
-
-                if (converter == null)
+                if (converter is null)
                 {
-                    ilGenerator.CallReaderGetValueWithoutConverter(columnIndex, columnInfo, srcType);
+                    EmitFieldWithoutConverter(ilGenerator, srcType, columnInfo, columnIndex);
                 }
                 else
                 {
-                    ilGenerator.CallReaderGetValueWithConverter(columnIndex, converter, columnInfo);
+                    EmitFieldWithConverter(ilGenerator, converter, columnInfo, columnIndex);
                 }
-
-                ilGenerator.Emit(OpCodes.Callvirt, columnInfo.PropertyInfo.GetSetMethod(true));
-                ilGenerator.MarkLabel(truePart);
             }
+        }
+
+        private static void EmitFieldWithoutConverter(
+            ILGenerator ilGenerator,
+            Type srcType,
+            ColumnInfo columnInfo,
+            int columnIndex)
+        {
+            Label truePart = ilGenerator.CallReaderIsDbNull(columnIndex);
+            ilGenerator.CallReaderGetValueWithoutConverter(columnIndex, columnInfo, srcType);
+            ilGenerator.Emit(OpCodes.Callvirt, columnInfo.PropertyInfo.GetSetMethod(true));
+            ilGenerator.MarkLabel(truePart);
+        }
+
+        private static void EmitFieldWithConverter(
+            ILGenerator ilGenerator,
+            IConverter converter,
+            ColumnInfo columnInfo,
+            int columnIndex)
+        {
+            Label truePart = ilGenerator.CallReaderIsDbNull(columnIndex);
+            ilGenerator.CallReaderGetValueWithConverter(columnIndex, converter, columnInfo);
+            ilGenerator.Emit(OpCodes.Callvirt, columnInfo.PropertyInfo.GetSetMethod(true));
+            ilGenerator.MarkLabel(truePart);
         }
 
         private static (ConstructorInfo ctor, bool isDefault) GetConstructor(Type type)
