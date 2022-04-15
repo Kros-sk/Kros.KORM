@@ -14,8 +14,8 @@ namespace Kros.KORM.Materializer
     {
         private readonly static List<IConverter> _converters = new List<IConverter>();
         private readonly static Dictionary<string, MethodInfo> _readerValueGetters = InitReaderValueGetters();
-        public readonly static MethodInfo _fnIsDBNull = typeof(IDataRecord).GetMethod(nameof(IDataReader.IsDBNull));
-        public readonly static MethodInfo _getValueMethodInfo =
+        private readonly static MethodInfo _fnIsDBNull = typeof(IDataRecord).GetMethod(nameof(IDataReader.IsDBNull));
+        private readonly static MethodInfo _getValueMethodInfo =
             typeof(IDataRecord).GetMethod("GetValue", new Type[] { typeof(int) });
         private readonly static FieldInfo _fldConverters = typeof(ILGeneratorHelper).GetField(nameof(_converters),
             BindingFlags.Static | BindingFlags.GetField | BindingFlags.NonPublic);

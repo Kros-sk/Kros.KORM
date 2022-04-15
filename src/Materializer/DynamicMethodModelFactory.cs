@@ -98,7 +98,7 @@ namespace Kros.KORM.Materializer
 
             ilGenerator.Emit(OpCodes.Newobj, ctor);
             EmitReaderFields(reader, tableInfo, ilGenerator, injector);
-            //ilGenerator.CallOnAfterMaterialize(tableInfo);
+            ilGenerator.CallOnAfterMaterialize(tableInfo);
             ilGenerator.Emit(OpCodes.Ret);
 
             return dynamicMethod.CreateDelegate(Expression.GetFuncType(typeof(IDataReader), type)) as Func<IDataReader, T>;
@@ -138,7 +138,7 @@ namespace Kros.KORM.Materializer
                 EmitField(reader, tableInfo, ilGenerator, i);
             }
 
-            //EmitPropertyForInjecting(tableInfo, ilGenerator, injector);
+            EmitPropertyForInjecting(tableInfo, ilGenerator, injector);
         }
 
         private static void EmitPropertyForInjecting(TableInfo tableInfo,
