@@ -48,7 +48,6 @@ namespace Kros.KORM.Materializer
             iLGenerator.Emit(OpCodes.Callvirt, _fnIsDBNull);
             Label truePart = iLGenerator.DefineLabel();
             iLGenerator.Emit(OpCodes.Brtrue_S, truePart);
-
             iLGenerator.Emit(OpCodes.Dup);
 
             return truePart;
@@ -96,7 +95,7 @@ namespace Kros.KORM.Materializer
             iLGenerator.CallReaderMethod(fieldIndex, valueGetter);
             if (castNeeded)
             {
-                EmitCastValue(iLGenerator, columnInfo, srcType);
+                EmitCastValue(iLGenerator, srcType, columnInfo.PropertyInfo.PropertyType);
             }
         }
 
@@ -158,15 +157,31 @@ namespace Kros.KORM.Materializer
             }
         }
 
-        public static void EmitCastValue(ILGenerator iLGenerator, ColumnInfo columnInfo, Type srcType)
+        public static void EmitCastValue(ILGenerator iLGenerator, Type srcType, Type targetType)
         {
             if (srcType.IsValueType)
             {
-                iLGenerator.Emit(OpCodes.Unbox_Any, columnInfo.PropertyInfo.PropertyType);
+                iLGenerator.Emit(OpCodes.Unbox_Any, targetType);
             }
             else
             {
-                iLGenerator.Emit(OpCodes.Castclass, columnInfo.PropertyInfo.PropertyType);
+                iLGenerator.Emit(OpCodes.Castclass, targetType);
+            }
+        }
+
+        public static void EmitSetNullValue(this ILGenerator ilGenerator, Type propertyType, MethodInfo propertySetter)
+        {
+            if (propertyType == typeof(int))
+            {
+                ilGenerator.Emit(OpCodes.Dup);
+                ilGenerator.Emit(OpCodes.Ldc_I4_0);
+                ilGenerator.Emit(OpCodes.Callvirt, propertySetter);
+            }
+            else if (propertyType == typeof(string))
+            {
+                ilGenerator.Emit(OpCodes.Dup);
+                ilGenerator.Emit(OpCodes.Ldnull);
+                ilGenerator.Emit(OpCodes.Callvirt, propertySetter);
             }
         }
 

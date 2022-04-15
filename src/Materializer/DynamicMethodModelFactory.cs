@@ -1,4 +1,4 @@
-using Kros.Caching;
+﻿using Kros.Caching;
 using Kros.KORM.Converter;
 using Kros.KORM.Helper;
 using Kros.KORM.Injection;
@@ -92,74 +92,13 @@ namespace Kros.KORM.Materializer
             IInjector injector,
             ConstructorInfo ctor)
         {
-
             Type type = typeof(T);
-            var dynamicMethod = new DynamicMethod(GetFactoryName, type, new Type[] { typeof(IDataReader) }, true);
+            DynamicMethod dynamicMethod = new(GetFactoryName, type, new Type[] { typeof(IDataReader) }, true);
             ILGenerator ilGenerator = dynamicMethod.GetILGenerator();
-            LocalBuilder localItem = ilGenerator.DeclareLocal(ctor.DeclaringType);
 
             ilGenerator.Emit(OpCodes.Newobj, ctor);
-
-            // EmitReaderFields(reader, tableInfo, ilGenerator, injector);
-            for (int columnIndex = 0; columnIndex < reader.FieldCount; columnIndex++)
-            {
-                ColumnInfo columnInfo = tableInfo.GetColumnInfo(reader.GetName(columnIndex));
-                if (columnInfo != null)
-                {
-                    Type srcType = reader.GetFieldType(columnIndex);
-                    MethodInfo valueGetter = ILGeneratorHelper.GetReaderValueGetter(columnInfo, srcType, out bool _);
-                    MethodInfo propertySetter = columnInfo.PropertyInfo.GetSetMethod(true);
-
-                    // Label truePart = ilGenerator.CallReaderIsDbNull(columnIndex);
-                    ilGenerator.Emit(OpCodes.Ldarg_0);
-                    ilGenerator.Emit(OpCodes.Ldc_I4, columnIndex);
-                    ilGenerator.Emit(OpCodes.Callvirt, ILGeneratorHelper._fnIsDBNull);
-                    Label truePart = ilGenerator.DefineLabel();
-                    Label endPart = ilGenerator.DefineLabel();
-                    ilGenerator.Emit(OpCodes.Brtrue_S, truePart);
-
-                    // ilGenerator.CallReaderMethod(columnIndex, valueGetter);
-                    ilGenerator.Emit(OpCodes.Dup);
-                    ilGenerator.Emit(OpCodes.Ldarg_0);
-                    ilGenerator.Emit(OpCodes.Ldc_I4, columnIndex);
-                    ilGenerator.Emit(valueGetter.IsVirtual ? OpCodes.Callvirt : OpCodes.Call, valueGetter);
-                    ilGenerator.Emit(OpCodes.Callvirt, propertySetter);
-
-                    ilGenerator.Emit(OpCodes.Br_S, endPart);
-
-                    ilGenerator.MarkLabel(truePart);
-
-                    if (columnInfo.PropertyInfo.PropertyType == typeof(int))
-                    {
-                        ilGenerator.Emit(OpCodes.Dup);
-                        ilGenerator.Emit(OpCodes.Ldc_I4_0);
-                        ilGenerator.Emit(OpCodes.Callvirt, propertySetter);
-                    }
-                    else if (columnInfo.PropertyInfo.PropertyType == typeof(string))
-                    {
-                        ilGenerator.Emit(OpCodes.Dup);
-                        ilGenerator.Emit(OpCodes.Ldnull);
-                        ilGenerator.Emit(OpCodes.Callvirt, propertySetter);
-                    }
-
-                    // ilGenerator.CallReaderGetValueWithoutConverter(columnIndex, columnInfo, srcType);
-
-                    ilGenerator.MarkLabel(endPart);
-
-                    //IConverter converter = ConverterHelper.GetConverter(columnInfo, srcType);
-                    //if (converter is null)
-                    //{
-                    //    EmitFieldWithoutConverter(ilGenerator, srcType, columnInfo, columnIndex);
-                    //}
-                    //else
-                    //{
-                    //    EmitFieldWithConverter(ilGenerator, converter, columnInfo, columnIndex);
-                    //}
-                }
-            }
-
+            EmitReaderFields(reader, tableInfo, ilGenerator, injector);
             //ilGenerator.CallOnAfterMaterialize(tableInfo);
-
             ilGenerator.Emit(OpCodes.Ret);
 
             return dynamicMethod.CreateDelegate(Expression.GetFuncType(typeof(IDataReader), type)) as Func<IDataReader, T>;
@@ -244,10 +183,18 @@ namespace Kros.KORM.Materializer
             ColumnInfo columnInfo,
             int columnIndex)
         {
-            Label truePart = ilGenerator.CallReaderIsDbNull(columnIndex);
+            MethodInfo propertySetter = columnInfo.PropertyInfo.GetSetMethod(true);
+
+            Label labelIsDbNull = ilGenerator.CallReaderIsDbNull(columnIndex);
+            Label endPart = ilGenerator.DefineLabel();
+
             ilGenerator.CallReaderGetValueWithoutConverter(columnIndex, columnInfo, srcType);
-            ilGenerator.Emit(OpCodes.Callvirt, columnInfo.PropertyInfo.GetSetMethod(true));
-            ilGenerator.MarkLabel(truePart);
+            ilGenerator.Emit(OpCodes.Callvirt, propertySetter);
+            ilGenerator.Emit(OpCodes.Br_S, endPart);
+
+            ilGenerator.MarkLabel(labelIsDbNull);
+            ilGenerator.EmitSetNullValue(columnInfo.PropertyInfo.PropertyType, propertySetter);
+            ilGenerator.MarkLabel(endPart);
         }
 
         private static void EmitFieldWithConverter(
