@@ -170,79 +170,9 @@ namespace Kros.KORM.Materializer
 
         public static void EmitSetNullValue(this ILGenerator ilGenerator, Type propertyType, MethodInfo propertySetter)
         {
-            if (propertyType == typeof(bool))
+            if (propertyType.IsPrimitive)
             {
-                ilGenerator.Emit(OpCodes.Dup);
-                ilGenerator.Emit(OpCodes.Ldc_I4_0);
-                ilGenerator.Emit(OpCodes.Callvirt, propertySetter);
-            }
-            else if (propertyType == typeof(byte))
-            {
-                ilGenerator.Emit(OpCodes.Dup);
-                ilGenerator.Emit(OpCodes.Ldc_I4_0);
-                ilGenerator.Emit(OpCodes.Callvirt, propertySetter);
-            }
-            else if (propertyType == typeof(sbyte))
-            {
-                ilGenerator.Emit(OpCodes.Dup);
-                ilGenerator.Emit(OpCodes.Ldc_I4_0);
-                ilGenerator.Emit(OpCodes.Callvirt, propertySetter);
-            }
-            else if (propertyType == typeof(short))
-            {
-                ilGenerator.Emit(OpCodes.Dup);
-                ilGenerator.Emit(OpCodes.Ldc_I4_0);
-                ilGenerator.Emit(OpCodes.Callvirt, propertySetter);
-            }
-            else if (propertyType == typeof(ushort))
-            {
-                ilGenerator.Emit(OpCodes.Dup);
-                ilGenerator.Emit(OpCodes.Ldc_I4_0);
-                ilGenerator.Emit(OpCodes.Callvirt, propertySetter);
-            }
-            else if (propertyType == typeof(int))
-            {
-                ilGenerator.Emit(OpCodes.Dup);
-                ilGenerator.Emit(OpCodes.Ldc_I4_0);
-                ilGenerator.Emit(OpCodes.Callvirt, propertySetter);
-            }
-            else if (propertyType == typeof(uint))
-            {
-                ilGenerator.Emit(OpCodes.Dup);
-                ilGenerator.Emit(OpCodes.Ldc_I4_0);
-                ilGenerator.Emit(OpCodes.Callvirt, propertySetter);
-            }
-            else if (propertyType == typeof(long))
-            {
-                ilGenerator.Emit(OpCodes.Dup);
-                ilGenerator.Emit(OpCodes.Ldc_I4_0);
-                ilGenerator.Emit(OpCodes.Conv_I8);
-                ilGenerator.Emit(OpCodes.Callvirt, propertySetter);
-            }
-            else if (propertyType == typeof(ulong))
-            {
-                ilGenerator.Emit(OpCodes.Dup);
-                ilGenerator.Emit(OpCodes.Ldc_I4_0);
-                ilGenerator.Emit(OpCodes.Conv_I8);
-                ilGenerator.Emit(OpCodes.Callvirt, propertySetter);
-            }
-            else if (propertyType == typeof(char))
-            {
-                ilGenerator.Emit(OpCodes.Dup);
-                ilGenerator.Emit(OpCodes.Ldc_I4_0);
-                ilGenerator.Emit(OpCodes.Callvirt, propertySetter);
-            }
-            else if (propertyType == typeof(double))
-            {
-                ilGenerator.Emit(OpCodes.Dup);
-                ilGenerator.Emit(OpCodes.Ldc_R8, (double)default);
-                ilGenerator.Emit(OpCodes.Callvirt, propertySetter);
-            }
-            else if (propertyType == typeof(float))
-            {
-                ilGenerator.Emit(OpCodes.Dup);
-                ilGenerator.Emit(OpCodes.Ldc_R4, (float)default);
-                ilGenerator.Emit(OpCodes.Callvirt, propertySetter);
+                EmitSetNullValueForPrimitiveTypes(ilGenerator, propertyType, propertySetter);
             }
             else if (propertyType.IsValueType)
             {
@@ -255,10 +185,34 @@ namespace Kros.KORM.Materializer
             }
             else
             {
+                // Reference types.
                 ilGenerator.Emit(OpCodes.Dup);
                 ilGenerator.Emit(OpCodes.Ldnull);
                 ilGenerator.Emit(OpCodes.Callvirt, propertySetter);
             }
+        }
+
+        public static void EmitSetNullValueForPrimitiveTypes(this ILGenerator ilGenerator, Type propertyType, MethodInfo propertySetter)
+        {
+            ilGenerator.Emit(OpCodes.Dup);
+            if ((propertyType == typeof(long)) || (propertyType == typeof(ulong)))
+            {
+                ilGenerator.Emit(OpCodes.Ldc_I4_0);
+                ilGenerator.Emit(OpCodes.Conv_I8);
+            }
+            else if (propertyType == typeof(double))
+            {
+                ilGenerator.Emit(OpCodes.Ldc_R8, (double)default);
+            }
+            else if (propertyType == typeof(float))
+            {
+                ilGenerator.Emit(OpCodes.Ldc_R4, (float)default);
+            }
+            else
+            {
+                ilGenerator.Emit(OpCodes.Ldc_I4_0);
+            }
+            ilGenerator.Emit(OpCodes.Callvirt, propertySetter);
         }
 
         private static Dictionary<string, MethodInfo> InitReaderValueGetters()
