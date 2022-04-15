@@ -218,6 +218,10 @@ INSERT INTO [{TableName}] VALUES (12, NULL);";
             }
         }
 
+        private class TestSubItem
+        {
+        }
+
         private class TestItem
         {
             public TestItem() : this(true)
@@ -228,6 +232,7 @@ INSERT INTO [{TableName}] VALUES (12, NULL);";
             {
                 if (initValuesInConstructor)
                 {
+                    ObjectVal = new TestSubItem();
                     StrVal = "Lorem";
                     BoolVal = true;
                     ByteVal = 1;
@@ -256,6 +261,7 @@ INSERT INTO [{TableName}] VALUES (12, NULL);";
                 }
             }
 
+            public TestSubItem ObjectVal { get; set; }
             public string StrVal { get; set; }
             public bool BoolVal { get; set; }
             public byte ByteVal { get; set; }
