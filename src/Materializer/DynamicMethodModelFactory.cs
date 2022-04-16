@@ -96,7 +96,10 @@ namespace Kros.KORM.Materializer
             DynamicMethod dynamicMethod = new(GetFactoryName, type, new Type[] { typeof(IDataReader) }, true);
             ILGenerator ilGenerator = dynamicMethod.GetILGenerator();
 
+            ilGenerator.DeclareLocal(typeof(T));
             ilGenerator.Emit(OpCodes.Newobj, ctor);
+            ilGenerator.Emit(OpCodes.Stloc_0);
+            ilGenerator.Emit(OpCodes.Ldloc_0);
             EmitReaderFields(reader, tableInfo, ilGenerator, injector);
             ilGenerator.CallOnAfterMaterialize(tableInfo);
             ilGenerator.Emit(OpCodes.Ret);
@@ -137,7 +140,6 @@ namespace Kros.KORM.Materializer
             {
                 EmitField(reader, tableInfo, ilGenerator, i);
             }
-
             EmitPropertyForInjecting(tableInfo, ilGenerator, injector);
         }
 

@@ -12,6 +12,44 @@ namespace Kros.KORM.Materializer
 {
     internal static class ILGeneratorHelper
     {
+        #region Nested types
+
+        internal static class NullablePrimitives
+        {
+            private static readonly Dictionary<Type, FieldInfo> _fields = new()
+            {
+                { typeof(bool), typeof(NullablePrimitives).GetField(nameof(NullableBool)) },
+                { typeof(byte), typeof(NullablePrimitives).GetField(nameof(NullableByte)) },
+                { typeof(sbyte), typeof(NullablePrimitives).GetField(nameof(NullableSByte)) },
+                { typeof(short), typeof(NullablePrimitives).GetField(nameof(NullableInt16)) },
+                { typeof(ushort), typeof(NullablePrimitives).GetField(nameof(NullableUInt16)) },
+                { typeof(int), typeof(NullablePrimitives).GetField(nameof(NullableInt32)) },
+                { typeof(uint), typeof(NullablePrimitives).GetField(nameof(NullableUInt32)) },
+                { typeof(long), typeof(NullablePrimitives).GetField(nameof(NullableInt64)) },
+                { typeof(ulong), typeof(NullablePrimitives).GetField(nameof(NullableUInt64)) },
+                { typeof(char), typeof(NullablePrimitives).GetField(nameof(NullableChar)) },
+                { typeof(double), typeof(NullablePrimitives).GetField(nameof(NullableDouble)) },
+                { typeof(float), typeof(NullablePrimitives).GetField(nameof(NullableSingle)) }
+            };
+
+            public static FieldInfo GetFieldInfo(Type type) => _fields[type];
+
+            public static readonly bool? NullableBool = null;
+            public static readonly byte? NullableByte = null;
+            public static readonly sbyte? NullableSByte = null;
+            public static readonly short? NullableInt16 = null;
+            public static readonly ushort? NullableUInt16 = null;
+            public static readonly int? NullableInt32 = null;
+            public static readonly uint? NullableUInt32 = null;
+            public static readonly long? NullableInt64 = null;
+            public static readonly ulong? NullableUInt64 = null;
+            public static readonly char? NullableChar = null;
+            public static readonly double? NullableDouble = null;
+            public static readonly float? NullableSingle = null;
+        }
+
+        #endregion
+
         private static readonly List<IConverter> _converters = new List<IConverter>();
         private static readonly Dictionary<string, MethodInfo> _readerValueGetters = InitReaderValueGetters();
         private static readonly MethodInfo _fnIsDBNull = typeof(IDataRecord).GetMethod(nameof(IDataReader.IsDBNull));
@@ -176,8 +214,13 @@ namespace Kros.KORM.Materializer
             }
             else if (propertyType.IsValueType)
             {
-                if (Nullable.GetUnderlyingType(propertyType) != null)
+                Type nullableType = Nullable.GetUnderlyingType(propertyType);
+                if (nullableType != null)
                 {
+                    if (nullableType.IsPrimitive)
+                    {
+                        EmitSetNullValueForNullablePrimitiveTypes(ilGenerator, nullableType, propertySetter);
+                    }
                 }
                 else
                 {
@@ -186,7 +229,7 @@ namespace Kros.KORM.Materializer
             else
             {
                 // Reference types.
-                ilGenerator.Emit(OpCodes.Dup);
+                ilGenerator.Emit(OpCodes.Ldloc_0);
                 ilGenerator.Emit(OpCodes.Ldnull);
                 ilGenerator.Emit(OpCodes.Callvirt, propertySetter);
             }
@@ -194,7 +237,7 @@ namespace Kros.KORM.Materializer
 
         public static void EmitSetNullValueForPrimitiveTypes(this ILGenerator ilGenerator, Type propertyType, MethodInfo propertySetter)
         {
-            ilGenerator.Emit(OpCodes.Dup);
+            ilGenerator.Emit(OpCodes.Ldloc_0);
             if ((propertyType == typeof(long)) || (propertyType == typeof(ulong)))
             {
                 ilGenerator.Emit(OpCodes.Ldc_I4_0);
@@ -212,6 +255,13 @@ namespace Kros.KORM.Materializer
             {
                 ilGenerator.Emit(OpCodes.Ldc_I4_0);
             }
+            ilGenerator.Emit(OpCodes.Callvirt, propertySetter);
+        }
+
+        public static void EmitSetNullValueForNullablePrimitiveTypes(this ILGenerator ilGenerator, Type propertyType, MethodInfo propertySetter)
+        {
+            ilGenerator.Emit(OpCodes.Ldloc_0);
+            ilGenerator.Emit(OpCodes.Ldsfld, NullablePrimitives.GetFieldInfo(propertyType));
             ilGenerator.Emit(OpCodes.Callvirt, propertySetter);
         }
 
