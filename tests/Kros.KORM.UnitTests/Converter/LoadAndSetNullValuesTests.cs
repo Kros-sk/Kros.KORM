@@ -222,6 +222,12 @@ INSERT INTO [{TableName}] VALUES (12, NULL);";
         {
         }
 
+        private struct TestStruct
+        {
+            public int IntVal;
+            public string StringVal;
+        }
+
         private class TestItem
         {
             public TestItem() : this(true)
@@ -234,6 +240,7 @@ INSERT INTO [{TableName}] VALUES (12, NULL);";
                 {
                     ObjectVal = new TestSubItem();
                     StrVal = "Lorem";
+
                     BoolVal = true;
                     ByteVal = 1;
                     SByteVal = 2;
@@ -246,6 +253,7 @@ INSERT INTO [{TableName}] VALUES (12, NULL);";
                     CharVal = 'a';
                     DoubleVal = 3.14;
                     SingleVal = 6.28F;
+
                     NullableBoolVal = true;
                     NullableByteVal = 1;
                     NullableSByteVal = 2;
@@ -258,11 +266,17 @@ INSERT INTO [{TableName}] VALUES (12, NULL);";
                     NullableCharVal = 'a';
                     NullableDoubleVal = 3.14;
                     NullableSingleVal = 6.28F;
+
+                    DateTimeVal = new DateTime(1978, 12, 10);
+                    NullableDateTimeVal = new DateTime(1978, 12, 10);
+                    CustomStructVal = new TestStruct() { IntVal = 42, StringVal = "Lorem" };
+                    NullableCustomStructVal = new TestStruct() { IntVal = 42, StringVal = "Lorem" };
                 }
             }
 
             public TestSubItem ObjectVal { get; set; }
             public string StrVal { get; set; }
+
             public bool BoolVal { get; set; }
             public byte ByteVal { get; set; }
             public sbyte SByteVal { get; set; }
@@ -275,6 +289,7 @@ INSERT INTO [{TableName}] VALUES (12, NULL);";
             public char CharVal { get; set; }
             public double DoubleVal { get; set; }
             public float SingleVal { get; set; }
+
             public bool? NullableBoolVal { get; set; }
             public byte? NullableByteVal { get; set; }
             public sbyte? NullableSByteVal { get; set; }
@@ -287,6 +302,11 @@ INSERT INTO [{TableName}] VALUES (12, NULL);";
             public char? NullableCharVal { get; set; }
             public double? NullableDoubleVal { get; set; }
             public float? NullableSingleVal { get; set; }
+
+            public DateTime DateTimeVal { get; set; }
+            public DateTime? NullableDateTimeVal { get; set; }
+            public TestStruct CustomStructVal { get; set; }
+            public TestStruct? NullableCustomStructVal { get; set; }
         }
 
         [Fact]
@@ -301,6 +321,6 @@ INSERT INTO [{TableName}] VALUES (12, NULL);";
             actual.Should().BeEquivalentTo(expected);
         }
 
-#endregion
+        #endregion
     }
 }
