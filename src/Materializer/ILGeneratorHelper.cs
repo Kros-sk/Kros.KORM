@@ -215,15 +215,13 @@ namespace Kros.KORM.Materializer
             else if (propertyType.IsValueType)
             {
                 Type nullableType = Nullable.GetUnderlyingType(propertyType);
-                if (nullableType != null)
+                if ((nullableType is not null) && nullableType.IsPrimitive)
                 {
-                    if (nullableType.IsPrimitive)
-                    {
-                        EmitSetNullValueForNullablePrimitiveTypes(ilGenerator, nullableType, propertySetter);
-                    }
+                    EmitSetNullValueForNullablePrimitiveTypes(ilGenerator, nullableType, propertySetter);
                 }
                 else
                 {
+                    EmitSetNullValueForValueTypes(ilGenerator, propertyType, propertySetter);
                 }
             }
             else
@@ -262,6 +260,16 @@ namespace Kros.KORM.Materializer
         {
             ilGenerator.Emit(OpCodes.Ldloc_0);
             ilGenerator.Emit(OpCodes.Ldsfld, NullablePrimitives.GetFieldInfo(propertyType));
+            ilGenerator.Emit(OpCodes.Callvirt, propertySetter);
+        }
+
+        public static void EmitSetNullValueForValueTypes(this ILGenerator ilGenerator, Type propertyType, MethodInfo propertySetter)
+        {
+            LocalBuilder local = ilGenerator.DeclareLocal(propertyType);
+            ilGenerator.Emit(OpCodes.Ldloc_0);
+            ilGenerator.Emit(OpCodes.Ldloca_S, local.LocalIndex);
+            ilGenerator.Emit(OpCodes.Initobj, local.LocalType);
+            ilGenerator.Emit(OpCodes.Ldloc_S, local.LocalIndex);
             ilGenerator.Emit(OpCodes.Callvirt, propertySetter);
         }
 
