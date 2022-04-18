@@ -118,6 +118,7 @@ namespace Kros.KORM.Materializer
             }
             else
             {
+                // Convert value from data reader.
                 ilGenerator.Emit(OpCodes.Ldarg_0);
                 ilGenerator.Emit(OpCodes.Ldc_I4, fieldIndex);
                 ilGenerator.Emit(OpCodes.Callvirt, _fnGetValue);
