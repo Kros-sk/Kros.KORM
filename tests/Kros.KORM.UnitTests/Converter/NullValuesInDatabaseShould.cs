@@ -176,6 +176,35 @@ namespace Kros.KORM.UnitTests.Converter
             public string NullableCustomStructVal { get; set; }
         }
 
+        private record TestDataRecord
+        (
+            //string StrVal = "Lorem",
+            bool BoolVal = true,
+            byte ByteVal = 1
+            //sbyte SByteVal = 2,
+            //short Int16Val = 3,
+            //ushort UInt16Val = 4,
+            //int Int32Val = 5,
+            //uint UInt32Val = 6,
+            //long Int64Val = 7,
+            //ulong UInt64Val = 8,
+            //char CharVal = 'a',
+            //double DoubleVal = 3.14,
+            //float SingleVal = 6.28f
+            //bool? NullableBoolVal = true,
+            //byte? NullableByteVal = 1,
+            //sbyte? NullableSByteVal = 2,
+            //short? NullableInt16Val = 3,
+            //ushort? NullableUInt16Val = 4,
+            //int? NullableInt32Val = 5,
+            //uint? NullableUInt32Val = 6,
+            //long? NullableInt64Val = 7,
+            //ulong? NullableUInt64Val = 8,
+            //char? NullableCharVal = 'a',
+            //double? NullableDoubleVal = 3.14,
+            //float? NullableSingleVal = 6.28f
+        );
+
         private class TestDataSubClass
         {
             public string Value { get; set; }
@@ -288,7 +317,40 @@ namespace Kros.KORM.UnitTests.Converter
         [Fact]
         public void PropagateToDataRecord()
         {
-            throw new NotImplementedException();
+            TestDataInfo<TestDataRecord, TestDataRecord> info = new(false);
+            DynamicMethodModelFactory modelFactory = new(info.DatabaseMapper);
+            Func<IDataReader, TestDataRecord> factory = modelFactory.GetFactory<TestDataRecord>(info.DataReader);
+
+            TestDataRecord actual = factory(info.DataReader);
+            TestDataRecord expected = new()
+            {
+                //StrVal = null,
+                BoolVal = false,
+                ByteVal = 0,
+                //SByteVal = 0,
+                //Int16Val = 0,
+                //UInt16Val = 0,
+                //Int32Val = 0,
+                //UInt32Val = 0,
+                //Int64Val = 0,
+                //UInt64Val = 0,
+                //CharVal = '\0',
+                //DoubleVal = 0,
+                //SingleVal = 0,
+                //NullableBoolVal = null,
+                //NullableByteVal = null,
+                //NullableSByteVal = null,
+                //NullableInt16Val = null,
+                //NullableUInt16Val = null,
+                //NullableInt32Val = null,
+                //NullableUInt32Val = null,
+                //NullableInt64Val = null,
+                //NullableUInt64Val = null,
+                //NullableCharVal = null,
+                //NullableDoubleVal = null,
+                //NullableSingleVal = null
+            };
+            actual.Should().BeEquivalentTo(expected);
         }
 
         [Fact]

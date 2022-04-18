@@ -25,14 +25,14 @@ namespace Kros.KORM.Materializer
             var dynamicMethod = new DynamicMethod(
                 $"korm_factory_record_{typeof(T).Name}",
                 type, new Type[] { typeof(IDataReader) }, true);
-            ILGenerator iLGenerator = dynamicMethod.GetILGenerator();
+            ILGenerator ilGenerator = dynamicMethod.GetILGenerator();
             ParameterInfo[] paramsInfo = ctor.GetParameters();
 
             foreach (ParameterInfo param in paramsInfo)
             {
                 if (injector.IsInjectable(param.Name))
                 {
-                    iLGenerator.CallGetInjectedValue(injector, param.Name, param.ParameterType);
+                    ilGenerator.CallGetInjectedValue(injector, param.Name, param.ParameterType);
                 }
                 else
                 {
@@ -42,21 +42,23 @@ namespace Kros.KORM.Materializer
                         throw new InvalidOperationException(
                             Properties.Resources.ConstructorParameterDoesNotMatchProperty.Format(param.Name, type.FullName));
                     }
-                    FromReader(reader, iLGenerator, columnInfo);
+                    FromReader(reader, ilGenerator, columnInfo);
                 }
             }
 
-            iLGenerator.Emit(OpCodes.Newobj, ctor);
-            iLGenerator.CallOnAfterMaterialize(tableInfo);
-            iLGenerator.Emit(OpCodes.Ret);
+            ilGenerator.DeclareLocal(typeof(T));
+            ilGenerator.Emit(OpCodes.Newobj, ctor);
+            ilGenerator.Emit(OpCodes.Stloc_0);
+            ilGenerator.CallOnAfterMaterialize(tableInfo);
+            ilGenerator.Emit(OpCodes.Ldloc_0);
+            ilGenerator.Emit(OpCodes.Ret);
 
             return dynamicMethod.CreateDelegate(Expression.GetFuncType(typeof(IDataReader), type)) as Func<IDataReader, T>;
         }
 
         private static void FromReader(IDataReader reader, ILGenerator iLGenerator, ColumnInfo columnInfo)
         {
-            string fieldName = columnInfo.Name;
-            int ordinal = reader.GetOrdinal(fieldName);
+            int ordinal = reader.GetOrdinal(columnInfo.Name);
             Type srcType = reader.GetFieldType(ordinal);
 
             IConverter converter = ConverterHelper.GetConverter(columnInfo, srcType);

@@ -65,7 +65,7 @@ namespace Kros.KORM.Materializer
 
             if (valueGetter != null
                 && (valueGetter.ReturnType == propertyType
-                || valueGetter.ReturnType == Nullable.GetUnderlyingType(propertyType)))
+                || valueGetter.ReturnType == nullableUnderlyingType))
             {
                 castNeeded = false;
             }
@@ -152,7 +152,7 @@ namespace Kros.KORM.Materializer
         {
             if (tableInfo.OnAfterMaterialize != null)
             {
-                iLGenerator.Emit(OpCodes.Dup);
+                iLGenerator.Emit(OpCodes.Ldloc_0);
                 iLGenerator.Emit(OpCodes.Ldarg_0);
                 if (tableInfo.OnAfterMaterialize.IsVirtual)
                 {
