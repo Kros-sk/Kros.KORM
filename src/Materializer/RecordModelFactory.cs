@@ -57,11 +57,9 @@ namespace Kros.KORM.Materializer
         {
             string fieldName = columnInfo.Name;
             int ordinal = reader.GetOrdinal(fieldName);
-
             Type srcType = reader.GetFieldType(ordinal);
 
             IConverter converter = ConverterHelper.GetConverter(columnInfo, srcType);
-
             if (converter is null)
             {
                 iLGenerator.CallReaderGetValueWithoutConverter(ordinal, columnInfo, srcType);

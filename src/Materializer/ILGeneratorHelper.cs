@@ -46,10 +46,10 @@ namespace Kros.KORM.Materializer
             iLGenerator.Emit(OpCodes.Ldarg_0);
             iLGenerator.Emit(OpCodes.Ldc_I4, fieldIndex);
             iLGenerator.Emit(OpCodes.Callvirt, _fnIsDBNull);
-            Label truePart = iLGenerator.DefineLabel();
-            iLGenerator.Emit(OpCodes.Brtrue_S, truePart);
+            Label falsePart = iLGenerator.DefineLabel();
+            iLGenerator.Emit(OpCodes.Brfalse_S, falsePart);
 
-            return truePart;
+            return falsePart;
         }
 
         public static MethodInfo GetReaderValueGetter(this Type srcType, bool isNullable = false)
@@ -175,9 +175,8 @@ namespace Kros.KORM.Materializer
             }
         }
 
-        public static void EmitSetNullValue(this ILGenerator ilGenerator, Type propertyType, MethodInfo propertySetter)
+        public static void EmitSetNullValue(this ILGenerator ilGenerator, Type propertyType)
         {
-            ilGenerator.Emit(OpCodes.Ldloc_0);
             if (propertyType.IsPrimitive)
             {
                 EmitSetNullValueForPrimitiveTypes(ilGenerator, propertyType);
@@ -191,7 +190,6 @@ namespace Kros.KORM.Materializer
                 // Reference types.
                 ilGenerator.Emit(OpCodes.Ldnull);
             }
-            ilGenerator.Emit(OpCodes.Callvirt, propertySetter);
         }
 
         public static void EmitSetNullValueForPrimitiveTypes(this ILGenerator ilGenerator, Type propertyType)
