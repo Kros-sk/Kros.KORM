@@ -171,11 +171,11 @@ namespace Kros.KORM.Materializer
                 IConverter converter = ConverterHelper.GetConverter(columnInfo, srcType);
                 if (converter is null)
                 {
-                    EmitFieldWithoutConverter(ilGenerator, srcType, columnInfo, columnIndex);
+                    EmitFieldWithoutConverter(ilGenerator, srcType, columnInfo.PropertyInfo.PropertyType, columnIndex);
                 }
                 else
                 {
-                    EmitFieldWithConverter(ilGenerator, converter, columnInfo, columnIndex);
+                    EmitFieldWithConverter(ilGenerator, converter, columnInfo.PropertyInfo.PropertyType, columnIndex);
                 }
                 ilGenerator.Emit(OpCodes.Callvirt, columnInfo.PropertyInfo.GetSetMethod(true));
             }
@@ -184,18 +184,18 @@ namespace Kros.KORM.Materializer
         private static void EmitFieldWithoutConverter(
             ILGenerator ilGenerator,
             Type srcType,
-            ColumnInfo columnInfo,
+            Type propertyType,
             int columnIndex)
         {
             // if (reader.IsDbNull(columnIndex)) {
             Label labelIsNotDbNull = ilGenerator.CallReaderIsDbNull(columnIndex);
             Label endPart = ilGenerator.DefineLabel();
-            ilGenerator.EmitSetNullValue(columnInfo.PropertyInfo.PropertyType);
+            ilGenerator.EmitSetNullValue(propertyType);
             ilGenerator.Emit(OpCodes.Br_S, endPart);
 
             // } else {
             ilGenerator.MarkLabel(labelIsNotDbNull);
-            ilGenerator.CallReaderGetValueWithoutConverter(columnIndex, columnInfo, srcType);
+            ilGenerator.CallReaderGetValueWithoutConverter(columnIndex, propertyType, srcType);
 
             // }
             ilGenerator.MarkLabel(endPart);
@@ -204,18 +204,18 @@ namespace Kros.KORM.Materializer
         private static void EmitFieldWithConverter(
             ILGenerator ilGenerator,
             IConverter converter,
-            ColumnInfo columnInfo,
+            Type propertyType,
             int columnIndex)
         {
             // if (reader.IsDbNull(columnIndex)) {
             Label labelIsNotDbNull = ilGenerator.CallReaderIsDbNull(columnIndex);
             Label endPart = ilGenerator.DefineLabel();
-            ilGenerator.CallConverter(converter, columnInfo, columnIndex, convertNullValue: true);
+            ilGenerator.CallConverter(converter, propertyType, columnIndex, convertNullValue: true);
             ilGenerator.Emit(OpCodes.Br_S, endPart);
 
             // } else {
             ilGenerator.MarkLabel(labelIsNotDbNull);
-            ilGenerator.CallConverter(converter, columnInfo, columnIndex, convertNullValue: false);
+            ilGenerator.CallConverter(converter, propertyType, columnIndex, convertNullValue: false);
 
             // }
             ilGenerator.MarkLabel(endPart);

@@ -58,19 +58,20 @@ namespace Kros.KORM.Materializer
             return _readerValueGetters.ContainsKey(name) ? _readerValueGetters[name] : null;
         }
 
-        public static MethodInfo GetReaderValueGetter(ColumnInfo columnInfo, Type srcType, out bool castNeeded)
+        public static MethodInfo GetReaderValueGetter(Type propertyType, Type srcType, out bool castNeeded)
         {
-            MethodInfo valueGetter = srcType.GetReaderValueGetter(columnInfo.IsNullable);
+            Type nullableUnderlyingType = Nullable.GetUnderlyingType(propertyType);
+            MethodInfo valueGetter = srcType.GetReaderValueGetter(nullableUnderlyingType is not null);
 
             if (valueGetter != null
-                && (valueGetter.ReturnType == columnInfo.PropertyInfo.PropertyType
-                || valueGetter.ReturnType == Nullable.GetUnderlyingType(columnInfo.PropertyInfo.PropertyType)))
+                && (valueGetter.ReturnType == propertyType
+                || valueGetter.ReturnType == Nullable.GetUnderlyingType(propertyType)))
             {
                 castNeeded = false;
             }
             else if (valueGetter is null
-                && ((srcType == columnInfo.PropertyInfo.PropertyType)
-                || (srcType == Nullable.GetUnderlyingType(columnInfo.PropertyInfo.PropertyType))))
+                && ((srcType == propertyType)
+                || (srcType == nullableUnderlyingType)))
             {
                 valueGetter = _getValueMethodInfo;
                 castNeeded = true;
@@ -78,7 +79,7 @@ namespace Kros.KORM.Materializer
             else
             {
                 throw new InvalidOperationException(
-                    Properties.Resources.CannotMaterializeSourceValue.Format(srcType, columnInfo.PropertyInfo.PropertyType));
+                    Properties.Resources.CannotMaterializeSourceValue.Format(srcType, propertyType));
             }
             return valueGetter;
         }
@@ -86,21 +87,21 @@ namespace Kros.KORM.Materializer
         public static void CallReaderGetValueWithoutConverter(
             this ILGenerator iLGenerator,
             int fieldIndex,
-            ColumnInfo columnInfo,
+            Type propertyType,
             Type srcType)
         {
-            MethodInfo valueGetter = GetReaderValueGetter(columnInfo, srcType, out bool castNeeded);
+            MethodInfo valueGetter = GetReaderValueGetter(propertyType, srcType, out bool castNeeded);
             iLGenerator.CallReaderMethod(fieldIndex, valueGetter);
             if (castNeeded)
             {
-                EmitCastValue(iLGenerator, srcType, columnInfo.PropertyInfo.PropertyType);
+                EmitCastValue(iLGenerator, srcType, propertyType);
             }
         }
 
         public static void CallConverter(
             this ILGenerator ilGenerator,
             IConverter converter,
-            ColumnInfo columnInfo,
+            Type propertyType,
             int fieldIndex,
             bool convertNullValue)
         {
@@ -123,7 +124,7 @@ namespace Kros.KORM.Materializer
             }
 
             ilGenerator.Emit(OpCodes.Callvirt, _fnConvert);
-            ilGenerator.Emit(OpCodes.Unbox_Any, columnInfo.PropertyInfo.PropertyType);
+            ilGenerator.Emit(OpCodes.Unbox_Any, propertyType);
         }
 
         public static void CallGetInjectedValue(

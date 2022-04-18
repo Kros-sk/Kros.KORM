@@ -62,11 +62,11 @@ namespace Kros.KORM.Materializer
             IConverter converter = ConverterHelper.GetConverter(columnInfo, srcType);
             if (converter is null)
             {
-                iLGenerator.CallReaderGetValueWithoutConverter(ordinal, columnInfo, srcType);
+                iLGenerator.CallReaderGetValueWithoutConverter(ordinal, columnInfo.PropertyInfo.PropertyType, srcType);
             }
             else
             {
-                iLGenerator.CallConverter(converter, columnInfo, ordinal, convertNullValue: false);
+                iLGenerator.CallConverter(converter, columnInfo.PropertyInfo.PropertyType, ordinal, convertNullValue: false);
             }
         }
     }
