@@ -86,7 +86,6 @@ namespace Kros.KORM.Materializer
             iLGenerator.Emit(OpCodes.Callvirt, _fnIsDBNull);
             Label truePart = iLGenerator.DefineLabel();
             iLGenerator.Emit(OpCodes.Brtrue_S, truePart);
-            iLGenerator.Emit(OpCodes.Dup);
 
             return truePart;
         }
@@ -136,25 +135,33 @@ namespace Kros.KORM.Materializer
             }
         }
 
-        public static void CallReaderGetValueWithConverter(
-            this ILGenerator iLGenerator,
-            int fieldIndex,
+        public static void CallConverter(
+            this ILGenerator ilGenerator,
             IConverter converter,
-            ColumnInfo columnInfo)
+            ColumnInfo columnInfo,
+            int fieldIndex,
+            bool convertNullValue)
         {
             int converterIndex = _converters.Count;
             _converters.Add(converter);
 
-            iLGenerator.Emit(OpCodes.Ldsfld, _fldConverters);
-            iLGenerator.Emit(OpCodes.Ldc_I4, converterIndex);
-            iLGenerator.Emit(OpCodes.Callvirt, _fnConvertersListGetItem);
+            ilGenerator.Emit(OpCodes.Ldsfld, _fldConverters);
+            ilGenerator.Emit(OpCodes.Ldc_I4, converterIndex);
+            ilGenerator.Emit(OpCodes.Callvirt, _fnConvertersListGetItem);
 
-            iLGenerator.Emit(OpCodes.Ldarg_0);
-            iLGenerator.Emit(OpCodes.Ldc_I4, fieldIndex);
-            iLGenerator.Emit(OpCodes.Callvirt, _fnGetValue);
+            if (convertNullValue)
+            {
+                ilGenerator.Emit(OpCodes.Ldnull);
+            }
+            else
+            {
+                ilGenerator.Emit(OpCodes.Ldarg_0);
+                ilGenerator.Emit(OpCodes.Ldc_I4, fieldIndex);
+                ilGenerator.Emit(OpCodes.Callvirt, _fnGetValue);
+            }
 
-            iLGenerator.Emit(OpCodes.Callvirt, _fnConvert);
-            iLGenerator.Emit(OpCodes.Unbox_Any, columnInfo.PropertyInfo.PropertyType);
+            ilGenerator.Emit(OpCodes.Callvirt, _fnConvert);
+            ilGenerator.Emit(OpCodes.Unbox_Any, columnInfo.PropertyInfo.PropertyType);
         }
 
         public static void CallGetInjectedValue(
@@ -215,7 +222,7 @@ namespace Kros.KORM.Materializer
             else if (propertyType.IsValueType)
             {
                 Type nullableType = Nullable.GetUnderlyingType(propertyType);
-                if ((nullableType is not null) && nullableType.IsPrimitive)
+                if (nullableType?.IsPrimitive == true)
                 {
                     EmitSetNullValueForNullablePrimitiveTypes(ilGenerator, nullableType, propertySetter);
                 }

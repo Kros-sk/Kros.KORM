@@ -68,7 +68,7 @@ namespace Kros.KORM.Materializer
             }
             else
             {
-                iLGenerator.CallReaderGetValueWithConverter(ordinal, converter, columnInfo);
+                iLGenerator.CallConverter(converter, columnInfo, ordinal, convertNullValue: false);
             }
         }
     }

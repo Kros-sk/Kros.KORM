@@ -190,6 +190,7 @@ namespace Kros.KORM.Materializer
             Label labelIsDbNull = ilGenerator.CallReaderIsDbNull(columnIndex);
             Label endPart = ilGenerator.DefineLabel();
 
+            ilGenerator.Emit(OpCodes.Ldloc_0);
             ilGenerator.CallReaderGetValueWithoutConverter(columnIndex, columnInfo, srcType);
             ilGenerator.Emit(OpCodes.Callvirt, propertySetter);
             ilGenerator.Emit(OpCodes.Br_S, endPart);
@@ -205,10 +206,18 @@ namespace Kros.KORM.Materializer
             ColumnInfo columnInfo,
             int columnIndex)
         {
-            Label truePart = ilGenerator.CallReaderIsDbNull(columnIndex);
-            ilGenerator.CallReaderGetValueWithConverter(columnIndex, converter, columnInfo);
+            ilGenerator.Emit(OpCodes.Ldloc_0);
+            Label labelIsDbNull = ilGenerator.CallReaderIsDbNull(columnIndex);
+            Label endPart = ilGenerator.DefineLabel();
+
+            ilGenerator.CallConverter(converter, columnInfo, columnIndex, convertNullValue: false);
+            ilGenerator.Emit(OpCodes.Br_S, endPart);
+
+            ilGenerator.MarkLabel(labelIsDbNull);
+            ilGenerator.CallConverter(converter, columnInfo, columnIndex, convertNullValue: true);
+
+            ilGenerator.MarkLabel(endPart);
             ilGenerator.Emit(OpCodes.Callvirt, columnInfo.PropertyInfo.GetSetMethod(true));
-            ilGenerator.MarkLabel(truePart);
         }
 
         private static (ConstructorInfo ctor, bool isDefault) GetConstructor(Type type)

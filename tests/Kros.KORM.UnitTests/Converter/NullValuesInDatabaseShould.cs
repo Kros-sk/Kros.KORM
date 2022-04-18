@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+using Kros.KORM.Converter;
 using Kros.KORM.Materializer;
 using Kros.KORM.Metadata;
 using Kros.KORM.UnitTests.Base;
@@ -15,6 +16,8 @@ namespace Kros.KORM.UnitTests.Converter
     {
         #region Helpers
 
+        private const string ConvertedValue = "Lorem Ipsum";
+
         private class TestDataItem
         {
             public TestDataItem() : this(true) { }
@@ -23,7 +26,7 @@ namespace Kros.KORM.UnitTests.Converter
             {
                 if (initProperties)
                 {
-                    ObjectVal = new TestDataSubItem();
+                    ObjectVal = new TestDataSubItem() { Value = "Lorem" };
                     StrVal = "Lorem";
 
                     BoolVal = true;
@@ -94,8 +97,88 @@ namespace Kros.KORM.UnitTests.Converter
             public TestDataStruct? NullableCustomStructVal { get; set; }
         }
 
+        private class ConvertedTestDataItem
+        {
+            public ConvertedTestDataItem() : this(false) { }
+
+            public ConvertedTestDataItem(bool initProperties)
+            {
+                if (initProperties)
+                {
+                    ObjectVal = ConvertedValue;
+                    StrVal = ConvertedValue;
+
+                    BoolVal = ConvertedValue;
+                    ByteVal = ConvertedValue;
+                    SByteVal = ConvertedValue;
+                    Int16Val = ConvertedValue;
+                    UInt16Val = ConvertedValue;
+                    Int32Val = ConvertedValue;
+                    UInt32Val = ConvertedValue;
+                    Int64Val = ConvertedValue;
+                    UInt64Val = ConvertedValue;
+                    CharVal = ConvertedValue;
+                    DoubleVal = ConvertedValue;
+                    SingleVal = ConvertedValue;
+
+                    NullableBoolVal = ConvertedValue;
+                    NullableByteVal = ConvertedValue;
+                    NullableSByteVal = ConvertedValue;
+                    NullableInt16Val = ConvertedValue;
+                    NullableUInt16Val = ConvertedValue;
+                    NullableInt32Val = ConvertedValue;
+                    NullableUInt32Val = ConvertedValue;
+                    NullableInt64Val = ConvertedValue;
+                    NullableUInt64Val = ConvertedValue;
+                    NullableCharVal = ConvertedValue;
+                    NullableDoubleVal = ConvertedValue;
+                    NullableSingleVal = ConvertedValue;
+
+                    DateTimeVal = ConvertedValue;
+                    NullableDateTimeVal = ConvertedValue;
+                    CustomStructVal = ConvertedValue;
+                    NullableCustomStructVal = ConvertedValue;
+                }
+            }
+
+            public string ObjectVal { get; set; }
+            public string StrVal { get; set; }
+
+            public string BoolVal { get; set; }
+            public string ByteVal { get; set; }
+            public string SByteVal { get; set; }
+            public string Int16Val { get; set; }
+            public string UInt16Val { get; set; }
+            public string Int32Val { get; set; }
+            public string UInt32Val { get; set; }
+            public string Int64Val { get; set; }
+            public string UInt64Val { get; set; }
+            public string CharVal { get; set; }
+            public string DoubleVal { get; set; }
+            public string SingleVal { get; set; }
+
+            public string NullableBoolVal { get; set; }
+            public string NullableByteVal { get; set; }
+            public string NullableSByteVal { get; set; }
+            public string NullableInt16Val { get; set; }
+            public string NullableUInt16Val { get; set; }
+            public string NullableInt32Val { get; set; }
+            public string NullableUInt32Val { get; set; }
+            public string NullableInt64Val { get; set; }
+            public string NullableUInt64Val { get; set; }
+            public string NullableCharVal { get; set; }
+            public string NullableDoubleVal { get; set; }
+            public string NullableSingleVal { get; set; }
+
+            public string DateTimeVal { get; set; }
+            public string NullableDateTimeVal { get; set; }
+            public string CustomStructVal { get; set; }
+            public string NullableCustomStructVal { get; set; }
+        }
+
         private class TestDataSubItem
         {
+            public string Value { get; set; }
         }
 
         private struct TestDataStruct
@@ -104,21 +187,27 @@ namespace Kros.KORM.UnitTests.Converter
             public string StringVal;
         }
 
+        private class TestConverter : IConverter
+        {
+            public object Convert(object value) => ConvertedValue;
+            public object ConvertBack(object value) => throw new NotImplementedException();
+        }
+
         private class PropInfo
         {
             public string Name { get; set; }
-            public Type PropertyType { get; set; }
+            public Type DbType { get; set; }
         }
 
-        private class TestDataInfo<T>
+        private class TestDataInfo<TClientData, TDbData>
         {
             private readonly Dictionary<int, PropInfo> _info = new();
             private readonly IDatabaseMapper _databaseMapper;
             private readonly IDataReader _dataReader;
 
-            public TestDataInfo()
+            public TestDataInfo(bool useConverters)
             {
-                Type dataType = typeof(T);
+                Type dataType = typeof(TDbData);
                 PropertyInfo[] props = dataType.GetProperties();
                 int i = 0;
                 foreach (PropertyInfo prop in props)
@@ -126,26 +215,31 @@ namespace Kros.KORM.UnitTests.Converter
                     _info.Add(i, new PropInfo()
                     {
                         Name = prop.Name,
-                        PropertyType = prop.PropertyType
+                        DbType = prop.PropertyType
                     });
                     i++;
                 }
-                _databaseMapper = CreateDatabaseMapper();
+                _databaseMapper = CreateDatabaseMapper<TClientData>(useConverters);
                 _dataReader = CreateDataReader();
             }
 
             public int Count => _info.Count;
-            public Type GetFieldType(int i) => _info[i].PropertyType;
-            public string GetFieldName(int i) => _info[i].Name;
             public IDatabaseMapper DatabaseMapper => _databaseMapper;
             public IDataReader DataReader => _dataReader;
 
-            private static IDatabaseMapper CreateDatabaseMapper()
+            private static IDatabaseMapper CreateDatabaseMapper<T>(bool useConverters)
             {
                 IDatabaseMapper mapper = Substitute.For<IDatabaseMapper>();
 
                 ConventionModelMapper modelMapper = new();
-                TableInfo tableInfo = modelMapper.GetTableInfo<TestDataItem>();
+                TableInfo tableInfo = modelMapper.GetTableInfo<T>();
+                if (useConverters)
+                {
+                    foreach (ColumnInfo column in tableInfo.Columns)
+                    {
+                        column.Converter = new TestConverter();
+                    }
+                }
                 mapper.GetTableInfo<T>().Returns(tableInfo);
                 mapper.GetTableInfo(typeof(T)).Returns(tableInfo);
 
@@ -157,7 +251,7 @@ namespace Kros.KORM.UnitTests.Converter
                 IDataReader reader = Substitute.For<IDataReader>();
 
                 reader.FieldCount.Returns(Count);
-                reader.GetFieldType(Arg.Any<int>()).Returns(ci => _info[ci.Arg<int>()].PropertyType);
+                reader.GetFieldType(Arg.Any<int>()).Returns(ci => _info[ci.Arg<int>()].DbType);
                 reader.GetName(Arg.Any<int>()).Returns(ci => _info[ci.Arg<int>()].Name);
                 reader.IsDBNull(Arg.Any<int>()).Returns(ci => true);
 
@@ -170,7 +264,7 @@ namespace Kros.KORM.UnitTests.Converter
         [Fact]
         public void PropagateToDataObject()
         {
-            TestDataInfo<TestDataItem> info = new();
+            TestDataInfo<TestDataItem, TestDataItem> info = new(false);
             DynamicMethodModelFactory modelFactory = new(info.DatabaseMapper);
             Func<IDataReader, TestDataItem> factory = modelFactory.GetFactory<TestDataItem>(info.DataReader);
 
@@ -182,7 +276,13 @@ namespace Kros.KORM.UnitTests.Converter
         [Fact]
         public void BeConsumedByConverters()
         {
-            throw new NotImplementedException();
+            TestDataInfo<ConvertedTestDataItem, TestDataItem> info = new(true);
+            DynamicMethodModelFactory modelFactory = new(info.DatabaseMapper);
+            Func<IDataReader, ConvertedTestDataItem> factory = modelFactory.GetFactory<ConvertedTestDataItem>(info.DataReader);
+
+            ConvertedTestDataItem actual = factory(info.DataReader);
+            ConvertedTestDataItem expected = new(initProperties: true);
+            actual.Should().BeEquivalentTo(expected);
         }
     }
 }
