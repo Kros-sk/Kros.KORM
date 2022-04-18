@@ -189,16 +189,16 @@ namespace Kros.KORM.Materializer
         {
             // if (reader.IsDbNull(columnIndex)) {
             Label labelIsNotDbNull = ilGenerator.CallReaderIsDbNull(columnIndex);
-            Label endPart = ilGenerator.DefineLabel();
+            Label labelEnd = ilGenerator.DefineLabel();
             ilGenerator.EmitSetNullValue(propertyType);
-            ilGenerator.Emit(OpCodes.Br_S, endPart);
+            ilGenerator.Emit(OpCodes.Br_S, labelEnd);
 
             // } else {
             ilGenerator.MarkLabel(labelIsNotDbNull);
             ilGenerator.CallReaderGetValueWithoutConverter(columnIndex, propertyType, srcType);
 
             // }
-            ilGenerator.MarkLabel(endPart);
+            ilGenerator.MarkLabel(labelEnd);
         }
 
         private static void EmitFieldWithConverter(
@@ -209,16 +209,16 @@ namespace Kros.KORM.Materializer
         {
             // if (reader.IsDbNull(columnIndex)) {
             Label labelIsNotDbNull = ilGenerator.CallReaderIsDbNull(columnIndex);
-            Label endPart = ilGenerator.DefineLabel();
+            Label labelEnd = ilGenerator.DefineLabel();
             ilGenerator.CallConverter(converter, propertyType, columnIndex, convertNullValue: true);
-            ilGenerator.Emit(OpCodes.Br_S, endPart);
+            ilGenerator.Emit(OpCodes.Br_S, labelEnd);
 
             // } else {
             ilGenerator.MarkLabel(labelIsNotDbNull);
             ilGenerator.CallConverter(converter, propertyType, columnIndex, convertNullValue: false);
 
             // }
-            ilGenerator.MarkLabel(endPart);
+            ilGenerator.MarkLabel(labelEnd);
         }
 
         private static (ConstructorInfo ctor, bool isDefault) GetConstructor(Type type)
