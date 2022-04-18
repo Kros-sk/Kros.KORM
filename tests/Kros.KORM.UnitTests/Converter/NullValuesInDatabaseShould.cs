@@ -18,15 +18,15 @@ namespace Kros.KORM.UnitTests.Converter
 
         private const string ConvertedValue = "Lorem Ipsum";
 
-        private class TestDataItem
+        private class TestDataClass
         {
-            public TestDataItem() : this(true) { }
+            public TestDataClass() : this(true) { }
 
-            public TestDataItem(bool initProperties)
+            public TestDataClass(bool initProperties)
             {
                 if (initProperties)
                 {
-                    ObjectVal = new TestDataSubItem() { Value = "Lorem" };
+                    ObjectVal = new TestDataSubClass() { Value = "Lorem" };
                     StrVal = "Lorem";
 
                     BoolVal = true;
@@ -62,7 +62,7 @@ namespace Kros.KORM.UnitTests.Converter
                 }
             }
 
-            public TestDataSubItem ObjectVal { get; set; }
+            public TestDataSubClass ObjectVal { get; set; }
             public string StrVal { get; set; }
 
             public bool BoolVal { get; set; }
@@ -97,11 +97,11 @@ namespace Kros.KORM.UnitTests.Converter
             public TestDataStruct? NullableCustomStructVal { get; set; }
         }
 
-        private class ConvertedTestDataItem
+        private class ConvertedTestDataClass
         {
-            public ConvertedTestDataItem() : this(false) { }
+            public ConvertedTestDataClass() : this(false) { }
 
-            public ConvertedTestDataItem(bool initProperties)
+            public ConvertedTestDataClass(bool initProperties)
             {
                 if (initProperties)
                 {
@@ -176,7 +176,7 @@ namespace Kros.KORM.UnitTests.Converter
             public string NullableCustomStructVal { get; set; }
         }
 
-        private class TestDataSubItem
+        private class TestDataSubClass
         {
             public string Value { get; set; }
         }
@@ -262,27 +262,39 @@ namespace Kros.KORM.UnitTests.Converter
         #endregion
 
         [Fact]
-        public void PropagateToDataObject()
+        public void PropagateToDataClass()
         {
-            TestDataInfo<TestDataItem, TestDataItem> info = new(false);
+            TestDataInfo<TestDataClass, TestDataClass> info = new(false);
             DynamicMethodModelFactory modelFactory = new(info.DatabaseMapper);
-            Func<IDataReader, TestDataItem> factory = modelFactory.GetFactory<TestDataItem>(info.DataReader);
+            Func<IDataReader, TestDataClass> factory = modelFactory.GetFactory<TestDataClass>(info.DataReader);
 
-            TestDataItem actual = factory(info.DataReader);
-            TestDataItem expected = new(initProperties: false);
+            TestDataClass actual = factory(info.DataReader);
+            TestDataClass expected = new(initProperties: false);
             actual.Should().BeEquivalentTo(expected);
         }
 
         [Fact]
-        public void BeConsumedByConverters()
+        public void BeConsumedByConvertersInDataClass()
         {
-            TestDataInfo<ConvertedTestDataItem, TestDataItem> info = new(true);
+            TestDataInfo<ConvertedTestDataClass, TestDataClass> info = new(true);
             DynamicMethodModelFactory modelFactory = new(info.DatabaseMapper);
-            Func<IDataReader, ConvertedTestDataItem> factory = modelFactory.GetFactory<ConvertedTestDataItem>(info.DataReader);
+            Func<IDataReader, ConvertedTestDataClass> factory = modelFactory.GetFactory<ConvertedTestDataClass>(info.DataReader);
 
-            ConvertedTestDataItem actual = factory(info.DataReader);
-            ConvertedTestDataItem expected = new(initProperties: true);
+            ConvertedTestDataClass actual = factory(info.DataReader);
+            ConvertedTestDataClass expected = new(initProperties: true);
             actual.Should().BeEquivalentTo(expected);
+        }
+
+        [Fact]
+        public void PropagateToDataRecord()
+        {
+            throw new NotImplementedException();
+        }
+
+        [Fact]
+        public void BeConsumedByConvertersInDataRecord()
+        {
+            throw new NotImplementedException();
         }
     }
 }
