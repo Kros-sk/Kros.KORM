@@ -23,7 +23,7 @@ namespace Kros.KORM.UnitTests.Materializer
         public void CreateFactoryWhichKnowFillingObjectsWithPrimitiveTypes()
         {
             DynamicMethodModelFactory factory = CreateFactory();
-            IDataReader data = new InMemoryDataReader(CreateData());
+            using IDataReader data = new InMemoryDataReader(CreateData());
             data.Read();
 
             var fact = factory.GetFactory<Foo>(data);
@@ -48,7 +48,7 @@ namespace Kros.KORM.UnitTests.Materializer
         {
             DynamicMethodModelFactory factory = CreateFactory();
             var rows = CreateData();
-            InMemoryDataReader data = new InMemoryDataReader(rows);
+            using InMemoryDataReader data = new InMemoryDataReader(rows);
             data.Read();
 
             data.CurrentValues[1] = DBNull.Value;
@@ -71,7 +71,7 @@ namespace Kros.KORM.UnitTests.Materializer
             var rows = CreateData();
 
             rows[0].Add("PropertyEnum", 3);
-            IDataReader data = new InMemoryDataReader(rows);
+            using IDataReader data = new InMemoryDataReader(rows);
             data.Read();
             var fact = factory.GetFactory<Foo>(data);
 
@@ -87,7 +87,7 @@ namespace Kros.KORM.UnitTests.Materializer
             var rows = CreateData();
 
             rows[0].Add("PropertyEnumConv", "V2");
-            IDataReader data = new InMemoryDataReader(rows);
+            using IDataReader data = new InMemoryDataReader(rows);
             data.Read();
 
             var fact = factory.GetFactory<Foo>(data);
@@ -102,7 +102,7 @@ namespace Kros.KORM.UnitTests.Materializer
         {
             DynamicMethodModelFactory factory = CreateFactory();
             var rows = CreateData();
-            InMemoryDataReader data = new InMemoryDataReader(rows);
+            using InMemoryDataReader data = new InMemoryDataReader(rows);
             data.Read();
 
             data.CurrentTypes[0] = typeof(double);
@@ -120,7 +120,7 @@ namespace Kros.KORM.UnitTests.Materializer
         {
             DynamicMethodModelFactory factory = CreateFactory();
             var rows = CreateData();
-            InMemoryDataReader data = new InMemoryDataReader(rows);
+            using InMemoryDataReader data = new InMemoryDataReader(rows);
             data.Read();
 
             var fact = factory.GetFactory<Foo>(data);
@@ -137,7 +137,7 @@ namespace Kros.KORM.UnitTests.Materializer
             var rows = CreateData();
 
             rows[0].Add("Bar", 3);
-            IDataReader data = new InMemoryDataReader(rows);
+            using IDataReader data = new InMemoryDataReader(rows);
             data.Read();
             var fact = factory.GetFactory<Foo>(data);
 
@@ -153,7 +153,7 @@ namespace Kros.KORM.UnitTests.Materializer
             var rows = CreateData();
 
             rows[0].Add("XXX", 3);
-            IDataReader data = new InMemoryDataReader(rows);
+            using IDataReader data = new InMemoryDataReader(rows);
             data.Read();
             var fact = factory.GetFactory<Foo>(data);
 
@@ -168,7 +168,7 @@ namespace Kros.KORM.UnitTests.Materializer
 
             rows[0].Add("PropertyDateTimeNullable", new DateTime(2005, 1, 5));
 
-            InMemoryDataReader data = new InMemoryDataReader(rows);
+            using InMemoryDataReader data = new InMemoryDataReader(rows);
             data.Read();
 
             data.CurrentTypes[7] = typeof(DateTime);
@@ -211,7 +211,7 @@ namespace Kros.KORM.UnitTests.Materializer
             rows[0].Add("Prop2", 1);
             rows[0].Add("Prop4", 111);
 
-            InMemoryDataReader data = new InMemoryDataReader(rows);
+            using InMemoryDataReader data = new InMemoryDataReader(rows);
             data.Read();
 
             var fact = factory.GetFactory<Bar>(data);
@@ -238,7 +238,7 @@ namespace Kros.KORM.UnitTests.Materializer
             rows[0].Add("Prop4", 111);
             rows[0].Add("Image", image);
 
-            InMemoryDataReader data = new InMemoryDataReader(rows);
+            using InMemoryDataReader data = new InMemoryDataReader(rows);
             data.Read();
 
             var fact = factory.GetFactory<Bar>(data);
@@ -264,7 +264,7 @@ namespace Kros.KORM.UnitTests.Materializer
             rows[0].Add("Prop4", image); // Bar.Prop4 => integer
             rows[0].Add("Image", image);
 
-            InMemoryDataReader data = new InMemoryDataReader(rows);
+            using InMemoryDataReader data = new InMemoryDataReader(rows);
             data.Read();
 
             var fact = factory.GetFactory<Bar>(data);
@@ -284,7 +284,7 @@ namespace Kros.KORM.UnitTests.Materializer
             var rows = CreateData();
 
             rows[0].Add("XXX", 3);
-            IDataReader data = new InMemoryDataReader(rows);
+            using IDataReader data = new InMemoryDataReader(rows);
             data.Read();
 
             var fact = factory.GetFactory<Foo>(data);

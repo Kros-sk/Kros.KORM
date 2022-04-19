@@ -19,7 +19,7 @@ namespace Kros.KORM.UnitTests.Materializer
         [Fact]
         public void MaterializeDataFromReader()
         {
-            IDataReader reader = new InMemoryDataReader(CreateDataForReader());
+            using IDataReader reader = new InMemoryDataReader(CreateDataForReader());
 
             ModelBuilder builder = CreateBuilder();
 
@@ -38,7 +38,7 @@ namespace Kros.KORM.UnitTests.Materializer
         {
             var sourceData = CreateDataForReader();
             sourceData.Clear();
-            IDataReader reader = new InMemoryDataReader(sourceData);
+            using IDataReader reader = new InMemoryDataReader(sourceData);
 
             ModelBuilder builder = CreateBuilder();
 

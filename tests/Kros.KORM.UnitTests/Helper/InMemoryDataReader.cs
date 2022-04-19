@@ -12,11 +12,10 @@ namespace Kros.KORM.UnitTests.Helper
     public class InMemoryDataReader : IDataReader
     {
         private IEnumerator<Dictionary<string, object>> _data;
-        private List<string> _keys;
+        private readonly List<string> _keys;
         private List<object> _values;
-        private List<Type> _types;
-        private IEnumerable<Dictionary<string, object>> _originData;
-        private int _fieldCount = 0;
+        private readonly List<Type> _types;
+        private readonly int _fieldCount = 0;
 
         public InMemoryDataReader(IEnumerable<Dictionary<string, object>> data)
             : this(data, data.Any() ? data.First().Values.Select(p => p.GetType()).ToList() : Enumerable.Empty<Type>())
@@ -26,12 +25,12 @@ namespace Kros.KORM.UnitTests.Helper
         public InMemoryDataReader(IEnumerable<Dictionary<string, object>> data, IEnumerable<Type> types)
         {
             _data = data.GetEnumerator();
-            _originData = data;
-            if (_originData.Any())
+            Dictionary<string, object> item = data.FirstOrDefault();
+            if (item is not null)
             {
-                _keys = _originData.First().Keys.ToList();
+                _keys = item.Keys.ToList();
                 _types = types.ToList();
-                _fieldCount = _originData.First().Count;
+                _fieldCount = item.Count;
             }
         }
 
@@ -83,6 +82,8 @@ namespace Kros.KORM.UnitTests.Helper
 
         public void Dispose()
         {
+            _data?.Dispose();
+            _data = null;
         }
 
         public int FieldCount
