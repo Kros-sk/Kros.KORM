@@ -171,7 +171,7 @@ namespace Kros.KORM.Materializer
                 IConverter converter = ConverterHelper.GetConverter(columnInfo, srcType);
                 if (converter is null)
                 {
-                    EmitFieldWithoutConverter(ilGenerator, srcType, columnInfo.PropertyInfo.PropertyType, columnIndex);
+                    ilGenerator.EmitFieldWithoutConverter(srcType, columnInfo.PropertyInfo.PropertyType, columnIndex);
                 }
                 else
                 {
@@ -179,26 +179,6 @@ namespace Kros.KORM.Materializer
                 }
                 ilGenerator.LogAndEmit(OpCodes.Callvirt, columnInfo.PropertyInfo.GetSetMethod(true));
             }
-        }
-
-        private static void EmitFieldWithoutConverter(
-            ILGenerator ilGenerator,
-            Type srcType,
-            Type propertyType,
-            int columnIndex)
-        {
-            // if (reader.IsDbNull(columnIndex)) {
-            Label labelIsNotDbNull = ilGenerator.CallReaderIsDbNull(columnIndex);
-            Label labelEnd = ilGenerator.DefineLabel();
-            ilGenerator.EmitSetNullValue(propertyType);
-            ilGenerator.LogAndEmit(OpCodes.Br_S, labelEnd);
-
-            // } else {
-            ilGenerator.MarkLabel(labelIsNotDbNull);
-            ilGenerator.CallReaderGetValueWithoutConverter(columnIndex, propertyType, srcType);
-
-            // }
-            ilGenerator.MarkLabel(labelEnd);
         }
 
         private static void EmitFieldWithConverter(

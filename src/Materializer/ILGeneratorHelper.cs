@@ -30,84 +30,105 @@ namespace Kros.KORM.Materializer
             typeof(IInjector).GetMethod(nameof(IInjector.GetValue), new Type[] { typeof(string) });
 
 
-        private static readonly Action<string> _defaultLogger = (msg) => { };
         [ThreadStatic]
-        private static Action<string> _logger = _defaultLogger;
+        public static Action<string> Logger;
 
-        public static Action<string> Logger
+        private static void Log(string msg)
         {
-            get => _logger;
-            set => _logger = value is null ? _defaultLogger : value;
+            if (Logger is not null)
+            {
+                Logger(msg);
+            }
         }
 
         public static ILGenerator LogAndEmit(this ILGenerator ilGenerator, OpCode opCode)
         {
-            Logger(opCode.ToString());
+            Log(opCode.ToString());
             ilGenerator.Emit(opCode);
             return ilGenerator;
         }
 
         public static ILGenerator LogAndEmit(this ILGenerator ilGenerator, OpCode opCode, ConstructorInfo ctor)
         {
-            Logger($"{opCode} {ctor.DeclaringType.FullName}");
+            Log($"{opCode} {ctor.DeclaringType.FullName}");
             ilGenerator.Emit(opCode, ctor);
             return ilGenerator;
         }
 
         public static ILGenerator LogAndEmit(this ILGenerator ilGenerator, OpCode opCode, MethodInfo method)
         {
-            Logger($"{opCode} {method.DeclaringType.FullName}.{method.Name}");
+            Log($"{opCode} {method.DeclaringType.FullName}.{method.Name}");
             ilGenerator.Emit(opCode, method);
             return ilGenerator;
         }
 
         public static ILGenerator LogAndEmit(this ILGenerator ilGenerator, OpCode opCode, FieldInfo field)
         {
-            Logger($"{opCode} {field.DeclaringType.FullName}.{field.Name}");
+            Log($"{opCode} {field.DeclaringType.FullName}.{field.Name}");
             ilGenerator.Emit(opCode, field);
             return ilGenerator;
         }
 
         public static ILGenerator LogAndEmit(this ILGenerator ilGenerator, OpCode opCode, Type type)
         {
-            Logger($"{opCode} {type.FullName}");
+            Log($"{opCode} {type.FullName}");
             ilGenerator.Emit(opCode, type);
             return ilGenerator;
         }
 
         public static ILGenerator LogAndEmit(this ILGenerator ilGenerator, OpCode opCode, Label label)
         {
-            Logger($"{opCode} label");
+            Log($"{opCode} label");
             ilGenerator.Emit(opCode, label);
             return ilGenerator;
         }
 
         public static ILGenerator LogAndEmit(this ILGenerator ilGenerator, OpCode opCode, string arg)
         {
-            Logger($"{opCode} {arg}");
+            Log($"{opCode} {arg}");
             ilGenerator.Emit(opCode, arg);
             return ilGenerator;
         }
 
         public static ILGenerator LogAndEmit(this ILGenerator ilGenerator, OpCode opCode, int arg)
         {
-            Logger($"{opCode} {arg}");
+            Log($"{opCode} {arg}");
             ilGenerator.Emit(opCode, arg);
             return ilGenerator;
         }
 
         public static ILGenerator LogAndEmit(this ILGenerator ilGenerator, OpCode opCode, double arg)
         {
-            Logger($"{opCode} {arg}");
+            Log($"{opCode} {arg}");
             ilGenerator.Emit(opCode, arg);
             return ilGenerator;
         }
 
         public static ILGenerator LogAndEmit(this ILGenerator ilGenerator, OpCode opCode, float arg)
         {
-            Logger($"{opCode} {arg}");
+            Log($"{opCode} {arg}");
             ilGenerator.Emit(opCode, arg);
             return ilGenerator;
+        }
+
+        public static void EmitFieldWithoutConverter(
+            this ILGenerator ilGenerator,
+            Type srcType,
+            Type propertyType,
+            int columnIndex)
+        {
+            // if (reader.IsDbNull(columnIndex)) {
+            Label labelIsNotDbNull = ilGenerator.CallReaderIsDbNull(columnIndex);
+            Label labelEnd = ilGenerator.DefineLabel();
+            ilGenerator.EmitSetNullValue(propertyType);
+            ilGenerator.LogAndEmit(OpCodes.Br_S, labelEnd);
+
+            // } else {
+            ilGenerator.MarkLabel(labelIsNotDbNull);
+            ilGenerator.CallReaderGetValueWithoutConverter(columnIndex, propertyType, srcType);
+
+            // }
+            ilGenerator.MarkLabel(labelEnd);
         }
 
         public static ILGenerator CallReaderMethod(
@@ -165,7 +186,7 @@ namespace Kros.KORM.Materializer
             return valueGetter;
         }
 
-        public static void CallReaderGetValueWithoutConverter(
+        private static void CallReaderGetValueWithoutConverter(
             this ILGenerator ilGenerator,
             int fieldIndex,
             Type propertyType,
