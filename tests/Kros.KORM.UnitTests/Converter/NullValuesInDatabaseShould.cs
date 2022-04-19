@@ -9,19 +9,11 @@ using System.Collections.Generic;
 using System.Data;
 using System.Reflection;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Kros.KORM.UnitTests.Converter
 {
     public class NullValuesInDatabaseShould : DatabaseTestBase
     {
-        private readonly ITestOutputHelper _output;
-
-        public NullValuesInDatabaseShould(ITestOutputHelper output)
-        {
-            _output = output;
-        }
-
         #region Helpers
 
         private const string ConverterDefaultValue = "Default";
@@ -527,7 +519,6 @@ namespace Kros.KORM.UnitTests.Converter
         [InlineData(false)]
         public void PropagateToDataClass(bool simulateDbNull)
         {
-            ILGeneratorHelper.Logger = _output.WriteLine;
             TestDataHelper<TestDataClass, TestDataClass> info = new(simulateDbNull: simulateDbNull, useConverter: false);
             DynamicMethodModelFactory modelFactory = new(info.DatabaseMapper);
             Func<IDataReader, TestDataClass> factory = modelFactory.GetFactory<TestDataClass>(info.DataReader);
@@ -544,7 +535,6 @@ namespace Kros.KORM.UnitTests.Converter
         [InlineData(false)]
         public void BeConsumedByConvertersInDataClass(bool simulateDbNull)
         {
-            ILGeneratorHelper.Logger = _output.WriteLine;
             TestDataHelper<ConvertedTestDataClass, TestDataClass> info = new(simulateDbNull: simulateDbNull, useConverter: true);
             DynamicMethodModelFactory modelFactory = new(info.DatabaseMapper);
             Func<IDataReader, ConvertedTestDataClass> factory = modelFactory.GetFactory<ConvertedTestDataClass>(info.DataReader);
@@ -559,7 +549,6 @@ namespace Kros.KORM.UnitTests.Converter
         [InlineData(false)]
         public void PropagateToDataRecord(bool simulateDbNull)
         {
-            ILGeneratorHelper.Logger = _output.WriteLine;
             TestDataHelper<TestDataRecord, TestDataRecord> info = new(simulateDbNull: simulateDbNull, useConverter: false);
             DynamicMethodModelFactory modelFactory = new(info.DatabaseMapper);
             Func<IDataReader, TestDataRecord> factory = modelFactory.GetFactory<TestDataRecord>(info.DataReader);
@@ -576,7 +565,6 @@ namespace Kros.KORM.UnitTests.Converter
         [InlineData(false)]
         public void BeConsumedByConvertersInDataRecord(bool simulateDbNull)
         {
-            ILGeneratorHelper.Logger = _output.WriteLine;
             TestDataHelper<ConvertedTestDataRecord, TestDataRecord> info = new(simulateDbNull: simulateDbNull, useConverter: true);
             DynamicMethodModelFactory modelFactory = new(info.DatabaseMapper);
             Func<IDataReader, ConvertedTestDataRecord> factory = modelFactory.GetFactory<ConvertedTestDataRecord>(info.DataReader);

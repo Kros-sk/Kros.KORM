@@ -29,7 +29,6 @@ namespace Kros.KORM.Materializer
         private static readonly MethodInfo _fnInjectorMethodInfo =
             typeof(IInjector).GetMethod(nameof(IInjector.GetValue), new Type[] { typeof(string) });
 
-
         [ThreadStatic]
         public static Action<string> Logger;
 
