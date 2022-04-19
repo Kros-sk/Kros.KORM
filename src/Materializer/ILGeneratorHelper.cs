@@ -131,6 +131,26 @@ namespace Kros.KORM.Materializer
             ilGenerator.MarkLabel(labelEnd);
         }
 
+        public static void EmitFieldWithConverter(
+            this ILGenerator ilGenerator,
+            IConverter converter,
+            Type propertyType,
+            int columnIndex)
+        {
+            // if (reader.IsDbNull(columnIndex)) {
+            Label labelIsNotDbNull = ilGenerator.CallReaderIsDbNull(columnIndex);
+            Label labelEnd = ilGenerator.DefineLabel();
+            ilGenerator.CallConverter(converter, propertyType, columnIndex, convertNullValue: true);
+            ilGenerator.LogAndEmit(OpCodes.Br_S, labelEnd);
+
+            // } else {
+            ilGenerator.MarkLabel(labelIsNotDbNull);
+            ilGenerator.CallConverter(converter, propertyType, columnIndex, convertNullValue: false);
+
+            // }
+            ilGenerator.MarkLabel(labelEnd);
+        }
+
         public static ILGenerator CallReaderMethod(
             this ILGenerator ilGenerator,
             int fieldIndex,
@@ -200,7 +220,7 @@ namespace Kros.KORM.Materializer
             }
         }
 
-        public static void CallConverter(
+        private static void CallConverter(
             this ILGenerator ilGenerator,
             IConverter converter,
             Type propertyType,

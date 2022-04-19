@@ -175,30 +175,10 @@ namespace Kros.KORM.Materializer
                 }
                 else
                 {
-                    EmitFieldWithConverter(ilGenerator, converter, columnInfo.PropertyInfo.PropertyType, columnIndex);
+                    ilGenerator.EmitFieldWithConverter(converter, columnInfo.PropertyInfo.PropertyType, columnIndex);
                 }
                 ilGenerator.LogAndEmit(OpCodes.Callvirt, columnInfo.PropertyInfo.GetSetMethod(true));
             }
-        }
-
-        private static void EmitFieldWithConverter(
-            ILGenerator ilGenerator,
-            IConverter converter,
-            Type propertyType,
-            int columnIndex)
-        {
-            // if (reader.IsDbNull(columnIndex)) {
-            Label labelIsNotDbNull = ilGenerator.CallReaderIsDbNull(columnIndex);
-            Label labelEnd = ilGenerator.DefineLabel();
-            ilGenerator.CallConverter(converter, propertyType, columnIndex, convertNullValue: true);
-            ilGenerator.LogAndEmit(OpCodes.Br_S, labelEnd);
-
-            // } else {
-            ilGenerator.MarkLabel(labelIsNotDbNull);
-            ilGenerator.CallConverter(converter, propertyType, columnIndex, convertNullValue: false);
-
-            // }
-            ilGenerator.MarkLabel(labelEnd);
         }
 
         private static (ConstructorInfo ctor, bool isDefault) GetConstructor(Type type)

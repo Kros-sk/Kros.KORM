@@ -24,8 +24,8 @@ namespace Kros.KORM.UnitTests.Converter
 
         #region Helpers
 
-        private const string ConverterValue = "NOT DB NULL";
-        private const string ConverterValueDbNull = "DB NULL";
+        private const string ConverterDefaultValue = "Default";
+        private const string ConverterDbNullValue = "DB NULL";
 
         private class TestDataClass
         {
@@ -35,50 +35,85 @@ namespace Kros.KORM.UnitTests.Converter
             {
                 if (initProperties)
                 {
-                    ObjectVal = TestData.GetDataByType<TestDataSubClass>();
-                    StrVal = TestData.GetDataByType<string>();
+                    BoolVal = InitialDataSource.BoolVal;
+                    ByteVal = InitialDataSource.ByteVal;
+                    SByteVal = InitialDataSource.SByteVal;
+                    Int16Val = InitialDataSource.Int16Val;
+                    UInt16Val = InitialDataSource.UInt16Val;
+                    Int32Val = InitialDataSource.Int32Val;
+                    UInt32Val = InitialDataSource.UInt32Val;
+                    Int64Val = InitialDataSource.Int64Val;
+                    UInt64Val = InitialDataSource.UInt64Val;
+                    CharVal = InitialDataSource.CharVal;
+                    DoubleVal = InitialDataSource.DoubleVal;
+                    SingleVal = InitialDataSource.SingleVal;
+                    DecimalVal = InitialDataSource.DecimalVal;
 
-                    BoolVal = TestData.GetDataByType<bool>();
-                    ByteVal = TestData.GetDataByType<byte>();
-                    SByteVal = TestData.GetDataByType<sbyte>();
-                    Int16Val = TestData.GetDataByType<short>();
-                    UInt16Val = TestData.GetDataByType<ushort>();
-                    Int32Val = TestData.GetDataByType<int>();
-                    UInt32Val = TestData.GetDataByType<uint>();
-                    Int64Val = TestData.GetDataByType<long>();
-                    UInt64Val = TestData.GetDataByType<ulong>();
-                    CharVal = TestData.GetDataByType<char>();
-                    DoubleVal = TestData.GetDataByType<double>();
-                    SingleVal = TestData.GetDataByType<float>();
-                    DecimalVal = TestData.GetDataByType<decimal>();
+                    NullableBoolVal = InitialDataSource.BoolVal;
+                    NullableByteVal = InitialDataSource.ByteVal;
+                    NullableSByteVal = InitialDataSource.SByteVal;
+                    NullableInt16Val = InitialDataSource.Int16Val;
+                    NullableUInt16Val = InitialDataSource.UInt16Val;
+                    NullableInt32Val = InitialDataSource.Int32Val;
+                    NullableUInt32Val = InitialDataSource.UInt32Val;
+                    NullableInt64Val = InitialDataSource.Int64Val;
+                    NullableUInt64Val = InitialDataSource.UInt64Val;
+                    NullableCharVal = InitialDataSource.CharVal;
+                    NullableDoubleVal = InitialDataSource.DoubleVal;
+                    NullableSingleVal = InitialDataSource.SingleVal;
+                    NullableDecimalVal = InitialDataSource.DecimalVal;
 
-                    NullableBoolVal = TestData.GetDataByType<bool>();
-                    NullableByteVal = TestData.GetDataByType<byte>();
-                    NullableSByteVal = TestData.GetDataByType<sbyte>();
-                    NullableInt16Val = TestData.GetDataByType<short>();
-                    NullableUInt16Val = TestData.GetDataByType<ushort>();
-                    NullableInt32Val = TestData.GetDataByType<int>();
-                    NullableUInt32Val = TestData.GetDataByType<uint>();
-                    NullableInt64Val = TestData.GetDataByType<long>();
-                    NullableUInt64Val = TestData.GetDataByType<ulong>();
-                    NullableCharVal = TestData.GetDataByType<char>();
-                    NullableDoubleVal = TestData.GetDataByType<double>();
-                    NullableSingleVal = TestData.GetDataByType<float>();
-                    NullableDecimalVal = TestData.GetDataByType<decimal>();
-
-                    GuidVal = TestData.GetDataByType<Guid>();
-                    NullableGuidVal = TestData.GetDataByType<Guid>();
-                    DateTimeVal = TestData.GetDataByType<DateTime>();
-                    NullableDateTimeVal = TestData.GetDataByType<DateTime>();
-                    CustomStructVal = TestData.GetDataByType<TestDataStruct>();
-                    NullableCustomStructVal = TestData.GetDataByType<TestDataStruct>();
+                    ObjectVal = InitialDataSource.ObjectVal;
+                    StringVal = InitialDataSource.StringVal;
+                    GuidVal = InitialDataSource.GuidVal;
+                    NullableGuidVal = InitialDataSource.GuidVal;
+                    DateTimeVal = InitialDataSource.DateTimeVal;
+                    NullableDateTimeVal = InitialDataSource.DateTimeVal;
+                    CustomStructVal = InitialDataSource.CustomStructVal;
+                    NullableCustomStructVal = InitialDataSource.CustomStructVal;
                 }
             }
 
-            public static TestDataClass CreateWithNulledProperties() => new TestDataClass(initProperties: false);
+            public static TestDataClass CreateWithNulledProperties() => new(initProperties: false);
+            public static TestDataClass CreateWithDbValuesProperties() => new(initProperties: false)
+            {
+                BoolVal = DbDataSource.BoolVal,
+                ByteVal = DbDataSource.ByteVal,
+                SByteVal = DbDataSource.SByteVal,
+                Int16Val = DbDataSource.Int16Val,
+                UInt16Val = DbDataSource.UInt16Val,
+                Int32Val = DbDataSource.Int32Val,
+                UInt32Val = DbDataSource.UInt32Val,
+                Int64Val = DbDataSource.Int64Val,
+                UInt64Val = DbDataSource.UInt64Val,
+                CharVal = DbDataSource.CharVal,
+                DoubleVal = DbDataSource.DoubleVal,
+                SingleVal = DbDataSource.SingleVal,
+                DecimalVal = DbDataSource.DecimalVal,
 
-            public TestDataSubClass ObjectVal { get; set; }
-            public string StrVal { get; set; }
+                NullableBoolVal = DbDataSource.BoolVal,
+                NullableByteVal = DbDataSource.ByteVal,
+                NullableSByteVal = DbDataSource.SByteVal,
+                NullableInt16Val = DbDataSource.Int16Val,
+                NullableUInt16Val = DbDataSource.UInt16Val,
+                NullableInt32Val = DbDataSource.Int32Val,
+                NullableUInt32Val = DbDataSource.UInt32Val,
+                NullableInt64Val = DbDataSource.Int64Val,
+                NullableUInt64Val = DbDataSource.UInt64Val,
+                NullableCharVal = DbDataSource.CharVal,
+                NullableDoubleVal = DbDataSource.DoubleVal,
+                NullableSingleVal = DbDataSource.SingleVal,
+                NullableDecimalVal = DbDataSource.DecimalVal,
+
+                ObjectVal = DbDataSource.ObjectVal,
+                StringVal = DbDataSource.StringVal,
+                GuidVal = DbDataSource.GuidVal,
+                NullableGuidVal = DbDataSource.GuidVal,
+                DateTimeVal = DbDataSource.DateTimeVal,
+                NullableDateTimeVal = DbDataSource.DateTimeVal,
+                CustomStructVal = DbDataSource.CustomStructVal,
+                NullableCustomStructVal = DbDataSource.CustomStructVal
+            };
 
             public bool BoolVal { get; set; }
             public byte ByteVal { get; set; }
@@ -108,6 +143,8 @@ namespace Kros.KORM.UnitTests.Converter
             public float? NullableSingleVal { get; set; }
             public decimal? NullableDecimalVal { get; set; }
 
+            public string StringVal { get; set; }
+            public TestDataSubClass ObjectVal { get; set; }
             public Guid GuidVal { get; set; }
             public Guid? NullableGuidVal { get; set; }
             public DateTime DateTimeVal { get; set; }
@@ -122,47 +159,11 @@ namespace Kros.KORM.UnitTests.Converter
 
             public ConvertedTestDataClass(string value)
             {
-                ObjectVal = value;
-                StrVal = value;
-
-                BoolVal = value;
-                ByteVal = value;
-                SByteVal = value;
-                Int16Val = value;
-                UInt16Val = value;
-                Int32Val = value;
-                UInt32Val = value;
-                Int64Val = value;
-                UInt64Val = value;
-                CharVal = value;
-                DoubleVal = value;
-                SingleVal = value;
-                DecimalVal = value;
-
-                NullableBoolVal = value;
-                NullableByteVal = value;
-                NullableSByteVal = value;
-                NullableInt16Val = value;
-                NullableUInt16Val = value;
-                NullableInt32Val = value;
-                NullableUInt32Val = value;
-                NullableInt64Val = value;
-                NullableUInt64Val = value;
-                NullableCharVal = value;
-                NullableDoubleVal = value;
-                NullableSingleVal = value;
-                NullableDecimalVal = value;
-
-                GuidVal = value;
-                NullableGuidVal = value;
-                DateTimeVal = value;
-                NullableDateTimeVal = value;
-                CustomStructVal = value;
-                NullableCustomStructVal = value;
+                foreach (PropertyInfo prop in typeof(ConvertedTestDataClass).GetProperties())
+                {
+                    prop.SetValue(this, value);
+                }
             }
-
-            public string ObjectVal { get; set; }
-            public string StrVal { get; set; }
 
             public string BoolVal { get; set; }
             public string ByteVal { get; set; }
@@ -192,6 +193,8 @@ namespace Kros.KORM.UnitTests.Converter
             public string NullableSingleVal { get; set; }
             public string NullableDecimalVal { get; set; }
 
+            public string StringVal { get; set; }
+            public string ObjectVal { get; set; }
             public string GuidVal { get; set; }
             public string NullableGuidVal { get; set; }
             public string DateTimeVal { get; set; }
@@ -202,32 +205,101 @@ namespace Kros.KORM.UnitTests.Converter
 
         private record TestDataRecord
         (
-            string StrVal = "Lorem",
-            bool BoolVal = true,
-            byte ByteVal = 1,
-            sbyte SByteVal = 2,
-            short Int16Val = 3,
-            ushort UInt16Val = 4,
-            int Int32Val = 5,
-            uint UInt32Val = 6,
-            long Int64Val = 7,
-            ulong UInt64Val = 8,
-            char CharVal = 'a',
-            double DoubleVal = 3.14,
-            float SingleVal = 6.28f,
-            bool? NullableBoolVal = true,
-            byte? NullableByteVal = 1,
-            sbyte? NullableSByteVal = 2,
-            short? NullableInt16Val = 3,
-            ushort? NullableUInt16Val = 4,
-            int? NullableInt32Val = 5,
-            uint? NullableUInt32Val = 6,
-            long? NullableInt64Val = 7,
-            ulong? NullableUInt64Val = 8,
-            char? NullableCharVal = 'a',
-            double? NullableDoubleVal = 3.14,
-            float? NullableSingleVal = 6.28f
-        );
+            bool BoolVal = InitialDataSource.BoolVal,
+            byte ByteVal = InitialDataSource.ByteVal,
+            sbyte SByteVal = InitialDataSource.SByteVal,
+            short Int16Val = InitialDataSource.Int16Val,
+            ushort UInt16Val = InitialDataSource.UInt16Val,
+            int Int32Val = InitialDataSource.Int32Val,
+            uint UInt32Val = InitialDataSource.UInt32Val,
+            long Int64Val = InitialDataSource.Int64Val,
+            ulong UInt64Val = InitialDataSource.UInt64Val,
+            char CharVal = InitialDataSource.CharVal,
+            double DoubleVal = InitialDataSource.DoubleVal,
+            float SingleVal = InitialDataSource.SingleVal,
+            decimal DecimalVal = InitialDataSource.DecimalVal,
+
+            bool? NullableBoolVal = InitialDataSource.BoolVal,
+            byte? NullableByteVal = InitialDataSource.ByteVal,
+            sbyte? NullableSByteVal = InitialDataSource.SByteVal,
+            short? NullableInt16Val = InitialDataSource.Int16Val,
+            ushort? NullableUInt16Val = InitialDataSource.UInt16Val,
+            int? NullableInt32Val = InitialDataSource.Int32Val,
+            uint? NullableUInt32Val = InitialDataSource.UInt32Val,
+            long? NullableInt64Val = InitialDataSource.Int64Val,
+            ulong? NullableUInt64Val = InitialDataSource.UInt64Val,
+            char? NullableCharVal = InitialDataSource.CharVal,
+            double? NullableDoubleVal = InitialDataSource.DoubleVal,
+            float? NullableSingleVal = InitialDataSource.SingleVal,
+            decimal? NullableDecimalVal = InitialDataSource.DecimalVal,
+
+            string StrVal = InitialDataSource.StringVal
+        )
+        {
+            public static TestDataRecord CreateWithNulledProperties() => new()
+            {
+                BoolVal = false,
+                ByteVal = 0,
+                SByteVal = 0,
+                Int16Val = 0,
+                UInt16Val = 0,
+                Int32Val = 0,
+                UInt32Val = 0,
+                Int64Val = 0,
+                UInt64Val = 0,
+                CharVal = '\0',
+                DoubleVal = 0,
+                SingleVal = 0,
+                DecimalVal = 0,
+                NullableBoolVal = null,
+                NullableByteVal = null,
+                NullableSByteVal = null,
+                NullableInt16Val = null,
+                NullableUInt16Val = null,
+                NullableInt32Val = null,
+                NullableUInt32Val = null,
+                NullableInt64Val = null,
+                NullableUInt64Val = null,
+                NullableCharVal = null,
+                NullableDoubleVal = null,
+                NullableSingleVal = null,
+                NullableDecimalVal = null,
+                StrVal = null
+            };
+
+            public static TestDataRecord CreateWithDbValuesProperties() => new()
+            {
+                BoolVal = DbDataSource.BoolVal,
+                ByteVal = DbDataSource.ByteVal,
+                SByteVal = DbDataSource.SByteVal,
+                Int16Val = DbDataSource.Int16Val,
+                UInt16Val = DbDataSource.UInt16Val,
+                Int32Val = DbDataSource.Int32Val,
+                UInt32Val = DbDataSource.UInt32Val,
+                Int64Val = DbDataSource.Int64Val,
+                UInt64Val = DbDataSource.UInt64Val,
+                CharVal = DbDataSource.CharVal,
+                DoubleVal = DbDataSource.DoubleVal,
+                SingleVal = DbDataSource.SingleVal,
+                DecimalVal = DbDataSource.DecimalVal,
+
+                NullableBoolVal = DbDataSource.BoolVal,
+                NullableByteVal = DbDataSource.ByteVal,
+                NullableSByteVal = DbDataSource.SByteVal,
+                NullableInt16Val = DbDataSource.Int16Val,
+                NullableUInt16Val = DbDataSource.UInt16Val,
+                NullableInt32Val = DbDataSource.Int32Val,
+                NullableUInt32Val = DbDataSource.UInt32Val,
+                NullableInt64Val = DbDataSource.Int64Val,
+                NullableUInt64Val = DbDataSource.UInt64Val,
+                NullableCharVal = DbDataSource.CharVal,
+                NullableDoubleVal = DbDataSource.DoubleVal,
+                NullableSingleVal = DbDataSource.SingleVal,
+                NullableDecimalVal = DbDataSource.DecimalVal,
+
+                StrVal = DbDataSource.StringVal
+            };
+        }
 
         private record ConvertedTestDataRecord
         (
@@ -244,6 +316,8 @@ namespace Kros.KORM.UnitTests.Converter
             string CharVal = null,
             string DoubleVal = null,
             string SingleVal = null,
+            string DecimalVal = null,
+
             string NullableBoolVal = null,
             string NullableByteVal = null,
             string NullableSByteVal = null,
@@ -255,8 +329,20 @@ namespace Kros.KORM.UnitTests.Converter
             string NullableUInt64Val = null,
             string NullableCharVal = null,
             string NullableDoubleVal = null,
-            string NullableSingleVal = null
-        );
+            string NullableSingleVal = null,
+            string NullableDecimalVal = null
+        )
+        {
+            public static ConvertedTestDataRecord Create(string value)
+            {
+                ConvertedTestDataRecord data = new();
+                foreach (PropertyInfo prop in typeof(ConvertedTestDataRecord).GetProperties())
+                {
+                    prop.SetValue(data, value);
+                }
+                return data;
+            }
+        }
 
         private class TestDataSubClass
         {
@@ -271,7 +357,7 @@ namespace Kros.KORM.UnitTests.Converter
 
         private class TestConverter : IConverter
         {
-            public object Convert(object value) => value is null ? ConverterValueDbNull : ConverterValue;
+            public object Convert(object value) => value is null ? ConverterDbNullValue : ConverterDefaultValue;
             public object ConvertBack(object value) => throw new NotImplementedException();
         }
 
@@ -338,46 +424,87 @@ namespace Kros.KORM.UnitTests.Converter
                 reader.GetFieldType(Arg.Any<int>()).Returns(ci => _info[ci.Arg<int>()].DbType);
                 reader.IsDBNull(Arg.Any<int>()).Returns(ci => simulateDbNull);
 
-                reader.GetValue(Arg.Any<int>()).Returns(ci => TestData.GetDataByType(_info[ci.Arg<int>()].DbType));
-                reader.GetBoolean(Arg.Any<int>()).Returns(TestData.GetDataByType<bool>());
-                reader.GetByte(Arg.Any<int>()).Returns(TestData.GetDataByType<byte>());
-                reader.GetChar(Arg.Any<int>()).Returns(TestData.GetDataByType<char>());
-                reader.GetDateTime(Arg.Any<int>()).Returns(TestData.GetDataByType<DateTime>());
-                reader.GetDecimal(Arg.Any<int>()).Returns(TestData.GetDataByType<decimal>());
-                reader.GetDouble(Arg.Any<int>()).Returns(TestData.GetDataByType<double>());
-                reader.GetFloat(Arg.Any<int>()).Returns(TestData.GetDataByType<float>());
-                reader.GetGuid(Arg.Any<int>()).Returns(TestData.GetDataByType<Guid>());
-                reader.GetInt16(Arg.Any<int>()).Returns(TestData.GetDataByType<short>());
-                reader.GetInt32(Arg.Any<int>()).Returns(TestData.GetDataByType<int>());
-                reader.GetInt64(Arg.Any<int>()).Returns(TestData.GetDataByType<long>());
-                reader.GetString(Arg.Any<int>()).Returns(TestData.GetDataByType<string>());
+                reader.GetValue(Arg.Any<int>()).Returns(ci => DbDataSource.GetDataByType(_info[ci.Arg<int>()].DbType));
+                reader.GetBoolean(Arg.Any<int>()).Returns(DbDataSource.GetDataByType<bool>());
+                reader.GetByte(Arg.Any<int>()).Returns(DbDataSource.GetDataByType<byte>());
+                reader.GetChar(Arg.Any<int>()).Returns(DbDataSource.GetDataByType<char>());
+                reader.GetDateTime(Arg.Any<int>()).Returns(DbDataSource.GetDataByType<DateTime>());
+                reader.GetDecimal(Arg.Any<int>()).Returns(DbDataSource.GetDataByType<decimal>());
+                reader.GetDouble(Arg.Any<int>()).Returns(DbDataSource.GetDataByType<double>());
+                reader.GetFloat(Arg.Any<int>()).Returns(DbDataSource.GetDataByType<float>());
+                reader.GetGuid(Arg.Any<int>()).Returns(DbDataSource.GetDataByType<Guid>());
+                reader.GetInt16(Arg.Any<int>()).Returns(DbDataSource.GetDataByType<short>());
+                reader.GetInt32(Arg.Any<int>()).Returns(DbDataSource.GetDataByType<int>());
+                reader.GetInt64(Arg.Any<int>()).Returns(DbDataSource.GetDataByType<long>());
+                reader.GetString(Arg.Any<int>()).Returns(DbDataSource.GetDataByType<string>());
 
                 return reader;
             }
         }
 
-        private static class TestData
+        private static class InitialDataSource
         {
+            public const bool BoolVal = true;
+            public const byte ByteVal = 1;
+            public const sbyte SByteVal = 2;
+            public const short Int16Val = 3;
+            public const ushort UInt16Val = 4;
+            public const int Int32Val = 5;
+            public const uint UInt32Val = 6;
+            public const long Int64Val = 7;
+            public const ulong UInt64Val = 8;
+            public const char CharVal = 'a';
+            public const double DoubleVal = 1.14;
+            public const float SingleVal = 2.14F;
+            public const decimal DecimalVal = 3.14M;
+            public const string StringVal = "Lorem";
+            public static TestDataSubClass ObjectVal { get; } = new() { Value = "Lorem" };
+            public static Guid GuidVal { get; } = new("12345678-1234-1234-1234-123456789012");
+            public static DateTime DateTimeVal { get; } = new(1978, 12, 10);
+            public static TestDataStruct CustomStructVal { get; } = new() { IntVal = 42, StringVal = "Lorem" };
+        }
+
+        private static class DbDataSource
+        {
+            public const bool BoolVal = false;
+            public const byte ByteVal = 10;
+            public const sbyte SByteVal = 20;
+            public const short Int16Val = 30;
+            public const ushort UInt16Val = 40;
+            public const int Int32Val = 50;
+            public const uint UInt32Val = 60;
+            public const long Int64Val = 70;
+            public const ulong UInt64Val = 80;
+            public const char CharVal = 'z';
+            public const double DoubleVal = 10.14;
+            public const float SingleVal = 20.14F;
+            public const decimal DecimalVal = 30.14M;
+            public const string StringVal = "Ipsum";
+            public static TestDataSubClass ObjectVal { get; } = new() { Value = "Ipsum" };
+            public static Guid GuidVal { get; } = new("87654321-4321-4321-4321-210987654321");
+            public static DateTime DateTimeVal { get; } = new(1985, 4, 16);
+            public static TestDataStruct CustomStructVal { get; } = new() { IntVal = 24, StringVal = "Ipsum" };
+
             private static readonly Dictionary<Type, object> _dataByType = new()
             {
-                { typeof(TestDataSubClass), new TestDataSubClass() { Value = "Lorem" } },
-                { typeof(string), "Lorem" },
-                { typeof(bool), true },
-                { typeof(byte), (byte)1 },
-                { typeof(sbyte), (sbyte)2 },
-                { typeof(short), (short)3 },
-                { typeof(ushort), (ushort)4 },
-                { typeof(int), (int)5 },
-                { typeof(uint), (uint)6 },
-                { typeof(long), (long)7 },
-                { typeof(ulong), (ulong)8 },
-                { typeof(char), 'a' },
-                { typeof(double), 3.14 },
-                { typeof(float), (float)6.28 },
-                { typeof(decimal), (decimal)9.42 },
-                { typeof(Guid), new Guid("12345678-1234-1234-1234-123456789012") },
-                { typeof(DateTime), new DateTime(1978, 12, 10) },
-                { typeof(TestDataStruct), new TestDataStruct() { IntVal = 42, StringVal = "Lorem" } }
+                { typeof(string), StringVal },
+                { typeof(bool), BoolVal },
+                { typeof(byte), ByteVal },
+                { typeof(sbyte), SByteVal },
+                { typeof(short), Int16Val },
+                { typeof(ushort), UInt16Val },
+                { typeof(int), Int32Val },
+                { typeof(uint), UInt32Val },
+                { typeof(long), Int64Val },
+                { typeof(ulong), UInt64Val },
+                { typeof(char), CharVal },
+                { typeof(double), DoubleVal },
+                { typeof(float), SingleVal },
+                { typeof(decimal), DecimalVal },
+                { typeof(TestDataSubClass), ObjectVal },
+                { typeof(Guid), GuidVal },
+                { typeof(DateTime), DateTimeVal },
+                { typeof(TestDataStruct), CustomStructVal }
             };
 
             public static T GetDataByType<T>() => (T)GetDataByType(typeof(T));
@@ -389,11 +516,7 @@ namespace Kros.KORM.UnitTests.Converter
                 {
                     realType = dataType;
                 }
-                if (_dataByType.TryGetValue(realType, out object value))
-                {
-                    return value;
-                }
-                return null;
+                return _dataByType[realType];
             }
         }
 
@@ -410,7 +533,9 @@ namespace Kros.KORM.UnitTests.Converter
             Func<IDataReader, TestDataClass> factory = modelFactory.GetFactory<TestDataClass>(info.DataReader);
 
             TestDataClass actual = factory(info.DataReader);
-            TestDataClass expected = simulateDbNull ? TestDataClass.CreateWithNulledProperties() : new();
+            TestDataClass expected = simulateDbNull
+                ? TestDataClass.CreateWithNulledProperties()
+                : TestDataClass.CreateWithDbValuesProperties();
             actual.Should().BeEquivalentTo(expected);
         }
 
@@ -425,89 +550,42 @@ namespace Kros.KORM.UnitTests.Converter
             Func<IDataReader, ConvertedTestDataClass> factory = modelFactory.GetFactory<ConvertedTestDataClass>(info.DataReader);
 
             ConvertedTestDataClass actual = factory(info.DataReader);
-            ConvertedTestDataClass expected = new(simulateDbNull ? ConverterValueDbNull : ConverterValue);
+            ConvertedTestDataClass expected = simulateDbNull ? new(ConverterDbNullValue) : new(ConverterDefaultValue);
             actual.Should().BeEquivalentTo(expected);
         }
 
-        //[Fact]
-        //public void PropagateToDataRecord()
-        //{
-        //    ILGeneratorHelper.Logger = _output.WriteLine;
-        //    TestDataHelper<TestDataRecord, TestDataRecord> info = new(useConverter: false);
-        //    DynamicMethodModelFactory modelFactory = new(info.DatabaseMapper);
-        //    Func<IDataReader, TestDataRecord> factory = modelFactory.GetFactory<TestDataRecord>(info.DataReader);
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void PropagateToDataRecord(bool simulateDbNull)
+        {
+            ILGeneratorHelper.Logger = _output.WriteLine;
+            TestDataHelper<TestDataRecord, TestDataRecord> info = new(simulateDbNull: simulateDbNull, useConverter: false);
+            DynamicMethodModelFactory modelFactory = new(info.DatabaseMapper);
+            Func<IDataReader, TestDataRecord> factory = modelFactory.GetFactory<TestDataRecord>(info.DataReader);
 
-        //    TestDataRecord actual = factory(info.DataReader);
-        //    TestDataRecord expected = new()
-        //    {
-        //        StrVal = null,
-        //        BoolVal = false,
-        //        ByteVal = 0,
-        //        SByteVal = 0,
-        //        Int16Val = 0,
-        //        UInt16Val = 0,
-        //        Int32Val = 0,
-        //        UInt32Val = 0,
-        //        Int64Val = 0,
-        //        UInt64Val = 0,
-        //        CharVal = '\0',
-        //        DoubleVal = 0,
-        //        SingleVal = 0,
-        //        NullableBoolVal = null,
-        //        NullableByteVal = null,
-        //        NullableSByteVal = null,
-        //        NullableInt16Val = null,
-        //        NullableUInt16Val = null,
-        //        NullableInt32Val = null,
-        //        NullableUInt32Val = null,
-        //        NullableInt64Val = null,
-        //        NullableUInt64Val = null,
-        //        NullableCharVal = null,
-        //        NullableDoubleVal = null,
-        //        NullableSingleVal = null
-        //    };
-        //    actual.Should().BeEquivalentTo(expected);
-        //}
+            TestDataRecord actual = factory(info.DataReader);
+            TestDataRecord expected = simulateDbNull
+                ? TestDataRecord.CreateWithNulledProperties()
+                : TestDataRecord.CreateWithDbValuesProperties();
+            actual.Should().BeEquivalentTo(expected);
+        }
 
-        //[Fact]
-        //public void BeConsumedByConvertersInDataRecord()
-        //{
-        //    ILGeneratorHelper.Logger = _output.WriteLine;
-        //    ILGeneratorHelper.Logger = _output.WriteLine;
-        //    TestDataHelper<ConvertedTestDataRecord, TestDataRecord> info = new(useConverter: true);
-        //    DynamicMethodModelFactory modelFactory = new(info.DatabaseMapper);
-        //    Func<IDataReader, ConvertedTestDataRecord> factory = modelFactory.GetFactory<ConvertedTestDataRecord>(info.DataReader);
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void BeConsumedByConvertersInDataRecord(bool simulateDbNull)
+        {
+            ILGeneratorHelper.Logger = _output.WriteLine;
+            TestDataHelper<ConvertedTestDataRecord, TestDataRecord> info = new(simulateDbNull: simulateDbNull, useConverter: true);
+            DynamicMethodModelFactory modelFactory = new(info.DatabaseMapper);
+            Func<IDataReader, ConvertedTestDataRecord> factory = modelFactory.GetFactory<ConvertedTestDataRecord>(info.DataReader);
 
-        //    ConvertedTestDataRecord actual = factory(info.DataReader);
-        //    ConvertedTestDataRecord expected = new()
-        //    {
-        //        StrVal = ConvertedValue,
-        //        BoolVal = ConvertedValue,
-        //        ByteVal = ConvertedValue,
-        //        SByteVal = ConvertedValue,
-        //        Int16Val = ConvertedValue,
-        //        UInt16Val = ConvertedValue,
-        //        Int32Val = ConvertedValue,
-        //        UInt32Val = ConvertedValue,
-        //        Int64Val = ConvertedValue,
-        //        UInt64Val = ConvertedValue,
-        //        CharVal = ConvertedValue,
-        //        DoubleVal = ConvertedValue,
-        //        SingleVal = ConvertedValue,
-        //        NullableBoolVal = ConvertedValue,
-        //        NullableByteVal = ConvertedValue,
-        //        NullableSByteVal = ConvertedValue,
-        //        NullableInt16Val = ConvertedValue,
-        //        NullableUInt16Val = ConvertedValue,
-        //        NullableInt32Val = ConvertedValue,
-        //        NullableUInt32Val = ConvertedValue,
-        //        NullableInt64Val = ConvertedValue,
-        //        NullableUInt64Val = ConvertedValue,
-        //        NullableCharVal = ConvertedValue,
-        //        NullableDoubleVal = ConvertedValue,
-        //        NullableSingleVal = ConvertedValue
-        //    };
-        //    actual.Should().BeEquivalentTo(expected);
-        //}
+            ConvertedTestDataRecord actual = factory(info.DataReader);
+            ConvertedTestDataRecord expected = simulateDbNull
+                ? ConvertedTestDataRecord.Create(ConverterDbNullValue)
+                : ConvertedTestDataRecord.Create(ConverterDefaultValue);
+            actual.Should().BeEquivalentTo(expected);
+        }
     }
 }

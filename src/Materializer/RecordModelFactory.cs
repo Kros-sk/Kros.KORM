@@ -56,7 +56,7 @@ namespace Kros.KORM.Materializer
             return dynamicMethod.CreateDelegate(Expression.GetFuncType(typeof(IDataReader), type)) as Func<IDataReader, T>;
         }
 
-        private static void FromReader(IDataReader reader, ILGenerator iLGenerator, ColumnInfo columnInfo)
+        private static void FromReader(IDataReader reader, ILGenerator ilGenerator, ColumnInfo columnInfo)
         {
             int ordinal = reader.GetOrdinal(columnInfo.Name);
             Type srcType = reader.GetFieldType(ordinal);
@@ -64,11 +64,11 @@ namespace Kros.KORM.Materializer
             IConverter converter = ConverterHelper.GetConverter(columnInfo, srcType);
             if (converter is null)
             {
-                iLGenerator.CallReaderGetValueWithoutConverter(ordinal, columnInfo.PropertyInfo.PropertyType, srcType);
+                ilGenerator.EmitFieldWithoutConverter(srcType, columnInfo.PropertyInfo.PropertyType, ordinal);
             }
             else
             {
-                iLGenerator.CallConverter(converter, columnInfo.PropertyInfo.PropertyType, ordinal, convertNullValue: false);
+                ilGenerator.EmitFieldWithConverter(converter, columnInfo.PropertyInfo.PropertyType, ordinal);
             }
         }
     }
