@@ -150,7 +150,7 @@ namespace Kros.KORM.Materializer
             ilGenerator.MarkLabel(labelEnd);
         }
 
-        public static ILGenerator CallReaderMethod(
+        private static ILGenerator CallReaderMethod(
             this ILGenerator ilGenerator,
             int fieldIndex,
             MethodInfo methodInfo)
@@ -162,7 +162,7 @@ namespace Kros.KORM.Materializer
             return ilGenerator;
         }
 
-        public static Label CallReaderIsDbNull(this ILGenerator ilGenerator, int fieldIndex)
+        private static Label CallReaderIsDbNull(this ILGenerator ilGenerator, int fieldIndex)
         {
             ilGenerator.LogAndEmit(OpCodes.Ldarg_0);
             ilGenerator.LogAndEmit(OpCodes.Ldc_I4, fieldIndex);
@@ -179,7 +179,7 @@ namespace Kros.KORM.Materializer
             return _readerValueGetters.ContainsKey(name) ? _readerValueGetters[name] : null;
         }
 
-        public static MethodInfo GetReaderValueGetter(Type propertyType, Type srcType, out bool castNeeded)
+        private static MethodInfo GetReaderValueGetter(Type propertyType, Type srcType, out bool castNeeded)
         {
             Type nullableUnderlyingType = Nullable.GetUnderlyingType(propertyType);
             MethodInfo valueGetter = srcType.GetReaderValueGetter(nullableUnderlyingType is not null);
@@ -298,7 +298,7 @@ namespace Kros.KORM.Materializer
             }
         }
 
-        public static void EmitSetNullValue(this ILGenerator ilGenerator, Type propertyType)
+        private static void EmitSetNullValue(this ILGenerator ilGenerator, Type propertyType)
         {
             if (propertyType.IsPrimitive)
             {
@@ -315,7 +315,7 @@ namespace Kros.KORM.Materializer
             }
         }
 
-        public static void EmitSetNullValueForPrimitiveTypes(this ILGenerator ilGenerator, Type propertyType)
+        private static void EmitSetNullValueForPrimitiveTypes(this ILGenerator ilGenerator, Type propertyType)
         {
             if ((propertyType == typeof(long)) || (propertyType == typeof(ulong)))
             {
@@ -337,7 +337,7 @@ namespace Kros.KORM.Materializer
             }
         }
 
-        public static void EmitSetNullValueForValueTypes(this ILGenerator ilGenerator, Type propertyType)
+        private static void EmitSetNullValueForValueTypes(this ILGenerator ilGenerator, Type propertyType)
         {
             LocalBuilder local = ilGenerator.DeclareLocal(propertyType);
             ilGenerator.LogAndEmit(OpCodes.Ldloca_S, local.LocalIndex);
