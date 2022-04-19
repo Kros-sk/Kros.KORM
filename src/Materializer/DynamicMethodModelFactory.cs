@@ -97,12 +97,12 @@ namespace Kros.KORM.Materializer
             ILGenerator ilGenerator = dynamicMethod.GetILGenerator();
 
             ilGenerator.DeclareLocal(typeof(T));
-            ilGenerator.Emit(OpCodes.Newobj, ctor);
-            ilGenerator.Emit(OpCodes.Stloc_0);
+            ilGenerator.LogAndEmit(OpCodes.Newobj, ctor);
+            ilGenerator.LogAndEmit(OpCodes.Stloc_0);
             EmitReaderFields(reader, tableInfo, ilGenerator, injector);
             ilGenerator.CallOnAfterMaterialize(tableInfo);
-            ilGenerator.Emit(OpCodes.Ldloc_0);
-            ilGenerator.Emit(OpCodes.Ret);
+            ilGenerator.LogAndEmit(OpCodes.Ldloc_0);
+            ilGenerator.LogAndEmit(OpCodes.Ret);
 
             return dynamicMethod.CreateDelegate(Expression.GetFuncType(typeof(IDataReader), type)) as Func<IDataReader, T>;
         }
@@ -151,9 +151,9 @@ namespace Kros.KORM.Materializer
                 .AllModelProperties
                 .Where(p => injector.IsInjectable(p.Name)))
             {
-                ilGenerator.Emit(OpCodes.Ldloc_0);
+                ilGenerator.LogAndEmit(OpCodes.Ldloc_0);
                 ilGenerator.CallGetInjectedValue(injector, property.Name, property.PropertyType);
-                ilGenerator.Emit(OpCodes.Callvirt, property.GetSetMethod(true));
+                ilGenerator.LogAndEmit(OpCodes.Callvirt, property.GetSetMethod(true));
             }
         }
 
@@ -166,7 +166,7 @@ namespace Kros.KORM.Materializer
             ColumnInfo columnInfo = tableInfo.GetColumnInfo(reader.GetName(columnIndex));
             if (columnInfo != null)
             {
-                ilGenerator.Emit(OpCodes.Ldloc_0);
+                ilGenerator.LogAndEmit(OpCodes.Ldloc_0);
                 Type srcType = reader.GetFieldType(columnIndex);
                 IConverter converter = ConverterHelper.GetConverter(columnInfo, srcType);
                 if (converter is null)
@@ -177,7 +177,7 @@ namespace Kros.KORM.Materializer
                 {
                     EmitFieldWithConverter(ilGenerator, converter, columnInfo.PropertyInfo.PropertyType, columnIndex);
                 }
-                ilGenerator.Emit(OpCodes.Callvirt, columnInfo.PropertyInfo.GetSetMethod(true));
+                ilGenerator.LogAndEmit(OpCodes.Callvirt, columnInfo.PropertyInfo.GetSetMethod(true));
             }
         }
 
@@ -191,7 +191,7 @@ namespace Kros.KORM.Materializer
             Label labelIsNotDbNull = ilGenerator.CallReaderIsDbNull(columnIndex);
             Label labelEnd = ilGenerator.DefineLabel();
             ilGenerator.EmitSetNullValue(propertyType);
-            ilGenerator.Emit(OpCodes.Br_S, labelEnd);
+            ilGenerator.LogAndEmit(OpCodes.Br_S, labelEnd);
 
             // } else {
             ilGenerator.MarkLabel(labelIsNotDbNull);
@@ -211,7 +211,7 @@ namespace Kros.KORM.Materializer
             Label labelIsNotDbNull = ilGenerator.CallReaderIsDbNull(columnIndex);
             Label labelEnd = ilGenerator.DefineLabel();
             ilGenerator.CallConverter(converter, propertyType, columnIndex, convertNullValue: true);
-            ilGenerator.Emit(OpCodes.Br_S, labelEnd);
+            ilGenerator.LogAndEmit(OpCodes.Br_S, labelEnd);
 
             // } else {
             ilGenerator.MarkLabel(labelIsNotDbNull);

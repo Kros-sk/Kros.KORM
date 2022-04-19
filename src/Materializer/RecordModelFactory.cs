@@ -47,11 +47,11 @@ namespace Kros.KORM.Materializer
             }
 
             ilGenerator.DeclareLocal(typeof(T));
-            ilGenerator.Emit(OpCodes.Newobj, ctor);
-            ilGenerator.Emit(OpCodes.Stloc_0);
+            ilGenerator.LogAndEmit(OpCodes.Newobj, ctor);
+            ilGenerator.LogAndEmit(OpCodes.Stloc_0);
             ilGenerator.CallOnAfterMaterialize(tableInfo);
-            ilGenerator.Emit(OpCodes.Ldloc_0);
-            ilGenerator.Emit(OpCodes.Ret);
+            ilGenerator.LogAndEmit(OpCodes.Ldloc_0);
+            ilGenerator.LogAndEmit(OpCodes.Ret);
 
             return dynamicMethod.CreateDelegate(Expression.GetFuncType(typeof(IDataReader), type)) as Func<IDataReader, T>;
         }
