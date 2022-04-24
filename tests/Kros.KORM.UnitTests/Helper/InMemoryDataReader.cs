@@ -83,7 +83,6 @@ namespace Kros.KORM.UnitTests.Helper
         public void Dispose()
         {
             _data?.Dispose();
-            _data = null;
         }
 
         public int FieldCount

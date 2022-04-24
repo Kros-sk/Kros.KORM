@@ -116,17 +116,17 @@ namespace Kros.KORM.Materializer
             Type propertyType,
             int columnIndex)
         {
-            // if (reader.IsDbNull(columnIndex)) {
+            // Emit: if (reader.IsDbNull(columnIndex)) {
             Label labelIsNotDbNull = ilGenerator.CallReaderIsDbNull(columnIndex);
             Label labelEnd = ilGenerator.DefineLabel();
             ilGenerator.EmitSetNullValue(propertyType);
             ilGenerator.LogAndEmit(OpCodes.Br_S, labelEnd);
 
-            // } else {
+            // Emit: } else {
             ilGenerator.MarkLabel(labelIsNotDbNull);
             ilGenerator.CallReaderGetValueWithoutConverter(columnIndex, propertyType, srcType);
 
-            // }
+            // Emit: }
             ilGenerator.MarkLabel(labelEnd);
         }
 
@@ -136,17 +136,17 @@ namespace Kros.KORM.Materializer
             Type propertyType,
             int columnIndex)
         {
-            // if (reader.IsDbNull(columnIndex)) {
+            // Emit: if (reader.IsDbNull(columnIndex)) {
             Label labelIsNotDbNull = ilGenerator.CallReaderIsDbNull(columnIndex);
             Label labelEnd = ilGenerator.DefineLabel();
             ilGenerator.CallConverter(converter, propertyType, columnIndex, convertNullValue: true);
             ilGenerator.LogAndEmit(OpCodes.Br_S, labelEnd);
 
-            // } else {
+            // Emit: } else {
             ilGenerator.MarkLabel(labelIsNotDbNull);
             ilGenerator.CallConverter(converter, propertyType, columnIndex, convertNullValue: false);
 
-            // }
+            // Emit: }
             ilGenerator.MarkLabel(labelEnd);
         }
 
@@ -302,11 +302,11 @@ namespace Kros.KORM.Materializer
         {
             if (propertyType.IsPrimitive)
             {
-                EmitSetNullValueForPrimitiveTypes(ilGenerator, propertyType);
+                EmitSetDefaultValueForPrimitiveTypes(ilGenerator, propertyType);
             }
             else if (propertyType.IsValueType)
             {
-                EmitSetNullValueForValueTypes(ilGenerator, propertyType);
+                EmitSetDefaultValueForValueTypes(ilGenerator, propertyType);
             }
             else
             {
@@ -315,7 +315,7 @@ namespace Kros.KORM.Materializer
             }
         }
 
-        private static void EmitSetNullValueForPrimitiveTypes(this ILGenerator ilGenerator, Type propertyType)
+        private static void EmitSetDefaultValueForPrimitiveTypes(this ILGenerator ilGenerator, Type propertyType)
         {
             if ((propertyType == typeof(long)) || (propertyType == typeof(ulong)))
             {
@@ -337,7 +337,7 @@ namespace Kros.KORM.Materializer
             }
         }
 
-        private static void EmitSetNullValueForValueTypes(this ILGenerator ilGenerator, Type propertyType)
+        private static void EmitSetDefaultValueForValueTypes(this ILGenerator ilGenerator, Type propertyType)
         {
             LocalBuilder local = ilGenerator.DeclareLocal(propertyType);
             ilGenerator.LogAndEmit(OpCodes.Ldloca_S, local.LocalIndex);

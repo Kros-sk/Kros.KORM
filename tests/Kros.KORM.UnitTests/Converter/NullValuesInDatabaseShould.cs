@@ -14,6 +14,68 @@ namespace Kros.KORM.UnitTests.Converter
 {
     public class NullValuesInDatabaseShould : DatabaseTestBase
     {
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void PropagateToDataClass(bool simulateDbNull)
+        {
+            TestDataHelper<TestDataClass, TestDataClass> info = new(simulateDbNull: simulateDbNull, useConverter: false);
+            DynamicMethodModelFactory modelFactory = new(info.DatabaseMapper);
+            Func<IDataReader, TestDataClass> factory = modelFactory.GetFactory<TestDataClass>(info.DataReader);
+
+            TestDataClass actual = factory(info.DataReader);
+            TestDataClass expected = simulateDbNull
+                ? TestDataClass.CreateWithNulledProperties()
+                : TestDataClass.CreateWithDbValuesProperties();
+            actual.Should().BeEquivalentTo(expected);
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void BeConsumedByConvertersInDataClass(bool simulateDbNull)
+        {
+            TestDataHelper<ConvertedTestDataClass, TestDataClass> info = new(simulateDbNull: simulateDbNull, useConverter: true);
+            DynamicMethodModelFactory modelFactory = new(info.DatabaseMapper);
+            Func<IDataReader, ConvertedTestDataClass> factory = modelFactory.GetFactory<ConvertedTestDataClass>(info.DataReader);
+
+            ConvertedTestDataClass actual = factory(info.DataReader);
+            ConvertedTestDataClass expected = simulateDbNull ? new(ConverterDbNullValue) : new(ConverterDefaultValue);
+            actual.Should().BeEquivalentTo(expected);
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void PropagateToDataRecord(bool simulateDbNull)
+        {
+            TestDataHelper<TestDataRecord, TestDataRecord> info = new(simulateDbNull: simulateDbNull, useConverter: false);
+            DynamicMethodModelFactory modelFactory = new(info.DatabaseMapper);
+            Func<IDataReader, TestDataRecord> factory = modelFactory.GetFactory<TestDataRecord>(info.DataReader);
+
+            TestDataRecord actual = factory(info.DataReader);
+            TestDataRecord expected = simulateDbNull
+                ? TestDataRecord.CreateWithNulledProperties()
+                : TestDataRecord.CreateWithDbValuesProperties();
+            actual.Should().BeEquivalentTo(expected);
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void BeConsumedByConvertersInDataRecord(bool simulateDbNull)
+        {
+            TestDataHelper<ConvertedTestDataRecord, TestDataRecord> info = new(simulateDbNull: simulateDbNull, useConverter: true);
+            DynamicMethodModelFactory modelFactory = new(info.DatabaseMapper);
+            Func<IDataReader, ConvertedTestDataRecord> factory = modelFactory.GetFactory<ConvertedTestDataRecord>(info.DataReader);
+
+            ConvertedTestDataRecord actual = factory(info.DataReader);
+            ConvertedTestDataRecord expected = simulateDbNull
+                ? ConvertedTestDataRecord.Create(ConverterDbNullValue)
+                : ConvertedTestDataRecord.Create(ConverterDefaultValue);
+            actual.Should().BeEquivalentTo(expected);
+        }
+
         #region Helpers
 
         private const string ConverterDefaultValue = "Default";
@@ -513,67 +575,5 @@ namespace Kros.KORM.UnitTests.Converter
         }
 
         #endregion
-
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void PropagateToDataClass(bool simulateDbNull)
-        {
-            TestDataHelper<TestDataClass, TestDataClass> info = new(simulateDbNull: simulateDbNull, useConverter: false);
-            DynamicMethodModelFactory modelFactory = new(info.DatabaseMapper);
-            Func<IDataReader, TestDataClass> factory = modelFactory.GetFactory<TestDataClass>(info.DataReader);
-
-            TestDataClass actual = factory(info.DataReader);
-            TestDataClass expected = simulateDbNull
-                ? TestDataClass.CreateWithNulledProperties()
-                : TestDataClass.CreateWithDbValuesProperties();
-            actual.Should().BeEquivalentTo(expected);
-        }
-
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void BeConsumedByConvertersInDataClass(bool simulateDbNull)
-        {
-            TestDataHelper<ConvertedTestDataClass, TestDataClass> info = new(simulateDbNull: simulateDbNull, useConverter: true);
-            DynamicMethodModelFactory modelFactory = new(info.DatabaseMapper);
-            Func<IDataReader, ConvertedTestDataClass> factory = modelFactory.GetFactory<ConvertedTestDataClass>(info.DataReader);
-
-            ConvertedTestDataClass actual = factory(info.DataReader);
-            ConvertedTestDataClass expected = simulateDbNull ? new(ConverterDbNullValue) : new(ConverterDefaultValue);
-            actual.Should().BeEquivalentTo(expected);
-        }
-
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void PropagateToDataRecord(bool simulateDbNull)
-        {
-            TestDataHelper<TestDataRecord, TestDataRecord> info = new(simulateDbNull: simulateDbNull, useConverter: false);
-            DynamicMethodModelFactory modelFactory = new(info.DatabaseMapper);
-            Func<IDataReader, TestDataRecord> factory = modelFactory.GetFactory<TestDataRecord>(info.DataReader);
-
-            TestDataRecord actual = factory(info.DataReader);
-            TestDataRecord expected = simulateDbNull
-                ? TestDataRecord.CreateWithNulledProperties()
-                : TestDataRecord.CreateWithDbValuesProperties();
-            actual.Should().BeEquivalentTo(expected);
-        }
-
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void BeConsumedByConvertersInDataRecord(bool simulateDbNull)
-        {
-            TestDataHelper<ConvertedTestDataRecord, TestDataRecord> info = new(simulateDbNull: simulateDbNull, useConverter: true);
-            DynamicMethodModelFactory modelFactory = new(info.DatabaseMapper);
-            Func<IDataReader, ConvertedTestDataRecord> factory = modelFactory.GetFactory<ConvertedTestDataRecord>(info.DataReader);
-
-            ConvertedTestDataRecord actual = factory(info.DataReader);
-            ConvertedTestDataRecord expected = simulateDbNull
-                ? ConvertedTestDataRecord.Create(ConverterDbNullValue)
-                : ConvertedTestDataRecord.Create(ConverterDefaultValue);
-            actual.Should().BeEquivalentTo(expected);
-        }
     }
 }
