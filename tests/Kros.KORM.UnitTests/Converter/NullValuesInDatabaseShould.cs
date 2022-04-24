@@ -125,6 +125,10 @@ namespace Kros.KORM.UnitTests.Converter
                     NullableDateTimeVal = InitialDataSource.DateTimeVal;
                     CustomStructVal = InitialDataSource.CustomStructVal;
                     NullableCustomStructVal = InitialDataSource.CustomStructVal;
+                    CustomEnumVal = InitialDataSource.CustomEnumVal;
+                    NullableCustomEnumVal = InitialDataSource.CustomEnumVal;
+                    CustomEnumWithoutZeroVal = InitialDataSource.CustomEnumWithoutZeroVal;
+                    NullableCustomEnumWithoutZeroVal = InitialDataSource.CustomEnumWithoutZeroVal;
                 }
             }
 
@@ -166,7 +170,11 @@ namespace Kros.KORM.UnitTests.Converter
                 DateTimeVal = DbDataSource.DateTimeVal,
                 NullableDateTimeVal = DbDataSource.DateTimeVal,
                 CustomStructVal = DbDataSource.CustomStructVal,
-                NullableCustomStructVal = DbDataSource.CustomStructVal
+                NullableCustomStructVal = DbDataSource.CustomStructVal,
+                CustomEnumVal = DbDataSource.CustomEnumVal,
+                NullableCustomEnumVal = DbDataSource.CustomEnumVal,
+                CustomEnumWithoutZeroVal = DbDataSource.CustomEnumWithoutZeroVal,
+                NullableCustomEnumWithoutZeroVal = DbDataSource.CustomEnumWithoutZeroVal
             };
 
             public bool BoolVal { get; set; }
@@ -205,6 +213,10 @@ namespace Kros.KORM.UnitTests.Converter
             public DateTime? NullableDateTimeVal { get; set; }
             public TestDataStruct CustomStructVal { get; set; }
             public TestDataStruct? NullableCustomStructVal { get; set; }
+            public TestDataEnum CustomEnumVal { get; set; }
+            public TestDataEnum? NullableCustomEnumVal { get; set; }
+            public TestDataEnumWithoutZero CustomEnumWithoutZeroVal { get; set; }
+            public TestDataEnumWithoutZero? NullableCustomEnumWithoutZeroVal { get; set; }
         }
 
         private class ConvertedTestDataClass
@@ -255,6 +267,10 @@ namespace Kros.KORM.UnitTests.Converter
             public string NullableDateTimeVal { get; set; }
             public string CustomStructVal { get; set; }
             public string NullableCustomStructVal { get; set; }
+            public string CustomEnumVal { get; set; }
+            public string NullableCustomEnumVal { get; set; }
+            public string CustomEnumWithoutZeroVal { get; set; }
+            public string NullableCustomEnumWithoutZeroVal { get; set; }
         }
 
         private record TestDataRecord
@@ -272,6 +288,8 @@ namespace Kros.KORM.UnitTests.Converter
             double DoubleVal = InitialDataSource.DoubleVal,
             float SingleVal = InitialDataSource.SingleVal,
             decimal DecimalVal = InitialDataSource.DecimalVal,
+            TestDataEnum CustomEnumVal = InitialDataSource.CustomEnumVal,
+            TestDataEnumWithoutZero CustomEnumWithoutZeroVal = InitialDataSource.CustomEnumWithoutZeroVal,
 
             bool? NullableBoolVal = InitialDataSource.BoolVal,
             byte? NullableByteVal = InitialDataSource.ByteVal,
@@ -286,6 +304,8 @@ namespace Kros.KORM.UnitTests.Converter
             double? NullableDoubleVal = InitialDataSource.DoubleVal,
             float? NullableSingleVal = InitialDataSource.SingleVal,
             decimal? NullableDecimalVal = InitialDataSource.DecimalVal,
+            TestDataEnum? NullableCustomEnumVal = InitialDataSource.CustomEnumVal,
+            TestDataEnumWithoutZero? NullableCustomEnumWithoutZeroVal = InitialDataSource.CustomEnumWithoutZeroVal,
 
             string StrVal = InitialDataSource.StringVal
         )
@@ -305,6 +325,8 @@ namespace Kros.KORM.UnitTests.Converter
                 DoubleVal = 0,
                 SingleVal = 0,
                 DecimalVal = 0,
+                CustomEnumVal = TestDataEnum.Zero,
+                CustomEnumWithoutZeroVal = (TestDataEnumWithoutZero)0,
                 NullableBoolVal = null,
                 NullableByteVal = null,
                 NullableSByteVal = null,
@@ -318,6 +340,8 @@ namespace Kros.KORM.UnitTests.Converter
                 NullableDoubleVal = null,
                 NullableSingleVal = null,
                 NullableDecimalVal = null,
+                NullableCustomEnumVal = null,
+                NullableCustomEnumWithoutZeroVal = null,
                 StrVal = null
             };
 
@@ -336,6 +360,8 @@ namespace Kros.KORM.UnitTests.Converter
                 DoubleVal = DbDataSource.DoubleVal,
                 SingleVal = DbDataSource.SingleVal,
                 DecimalVal = DbDataSource.DecimalVal,
+                CustomEnumVal = DbDataSource.CustomEnumVal,
+                CustomEnumWithoutZeroVal = DbDataSource.CustomEnumWithoutZeroVal,
 
                 NullableBoolVal = DbDataSource.BoolVal,
                 NullableByteVal = DbDataSource.ByteVal,
@@ -350,6 +376,8 @@ namespace Kros.KORM.UnitTests.Converter
                 NullableDoubleVal = DbDataSource.DoubleVal,
                 NullableSingleVal = DbDataSource.SingleVal,
                 NullableDecimalVal = DbDataSource.DecimalVal,
+                NullableCustomEnumVal = DbDataSource.CustomEnumVal,
+                NullableCustomEnumWithoutZeroVal = DbDataSource.CustomEnumWithoutZeroVal,
 
                 StrVal = DbDataSource.StringVal
             };
@@ -371,6 +399,8 @@ namespace Kros.KORM.UnitTests.Converter
             string DoubleVal = null,
             string SingleVal = null,
             string DecimalVal = null,
+            string CustomEnumVal = null,
+            string CustomEnumWithoutZeroVal = null,
 
             string NullableBoolVal = null,
             string NullableByteVal = null,
@@ -384,7 +414,9 @@ namespace Kros.KORM.UnitTests.Converter
             string NullableCharVal = null,
             string NullableDoubleVal = null,
             string NullableSingleVal = null,
-            string NullableDecimalVal = null
+            string NullableDecimalVal = null,
+            string NullableCustomEnumVal = null,
+            string NullableCustomEnumWithoutZeroVal = null
         )
         {
             public static ConvertedTestDataRecord Create(string value)
@@ -407,6 +439,19 @@ namespace Kros.KORM.UnitTests.Converter
         {
             public int IntVal;
             public string StringVal;
+        }
+
+        private enum TestDataEnum
+        {
+            Zero,
+            One,
+            Two
+        }
+
+        private enum TestDataEnumWithoutZero
+        {
+            Ten = 10,
+            Twenty = 20
         }
 
         private class TestConverter : IConverter
@@ -496,6 +541,7 @@ namespace Kros.KORM.UnitTests.Converter
             }
         }
 
+        // Data for different types used as initial values for class. This values are set in constructor.
         private static class InitialDataSource
         {
             public const bool BoolVal = true;
@@ -516,8 +562,11 @@ namespace Kros.KORM.UnitTests.Converter
             public static Guid GuidVal { get; } = new("12345678-1234-1234-1234-123456789012");
             public static DateTime DateTimeVal { get; } = new(1978, 12, 10);
             public static TestDataStruct CustomStructVal { get; } = new() { IntVal = 42, StringVal = "Lorem" };
+            public const TestDataEnum CustomEnumVal = TestDataEnum.One;
+            public const TestDataEnumWithoutZero CustomEnumWithoutZeroVal = TestDataEnumWithoutZero.Ten;
         }
 
+        // Data for different types used to simulate values from database.
         private static class DbDataSource
         {
             public const bool BoolVal = false;
@@ -538,6 +587,8 @@ namespace Kros.KORM.UnitTests.Converter
             public static Guid GuidVal { get; } = new("87654321-4321-4321-4321-210987654321");
             public static DateTime DateTimeVal { get; } = new(1985, 4, 16);
             public static TestDataStruct CustomStructVal { get; } = new() { IntVal = 24, StringVal = "Ipsum" };
+            public const TestDataEnum CustomEnumVal = TestDataEnum.Two;
+            public const TestDataEnumWithoutZero CustomEnumWithoutZeroVal = TestDataEnumWithoutZero.Twenty;
 
             private static readonly Dictionary<Type, object> _dataByType = new()
             {
@@ -558,7 +609,9 @@ namespace Kros.KORM.UnitTests.Converter
                 { typeof(TestDataSubClass), ObjectVal },
                 { typeof(Guid), GuidVal },
                 { typeof(DateTime), DateTimeVal },
-                { typeof(TestDataStruct), CustomStructVal }
+                { typeof(TestDataStruct), CustomStructVal },
+                { typeof(TestDataEnum), CustomEnumVal },
+                { typeof(TestDataEnumWithoutZero), CustomEnumWithoutZeroVal }
             };
 
             public static T GetDataByType<T>() => (T)GetDataByType(typeof(T));

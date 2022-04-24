@@ -37,9 +37,9 @@ namespace Kros.KORM.Converter
         /// Converted enum value for Clr.
         /// </returns>
         public object Convert(object value)
-        {
-            return Enum.ToObject(_enumType, value);
-        }
+            => value is null
+            ? Enum.ToObject(_enumType, 0)
+            : Enum.ToObject(_enumType, value);
 
         /// <summary>
         /// Converts the enum value from Clr to Db int value.
@@ -48,9 +48,6 @@ namespace Kros.KORM.Converter
         /// <returns>
         /// Converted int value for Db
         /// </returns>
-        public object ConvertBack(object value)
-        {
-            return (int)value;
-        }
+        public object ConvertBack(object value) => value is null ? 0 : (int)value;
     }
 }
