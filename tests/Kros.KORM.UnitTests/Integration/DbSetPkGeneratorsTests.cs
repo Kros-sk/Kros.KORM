@@ -78,7 +78,8 @@ $@"CREATE TABLE [dbo].[{TestTableNameB}] (
         private TestDatabase CreateTestDatabase()
         {
             TestDatabase db = CreateDatabase(new[] { CreateTable_A, CreateTable_B });
-            foreach (IIdGenerator idGenerator in IdGeneratorFactories.GetGeneratorsForDatabaseInit(db.Connection))
+            using IIdGeneratorsForDatabaseInit idGenerators = IdGeneratorFactories.GetGeneratorsForDatabaseInit(db.Connection);
+            foreach (IIdGenerator idGenerator in idGenerators)
             {
                 idGenerator.InitDatabaseForIdGenerator();
             }

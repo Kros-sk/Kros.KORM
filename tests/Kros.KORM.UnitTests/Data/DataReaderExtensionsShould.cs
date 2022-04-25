@@ -16,7 +16,7 @@ namespace Kros.KORM.UnitTests.Data
         [InlineData(null)]
         public void GetNullableBoolean(bool? value)
         {
-            InMemoryDataReader dataReader = CreateReader(value);
+            using InMemoryDataReader dataReader = CreateReader(value);
 
             dataReader.GetNullableBoolean(0).Should().Be(value);
         }
@@ -27,7 +27,7 @@ namespace Kros.KORM.UnitTests.Data
         [InlineData(null)]
         public void GetNullableByte(byte? value)
         {
-            InMemoryDataReader dataReader = CreateReader(value);
+            using InMemoryDataReader dataReader = CreateReader(value);
 
             dataReader.GetNullableByte(0).Should().Be(value);
         }
@@ -38,7 +38,7 @@ namespace Kros.KORM.UnitTests.Data
         [InlineData(null)]
         public void GetNullableChar(char? value)
         {
-            InMemoryDataReader dataReader = CreateReader(value);
+            using InMemoryDataReader dataReader = CreateReader(value);
 
             dataReader.GetNullableChar(0).Should().Be(value);
         }
@@ -50,7 +50,7 @@ namespace Kros.KORM.UnitTests.Data
         public void GetNullableDateTime(string value)
         {
             DateTime? dateTime = value.IsNullOrEmpty() ? null : value.ParseDateTime();
-            InMemoryDataReader dataReader = CreateReader(dateTime);
+            using InMemoryDataReader dataReader = CreateReader(dateTime);
 
             dataReader.GetNullableDateTime(0).Should().Be(dateTime);
         }
@@ -62,7 +62,7 @@ namespace Kros.KORM.UnitTests.Data
         public void GetNullableDecimal(double? value)
         {
             decimal? d = (decimal?)value;
-            InMemoryDataReader dataReader = CreateReader(d);
+            using InMemoryDataReader dataReader = CreateReader(d);
 
             dataReader.GetNullableDecimal(0).Should().Be(d);
         }
@@ -73,7 +73,7 @@ namespace Kros.KORM.UnitTests.Data
         [InlineData(null)]
         public void GetNullableDouble(double? value)
         {
-            InMemoryDataReader dataReader = CreateReader(value);
+            using InMemoryDataReader dataReader = CreateReader(value);
 
             dataReader.GetNullableDouble(0).Should().Be(value);
         }
@@ -85,7 +85,7 @@ namespace Kros.KORM.UnitTests.Data
         public void GetNullableGuid(string value)
         {
             Guid? g = value.IsNullOrEmpty() ? null : new Guid(value);
-            InMemoryDataReader dataReader = CreateReader(g);
+            using InMemoryDataReader dataReader = CreateReader(g);
 
             dataReader.GetNullableGuid(0).Should().Be(g);
         }
@@ -96,7 +96,7 @@ namespace Kros.KORM.UnitTests.Data
         [InlineData(null)]
         public void GetNullableInt16(short? value)
         {
-            InMemoryDataReader dataReader = CreateReader(value);
+            using InMemoryDataReader dataReader = CreateReader(value);
 
             dataReader.GetNullableInt16(0).Should().Be(value);
         }
@@ -107,7 +107,7 @@ namespace Kros.KORM.UnitTests.Data
         [InlineData(null)]
         public void GetNullableInt32(int? value)
         {
-            InMemoryDataReader dataReader = CreateReader(value);
+            using InMemoryDataReader dataReader = CreateReader(value);
 
             dataReader.GetNullableInt32(0).Should().Be(value);
         }
@@ -118,7 +118,7 @@ namespace Kros.KORM.UnitTests.Data
         [InlineData(null)]
         public void GetNullableInt64(long? value)
         {
-            InMemoryDataReader dataReader = CreateReader(value);
+            using InMemoryDataReader dataReader = CreateReader(value);
 
             dataReader.GetNullableInt64(0).Should().Be(value);
         }
@@ -129,7 +129,7 @@ namespace Kros.KORM.UnitTests.Data
         [InlineData(null)]
         public void GetNullableFloat(float? value)
         {
-            InMemoryDataReader dataReader = CreateReader(value);
+            using InMemoryDataReader dataReader = CreateReader(value);
 
             dataReader.GetNullableFloat(0).Should().Be(value);
         }

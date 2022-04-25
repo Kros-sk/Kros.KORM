@@ -113,7 +113,8 @@ END";
             };
 
             TestDatabase db = CreateDatabase(scripts);
-            foreach (IIdGenerator idGenerator in IdGeneratorFactories.GetGeneratorsForDatabaseInit(db.Connection))
+            using IIdGeneratorsForDatabaseInit idGenerators = IdGeneratorFactories.GetGeneratorsForDatabaseInit(db.Connection);
+            foreach (IIdGenerator idGenerator in idGenerators)
             {
                 idGenerator.InitDatabaseForIdGenerator();
             }

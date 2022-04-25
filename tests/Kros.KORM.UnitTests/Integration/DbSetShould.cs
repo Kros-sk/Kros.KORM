@@ -924,12 +924,6 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
 
         #region Helpers
 
-        private TestDatabase CreateTestDatabase()
-        {
-            var (_, _, tableScript, procedureScript) = SqlServerIntIdGenerator.GetSqlInfo();
-            return CreateDatabase(new[] { CreateTable_TestTable, tableScript, procedureScript });
-        }
-
         private static IEnumerable<DataTypesData> GetDataTypesData()
         {
             yield return CreateRecord(1);

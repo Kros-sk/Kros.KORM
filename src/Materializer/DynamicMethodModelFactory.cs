@@ -93,16 +93,16 @@ namespace Kros.KORM.Materializer
             ConstructorInfo ctor)
         {
             Type type = typeof(T);
-            var dynamicMethod = new DynamicMethod(GetFactoryName, type, new Type[] { typeof(IDataReader) }, true);
+            DynamicMethod dynamicMethod = new(GetFactoryName, type, new Type[] { typeof(IDataReader) }, true);
             ILGenerator ilGenerator = dynamicMethod.GetILGenerator();
 
-            ilGenerator.Emit(OpCodes.Newobj, ctor);
-
+            ilGenerator.DeclareLocal(typeof(T));
+            ilGenerator.LogAndEmit(OpCodes.Newobj, ctor);
+            ilGenerator.LogAndEmit(OpCodes.Stloc_0);
             EmitReaderFields(reader, tableInfo, ilGenerator, injector);
-
             ilGenerator.CallOnAfterMaterialize(tableInfo);
-
-            ilGenerator.Emit(OpCodes.Ret);
+            ilGenerator.LogAndEmit(OpCodes.Ldloc_0);
+            ilGenerator.LogAndEmit(OpCodes.Ret);
 
             return dynamicMethod.CreateDelegate(Expression.GetFuncType(typeof(IDataReader), type)) as Func<IDataReader, T>;
         }
@@ -140,7 +140,6 @@ namespace Kros.KORM.Materializer
             {
                 EmitField(reader, tableInfo, ilGenerator, i);
             }
-
             EmitPropertyForInjecting(tableInfo, ilGenerator, injector);
         }
 
@@ -152,13 +151,14 @@ namespace Kros.KORM.Materializer
                 .AllModelProperties
                 .Where(p => injector.IsInjectable(p.Name)))
             {
-                ilGenerator.Emit(OpCodes.Dup);
+                ilGenerator.LogAndEmit(OpCodes.Ldloc_0);
                 ilGenerator.CallGetInjectedValue(injector, property.Name, property.PropertyType);
-                ilGenerator.Emit(OpCodes.Callvirt, property.GetSetMethod(true));
+                ilGenerator.LogAndEmit(OpCodes.Callvirt, property.GetSetMethod(true));
             }
         }
 
-        private static void EmitField(IDataReader reader,
+        private static void EmitField(
+            IDataReader reader,
             TableInfo tableInfo,
             ILGenerator ilGenerator,
             int columnIndex)
@@ -166,22 +166,18 @@ namespace Kros.KORM.Materializer
             ColumnInfo columnInfo = tableInfo.GetColumnInfo(reader.GetName(columnIndex));
             if (columnInfo != null)
             {
+                ilGenerator.LogAndEmit(OpCodes.Ldloc_0);
                 Type srcType = reader.GetFieldType(columnIndex);
-
-                Label truePart = ilGenerator.CallReaderIsDbNull(columnIndex);
                 IConverter converter = ConverterHelper.GetConverter(columnInfo, srcType);
-
-                if (converter == null)
+                if (converter is null)
                 {
-                    ilGenerator.CallReaderGetValueWithoutConverter(columnIndex, columnInfo, srcType);
+                    ilGenerator.EmitFieldWithoutConverter(srcType, columnInfo.PropertyInfo.PropertyType, columnIndex);
                 }
                 else
                 {
-                    ilGenerator.CallReaderGetValueWithConverter(columnIndex, converter, columnInfo);
+                    ilGenerator.EmitFieldWithConverter(converter, columnInfo.PropertyInfo.PropertyType, columnIndex);
                 }
-
-                ilGenerator.Emit(OpCodes.Callvirt, columnInfo.PropertyInfo.GetSetMethod(true));
-                ilGenerator.MarkLabel(truePart);
+                ilGenerator.LogAndEmit(OpCodes.Callvirt, columnInfo.PropertyInfo.GetSetMethod(true));
             }
         }
 

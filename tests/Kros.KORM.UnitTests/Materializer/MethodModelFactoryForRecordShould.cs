@@ -21,9 +21,9 @@ namespace Kros.KORM.UnitTests.Materializer
         [Fact]
         public void ShouldUseNameMapping()
         {
-            IDataReader data = DataBuilder.Create(("Id", typeof(int)), ("FirstName", typeof(string)), ("Payment", typeof(string)))
-                    .AddRow(22, "Foo", 120.5)
-                    .Build();
+            using IDataReader data = DataBuilder.Create(("Id", typeof(int)), ("FirstName", typeof(string)), ("Payment", typeof(string)))
+                .AddRow(22, "Foo", 120.5)
+                .Build();
             Func<IDataReader, FooWithDifferentPropertyNames> factory = GetFactory<FooWithDifferentPropertyNames>(data);
 
             data.Read();
@@ -52,7 +52,7 @@ namespace Kros.KORM.UnitTests.Materializer
             float floatValue,
             string changedDate)
         {
-            IDataReader data = DataBuilder.Create(("Id", typeof(int)), ("Name", typeof(string)), ("Age", typeof(double)),
+            using IDataReader data = DataBuilder.Create(("Id", typeof(int)), ("Name", typeof(string)), ("Age", typeof(double)),
                 ("Salary", typeof(decimal)), ("DayOfBirth", typeof(DateTime)), ("IsEmployed", typeof(bool)),
                 ("TenantId", typeof(Guid)), ("Gender", typeof(Gender)), ("FloatValue", typeof(float)),
                 ("ChangedDate", typeof(DateTimeOffset)))
@@ -82,7 +82,7 @@ namespace Kros.KORM.UnitTests.Materializer
         [InlineData(26, (int)Gender.Man, 4258)]
         public void ShouldReadTypeWithDefaultConversions(long id, int gender, int salary)
         {
-            IDataReader data = DataBuilder.Create(("Id", typeof(long)),
+            using IDataReader data = DataBuilder.Create(("Id", typeof(long)),
                 ("Gender", typeof(int)), ("Salary", typeof(int)))
                 .AddRow(id, gender, salary)
                 .Build();
@@ -103,7 +103,7 @@ namespace Kros.KORM.UnitTests.Materializer
         public void ShouldReadTypeWithCustomConverters(string gender, string tenantId)
         {
             var converter = new CustomConverter();
-            IDataReader data = DataBuilder.Create(("Gender", typeof(string)), ("TenantId", typeof(Guid)))
+            using IDataReader data = DataBuilder.Create(("Gender", typeof(string)), ("TenantId", typeof(Guid)))
                 .AddRow(gender, new Guid(tenantId))
                 .Build();
             Func<IDataReader, FooWithConverters> factory = GetFactory<FooWithConverters>(data);
@@ -119,7 +119,7 @@ namespace Kros.KORM.UnitTests.Materializer
         [Fact()]
         public void ShouldReadTypeWithInjectableProperty()
         {
-            IDataReader data = DataBuilder.Create(("Id", typeof(long)))
+            using IDataReader data = DataBuilder.Create(("Id", typeof(long)))
                 .AddRow((long)11)
                 .Build();
             Func<IDataReader, FooWithInjectableProperty> factory = GetFactory<FooWithInjectableProperty>(data);
@@ -138,7 +138,7 @@ namespace Kros.KORM.UnitTests.Materializer
         [InlineData(2, 22)]
         public void ShouldReadTypeWithIMaterializeInterface(long id, int value)
         {
-            IDataReader data = DataBuilder.Create(("Id", typeof(long)), ("Value", typeof(int)))
+            using IDataReader data = DataBuilder.Create(("Id", typeof(long)), ("Value", typeof(int)))
                 .AddRow(id, value)
                 .Build();
             Func<IDataReader, FooWithOnAfterMaterialize> factory = GetFactory<FooWithOnAfterMaterialize>(data);
@@ -162,7 +162,7 @@ namespace Kros.KORM.UnitTests.Materializer
             DateTime? dt = dateTimeValue.IsNullOrEmpty() ? null : dateTimeValue.ParseDateTime();
             Guid? guid = guidValue.IsNullOrEmpty() ? null : new Guid(guidValue);
 
-            IDataReader data = DataBuilder.Create(("LongValue", typeof(long)), ("CharValue", typeof(char)),
+            using IDataReader data = DataBuilder.Create(("LongValue", typeof(long)), ("CharValue", typeof(char)),
                 ("IntValue", typeof(int)), ("DecimalValue", typeof(decimal)), ("BoolValue", typeof(bool)),
                 ("ByteValue", typeof(byte)), ("DateTimeValue", typeof(DateTime)), ("DoubleValue", typeof(double)),
                 ("GuidValue", typeof(Guid)), ("FloatValue", typeof(float)))
@@ -189,7 +189,7 @@ namespace Kros.KORM.UnitTests.Materializer
         [Fact()]
         public void ShouldThrowInvalidOperationExceptionWhenCtorParameterDoesNotMatchProperty()
         {
-            IDataReader data = DataBuilder.Create(("Id", typeof(long)))
+            using IDataReader data = DataBuilder.Create(("Id", typeof(long)))
                 .AddRow((long)22)
                 .Build();
 
