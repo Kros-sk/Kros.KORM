@@ -319,5 +319,12 @@ namespace Kros.KORM.Query
         /// <param name="columnNames">The column names.</param>
         /// <returns></returns>
         IDbSet<T> WithCustomUpsertConditionColumns(params string[] columnNames);
+
+        /// <summary>
+        /// Ignores the value generators defined over table by
+        /// UseValueGenerator in <see cref="DatabaseConfigurationBase"/>.
+        /// </summary>
+        /// <returns></returns>
+        IDbSet<T> IgnoreValueGenerators();
     }
 }

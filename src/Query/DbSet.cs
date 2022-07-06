@@ -38,6 +38,7 @@ namespace Kros.KORM.Query
         private readonly TableInfo _tableInfo;
         private Lazy<Type> _primaryKeyPropertyType;
         private IEnumerable<string> _upsertConditionColumnNames;
+        private bool _ignoreValueGenerators = false;
 
         #endregion
 
@@ -232,6 +233,7 @@ namespace Kros.KORM.Query
             _deletedItems.Clear();
             _deletedItemsIds.Clear();
             _deleteExpressions.Clear();
+            _ignoreValueGenerators = false;
         }
 
         /// <inheritdoc />
@@ -419,9 +421,12 @@ namespace Kros.KORM.Query
                 using (DbCommand command = _commandGenerator.GetInsertCommand())
                 {
                     PrepareCommand(command);
+                    ValueGenerated valueGenerated = _ignoreValueGenerators
+                        ? ValueGenerated.Never
+                        : ValueGenerated.OnInsert;
                     foreach (T item in items)
                     {
-                        _commandGenerator.FillCommand(command, item, ValueGenerated.OnInsert);
+                        _commandGenerator.FillCommand(command, item, valueGenerated);
                         if (hasIdentity)
                         {
                             var id = await ExecuteScalarAsync(command, useAsync, cancellationToken);
@@ -520,9 +525,12 @@ namespace Kros.KORM.Query
                 using (DbCommand command = _commandGenerator.GetUpdateCommand())
                 {
                     PrepareCommand(command);
+                    ValueGenerated valueGenerated = _ignoreValueGenerators
+                        ? ValueGenerated.Never
+                        : ValueGenerated.OnInsert;
                     foreach (T item in items)
                     {
-                        _commandGenerator.FillCommand(command, item, ValueGenerated.OnUpdate);
+                        _commandGenerator.FillCommand(command, item, valueGenerated);
                         await ExecuteNonQueryAsync(command, useAsync, cancellationToken);
                     }
                 }
@@ -698,5 +706,13 @@ namespace Kros.KORM.Query
         }
 
         #endregion
+
+        /// <inheritdoc/>
+        public IDbSet<T> IgnoreValueGenerators()
+        {
+            _ignoreValueGenerators = true;
+
+            return this;
+        }
     }
 }
