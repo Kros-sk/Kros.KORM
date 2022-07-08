@@ -527,7 +527,7 @@ namespace Kros.KORM.Query
                     PrepareCommand(command);
                     ValueGenerated valueGenerated = _ignoreValueGenerators
                         ? ValueGenerated.Never
-                        : ValueGenerated.OnInsert;
+                        : ValueGenerated.OnUpdate;
                     foreach (T item in items)
                     {
                         _commandGenerator.FillCommand(command, item, valueGenerated);
