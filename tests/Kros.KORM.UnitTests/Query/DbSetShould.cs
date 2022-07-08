@@ -319,7 +319,8 @@ namespace Kros.KORM.UnitTests
             var valueGenerator = Substitute.For<AutoIncrementValueGenerator>();
 
             modelBuilder.Entity<Person>()
-                .Property(p => p.Id).UseValueGeneratorOnInsertOrUpdate(valueGenerator);
+                .Property(p => p.Id).UseValueGeneratorOnInsert(valueGenerator)
+                .Property(p => p.Name).UseValueGeneratorOnUpdate(valueGenerator);
 
             modelBuilder.Build(modelMapper);
 
@@ -348,7 +349,8 @@ namespace Kros.KORM.UnitTests
             var valueGenerator = Substitute.For<AutoIncrementValueGenerator>();
 
             modelBuilder.Entity<Person>()
-                .Property(p => p.Id).UseValueGeneratorOnInsertOrUpdate(valueGenerator);
+                .Property(p => p.Id).UseValueGeneratorOnInsert(valueGenerator)
+                .Property(p => p.Name).UseValueGeneratorOnUpdate(valueGenerator);
 
             modelBuilder.Build(modelMapper);
 
