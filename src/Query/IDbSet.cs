@@ -106,16 +106,18 @@ namespace Kros.KORM.Query
         /// <summary>
         /// Commits all pending changes to the database.
         /// </summary>
-        void CommitChanges();
+        /// <param name="ignoreValueGenerators">Ignore value generators defined in database configuration.</param>
+        void CommitChanges(bool ignoreValueGenerators = false);
 
         /// <summary>
         /// Asynchronously commits all pending changes to the database.
         /// </summary>
+        /// <param name="ignoreValueGenerators">Ignore value generators defined in database configuration.</param>
         /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
         /// <returns>
         /// A task that represents the asynchronous save operation.
         /// </returns>
-        Task CommitChangesAsync(CancellationToken cancellationToken = default);
+        Task CommitChangesAsync(bool ignoreValueGenerators = false, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// List of items in Added state.
@@ -319,12 +321,5 @@ namespace Kros.KORM.Query
         /// <param name="columnNames">The column names.</param>
         /// <returns></returns>
         IDbSet<T> WithCustomUpsertConditionColumns(params string[] columnNames);
-
-        /// <summary>
-        /// Ignores the value generators defined over table by
-        /// UseValueGenerator in <see cref="DatabaseConfigurationBase"/>.
-        /// </summary>
-        /// <returns></returns>
-        IDbSet<T> IgnoreValueGenerators();
     }
 }

@@ -38,7 +38,6 @@ namespace Kros.KORM.Query
         private readonly TableInfo _tableInfo;
         private Lazy<Type> _primaryKeyPropertyType;
         private IEnumerable<string> _upsertConditionColumnNames;
-        private bool _ignoreValueGenerators = false;
 
         #endregion
 
@@ -233,7 +232,6 @@ namespace Kros.KORM.Query
             _deletedItems.Clear();
             _deletedItemsIds.Clear();
             _deleteExpressions.Clear();
-            _ignoreValueGenerators = false;
         }
 
         /// <inheritdoc />
@@ -345,18 +343,19 @@ namespace Kros.KORM.Query
         /// <summary>
         /// Commits all pending changes to the database.
         /// </summary>
-        public void CommitChanges() => CommitChangesCoreAsync(false).GetAwaiter().GetResult();
+        public void CommitChanges(bool ignoreValueGenerators = false)
+            => CommitChangesCoreAsync(false, ignoreValueGenerators).GetAwaiter().GetResult();
 
         /// <inheritdoc/>
-        public Task CommitChangesAsync(CancellationToken cancellationToken = default)
-            => CommitChangesCoreAsync(true, cancellationToken);
+        public Task CommitChangesAsync(bool ignoreValueGenerators = false, CancellationToken cancellationToken = default)
+            => CommitChangesCoreAsync(true, ignoreValueGenerators, cancellationToken);
 
-        private async Task CommitChangesCoreAsync(bool useAsync, CancellationToken cancellationToken = default)
+        private async Task CommitChangesCoreAsync(bool useAsync, bool ignoreValueGenerators, CancellationToken cancellationToken = default)
         {
             await _provider.ExecuteInTransactionAsync(async () =>
             {
-                await CommitChangesAddedItemsAsync(_addedItems, useAsync, cancellationToken);
-                await CommitChangesEditedItemsAsync(_editedItems, useAsync, cancellationToken);
+                await CommitChangesAddedItemsAsync(_addedItems, useAsync, ignoreValueGenerators, cancellationToken);
+                await CommitChangesEditedItemsAsync(_editedItems, useAsync, ignoreValueGenerators, cancellationToken);
                 await CommitChangesUpsertedItemsAsync(_upsertedItems, useAsync, cancellationToken);
                 await CommitChangesDeletedItemsAsync(_deletedItems, useAsync, cancellationToken);
                 await CommitChangesDeletedItemsByIdAsync(_deletedItemsIds, useAsync, cancellationToken);
@@ -411,6 +410,7 @@ namespace Kros.KORM.Query
         private async Task CommitChangesAddedItemsAsync(
             HashSet<T> items,
             bool useAsync,
+            bool ignoreValueGenerators,
             CancellationToken cancellationToken = default)
         {
             if (items?.Count > 0)
@@ -421,7 +421,7 @@ namespace Kros.KORM.Query
                 using (DbCommand command = _commandGenerator.GetInsertCommand())
                 {
                     PrepareCommand(command);
-                    ValueGenerated valueGenerated = _ignoreValueGenerators
+                    ValueGenerated valueGenerated = ignoreValueGenerators
                         ? ValueGenerated.Never
                         : ValueGenerated.OnInsert;
                     foreach (T item in items)
@@ -518,6 +518,7 @@ namespace Kros.KORM.Query
         private async Task CommitChangesEditedItemsAsync(
             HashSet<T> items,
             bool useAsync,
+            bool ignoreValueGenerators,
             CancellationToken cancellationToken = default)
         {
             if (items.Count > 0)
@@ -525,7 +526,7 @@ namespace Kros.KORM.Query
                 using (DbCommand command = _commandGenerator.GetUpdateCommand())
                 {
                     PrepareCommand(command);
-                    ValueGenerated valueGenerated = _ignoreValueGenerators
+                    ValueGenerated valueGenerated = ignoreValueGenerators
                         ? ValueGenerated.Never
                         : ValueGenerated.OnUpdate;
                     foreach (T item in items)
@@ -706,13 +707,5 @@ namespace Kros.KORM.Query
         }
 
         #endregion
-
-        /// <inheritdoc/>
-        public IDbSet<T> IgnoreValueGenerators()
-        {
-            _ignoreValueGenerators = true;
-
-            return this;
-        }
     }
 }

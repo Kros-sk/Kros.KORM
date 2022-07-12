@@ -231,7 +231,7 @@ namespace Kros.KORM
 
             action(dbSet);
 
-            await dbSet.CommitChangesAsync(cancellationToken);
+            await dbSet.CommitChangesAsync(cancellationToken: cancellationToken);
         }
 
         private static async Task ProcessBulkOperationAsync<TEntity>(

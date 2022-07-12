@@ -314,65 +314,52 @@ namespace Kros.KORM.UnitTests
         [Fact]
         public void ValueGeneratorShouldNotBeCalledWhenIgnored()
         {
-            var modelBuilder = new ModelConfigurationBuilder();
             var modelMapper = new ConventionModelMapper();
-            var valueGenerator = Substitute.For<AutoIncrementValueGenerator>();
-
-            modelBuilder.Entity<Person>()
-                .Property(p => p.Id).UseValueGeneratorOnInsert(valueGenerator)
-                .Property(p => p.Name).UseValueGeneratorOnUpdate(valueGenerator);
-
-            modelBuilder.Build(modelMapper);
-
-            TableInfo tableInfo = modelMapper.GetTableInfo<Person>();
-
-            IDbSet<Person> dbSet = new DbSet<Person>(Substitute.For<ICommandGenerator<Person>>(),
-                                                     Substitute.For<IQueryProvider>(),
-                                                     Substitute.For<IQuery<Person>>(),
-                                                     tableInfo)
-            {
-                new Person() { Id = 1, Name = "A", Age = 1 },
-                new Person() { Id = 2, Name = "B", Age = 2 }
-            };
-            dbSet.IgnoreValueGenerators().Add(new Person() { Name = "C", Age = 3 });
-            dbSet.Edit(new Person() { Id = 2, Name = "B", Age = 2 });
-
-            dbSet.CommitChanges();
-            valueGenerator.Received(0).GetValue();
-        }
-
-        [Fact]
-        public void ValueGeneratorShouldBeCalledWhenNotIgnored()
-        {
-            var modelBuilder = new ModelConfigurationBuilder();
-            var modelMapper = new ConventionModelMapper();
-            var valueGenerator = Substitute.For<AutoIncrementValueGenerator>();
-
-            modelBuilder.Entity<Person>()
-                .Property(p => p.Id).UseValueGeneratorOnInsert(valueGenerator)
-                .Property(p => p.Name).UseValueGeneratorOnUpdate(valueGenerator);
-
-            modelBuilder.Build(modelMapper);
+            var ignoreValueGenerators = true;
 
             TableInfo tableInfo = modelMapper.GetTableInfo<Person>();
 
             var commandGenerator = Substitute.For<ICommandGenerator<Person>>();
             var command = Substitute.For<DbCommand>();
             commandGenerator.GetInsertCommand().Returns(command);
+            commandGenerator.GetUpdateCommand().Returns(command);
+            commandGenerator.GetDeleteCommand().Returns(command);
 
-            IDbSet<Person> dbSet = new DbSet<Person>(Substitute.For<ICommandGenerator<Person>>(),
-                                                     Substitute.For<IQueryProvider>(),
+            IDbSet<Person> dbSet = new DbSet<Person>(commandGenerator,
+                                                     new FakeProvider(),
                                                      Substitute.For<IQuery<Person>>(),
-                                                     tableInfo)
-            {
-                new Person() { Id = 1, Name = "A", Age = 1 },
-                new Person() { Id = 2, Name = "B", Age = 2 }
-            };
+                                                     tableInfo);
             dbSet.Add(new Person() { Name = "C", Age = 3 });
             dbSet.Edit(new Person() { Id = 2, Name = "B", Age = 2 });
+            dbSet.CommitChanges(ignoreValueGenerators);
+            commandGenerator.Received(2).FillCommand(Arg.Any<DbCommand>(), Arg.Any<Person>(), Arg.Is(ValueGenerated.Never));
+        }
 
-            dbSet.CommitChanges();
-            valueGenerator.Received(2).GetValue();
+        [Fact]
+        public void ValueGeneratorShouldBeCalledWhenNotIgnored()
+        {
+            var modelMapper = new ConventionModelMapper();
+            var ignoreValueGenerators = false;
+
+            TableInfo tableInfo = modelMapper.GetTableInfo<Person>();
+
+            var commandGenerator = Substitute.For<ICommandGenerator<Person>>();
+            var command = Substitute.For<DbCommand>();
+            commandGenerator.GetInsertCommand().Returns(command);
+            commandGenerator.GetUpdateCommand().Returns(command);
+            commandGenerator.GetDeleteCommand().Returns(command);
+
+            IDbSet<Person> dbSet = new DbSet<Person>(commandGenerator,
+                                                     new FakeProvider(),
+                                                     Substitute.For<IQuery<Person>>(),
+                                                     tableInfo);
+            dbSet.Add(new Person() { Name = "C", Age = 3 });
+            dbSet.Edit(new Person() { Id = 2, Name = "B", Age = 2 });
+            dbSet.CommitChanges(ignoreValueGenerators);
+            commandGenerator.Received(1).FillCommand(Arg.Any<DbCommand>(), Arg.Any<Person>(), Arg.Is(ValueGenerated.OnInsert));
+            commandGenerator.Received(1).FillCommand(Arg.Any<DbCommand>(), Arg.Any<Person>(), Arg.Is(ValueGenerated.OnUpdate));
+
+            dbSet.CommitChanges(ignoreValueGenerators);
         }
 
         #endregion
@@ -384,12 +371,6 @@ namespace Kros.KORM.UnitTests
             public int Id { get; set; }
             public string Name { get; set; }
             public int Age { get; set; }
-        }
-
-        public class AutoIncrementValueGenerator : IValueGenerator
-        {
-            public const int GeneratedValue = 123;
-            public object GetValue() => GeneratedValue;
         }
 
         private class FakeProvider : IQueryProvider
