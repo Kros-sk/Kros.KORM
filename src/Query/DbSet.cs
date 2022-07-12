@@ -347,7 +347,7 @@ namespace Kros.KORM.Query
             => CommitChangesCoreAsync(false, ignoreValueGenerators).GetAwaiter().GetResult();
 
         /// <inheritdoc/>
-        public Task CommitChangesAsync(bool ignoreValueGenerators = false, CancellationToken cancellationToken = default)
+        public Task CommitChangesAsync(CancellationToken cancellationToken = default, bool ignoreValueGenerators = false)
             => CommitChangesCoreAsync(true, ignoreValueGenerators, cancellationToken);
 
         private async Task CommitChangesCoreAsync(

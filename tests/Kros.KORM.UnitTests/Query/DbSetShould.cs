@@ -324,10 +324,11 @@ namespace Kros.KORM.UnitTests
             commandGenerator.GetInsertCommand().Returns(command);
             commandGenerator.GetUpdateCommand().Returns(command);
 
-            IDbSet<Person> dbSet = new DbSet<Person>(commandGenerator,
-                                                     new FakeProvider(),
-                                                     Substitute.For<IQuery<Person>>(),
-                                                     tableInfo);
+            IDbSet<Person> dbSet = new DbSet<Person>(
+                commandGenerator,
+                new FakeProvider(),
+                Substitute.For<IQuery<Person>>(),
+                tableInfo);
             dbSet.Add(new Person() { Name = "C", Age = 3 });
             dbSet.Edit(new Person() { Id = 2, Name = "B", Age = 2 });
             dbSet.CommitChanges(ignoreValueGenerators);
@@ -348,10 +349,11 @@ namespace Kros.KORM.UnitTests
             commandGenerator.GetInsertCommand().Returns(command);
             commandGenerator.GetUpdateCommand().Returns(command);
 
-            IDbSet<Person> dbSet = new DbSet<Person>(commandGenerator,
-                                                     new FakeProvider(),
-                                                     Substitute.For<IQuery<Person>>(),
-                                                     tableInfo);
+            IDbSet<Person> dbSet = new DbSet<Person>(
+                commandGenerator,
+                new FakeProvider(),
+                Substitute.For<IQuery<Person>>(),
+                tableInfo);
             dbSet.Add(new Person() { Name = "C", Age = 3 });
             dbSet.Edit(new Person() { Id = 2, Name = "B", Age = 2 });
             dbSet.CommitChanges(ignoreValueGenerators);
