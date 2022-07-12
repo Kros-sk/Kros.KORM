@@ -404,7 +404,7 @@ For using value generators you can use these three methods in `DatabaseConfigura
 If you need to perfrom a database operation without the use of value generators you can do so by passing parameter `ignoreValueGenerators` in either of the commit functions. This will ensure that all operations within commited transaction will be completed without supplementing values from value generators.
 
 ```Csharp
-_dbSet.CommitChanges(ignoreValueGenerators = true);
+_dbSet.CommitChanges(ignoreValueGenerators: true);
 ```
 
 ### OnAfterMaterialize

@@ -112,12 +112,12 @@ namespace Kros.KORM.Query
         /// <summary>
         /// Asynchronously commits all pending changes to the database.
         /// </summary>
-        /// <param name="ignoreValueGenerators">Ignore value generators defined in database configuration.</param>
         /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+        /// <param name="ignoreValueGenerators">Ignore value generators defined in database configuration.</param>
         /// <returns>
         /// A task that represents the asynchronous save operation.
         /// </returns>
-        Task CommitChangesAsync(bool ignoreValueGenerators = false, CancellationToken cancellationToken = default);
+        Task CommitChangesAsync(CancellationToken cancellationToken = default, bool ignoreValueGenerators = false);
 
         /// <summary>
         /// List of items in Added state.

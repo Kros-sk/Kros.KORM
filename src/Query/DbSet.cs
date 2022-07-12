@@ -350,7 +350,10 @@ namespace Kros.KORM.Query
         public Task CommitChangesAsync(bool ignoreValueGenerators = false, CancellationToken cancellationToken = default)
             => CommitChangesCoreAsync(true, ignoreValueGenerators, cancellationToken);
 
-        private async Task CommitChangesCoreAsync(bool useAsync, bool ignoreValueGenerators, CancellationToken cancellationToken = default)
+        private async Task CommitChangesCoreAsync(
+            bool useAsync,
+            bool ignoreValueGenerators,
+            CancellationToken cancellationToken = default)
         {
             await _provider.ExecuteInTransactionAsync(async () =>
             {

@@ -323,7 +323,6 @@ namespace Kros.KORM.UnitTests
             var command = Substitute.For<DbCommand>();
             commandGenerator.GetInsertCommand().Returns(command);
             commandGenerator.GetUpdateCommand().Returns(command);
-            commandGenerator.GetDeleteCommand().Returns(command);
 
             IDbSet<Person> dbSet = new DbSet<Person>(commandGenerator,
                                                      new FakeProvider(),
@@ -332,6 +331,7 @@ namespace Kros.KORM.UnitTests
             dbSet.Add(new Person() { Name = "C", Age = 3 });
             dbSet.Edit(new Person() { Id = 2, Name = "B", Age = 2 });
             dbSet.CommitChanges(ignoreValueGenerators);
+
             commandGenerator.Received(2).FillCommand(Arg.Any<DbCommand>(), Arg.Any<Person>(), Arg.Is(ValueGenerated.Never));
         }
 
@@ -347,7 +347,6 @@ namespace Kros.KORM.UnitTests
             var command = Substitute.For<DbCommand>();
             commandGenerator.GetInsertCommand().Returns(command);
             commandGenerator.GetUpdateCommand().Returns(command);
-            commandGenerator.GetDeleteCommand().Returns(command);
 
             IDbSet<Person> dbSet = new DbSet<Person>(commandGenerator,
                                                      new FakeProvider(),
@@ -356,10 +355,9 @@ namespace Kros.KORM.UnitTests
             dbSet.Add(new Person() { Name = "C", Age = 3 });
             dbSet.Edit(new Person() { Id = 2, Name = "B", Age = 2 });
             dbSet.CommitChanges(ignoreValueGenerators);
+
             commandGenerator.Received(1).FillCommand(Arg.Any<DbCommand>(), Arg.Any<Person>(), Arg.Is(ValueGenerated.OnInsert));
             commandGenerator.Received(1).FillCommand(Arg.Any<DbCommand>(), Arg.Any<Person>(), Arg.Is(ValueGenerated.OnUpdate));
-
-            dbSet.CommitChanges(ignoreValueGenerators);
         }
 
         #endregion
