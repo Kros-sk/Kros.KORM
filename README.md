@@ -399,6 +399,14 @@ For using value generators you can use these three methods in `DatabaseConfigura
 
 - __CurrentTimeValueGenerator__ - Generator generates date and time that are set to the current Coordinated Universal Time (UTC).
 
+#### Ignoring value generators
+
+If you need to perfrom a database operation without the use of value generators you can do so by passing parameter `ignoreValueGenerators` in either of the commit methods. This will ensure that all operations within commited transaction will be completed without supplementing values from value generators.
+
+```Csharp
+_dbSet.CommitChanges(ignoreValueGenerators: true);
+```
+
 ### OnAfterMaterialize
 
 If you want to do some special action right after materialisation is done (for example to do some calculations) or you want to get some other values from source reader, that can not by processed automatically, your class should implement interface [IMaterialize](https://kros-sk.github.io/Kros.Libs.Documentation/api/Kros.KORM.Materializer.IMaterialize.html).
