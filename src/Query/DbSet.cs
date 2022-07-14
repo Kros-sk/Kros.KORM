@@ -424,12 +424,9 @@ namespace Kros.KORM.Query
                 using (DbCommand command = _commandGenerator.GetInsertCommand())
                 {
                     PrepareCommand(command);
-                    ValueGenerated valueGenerated = ignoreValueGenerators
-                        ? ValueGenerated.Never
-                        : ValueGenerated.OnInsert;
                     foreach (T item in items)
                     {
-                        _commandGenerator.FillCommand(command, item, valueGenerated);
+                        _commandGenerator.FillCommand(command, item, ValueGenerated.OnInsert, ignoreValueGenerators);
                         if (hasIdentity)
                         {
                             var id = await ExecuteScalarAsync(command, useAsync, cancellationToken);

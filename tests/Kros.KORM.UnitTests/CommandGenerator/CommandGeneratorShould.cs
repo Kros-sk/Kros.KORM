@@ -195,7 +195,7 @@ SELECT * FROM @OutputTable;";
             IQuery<Foo> query = CreateFooQuery();
             query.Select(p => new { p.Plat, p.KrstneMeno, p.PropertyGuid, p.PropertyEnum, p.PropertyEnumConv });
 
-            var generator = new CommandGenerator<Foo>(GetFooTableInfo(false), provider, query);
+            var generator = new CommandGenerator<Foo>(GetFooTableInfo(false, false), provider, query);
 
             Action action = () =>
             {
@@ -213,7 +213,7 @@ SELECT * FROM @OutputTable;";
             IQuery<Foo> query = CreateFooQuery();
             query.Select(p => new { p.Plat, p.KrstneMeno, p.PropertyGuid, p.PropertyEnum, p.PropertyEnumConv });
 
-            var generator = new CommandGenerator<Foo>(GetFooTableInfo(false), provider, query);
+            var generator = new CommandGenerator<Foo>(GetFooTableInfo(false, false), provider, query);
 
             Action action = () =>
             {
@@ -231,7 +231,7 @@ SELECT * FROM @OutputTable;";
             IQuery<Foo> query = CreateFooQuery();
             query.Select(p => new { p.Plat, p.KrstneMeno, p.PropertyGuid, p.PropertyEnum, p.PropertyEnumConv });
 
-            var generator = new CommandGenerator<Foo>(GetFooTableInfo(false), provider, query);
+            var generator = new CommandGenerator<Foo>(GetFooTableInfo(false, false), provider, query);
             Action action = () =>
             {
                 DbCommand update = generator.GetDeleteCommand();
@@ -269,6 +269,58 @@ SELECT * FROM @OutputTable;";
             var convertedValue = commandGenerator.GetColumnValue(idColumn, dto, ValueGenerated.Never);
 
             convertedValue.Should().Be(AutoIncrementValueGenerator.GeneratedValue);
+        }
+
+        [Fact]
+        public void CommandShouldContainGeneratedValueWhenNotIgnored()
+        {
+            var item = new Foo
+            {
+                PropertyValueGenerator = 552
+            };
+
+            KORM.Query.IQueryProvider provider = Substitute.For<KORM.Query.IQueryProvider>();
+            provider.GetCommandForCurrentTransaction().Returns(new SqlCommand());
+
+            IQuery<Foo> query = CreateFooQuery();
+            query.Select(p => new { p.PropertyValueGenerator });
+
+            var generator = new CommandGenerator<Foo>(GetFooTableInfo(true), provider, query);
+
+            DbCommand insert = generator.GetInsertCommand();
+            DbCommand update = generator.GetUpdateCommand();
+
+            generator.FillCommand(insert, item, ValueGenerated.OnInsert);
+            insert.Parameters["@PropertyValueGenerator"].Value.Should().Be(123);
+
+            generator.FillCommand(update, item, ValueGenerated.OnUpdate);
+            update.Parameters["@PropertyValueGenerator"].Value.Should().Be(123);
+        }
+
+        [Fact]
+        public void CommandShouldNotContainGeneratedValueWhenIgnored()
+        {
+            var item = new Foo
+            {
+                PropertyValueGenerator = 552
+            };
+
+            KORM.Query.IQueryProvider provider = Substitute.For<KORM.Query.IQueryProvider>();
+            provider.GetCommandForCurrentTransaction().Returns(new SqlCommand());
+
+            IQuery<Foo> query = CreateFooQuery();
+            query.Select(p => new { p.PropertyValueGenerator });
+
+            var generator = new CommandGenerator<Foo>(GetFooTableInfo(true), provider, query);
+
+            DbCommand insert = generator.GetInsertCommand();
+            DbCommand update = generator.GetUpdateCommand();
+
+            generator.FillCommand(insert, item, ValueGenerated.OnInsert, true);
+            insert.Parameters["@PropertyValueGenerator"].Value.Should().Be(552);
+
+            generator.FillCommand(update, item, ValueGenerated.OnUpdate, true);
+            update.Parameters["@PropertyValueGenerator"].Value.Should().Be(552);
         }
 
         #endregion
@@ -324,9 +376,9 @@ SELECT * FROM @OutputTable;";
             return query;
         }
 
-        private TableInfo GetFooTableInfo() => GetFooTableInfo(true);
+        private TableInfo GetFooTableInfo(bool isValueGeneratedOnInsertOrUpdate = false) => GetFooTableInfo(true, isValueGeneratedOnInsertOrUpdate);
 
-        private TableInfo GetFooTableInfo(bool withIdRow)
+        private TableInfo GetFooTableInfo(bool withIdRow, bool isValueGeneratedOnInsertOrUpdate)
         {
             var columns = new List<ColumnInfo>() {
                 new ColumnInfo(){ Name = "FirstName", PropertyInfo = GetPropertyInfo<Foo>("KrstneMeno")},
@@ -342,7 +394,7 @@ SELECT * FROM @OutputTable;";
                     Name = "PropertyValueGenerator",
                     PropertyInfo = GetPropertyInfo<Foo>("PropertyValueGenerator"),
                     ValueGenerator = new AutoIncrementValueGenerator(),
-                    ValueGenerated = ValueGenerated.OnUpdate
+                    ValueGenerated = isValueGeneratedOnInsertOrUpdate ? ValueGenerated.OnInsertOrUpdate : ValueGenerated.OnUpdate
                 }
             };
 
@@ -444,7 +496,7 @@ SELECT * FROM @OutputTable;";
             public object ConvertBack(object value) => value is null ? "NULL" : value;
         }
 
-        private class Foo
+        internal class Foo
         {
             [Alias("IdRow")]
             [Key()]
@@ -496,7 +548,7 @@ SELECT * FROM @OutputTable;";
             public int FK2 { get; set; }
         }
 
-        private enum TestEnum
+        internal enum TestEnum
         {
             Value1 = 1,
             Value2 = 2,
