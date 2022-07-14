@@ -310,6 +310,7 @@ namespace Kros.KORM.UnitTests
             yield return new object[] { new List<object>() { 1, 2, 3, true }, true };
             yield return new object[] { new List<object>() { 1, 2, 3, 4 }, false };
         }
+
         #endregion
 
         #region Test classes
