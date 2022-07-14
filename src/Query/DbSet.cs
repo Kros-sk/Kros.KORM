@@ -526,12 +526,9 @@ namespace Kros.KORM.Query
                 using (DbCommand command = _commandGenerator.GetUpdateCommand())
                 {
                     PrepareCommand(command);
-                    ValueGenerated valueGenerated = ignoreValueGenerators
-                        ? ValueGenerated.Never
-                        : ValueGenerated.OnUpdate;
                     foreach (T item in items)
                     {
-                        _commandGenerator.FillCommand(command, item, valueGenerated);
+                        _commandGenerator.FillCommand(command, item, ValueGenerated.OnUpdate, ignoreValueGenerators);
                         await ExecuteNonQueryAsync(command, useAsync, cancellationToken);
                     }
                 }
