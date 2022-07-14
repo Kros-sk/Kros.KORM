@@ -496,7 +496,7 @@ SELECT * FROM @OutputTable;";
             public object ConvertBack(object value) => value is null ? "NULL" : value;
         }
 
-        internal class Foo
+        private class Foo
         {
             [Alias("IdRow")]
             [Key()]
@@ -548,7 +548,7 @@ SELECT * FROM @OutputTable;";
             public int FK2 { get; set; }
         }
 
-        internal enum TestEnum
+        private enum TestEnum
         {
             Value1 = 1,
             Value2 = 2,
