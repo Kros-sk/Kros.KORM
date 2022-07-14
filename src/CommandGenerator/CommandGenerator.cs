@@ -240,7 +240,7 @@ SELECT * FROM @OutputTable;";
                 {
                     DbParameter parameter = command.Parameters[paramName];
                     if (!ignoreValueGenerators)
-                    { 
+                    {
                         SetColumnValueFromValueGenerator(colInfo, item, valueGenerated);
                     }
                     object val = GetColumnValue(colInfo, item, valueGenerated);

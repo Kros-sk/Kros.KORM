@@ -195,7 +195,7 @@ SELECT * FROM @OutputTable;";
             IQuery<Foo> query = CreateFooQuery();
             query.Select(p => new { p.Plat, p.KrstneMeno, p.PropertyGuid, p.PropertyEnum, p.PropertyEnumConv });
 
-            var generator = new CommandGenerator<Foo>(GetFooTableInfo(false, false), provider, query);
+            var generator = new CommandGenerator<Foo>(GetFooTableInfo(false), provider, query);
 
             Action action = () =>
             {
@@ -213,7 +213,7 @@ SELECT * FROM @OutputTable;";
             IQuery<Foo> query = CreateFooQuery();
             query.Select(p => new { p.Plat, p.KrstneMeno, p.PropertyGuid, p.PropertyEnum, p.PropertyEnumConv });
 
-            var generator = new CommandGenerator<Foo>(GetFooTableInfo(false, false), provider, query);
+            var generator = new CommandGenerator<Foo>(GetFooTableInfo(false), provider, query);
 
             Action action = () =>
             {
@@ -231,7 +231,7 @@ SELECT * FROM @OutputTable;";
             IQuery<Foo> query = CreateFooQuery();
             query.Select(p => new { p.Plat, p.KrstneMeno, p.PropertyGuid, p.PropertyEnum, p.PropertyEnumConv });
 
-            var generator = new CommandGenerator<Foo>(GetFooTableInfo(false, false), provider, query);
+            var generator = new CommandGenerator<Foo>(GetFooTableInfo(false), provider, query);
             Action action = () =>
             {
                 DbCommand update = generator.GetDeleteCommand();
@@ -285,7 +285,7 @@ SELECT * FROM @OutputTable;";
             IQuery<Foo> query = CreateFooQuery();
             query.Select(p => new { p.PropertyValueGenerator });
 
-            var generator = new CommandGenerator<Foo>(GetFooTableInfo(true), provider, query);
+            var generator = new CommandGenerator<Foo>(GetFooTableInfo(ValueGenerated.OnInsertOrUpdate), provider, query);
 
             DbCommand insert = generator.GetInsertCommand();
             DbCommand update = generator.GetUpdateCommand();
@@ -311,7 +311,7 @@ SELECT * FROM @OutputTable;";
             IQuery<Foo> query = CreateFooQuery();
             query.Select(p => new { p.PropertyValueGenerator });
 
-            var generator = new CommandGenerator<Foo>(GetFooTableInfo(true), provider, query);
+            var generator = new CommandGenerator<Foo>(GetFooTableInfo(ValueGenerated.OnInsertOrUpdate), provider, query);
 
             DbCommand insert = generator.GetInsertCommand();
             DbCommand update = generator.GetUpdateCommand();
@@ -376,9 +376,13 @@ SELECT * FROM @OutputTable;";
             return query;
         }
 
-        private TableInfo GetFooTableInfo(bool isValueGeneratedOnInsertOrUpdate = false) => GetFooTableInfo(true, isValueGeneratedOnInsertOrUpdate);
+        private TableInfo GetFooTableInfo(
+            ValueGenerated valueGenerated = ValueGenerated.OnUpdate)
+            => GetFooTableInfo(true, valueGenerated);
 
-        private TableInfo GetFooTableInfo(bool withIdRow, bool isValueGeneratedOnInsertOrUpdate)
+        private TableInfo GetFooTableInfo(
+            bool withIdRow,
+            ValueGenerated valueGenerated = ValueGenerated.OnUpdate)
         {
             var columns = new List<ColumnInfo>() {
                 new ColumnInfo(){ Name = "FirstName", PropertyInfo = GetPropertyInfo<Foo>("KrstneMeno")},
@@ -394,7 +398,7 @@ SELECT * FROM @OutputTable;";
                     Name = "PropertyValueGenerator",
                     PropertyInfo = GetPropertyInfo<Foo>("PropertyValueGenerator"),
                     ValueGenerator = new AutoIncrementValueGenerator(),
-                    ValueGenerated = isValueGeneratedOnInsertOrUpdate ? ValueGenerated.OnInsertOrUpdate : ValueGenerated.OnUpdate
+                    ValueGenerated = valueGenerated
                 }
             };
 
