@@ -311,57 +311,6 @@ namespace Kros.KORM.UnitTests
             yield return new object[] { new List<object>() { 1, 2, 3, 4 }, false };
         }
 
-        [Fact]
-        public void ValueGeneratorShouldNotBeCalledWhenIgnored()
-        {
-            var modelMapper = new ConventionModelMapper();
-            var ignoreValueGenerators = true;
-
-            TableInfo tableInfo = modelMapper.GetTableInfo<Person>();
-
-            var commandGenerator = Substitute.For<ICommandGenerator<Person>>();
-            var command = Substitute.For<DbCommand>();
-            commandGenerator.GetInsertCommand().Returns(command);
-            commandGenerator.GetUpdateCommand().Returns(command);
-
-            IDbSet<Person> dbSet = new DbSet<Person>(
-                commandGenerator,
-                new FakeProvider(),
-                Substitute.For<IQuery<Person>>(),
-                tableInfo);
-            dbSet.Add(new Person() { Name = "C", Age = 3 });
-            dbSet.Edit(new Person() { Id = 2, Name = "B", Age = 2 });
-            dbSet.CommitChanges(ignoreValueGenerators);
-
-            commandGenerator.Received(2).FillCommand(Arg.Any<DbCommand>(), Arg.Any<Person>(), Arg.Is(ValueGenerated.Never));
-        }
-
-        [Fact]
-        public void ValueGeneratorShouldBeCalledWhenNotIgnored()
-        {
-            var modelMapper = new ConventionModelMapper();
-            var ignoreValueGenerators = false;
-
-            TableInfo tableInfo = modelMapper.GetTableInfo<Person>();
-
-            var commandGenerator = Substitute.For<ICommandGenerator<Person>>();
-            var command = Substitute.For<DbCommand>();
-            commandGenerator.GetInsertCommand().Returns(command);
-            commandGenerator.GetUpdateCommand().Returns(command);
-
-            IDbSet<Person> dbSet = new DbSet<Person>(
-                commandGenerator,
-                new FakeProvider(),
-                Substitute.For<IQuery<Person>>(),
-                tableInfo);
-            dbSet.Add(new Person() { Name = "C", Age = 3 });
-            dbSet.Edit(new Person() { Id = 2, Name = "B", Age = 2 });
-            dbSet.CommitChanges(ignoreValueGenerators);
-
-            commandGenerator.Received(1).FillCommand(Arg.Any<DbCommand>(), Arg.Any<Person>(), Arg.Is(ValueGenerated.OnInsert));
-            commandGenerator.Received(1).FillCommand(Arg.Any<DbCommand>(), Arg.Any<Person>(), Arg.Is(ValueGenerated.OnUpdate));
-        }
-
         #endregion
 
         #region Test classes
