@@ -122,7 +122,7 @@ namespace Kros.KORM.UnitTests.Query.Sql
             AreSame(provider.LastExpression.Expression, new QueryInfo(expectedSql), parameters);
         }
 
-        private bool CompareLimitOffsetDataReaders(LimitOffsetDataReader reader1, LimitOffsetDataReader reader2)
+        private static bool CompareLimitOffsetDataReaders(LimitOffsetDataReader reader1, LimitOffsetDataReader reader2)
         {
             if (reader1 == null)
             {
@@ -175,7 +175,7 @@ namespace Kros.KORM.UnitTests.Query.Sql
             }
         }
 
-        public class FakeQueryProvider : QueryProvider
+        internal class FakeQueryProvider : QueryProvider
         {
             private readonly DbConnection _sqlConnection;
             private readonly ISqlExpressionVisitorFactory _visitorFactory;
@@ -222,7 +222,7 @@ namespace Kros.KORM.UnitTests.Query.Sql
             }
         }
 
-        public class FakeQueryProviderFactory : IQueryProviderFactory
+        internal class FakeQueryProviderFactory : IQueryProviderFactory
         {
             public KORM.Query.IQueryProvider Create(DbConnection connection, IModelBuilder modelBuilder, IDatabaseMapper databaseMapper)
                 => new FakeQueryProvider(connection, new FakeSqlServerSqlExpressionVisitorFactory(databaseMapper), databaseMapper);
@@ -233,7 +233,7 @@ namespace Kros.KORM.UnitTests.Query.Sql
             }
         }
 
-        public class FakeSqlServerSqlExpressionVisitorFactory : ISqlExpressionVisitorFactory
+        private class FakeSqlServerSqlExpressionVisitorFactory : ISqlExpressionVisitorFactory
         {
             private readonly IDatabaseMapper _databaseMapper;
 
@@ -250,7 +250,7 @@ namespace Kros.KORM.UnitTests.Query.Sql
                 => new SqlServer2012SqlGenerator(_databaseMapper);
         }
 
-        public class DatabaseConfiguration : DatabaseConfigurationBase
+        private class DatabaseConfiguration : DatabaseConfigurationBase
         {
             private readonly Delimiters _quota;
 

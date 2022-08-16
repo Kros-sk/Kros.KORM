@@ -27,8 +27,7 @@ namespace Kros.KORM
             Action<IDatabase, string> action,
             int commandTimeout = TransactionHelper.TIMEOUT_DEFAULT)
         {
-            using ITransaction transaction = database.BeginTransaction();
-            transaction.CommandTimeout = commandTimeout;
+            using ITransaction transaction = BeginTransaction(database, commandTimeout);
 
             action(database, CreateTempTable(database, values));
 
@@ -51,8 +50,7 @@ namespace Kros.KORM
             Func<IDatabase, string, Task> actionAsync,
             int commandTimeout = TransactionHelper.TIMEOUT_DEFAULT)
         {
-            using ITransaction transaction = database.BeginTransaction();
-            transaction.CommandTimeout = commandTimeout;
+            using ITransaction transaction = BeginTransaction(database, commandTimeout);
 
             await actionAsync(database, CreateTempTable(database, values));
 
@@ -76,8 +74,7 @@ namespace Kros.KORM
             Action<IDatabase, string> action,
             int commandTimeout = TransactionHelper.TIMEOUT_DEFAULT)
         {
-            using ITransaction transaction = database.BeginTransaction();
-            transaction.CommandTimeout = commandTimeout;
+            using ITransaction transaction = BeginTransaction(database, commandTimeout);
 
             action(database, CreateTempTable(database, values));
 
@@ -101,8 +98,7 @@ namespace Kros.KORM
             Func<IDatabase, string, Task> actionAsync,
             int commandTimeout = TransactionHelper.TIMEOUT_DEFAULT)
         {
-            using ITransaction transaction = database.BeginTransaction();
-            transaction.CommandTimeout = commandTimeout;
+            using ITransaction transaction = BeginTransaction(database, commandTimeout);
 
             await actionAsync(database, CreateTempTable(database, values));
 
@@ -127,8 +123,7 @@ namespace Kros.KORM
             Func<IDatabase, string, T> action,
             int commandTimeout = TransactionHelper.TIMEOUT_DEFAULT)
         {
-            using ITransaction transaction = database.BeginTransaction();
-            transaction.CommandTimeout = commandTimeout;
+            using ITransaction transaction = BeginTransaction(database, commandTimeout);
 
             T ret = action(database, CreateTempTable(database, values));
 
@@ -155,8 +150,7 @@ namespace Kros.KORM
             Func<IDatabase, string, Task<T>> actionAsync,
             int commandTimeout = TransactionHelper.TIMEOUT_DEFAULT)
         {
-            using ITransaction transaction = database.BeginTransaction();
-            transaction.CommandTimeout = commandTimeout;
+            using ITransaction transaction = BeginTransaction(database, commandTimeout);
 
             T ret = await actionAsync(database, CreateTempTable(database, values));
 
@@ -184,8 +178,7 @@ namespace Kros.KORM
             Func<IDatabase, string, T> action,
             int commandTimeout = TransactionHelper.TIMEOUT_DEFAULT)
         {
-            using ITransaction transaction = database.BeginTransaction();
-            transaction.CommandTimeout = commandTimeout;
+            using ITransaction transaction = BeginTransaction(database, commandTimeout);
 
             T ret = action(database, CreateTempTable(database, values));
 
@@ -213,8 +206,7 @@ namespace Kros.KORM
             Func<IDatabase, string, Task<T>> actionAsync,
             int commandTimeout = TransactionHelper.TIMEOUT_DEFAULT)
         {
-            using ITransaction transaction = database.BeginTransaction();
-            transaction.CommandTimeout = commandTimeout;
+            using ITransaction transaction = BeginTransaction(database, commandTimeout);
 
             T ret = await actionAsync(database, CreateTempTable(database, values));
 
@@ -298,6 +290,18 @@ namespace Kros.KORM
 
             using var reader = new EnumerableDataReader<KeyValuePair<TKey, TValue>>(values, new string[] { "Key", "Value" });
             bulkInsert.Insert(reader);
+        }
+
+        private static ITransaction BeginTransaction(IDatabase database, int commandTimeout)
+        {
+            ITransaction transaction = database.BeginTransaction();
+
+            if (commandTimeout != TransactionHelper.TIMEOUT_DEFAULT)
+            {
+                transaction.CommandTimeout = commandTimeout;
+            }
+
+            return transaction;
         }
     }
 }

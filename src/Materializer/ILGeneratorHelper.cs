@@ -1,6 +1,5 @@
 ﻿using Kros.Extensions;
 using Kros.KORM.Converter;
-using Kros.KORM.Data;
 using Kros.KORM.Injection;
 using Kros.KORM.Metadata;
 using System;
@@ -13,158 +12,337 @@ namespace Kros.KORM.Materializer
 {
     internal static class ILGeneratorHelper
     {
-        private readonly static List<IConverter> _converters = new List<IConverter>();
-        private readonly static Dictionary<string, MethodInfo> _readerValueGetters = InitReaderValueGetters();
-        private readonly static MethodInfo _fnIsDBNull = typeof(IDataRecord).GetMethod(nameof(IDataReader.IsDBNull));
-        private readonly static MethodInfo _getValueMethodInfo =
+        private static readonly List<IConverter> _converters = new List<IConverter>();
+        private static readonly Dictionary<string, MethodInfo> _readerValueGetters = InitReaderValueGetters();
+        private static readonly MethodInfo _fnIsDBNull = typeof(IDataRecord).GetMethod(nameof(IDataReader.IsDBNull));
+        private static readonly MethodInfo _getValueMethodInfo =
             typeof(IDataRecord).GetMethod("GetValue", new Type[] { typeof(int) });
-        private readonly static FieldInfo _fldConverters = typeof(ILGeneratorHelper).GetField(nameof(_converters),
+        private static readonly FieldInfo _fldConverters = typeof(ILGeneratorHelper).GetField(nameof(_converters),
             BindingFlags.Static | BindingFlags.GetField | BindingFlags.NonPublic);
-        private readonly static MethodInfo _fnConvertersListGetItem = typeof(List<IConverter>).GetProperty("Item").GetGetMethod();
-        private readonly static MethodInfo _fnGetValue = typeof(IDataRecord).GetMethod("GetValue", new Type[] { typeof(int) });
-        private readonly static MethodInfo _fnConvert = typeof(IConverter).GetMethod("Convert");
-        private readonly static List<IInjector> _injectors = new List<IInjector>();
-        private readonly static FieldInfo _fldInjectors = typeof(ILGeneratorHelper).GetField(nameof(_injectors),
+        private static readonly MethodInfo _fnConvertersListGetItem = typeof(List<IConverter>).GetProperty("Item").GetGetMethod();
+        private static readonly MethodInfo _fnGetValue = typeof(IDataRecord).GetMethod("GetValue", new Type[] { typeof(int) });
+        private static readonly MethodInfo _fnConvert = typeof(IConverter).GetMethod("Convert");
+        private static readonly List<IInjector> _injectors = new List<IInjector>();
+        private static readonly FieldInfo _fldInjectors = typeof(ILGeneratorHelper).GetField(nameof(_injectors),
             BindingFlags.Static | BindingFlags.GetField | BindingFlags.NonPublic);
-        private readonly static MethodInfo _fnInjectorsListGetItem = typeof(List<IInjector>).GetProperty("Item").GetGetMethod();
-        private readonly static MethodInfo _fnInjectorMethodInfo =
+        private static readonly MethodInfo _fnInjectorsListGetItem = typeof(List<IInjector>).GetProperty("Item").GetGetMethod();
+        private static readonly MethodInfo _fnInjectorMethodInfo =
             typeof(IInjector).GetMethod(nameof(IInjector.GetValue), new Type[] { typeof(string) });
 
-        public static ILGenerator CallReaderMethod(
-            this ILGenerator iLGenerator,
+        [ThreadStatic]
+        public static Action<string> Logger;
+
+        private static void Log(string msg)
+        {
+            if (Logger is not null)
+            {
+                Logger(msg);
+            }
+        }
+
+        public static ILGenerator LogAndEmit(this ILGenerator ilGenerator, OpCode opCode)
+        {
+            Log(opCode.ToString());
+            ilGenerator.Emit(opCode);
+            return ilGenerator;
+        }
+
+        public static ILGenerator LogAndEmit(this ILGenerator ilGenerator, OpCode opCode, ConstructorInfo ctor)
+        {
+            Log($"{opCode} {ctor.DeclaringType.FullName}");
+            ilGenerator.Emit(opCode, ctor);
+            return ilGenerator;
+        }
+
+        public static ILGenerator LogAndEmit(this ILGenerator ilGenerator, OpCode opCode, MethodInfo method)
+        {
+            Log($"{opCode} {method.DeclaringType.FullName}.{method.Name}");
+            ilGenerator.Emit(opCode, method);
+            return ilGenerator;
+        }
+
+        public static ILGenerator LogAndEmit(this ILGenerator ilGenerator, OpCode opCode, FieldInfo field)
+        {
+            Log($"{opCode} {field.DeclaringType.FullName}.{field.Name}");
+            ilGenerator.Emit(opCode, field);
+            return ilGenerator;
+        }
+
+        public static ILGenerator LogAndEmit(this ILGenerator ilGenerator, OpCode opCode, Type type)
+        {
+            Log($"{opCode} {type.FullName}");
+            ilGenerator.Emit(opCode, type);
+            return ilGenerator;
+        }
+
+        public static ILGenerator LogAndEmit(this ILGenerator ilGenerator, OpCode opCode, Label label)
+        {
+            Log($"{opCode} label");
+            ilGenerator.Emit(opCode, label);
+            return ilGenerator;
+        }
+
+        public static ILGenerator LogAndEmit(this ILGenerator ilGenerator, OpCode opCode, string arg)
+        {
+            Log($"{opCode} {arg}");
+            ilGenerator.Emit(opCode, arg);
+            return ilGenerator;
+        }
+
+        public static ILGenerator LogAndEmit(this ILGenerator ilGenerator, OpCode opCode, int arg)
+        {
+            Log($"{opCode} {arg}");
+            ilGenerator.Emit(opCode, arg);
+            return ilGenerator;
+        }
+
+        public static ILGenerator LogAndEmit(this ILGenerator ilGenerator, OpCode opCode, double arg)
+        {
+            Log($"{opCode} {arg}");
+            ilGenerator.Emit(opCode, arg);
+            return ilGenerator;
+        }
+
+        public static ILGenerator LogAndEmit(this ILGenerator ilGenerator, OpCode opCode, float arg)
+        {
+            Log($"{opCode} {arg}");
+            ilGenerator.Emit(opCode, arg);
+            return ilGenerator;
+        }
+
+        public static void EmitFieldWithoutConverter(
+            this ILGenerator ilGenerator,
+            Type srcType,
+            Type propertyType,
+            int columnIndex)
+        {
+            // Emit: if (reader.IsDbNull(columnIndex)) {
+            Label labelIsNotDbNull = ilGenerator.CallReaderIsDbNull(columnIndex);
+            Label labelEnd = ilGenerator.DefineLabel();
+            ilGenerator.EmitSetNullValue(propertyType);
+            ilGenerator.LogAndEmit(OpCodes.Br_S, labelEnd);
+
+            // Emit: } else {
+            ilGenerator.MarkLabel(labelIsNotDbNull);
+            ilGenerator.CallReaderGetValueWithoutConverter(columnIndex, propertyType, srcType);
+
+            // Emit: }
+            ilGenerator.MarkLabel(labelEnd);
+        }
+
+        public static void EmitFieldWithConverter(
+            this ILGenerator ilGenerator,
+            IConverter converter,
+            Type propertyType,
+            int columnIndex)
+        {
+            // Emit: if (reader.IsDbNull(columnIndex)) {
+            Label labelIsNotDbNull = ilGenerator.CallReaderIsDbNull(columnIndex);
+            Label labelEnd = ilGenerator.DefineLabel();
+            ilGenerator.CallConverter(converter, propertyType, columnIndex, convertNullValue: true);
+            ilGenerator.LogAndEmit(OpCodes.Br_S, labelEnd);
+
+            // Emit: } else {
+            ilGenerator.MarkLabel(labelIsNotDbNull);
+            ilGenerator.CallConverter(converter, propertyType, columnIndex, convertNullValue: false);
+
+            // Emit: }
+            ilGenerator.MarkLabel(labelEnd);
+        }
+
+        private static ILGenerator CallReaderMethod(
+            this ILGenerator ilGenerator,
             int fieldIndex,
             MethodInfo methodInfo)
         {
-            iLGenerator.Emit(OpCodes.Ldarg_0);
-            iLGenerator.Emit(OpCodes.Ldc_I4, fieldIndex);
-            iLGenerator.Emit(methodInfo.IsVirtual ? OpCodes.Callvirt : OpCodes.Call, methodInfo);
+            ilGenerator.LogAndEmit(OpCodes.Ldarg_0);
+            ilGenerator.LogAndEmit(OpCodes.Ldc_I4, fieldIndex);
+            ilGenerator.LogAndEmit(methodInfo.IsVirtual ? OpCodes.Callvirt : OpCodes.Call, methodInfo);
 
-            return iLGenerator;
+            return ilGenerator;
         }
 
-        public static Label CallReaderIsDbNull(this ILGenerator iLGenerator, int fieldIndex)
+        private static Label CallReaderIsDbNull(this ILGenerator ilGenerator, int fieldIndex)
         {
-            iLGenerator.Emit(OpCodes.Ldarg_0);
-            iLGenerator.Emit(OpCodes.Ldc_I4, fieldIndex);
-            iLGenerator.Emit(OpCodes.Callvirt, _fnIsDBNull);
-            Label truePart = iLGenerator.DefineLabel();
-            iLGenerator.Emit(OpCodes.Brtrue_S, truePart);
+            ilGenerator.LogAndEmit(OpCodes.Ldarg_0);
+            ilGenerator.LogAndEmit(OpCodes.Ldc_I4, fieldIndex);
+            ilGenerator.LogAndEmit(OpCodes.Callvirt, _fnIsDBNull);
+            Label falsePart = ilGenerator.DefineLabel();
+            ilGenerator.LogAndEmit(OpCodes.Brfalse_S, falsePart);
 
-            iLGenerator.Emit(OpCodes.Dup);
-
-            return truePart;
+            return falsePart;
         }
 
         public static MethodInfo GetReaderValueGetter(this Type srcType, bool isNullable = false)
         {
             string name = isNullable ? GetNullableName(srcType.Name) : srcType.Name;
-
             return _readerValueGetters.ContainsKey(name) ? _readerValueGetters[name] : null;
         }
 
-        public static void CallReaderGetValueWithoutConverter(
-            this ILGenerator iLGenerator,
-            int fieldIndex,
-            ColumnInfo columnInfo,
-            Type srcType)
+        private static MethodInfo GetReaderValueGetter(Type propertyType, Type srcType, out bool castNeeded)
         {
-            MethodInfo valuegetter = srcType.GetReaderValueGetter(columnInfo.IsNullable);
+            Type nullableUnderlyingType = Nullable.GetUnderlyingType(propertyType);
+            MethodInfo valueGetter = srcType.GetReaderValueGetter(nullableUnderlyingType is not null);
 
-            bool castNeeded;
-            if (valuegetter != null
-                && (valuegetter.ReturnType == columnInfo.PropertyInfo.PropertyType
-                || valuegetter.ReturnType == Nullable.GetUnderlyingType(columnInfo.PropertyInfo.PropertyType)))
+            if (valueGetter != null
+                && (valueGetter.ReturnType == propertyType
+                || valueGetter.ReturnType == nullableUnderlyingType))
             {
                 castNeeded = false;
             }
-            else if (valuegetter is null
-                && ((srcType == columnInfo.PropertyInfo.PropertyType)
-                || (srcType == Nullable.GetUnderlyingType(columnInfo.PropertyInfo.PropertyType))))
+            else if (valueGetter is null
+                && ((srcType == propertyType)
+                || (srcType == nullableUnderlyingType)))
             {
-                valuegetter = _getValueMethodInfo;
+                valueGetter = _getValueMethodInfo;
                 castNeeded = true;
             }
             else
             {
                 throw new InvalidOperationException(
-                    Properties.Resources.CannotMaterializeSourceValue.Format(srcType, columnInfo.PropertyInfo.PropertyType));
+                    Properties.Resources.CannotMaterializeSourceValue.Format(srcType, propertyType));
             }
-            iLGenerator.CallReaderMethod(fieldIndex, valuegetter);
+            return valueGetter;
+        }
 
+        private static void CallReaderGetValueWithoutConverter(
+            this ILGenerator ilGenerator,
+            int fieldIndex,
+            Type propertyType,
+            Type srcType)
+        {
+            MethodInfo valueGetter = GetReaderValueGetter(propertyType, srcType, out bool castNeeded);
+            ilGenerator.CallReaderMethod(fieldIndex, valueGetter);
             if (castNeeded)
             {
-                EmitCastValue(iLGenerator, columnInfo, srcType);
+                EmitCastValue(ilGenerator, srcType, propertyType);
             }
         }
 
-        public static void CallReaderGetValueWithConverter(
-            this ILGenerator iLGenerator,
-            int fieldIndex,
+        private static void CallConverter(
+            this ILGenerator ilGenerator,
             IConverter converter,
-            ColumnInfo columnInfo)
+            Type propertyType,
+            int fieldIndex,
+            bool convertNullValue)
         {
             int converterIndex = _converters.Count;
             _converters.Add(converter);
 
-            iLGenerator.Emit(OpCodes.Ldsfld, _fldConverters);
-            iLGenerator.Emit(OpCodes.Ldc_I4, converterIndex);
-            iLGenerator.Emit(OpCodes.Callvirt, _fnConvertersListGetItem);
+            ilGenerator.LogAndEmit(OpCodes.Ldsfld, _fldConverters);
+            ilGenerator.LogAndEmit(OpCodes.Ldc_I4, converterIndex);
+            ilGenerator.LogAndEmit(OpCodes.Callvirt, _fnConvertersListGetItem);
 
-            iLGenerator.Emit(OpCodes.Ldarg_0);
-            iLGenerator.Emit(OpCodes.Ldc_I4, fieldIndex);
-            iLGenerator.Emit(OpCodes.Callvirt, _fnGetValue);
+            if (convertNullValue)
+            {
+                ilGenerator.LogAndEmit(OpCodes.Ldnull);
+            }
+            else
+            {
+                // Convert value from data reader.
+                ilGenerator.LogAndEmit(OpCodes.Ldarg_0);
+                ilGenerator.LogAndEmit(OpCodes.Ldc_I4, fieldIndex);
+                ilGenerator.LogAndEmit(OpCodes.Callvirt, _fnGetValue);
+            }
 
-            iLGenerator.Emit(OpCodes.Callvirt, _fnConvert);
-            iLGenerator.Emit(OpCodes.Unbox_Any, columnInfo.PropertyInfo.PropertyType);
+            ilGenerator.LogAndEmit(OpCodes.Callvirt, _fnConvert);
+            ilGenerator.LogAndEmit(OpCodes.Unbox_Any, propertyType);
         }
 
         public static void CallGetInjectedValue(
-            this ILGenerator iLGenerator,
+            this ILGenerator ilGenerator,
             IInjector injector,
             string propertyName,
             Type propertyType)
         {
             int injectorIndex = GetInjectorIndex(injector);
 
-            iLGenerator.Emit(OpCodes.Ldsfld, _fldInjectors);
-            iLGenerator.Emit(OpCodes.Ldc_I4, injectorIndex);
-            iLGenerator.Emit(OpCodes.Callvirt, _fnInjectorsListGetItem);
+            ilGenerator.LogAndEmit(OpCodes.Ldsfld, _fldInjectors);
+            ilGenerator.LogAndEmit(OpCodes.Ldc_I4, injectorIndex);
+            ilGenerator.LogAndEmit(OpCodes.Callvirt, _fnInjectorsListGetItem);
 
-            iLGenerator.Emit(OpCodes.Ldstr, propertyName);
-            iLGenerator.Emit(OpCodes.Callvirt, _fnInjectorMethodInfo);
+            ilGenerator.LogAndEmit(OpCodes.Ldstr, propertyName);
+            ilGenerator.LogAndEmit(OpCodes.Callvirt, _fnInjectorMethodInfo);
 
-            iLGenerator.Emit(OpCodes.Unbox_Any, propertyType);
+            ilGenerator.LogAndEmit(OpCodes.Unbox_Any, propertyType);
         }
 
         public static void CallOnAfterMaterialize(
-            this ILGenerator iLGenerator,
+            this ILGenerator ilGenerator,
             TableInfo tableInfo)
         {
             if (tableInfo.OnAfterMaterialize != null)
             {
-                iLGenerator.Emit(OpCodes.Dup);
-                iLGenerator.Emit(OpCodes.Ldarg_0);
+                ilGenerator.LogAndEmit(OpCodes.Ldloc_0);
+                ilGenerator.LogAndEmit(OpCodes.Ldarg_0);
                 if (tableInfo.OnAfterMaterialize.IsVirtual)
                 {
-                    iLGenerator.Emit(OpCodes.Callvirt, tableInfo.OnAfterMaterialize);
+                    ilGenerator.LogAndEmit(OpCodes.Callvirt, tableInfo.OnAfterMaterialize);
                 }
                 else
                 {
-                    iLGenerator.Emit(OpCodes.Call, tableInfo.OnAfterMaterialize);
+                    ilGenerator.LogAndEmit(OpCodes.Call, tableInfo.OnAfterMaterialize);
                 }
             }
         }
 
-        private static void EmitCastValue(ILGenerator iLGenerator, ColumnInfo columnInfo, Type srcType)
+        private static void EmitCastValue(ILGenerator ilGenerator, Type srcType, Type targetType)
         {
             if (srcType.IsValueType)
             {
-                iLGenerator.Emit(OpCodes.Unbox_Any, columnInfo.PropertyInfo.PropertyType);
+                ilGenerator.LogAndEmit(OpCodes.Unbox_Any, targetType);
             }
             else
             {
-                iLGenerator.Emit(OpCodes.Castclass, columnInfo.PropertyInfo.PropertyType);
+                ilGenerator.LogAndEmit(OpCodes.Castclass, targetType);
             }
+        }
+
+        private static void EmitSetNullValue(this ILGenerator ilGenerator, Type propertyType)
+        {
+            if (propertyType.IsPrimitive)
+            {
+                EmitSetDefaultValueForPrimitiveTypes(ilGenerator, propertyType);
+            }
+            else if (propertyType.IsValueType)
+            {
+                EmitSetDefaultValueForValueTypes(ilGenerator, propertyType);
+            }
+            else
+            {
+                // Reference types.
+                ilGenerator.LogAndEmit(OpCodes.Ldnull);
+            }
+        }
+
+        private static void EmitSetDefaultValueForPrimitiveTypes(this ILGenerator ilGenerator, Type propertyType)
+        {
+            if ((propertyType == typeof(long)) || (propertyType == typeof(ulong)))
+            {
+                ilGenerator.LogAndEmit(OpCodes.Ldc_I4_0);
+                ilGenerator.LogAndEmit(OpCodes.Conv_I8);
+            }
+            else if (propertyType == typeof(double))
+            {
+                ilGenerator.LogAndEmit(OpCodes.Ldc_R8, (double)default);
+            }
+            else if (propertyType == typeof(float))
+            {
+                ilGenerator.LogAndEmit(OpCodes.Ldc_R4, (float)default);
+            }
+            else
+            {
+                // Every other primitive type default is just 0.
+                ilGenerator.LogAndEmit(OpCodes.Ldc_I4_0);
+            }
+        }
+
+        private static void EmitSetDefaultValueForValueTypes(this ILGenerator ilGenerator, Type propertyType)
+        {
+            LocalBuilder local = ilGenerator.DeclareLocal(propertyType);
+            ilGenerator.LogAndEmit(OpCodes.Ldloca_S, local.LocalIndex);
+            ilGenerator.LogAndEmit(OpCodes.Initobj, local.LocalType);
+            ilGenerator.LogAndEmit(OpCodes.Ldloc_S, local.LocalIndex);
         }
 
         private static Dictionary<string, MethodInfo> InitReaderValueGetters()
@@ -175,7 +353,8 @@ namespace Kros.KORM.Materializer
                 => typeof(IDataRecord).GetMethod($"Get{typeName}", new Type[] { typeof(int) });
 
             MethodInfo CreateReaderNullableValueGetter(string typeName)
-                => typeof(DataReaderExtensions).GetMethod($"GetNullable{typeName}", new Type[] { typeof(IDataReader), typeof(int) });
+                => typeof(Kros.KORM.Data.DataReaderExtensions)
+                    .GetMethod($"GetNullable{typeName}", new Type[] { typeof(IDataReader), typeof(int) });
 
             void Add<T>()
             {
