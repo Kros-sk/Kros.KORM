@@ -286,11 +286,11 @@ namespace Kros.KORM.Query
                 try
                 {
                     await action();
-                    transaction.Commit();
+                    await transaction.CommitAsync();
                 }
                 catch
                 {
-                    transaction.Rollback();
+                    await transaction.RollbackAsync();
                     throw;
                 }
             }
