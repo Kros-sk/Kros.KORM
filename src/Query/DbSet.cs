@@ -365,7 +365,7 @@ namespace Kros.KORM.Query
                 await CommitChangesDeletedByConditionsAsync(_deleteExpressions, useAsync, cancellationToken);
 
                 Clear();
-            });
+            }, cancellationToken);
         }
 
         /// <summary>
