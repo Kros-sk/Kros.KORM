@@ -6,6 +6,7 @@ using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Kros.KORM.UnitTests.Integration
@@ -198,6 +199,40 @@ $@" CREATE PROCEDURE [dbo].[WaitForTwoSeconds] AS
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
+        public async Task ExplicitTransactionShould_CommitDataAfterOtherTransactionEndWithRollbackAsync(bool openConnection)
+        {
+            await DoTestWithConnectionAsync(openConnection, ExplicitTransactionCommitDataAfterOtherTransactionEndWithRollbackAsync, CreateDatabase);
+        }
+
+        private async Task ExplicitTransactionCommitDataAfterOtherTransactionEndWithRollbackAsync(TestDatabase korm)
+        {
+            using (var transaction = korm.BeginTransaction())
+            {
+                var dbSet = korm.Query<Invoice>().AsDbSet();
+
+                dbSet.Add(CreateTestData());
+                dbSet.CommitChanges();
+
+                await transaction.RollbackAsync();
+
+                DatabaseShouldBeEmpty(korm);
+            }
+            using (var transaction = korm.BeginTransaction())
+            {
+                var dbSet = korm.Query<Invoice>().AsDbSet();
+
+                dbSet.Add(CreateTestData());
+                dbSet.CommitChanges();
+
+                await transaction.CommitAsync();
+
+                DatabaseShouldContainInvoices(korm.ConnectionString, CreateTestData());
+            }
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
         public void ExplicitTransactionShould_RollbackData(bool openConnection)
         {
             DoTestWithConnection(openConnection, ExplicitTransactionRollbackData, CreateDatabase);
@@ -372,6 +407,30 @@ $@" CREATE PROCEDURE [dbo].[WaitForTwoSeconds] AS
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
+        public async Task ExplicitTransactionShould_KeepMasterConnectionStateWhenCommitWasCalledAsync(bool openConnection)
+        {
+            await DoTestWithConnectionAsync(openConnection, ExplicitTransactionCommitAsync, CreateDatabase);
+        }
+
+        private async Task ExplicitTransactionCommitAsync(TestDatabase database)
+        {
+            using (var korm = new Database(database.ConnectionString))
+            using (var transaction = korm.BeginTransaction())
+            {
+                var dbSet = korm.Query<Invoice>().AsDbSet();
+
+                dbSet.Add(CreateTestData());
+                dbSet.CommitChanges();
+
+                await transaction.CommitAsync();
+
+                DatabaseShouldContainInvoices(database.ConnectionString, CreateTestData());
+            }
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
         public void ExplicitTransactionShould_KeepMasterConnectionStateWhenRollbackWasCalled(bool openConnection)
         {
             DoTestWithConnection(openConnection, ExplicitTransactionRollback, CreateDatabase);
@@ -509,17 +568,34 @@ $@" CREATE PROCEDURE [dbo].[WaitForTwoSeconds] AS
 
         #region Helpers
 
-        private void DoTestWithConnection(
+        private static void DoTestWithConnection(
             bool openConnection,
             Action<TestDatabase> testAction,
             Func<TestDatabase> createDatabaseAction)
         {
-            using (var database = createDatabaseAction())
+            using TestDatabase database = createDatabaseAction();
+            if (openConnection)
             {
-                if (openConnection) database.Connection.Open();
-                testAction(database);
-                database.Connection.State.Should().Be(openConnection ? ConnectionState.Open : ConnectionState.Closed);
+                database.Connection.Open();
             }
+
+            testAction(database);
+            database.Connection.State.Should().Be(openConnection ? ConnectionState.Open : ConnectionState.Closed);
+        }
+
+        private static async Task DoTestWithConnectionAsync(
+            bool openConnection,
+            Func<TestDatabase, Task> testAction,
+            Func<TestDatabase> createDatabaseAction)
+        {
+            using TestDatabase database = createDatabaseAction();
+            if (openConnection)
+            {
+                database.Connection.Open();
+            }
+
+            await testAction(database);
+            database.Connection.State.Should().Be(openConnection ? ConnectionState.Open : ConnectionState.Closed);
         }
 
         private void DatabaseShouldContainInvoices(Database korm, IEnumerable<Invoice> expected)

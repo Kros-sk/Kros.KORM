@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Kros.KORM.Data
 {
@@ -37,19 +39,45 @@ namespace Kros.KORM.Data
             }
 
             public void Commit()
+                => OnCommit(false).GetAwaiter().GetResult();
+
+            public Task CommitAsync(CancellationToken cancellationToken = default)
+                => OnCommit(true, cancellationToken);
+
+            private async Task OnCommit(bool useAsync, CancellationToken cancellationToken = default)
             {
                 _wasCommitOrRollback = true;
                 if (_transactionHelper.CanCommitTransaction)
                 {
-                    _transaction.Value.Commit();
+                    if (useAsync)
+                    {
+                        await _transaction.Value.CommitAsync(cancellationToken);
+                    }
+                    else
+                    {
+                        _transaction.Value.Commit();
+                    }
                     _transactionHelper.EndTransaction(true);
                 }
             }
 
             public void Rollback()
+                => OnRollback(false).GetAwaiter().GetResult();
+
+            public Task RollbackAsync(CancellationToken cancellationToken = default)
+                => OnRollback(true, cancellationToken);
+
+            private async Task OnRollback(bool useAsync, CancellationToken cancellationToken = default)
             {
                 _wasCommitOrRollback = true;
-                _transaction.Value.Rollback();
+                if (useAsync)
+                {
+                    _transaction.Value.Rollback();
+                }
+                else
+                {
+                    await _transaction.Value.RollbackAsync(cancellationToken);
+                }
                 _transactionHelper.EndTransaction(false);
             }
 
@@ -103,6 +131,18 @@ namespace Kros.KORM.Data
             {
                 _transactionHelper.EndTransaction(false);
                 _wasCommitOrRollback = true;
+            }
+
+            public Task CommitAsync(CancellationToken cancellationToken = default)
+            {
+                Commit();
+                return Task.CompletedTask;
+            }
+
+            public Task RollbackAsync(CancellationToken cancellationToken = default)
+            {
+                Rollback();
+                return Task.CompletedTask;
             }
 
             public int CommandTimeout
