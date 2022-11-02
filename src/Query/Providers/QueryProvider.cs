@@ -278,14 +278,14 @@ namespace Kros.KORM.Query
         }
 
         /// <inheritdoc/>
-        public async Task ExecuteInTransactionAsync(Func<Task> action, CancellationToken cancellationToken = default)
+        public async Task ExecuteInTransactionAsync(Func<CancellationToken, Task> action, CancellationToken cancellationToken = default)
         {
             using (OpenConnection())
             using (var transaction = _transactionHelper.Value.BeginTransaction())
             {
                 try
                 {
-                    await action();
+                    await action(cancellationToken);
                     await transaction.CommitAsync(cancellationToken);
                 }
                 catch

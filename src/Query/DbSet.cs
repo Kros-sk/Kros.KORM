@@ -355,14 +355,14 @@ namespace Kros.KORM.Query
             bool ignoreValueGenerators,
             CancellationToken cancellationToken = default)
         {
-            await _provider.ExecuteInTransactionAsync(async () =>
+            await _provider.ExecuteInTransactionAsync(async (token) =>
             {
-                await CommitChangesAddedItemsAsync(_addedItems, useAsync, ignoreValueGenerators, cancellationToken);
-                await CommitChangesEditedItemsAsync(_editedItems, useAsync, ignoreValueGenerators, cancellationToken);
-                await CommitChangesUpsertedItemsAsync(_upsertedItems, useAsync, cancellationToken);
-                await CommitChangesDeletedItemsAsync(_deletedItems, useAsync, cancellationToken);
-                await CommitChangesDeletedItemsByIdAsync(_deletedItemsIds, useAsync, cancellationToken);
-                await CommitChangesDeletedByConditionsAsync(_deleteExpressions, useAsync, cancellationToken);
+                await CommitChangesAddedItemsAsync(_addedItems, useAsync, ignoreValueGenerators, token);
+                await CommitChangesEditedItemsAsync(_editedItems, useAsync, ignoreValueGenerators, token);
+                await CommitChangesUpsertedItemsAsync(_upsertedItems, useAsync, token);
+                await CommitChangesDeletedItemsAsync(_deletedItems, useAsync, token);
+                await CommitChangesDeletedItemsByIdAsync(_deletedItemsIds, useAsync, token);
+                await CommitChangesDeletedByConditionsAsync(_deleteExpressions, useAsync, token);
 
                 Clear();
             }, cancellationToken);

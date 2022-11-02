@@ -72,7 +72,7 @@ namespace Kros.KORM.Query
         /// <returns>
         /// A task that represents the asynchronous operation.
         /// </returns>
-        Task ExecuteInTransactionAsync(Func<Task> action, CancellationToken cancellationToken = default);
+        Task ExecuteInTransactionAsync(Func<CancellationToken, Task> action, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Executes the command.
