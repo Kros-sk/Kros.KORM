@@ -1104,7 +1104,6 @@ namespace Kros.KORM.Query.Sql
             return expression;
         }
 
-
         /// <summary>
         /// Class which help with Linq query parameters.
         /// </summary>
