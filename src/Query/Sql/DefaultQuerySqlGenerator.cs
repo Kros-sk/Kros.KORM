@@ -946,6 +946,8 @@ namespace Kros.KORM.Query.Sql
                     return BindSubstring(expression);
                 case "Trim":
                     return BindTrim(expression);
+                case "Compare":
+                    return BindCompare(expression);
             }
 
             throw new NotSupportedException(string.Format(Resources.MethodIsNotSupported, expression.Method.Name));
@@ -1081,6 +1083,24 @@ namespace Kros.KORM.Query.Sql
             LinqStringBuilder.Append(" LIKE ");
             Visit(expression.Arguments[0]);
             LinqStringBuilder.Append(" + '%')");
+            return expression;
+        }
+
+        /// <summary>
+        /// Binds the <see cref="string.Compare(string, string)"/> method.
+        /// </summary>
+        /// <param name="expression">The expression.</param>
+        protected virtual Expression BindCompare(MethodCallExpression expression)
+        {
+            LinqStringBuilder.Append("CASE WHEN ");
+            Visit(expression.Arguments[0]);
+            LinqStringBuilder.Append(" = ");
+            Visit(expression.Arguments[1]);
+            LinqStringBuilder.Append(" THEN 0 WHEN ");
+            Visit(expression.Arguments[0]);
+            LinqStringBuilder.Append(" < ");
+            Visit(expression.Arguments[1]);
+            LinqStringBuilder.Append(" THEN -1 ELSE 1 END");
             return expression;
         }
 
