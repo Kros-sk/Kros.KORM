@@ -133,6 +133,23 @@ namespace Kros.KORM.UnitTests.Query.Sql
             whereExpression.Sql.Should().Be("((Id = @Filter1) AND (Name LIKE @Filter2 + '%'))");
         }
 
+        [Fact]
+        public void GenerateWhereConditionWithStringMethodsUsed()
+        {
+            DefaultQuerySqlGenerator generator = CreateQuerySqlGenerator();
+            Expression<Func<Person, bool>> where = (p)
+                => p.FirstName.ToUpper().EndsWith("M")
+                && p.LastName.Trim().Substring(1, 2) == "er"
+                && string.Compare(p.FirstName, p.LastName) == 1;
+
+            WhereExpression whereExpression = generator.GenerateWhereCondition(where);
+
+            whereExpression.Sql.Should().Be("(((UPPER(Name) LIKE '%' + @1) " +
+                "AND (SUBSTRING(RTRIM(LTRIM(LastName)), @2 + 1, @3) = @4)) " +
+                "AND (CASE WHEN Name = LastName THEN 0 WHEN Name < LastName THEN -1 ELSE 1 END = @5))");
+            whereExpression.Parameters.Should().BeEquivalentTo(new object[] { "M", 1, 2, "er", 1 });
+        }
+
         private static DefaultQuerySqlGenerator CreateQuerySqlGenerator()
             => new DefaultQuerySqlGenerator(new DatabaseMapper(new ConventionModelMapper()));
 
