@@ -103,6 +103,7 @@ You can use also some string functions in Linq queries:
 | Replace         | Where(p => p.FirstName.Replace("hn", "zo") == "Jozo") | WHERE (REPLACE(FirstName, @1, @2) = @3)       |
 | Substring       | Where(p => p.FirstName.Substring(1, 2) == "oh")       | WHERE (SUBSTRING(FirstName, @1 + 1, @2) = @3) |
 | Trim            | Where(p => p.FirstName.Trim() == "John")              | WHERE (RTRIM(LTRIM(FirstName)) = @1)          |
+| Compare         | Where(p => string.Compare(p.FirstName, "John") == 0)  | WHERE (CASE WHEN FirstName = @1 THEN 0 WHEN FirstName < @2 THEN -1 ELSE 1 END = @3)
 
 Translation is provided by implementation of [ISqlExpressionVisitor](https://kros-sk.github.io/Kros.Libs.Documentation/api/Kros.KORM.Query.Sql.ISqlExpressionVisitor.html).
 
