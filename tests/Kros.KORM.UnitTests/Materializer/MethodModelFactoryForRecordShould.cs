@@ -94,7 +94,7 @@ namespace Kros.KORM.UnitTests.Materializer
 
             bar.Id.Should().Be(id);
             bar.Salary.Should().Be(salary);
-            bar.Gender.Should().Be(gender); ;
+            bar.Gender.Should().Be(gender);
         }
 
         [Theory()]
