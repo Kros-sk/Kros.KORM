@@ -537,6 +537,7 @@ namespace Kros.KORM.Query.Sql
             if (methodName.MatchMethodName(nameof(Enumerable.ThenBy))) return VisitOrderBy(expression, OrderType.Ascending);
             if (methodName.MatchMethodName(nameof(Enumerable.ThenByDescending))) return VisitOrderBy(expression, OrderType.Descending);
             if (methodName.MatchMethodName(nameof(Enumerable.Count))) return VisitCount(expression);
+            if (methodName.MatchMethodName(nameof(Enumerable.LongCount))) return VisitLongCount(expression);
             if (methodName.MatchMethodName(nameof(Enumerable.Min))) return VisitAggregate(expression, nameof(Enumerable.Min));
             if (methodName.MatchMethodName(nameof(Enumerable.Max))) return VisitAggregate(expression, nameof(Enumerable.Max));
             if (methodName.MatchMethodName(nameof(Enumerable.Sum))) return VisitAggregate(expression, nameof(Enumerable.Sum));
@@ -638,6 +639,21 @@ namespace Kros.KORM.Query.Sql
                 VisitWhere(expression);
             }
             SelectExpression.SetColumnsExpression(new ColumnsExpression("COUNT(*)"));
+
+            return expression;
+        }
+
+        /// <summary>
+        /// Visits the Linq LongCount method.
+        /// </summary>
+        /// <param name="expression">The expression.</param>
+        protected virtual Expression VisitLongCount(MethodCallExpression expression)
+        {
+            if (expression.Arguments.Count > 1)
+            {
+                VisitWhere(expression);
+            }
+            SelectExpression.SetColumnsExpression(new ColumnsExpression("COUNT_BIG(*)"));
 
             return expression;
         }
