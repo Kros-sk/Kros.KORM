@@ -20,7 +20,7 @@ namespace Kros.KORM.UnitTests.Migrations.Providers
             AssemblyMigrationScriptsProvider provider = CreateDefaultProvider();
             var scripts = provider.GetScripts().ToList();
 
-            scripts.Should().Equals(new[] {
+            scripts.Should().BeEquivalentTo(new[] {
                 new ScriptInfo(provider)
                 {
                     Id = 20190228001,
@@ -58,7 +58,7 @@ namespace Kros.KORM.UnitTests.Migrations.Providers
                 "Kros.KORM.UnitTests.Resources.AnotherSqlScripts");
             var scripts = provider.GetScripts().ToList();
 
-            scripts.Should().Equals(new[]
+            scripts.Should().BeEquivalentTo(new[]
             {
                 new ScriptInfo(provider)
                 {
@@ -76,7 +76,7 @@ namespace Kros.KORM.UnitTests.Migrations.Providers
                 {
                     Id = 20190227003,
                     Name = "Script_with_separator",
-                    Path = GetNamespace("20190227002_Script_with_separator")
+                    Path = GetNamespace("20190227003_Script_with_separator")
                 }
             });
         }

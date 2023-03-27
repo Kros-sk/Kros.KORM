@@ -153,8 +153,8 @@ namespace Kros.KORM.UnitTests.Materializer
 
         [Theory()]
         [InlineData(null, null, null, null, null, null, null, null, null, null)]
-        [InlineData(12, 'c', 32, 12.5, true, (byte)1, "2020-02-06", 56.7, "{3D6F4D25-60E8-432B-B6A7-3ADDBD331812}", (float)58.9)]
-        [InlineData(52, '*', 2, 18.05, false, (byte)0, "2028-09-08", 152.007, "{94FB4F1C-9FEE-457C-84E8-E7562601DC39}", (float)8)]
+        [InlineData(12L, 'c', 32, 12.5, true, (byte)1, "2020-02-06", 56.7, "{3D6F4D25-60E8-432B-B6A7-3ADDBD331812}", (float)58.9)]
+        [InlineData(52L, '*', 2, 18.05, false, (byte)0, "2028-09-08", 152.007, "{94FB4F1C-9FEE-457C-84E8-E7562601DC39}", (float)8)]
         public void ShouldReadTypeWithNullableTypes(long? longValue, char? charValue, int? intValue, double? decimalValue,
             bool? boolValue, byte? byteValue, string dateTimeValue, double? doubleValue,
             string guidValue, float? floatValue)
