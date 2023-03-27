@@ -295,6 +295,24 @@ namespace Kros.KORM.UnitTests.Query.Sql
         }
 
         [Fact]
+        public void TranslateLongCountMethod()
+        {
+            var query = Query<Person>();
+            var count = query.LongCount();
+
+            WasGeneratedSameSql(query, "SELECT COUNT_BIG(*) FROM People");
+        }
+
+        [Fact]
+        public void TranslateLongCountWithConditionMethod()
+        {
+            var query = Query<Person>();
+            var count = query.LongCount(p => p.Id > 5);
+
+            WasGeneratedSameSql(query, "SELECT COUNT_BIG(*) FROM People WHERE ((Id > @1))", 5);
+        }
+
+        [Fact]
         public void TranslateSumMethod()
         {
             var query = Query<Person>();
