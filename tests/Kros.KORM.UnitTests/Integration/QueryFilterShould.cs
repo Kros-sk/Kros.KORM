@@ -49,7 +49,7 @@ INSERT INTO [Foo] VALUES (4, 3, 'Jakub');";
                     .ToList()
                     .Select(p => p.Id);
 
-                ids.Should().BeEquivalentTo(2);
+                ids.Should().BeEquivalentTo(new int[] { 2 });
             }
         }
 
@@ -65,7 +65,7 @@ INSERT INTO [Foo] VALUES (4, 3, 'Jakub');";
                     .ToList()
                     .Select(p => p.Id);
 
-                ids.Should().BeEquivalentTo(2, 3, 4);
+                ids.Should().BeEquivalentTo(new int[] { 2, 3, 4 });
             }
         }
 

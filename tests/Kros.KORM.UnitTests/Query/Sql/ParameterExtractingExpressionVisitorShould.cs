@@ -19,7 +19,7 @@ namespace Kros.KORM.UnitTests.Query.Sql
 
             ParameterExtractingExpressionVisitor.ExtractParametersToCommand(command, query.Expression);
 
-            command.Parameters.Should().HaveCount(2);
+            command.Parameters.Count.Should().Be(2);
             command.Parameters[0].ParameterName.Should().Be("@Id");
             command.Parameters[0].Value.Should().Be(1);
 
@@ -39,7 +39,7 @@ namespace Kros.KORM.UnitTests.Query.Sql
 
             ParameterExtractingExpressionVisitor.ExtractParametersToCommand(command, query.Expression);
 
-            command.Parameters.Should().HaveCount(3);
+            command.Parameters.Count.Should().Be(3);
             command.Parameters[0].ParameterName.Should().Be("@Id");
             command.Parameters[0].Value.Should().Be(0);
 
@@ -63,7 +63,7 @@ namespace Kros.KORM.UnitTests.Query.Sql
 
                 ParameterExtractingExpressionVisitor.ExtractParametersToCommand(command, query.Expression);
 
-                command.Parameters.Should().HaveCount(3);
+                command.Parameters.Count.Should().Be(3);
                 command.Parameters[0].ParameterName.Should().Be("@0");
                 command.Parameters[0].Value.Should().Be(0);
 
@@ -88,7 +88,7 @@ namespace Kros.KORM.UnitTests.Query.Sql
 
             ParameterExtractingExpressionVisitor.ExtractParametersToCommand(command, query.Expression);
 
-            command.Parameters.Should().HaveCount(3);
+            command.Parameters.Count.Should().Be(3);
             command.Parameters[0].ParameterName.Should().Be("@Id");
             command.Parameters[0].Value.Should().Be(0);
 
@@ -111,7 +111,7 @@ namespace Kros.KORM.UnitTests.Query.Sql
 
             ParameterExtractingExpressionVisitor.ExtractParametersToCommand(command, query.Expression);
 
-            command.Parameters.Should().HaveCount(4);
+            command.Parameters.Count.Should().Be(4);
             command.Parameters[0].ParameterName.Should().Be("@1");
             command.Parameters[0].Value.Should().Be(1);
 
@@ -137,7 +137,7 @@ namespace Kros.KORM.UnitTests.Query.Sql
 
             ParameterExtractingExpressionVisitor.ExtractParametersToCommand(command, query.Expression);
 
-            command.Parameters.Should().HaveCount(3);
+            command.Parameters.Count.Should().Be(3);
             command.Parameters[0].ParameterName.Should().Be("@A");
             command.Parameters[0].Value.Should().Be(1);
 
@@ -160,7 +160,7 @@ namespace Kros.KORM.UnitTests.Query.Sql
 
             ParameterExtractingExpressionVisitor.ExtractParametersToCommand(command, query.Expression);
 
-            command.Parameters.Should().HaveCount(2);
+            command.Parameters.Count.Should().Be(2);
             command.Parameters[0].ParameterName.Should().Be("@A");
             command.Parameters[0].Value.Should().Be(string.Empty);
 
@@ -181,7 +181,7 @@ namespace Kros.KORM.UnitTests.Query.Sql
 
             ParameterExtractingExpressionVisitor.ExtractParametersToCommand(command, query.Expression);
 
-            command.Parameters.Should().HaveCount(4);
+            command.Parameters.Count.Should().Be(4);
             command.Parameters[0].ParameterName.Should().Be("@1");
             command.Parameters[0].Value.Should().Be(1);
 
