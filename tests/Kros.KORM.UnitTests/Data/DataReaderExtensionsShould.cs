@@ -1,5 +1,6 @@
 ﻿using Castle.Core.Internal;
 using FluentAssertions;
+using Kros.Extensions;
 using Kros.KORM.Data;
 using Kros.KORM.UnitTests.Helper;
 using System;

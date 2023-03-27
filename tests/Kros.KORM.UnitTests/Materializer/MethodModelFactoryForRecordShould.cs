@@ -1,5 +1,5 @@
-﻿using Castle.Core.Internal;
-using FluentAssertions;
+﻿using FluentAssertions;
+using Kros.Extensions;
 using Kros.KORM.Converter;
 using Kros.KORM.Helper;
 using Kros.KORM.Injection;
@@ -78,9 +78,9 @@ namespace Kros.KORM.UnitTests.Materializer
         }
 
         [Theory()]
-        [InlineData(23, (int)Gender.Woman, 2356)]
-        [InlineData(26, (int)Gender.Man, 4258)]
-        public void ShouldReadTypeWithDefaultConversions(long id, int gender, int salary)
+        [InlineData(23, Gender.Woman, 2356)]
+        [InlineData(26, Gender.Man, 4258)]
+        public void ShouldReadTypeWithDefaultConversions(long id, Gender gender, int salary)
         {
             using IDataReader data = DataBuilder.Create(("Id", typeof(long)),
                 ("Gender", typeof(int)), ("Salary", typeof(int)))
@@ -94,7 +94,7 @@ namespace Kros.KORM.UnitTests.Materializer
 
             bar.Id.Should().Be(id);
             bar.Salary.Should().Be(salary);
-            bar.Gender.Should().Be(gender);
+            bar.Gender.Should().Be(gender); ;
         }
 
         [Theory()]
@@ -113,7 +113,7 @@ namespace Kros.KORM.UnitTests.Materializer
             FooWithConverters bar = factory(data);
 
             bar.TenantId.Should().BeEquivalentTo(tenantId);
-            bar.Gender.Should().Be(converter.Convert(gender));
+            bar.Gender.Should().Be((Gender)converter.Convert(gender));
         }
 
         [Fact()]
