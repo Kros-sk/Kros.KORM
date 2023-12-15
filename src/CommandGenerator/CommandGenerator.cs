@@ -200,7 +200,7 @@ SELECT * FROM @OutputTable;";
                 AddDeleteCommandParameter(cmd, paramterName, id);
                 if (iterationCount > 1)
                 {
-                    deleteQueryText.Append(",");
+                    deleteQueryText.Append(',');
                 }
                 deleteQueryText.Append(paramterName);
 
@@ -259,7 +259,7 @@ SELECT * FROM @OutputTable;";
 
         private static DbCommand FinishDeleteCommand(DbCommand cmd, StringBuilder deleteQueryText)
         {
-            deleteQueryText.Append(")");
+            deleteQueryText.Append(')');
             cmd.CommandText = deleteQueryText.ToString();
             return cmd;
         }
