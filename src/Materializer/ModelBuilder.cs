@@ -196,7 +196,7 @@ namespace Kros.KORM.Materializer
 
             private Func<IDataReader, T> _modelFactory;
             private IDataReader _reader;
-            private T _currentItem = default(T);
+            private T _currentItem = default;
 
             #endregion
 
@@ -234,7 +234,7 @@ namespace Kros.KORM.Materializer
             public bool MoveNext()
             {
                 var result = _reader.Read();
-                _currentItem = result ? _modelFactory(_reader) : default(T);
+                _currentItem = result ? _modelFactory(_reader) : default;
                 return result;
             }
 
@@ -249,7 +249,7 @@ namespace Kros.KORM.Materializer
                 }
                 _modelFactory = null;
                 _reader = null;
-                _currentItem = default(T);
+                _currentItem = default;
             }
 
             /// <summary>
