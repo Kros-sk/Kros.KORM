@@ -1,8 +1,8 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>net8.0</TargetFrameworks>
-    <Version>6.2.0</Version>
+    <Version>7.0.0</Version>
     <Authors>KROS a. s.</Authors>
     <Company>KROS a. s.</Company>
     <Description>KORM is fast, easy to use, micro ORM tool (Kros Object Relation Mapper).</Description>
