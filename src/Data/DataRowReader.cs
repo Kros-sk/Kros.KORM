@@ -72,7 +72,7 @@ namespace Kros.KORM.Data
                     }
                     catch (IndexOutOfRangeException)
                     {
-                        throw new ArgumentOutOfRangeException("ordinal");
+                        throw new ArgumentOutOfRangeException(nameof(ordinal));
                     }
                 }
                 throw new InvalidOperationException("Cannot process deleted row.");
@@ -180,7 +180,7 @@ namespace Kros.KORM.Data
             }
             catch (IndexOutOfRangeException)
             {
-                throw new ArgumentOutOfRangeException("ordinal");
+                throw new ArgumentOutOfRangeException(nameof(ordinal));
             }
         }
 
@@ -200,7 +200,7 @@ namespace Kros.KORM.Data
             }
             catch (IndexOutOfRangeException)
             {
-                throw new ArgumentOutOfRangeException("ordinal");
+                throw new ArgumentOutOfRangeException(nameof(ordinal));
             }
         }
 
@@ -226,7 +226,7 @@ namespace Kros.KORM.Data
             }
             catch (IndexOutOfRangeException)
             {
-                throw new ArgumentOutOfRangeException("ordinal");
+                throw new ArgumentOutOfRangeException(nameof(ordinal));
             }
             if (buffer == null)
                 return (long)numArray.Length;
@@ -234,11 +234,11 @@ namespace Kros.KORM.Data
             int num2 = Math.Min(numArray.Length - num1, length);
             if (num1 < 0)
             {
-                throw new ArgumentOutOfRangeException("dataOffset");
+                throw new ArgumentOutOfRangeException(nameof(dataOffset));
             }
             if (bufferOffset < 0 || bufferOffset > 0 && bufferOffset >= buffer.Length)
             {
-                throw new ArgumentOutOfRangeException("bufferOffset");
+                throw new ArgumentOutOfRangeException(nameof(bufferOffset));
             }
             if (0 < num2)
             {
@@ -248,7 +248,7 @@ namespace Kros.KORM.Data
             {
                 if (length < 0)
                 {
-                    throw new ArgumentOutOfRangeException("length");
+                    throw new ArgumentOutOfRangeException(nameof(length));
                 }
                 num2 = 0;
             }
@@ -271,7 +271,7 @@ namespace Kros.KORM.Data
             }
             catch (IndexOutOfRangeException)
             {
-                throw new ArgumentOutOfRangeException("ordinal");
+                throw new ArgumentOutOfRangeException(nameof(ordinal));
             }
         }
 
@@ -296,7 +296,7 @@ namespace Kros.KORM.Data
             }
             catch (IndexOutOfRangeException)
             {
-                throw new ArgumentOutOfRangeException("ordinal");
+                throw new ArgumentOutOfRangeException(nameof(ordinal));
             }
             if (buffer == null)
                 return (long)chArray.Length;
@@ -304,11 +304,11 @@ namespace Kros.KORM.Data
             int num2 = Math.Min(chArray.Length - num1, length);
             if (num1 < 0)
             {
-                throw new ArgumentOutOfRangeException("dataOffset");
+                throw new ArgumentOutOfRangeException(nameof(dataOffset));
             }
             if (bufferOffset < 0 || bufferOffset > 0 && bufferOffset >= buffer.Length)
             {
-                throw new ArgumentOutOfRangeException("bufferOffset");
+                throw new ArgumentOutOfRangeException(nameof(bufferOffset));
             }
             if (0 < num2)
             {
@@ -318,7 +318,7 @@ namespace Kros.KORM.Data
             {
                 if (length < 0)
                 {
-                    throw new ArgumentOutOfRangeException("length");
+                    throw new ArgumentOutOfRangeException(nameof(length));
                 }
                 num2 = 0;
             }
@@ -354,7 +354,7 @@ namespace Kros.KORM.Data
             }
             catch (IndexOutOfRangeException)
             {
-                throw new ArgumentOutOfRangeException("ordinal");
+                throw new ArgumentOutOfRangeException(nameof(ordinal));
             }
         }
 
@@ -374,7 +374,7 @@ namespace Kros.KORM.Data
             }
             catch (IndexOutOfRangeException)
             {
-                throw new ArgumentOutOfRangeException("ordinal");
+                throw new ArgumentOutOfRangeException(nameof(ordinal));
             }
         }
 
@@ -394,7 +394,7 @@ namespace Kros.KORM.Data
             }
             catch (IndexOutOfRangeException)
             {
-                throw new ArgumentOutOfRangeException("ordinal");
+                throw new ArgumentOutOfRangeException(nameof(ordinal));
             }
         }
 
@@ -426,7 +426,7 @@ namespace Kros.KORM.Data
             }
             catch (IndexOutOfRangeException)
             {
-                throw new ArgumentOutOfRangeException("ordinal");
+                throw new ArgumentOutOfRangeException(nameof(ordinal));
             }
         }
 
@@ -446,7 +446,7 @@ namespace Kros.KORM.Data
             }
             catch (IndexOutOfRangeException)
             {
-                throw new ArgumentOutOfRangeException("ordinal");
+                throw new ArgumentOutOfRangeException(nameof(ordinal));
             }
         }
 
@@ -466,7 +466,7 @@ namespace Kros.KORM.Data
             }
             catch (IndexOutOfRangeException)
             {
-                throw new ArgumentOutOfRangeException("ordinal");
+                throw new ArgumentOutOfRangeException(nameof(ordinal));
             }
         }
 
@@ -486,7 +486,7 @@ namespace Kros.KORM.Data
             }
             catch (IndexOutOfRangeException)
             {
-                throw new ArgumentOutOfRangeException("ordinal");
+                throw new ArgumentOutOfRangeException(nameof(ordinal));
             }
         }
 
@@ -506,7 +506,7 @@ namespace Kros.KORM.Data
             }
             catch (IndexOutOfRangeException)
             {
-                throw new ArgumentOutOfRangeException("ordinal");
+                throw new ArgumentOutOfRangeException(nameof(ordinal));
             }
         }
 
@@ -526,7 +526,7 @@ namespace Kros.KORM.Data
             }
             catch (IndexOutOfRangeException)
             {
-                throw new ArgumentOutOfRangeException("ordinal");
+                throw new ArgumentOutOfRangeException(nameof(ordinal));
             }
         }
 
@@ -546,7 +546,7 @@ namespace Kros.KORM.Data
             }
             catch (IndexOutOfRangeException)
             {
-                throw new ArgumentOutOfRangeException("ordinal");
+                throw new ArgumentOutOfRangeException(nameof(ordinal));
             }
         }
 
@@ -598,7 +598,7 @@ namespace Kros.KORM.Data
             }
             catch (IndexOutOfRangeException)
             {
-                throw new ArgumentOutOfRangeException("ordinal");
+                throw new ArgumentOutOfRangeException(nameof(ordinal));
             }
         }
 
@@ -618,7 +618,7 @@ namespace Kros.KORM.Data
             }
             catch (IndexOutOfRangeException)
             {
-                throw new ArgumentOutOfRangeException("ordinal");
+                throw new ArgumentOutOfRangeException(nameof(ordinal));
             }
         }
 
@@ -634,7 +634,7 @@ namespace Kros.KORM.Data
         {
             if (values == null)
             {
-                throw new ArgumentNullException("values");
+                throw new ArgumentNullException(nameof(values));
             }
             Array.Copy((Array)_dataRow.ItemArray,
                 (Array)values, _dataRow.ItemArray.Length > values.Length ? values.Length : _dataRow.ItemArray.Length);
@@ -662,7 +662,7 @@ namespace Kros.KORM.Data
             }
             catch (IndexOutOfRangeException)
             {
-                throw new ArgumentOutOfRangeException("ordinal");
+                throw new ArgumentOutOfRangeException(nameof(ordinal));
             }
         }
 
@@ -693,7 +693,7 @@ namespace Kros.KORM.Data
         {
             if (table == null)
             {
-                throw new ArgumentNullException("DataTable");
+                throw new ArgumentNullException(nameof(table));
             }
             return new DataTableReader(table).GetSchemaTable();
         }
