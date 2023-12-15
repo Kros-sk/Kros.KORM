@@ -359,10 +359,10 @@ SELECT * FROM @OutputTable;";
             return new CommandGenerator<Foo>(GetFooTableInfo(), provider, query);
         }
 
-        private static IQuery<Foo> CreateFooQuery()
+        private static Query<Foo> CreateFooQuery()
             => CreateQuery<Foo>();
 
-        private static IQuery<T> CreateQuery<T>()
+        private static Query<T> CreateQuery<T>()
         {
             var query = new Query<T>(
                 new DatabaseMapper(new ConventionModelMapper()),
@@ -431,7 +431,7 @@ SELECT * FROM @OutputTable;";
             return new CommandGenerator<FooIdentity>(GetFooIdentityTableInfo(), provider, query);
         }
 
-        private static IQuery<FooIdentity> CreateFooIdentityQuery()
+        private static Query<FooIdentity> CreateFooIdentityQuery()
         {
             var query = new Query<FooIdentity>(
                 new DatabaseMapper(new ConventionModelMapper()),

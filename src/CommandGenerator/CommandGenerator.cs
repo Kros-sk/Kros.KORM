@@ -272,7 +272,7 @@ SELECT * FROM @OutputTable;";
         public IEnumerable<ColumnInfo> GetQueryColumns(ValueGenerated valueGenerated)
             => GetQueryColumns().Where(c => c.ValueGenerator == null || c.ValueGenerated.HasFlag(valueGenerated));
 
-        private IEnumerable<ColumnInfo> GetQueryColumns()
+        private List<ColumnInfo> GetQueryColumns()
         {
             if (_columnsInfo == null)
             {

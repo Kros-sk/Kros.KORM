@@ -315,7 +315,7 @@ namespace Kros.KORM.Metadata
             return aliasAttr?.Alias;
         }
 
-        private static IEnumerable<ColumnInfo> OnMapPrimaryKey(TableInfo tableInfo)
+        private static List<ColumnInfo> OnMapPrimaryKey(TableInfo tableInfo)
         {
             ColumnInfo pkByConvention = null;
             var pkByAttributes = new List<(ColumnInfo Column, KeyAttribute Attribute)>();

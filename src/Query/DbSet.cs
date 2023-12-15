@@ -402,7 +402,7 @@ namespace Kros.KORM.Query
 
         #region Private Helpers
 
-        private void PrepareCommand(IDbCommand command)
+        private void PrepareCommand(DbCommand command)
         {
             if (_provider.SupportsPrepareCommand())
             {
