@@ -14,8 +14,8 @@ namespace Kros.KORM.Data
     [ExcludeFromCodeCoverage()]
     internal class DataRowReader : DbDataReader
     {
-        private DataTable _dataTable;
-        private DataRow _dataRow;
+        private readonly DataTable _dataTable;
+        private readonly DataRow _dataRow;
         private bool _isOpen = true;
         private bool _reachEORows = false;
         private DataTable _schemaTable;

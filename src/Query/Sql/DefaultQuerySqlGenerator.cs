@@ -1132,7 +1132,7 @@ namespace Kros.KORM.Query.Sql
         protected class Parameters
         {
             private int _parametersCount = 0;
-            private List<object> _params = new List<object>();
+            private readonly List<object> _params = new List<object>();
             private readonly string _parameterNamePrefix;
 
             /// <summary>

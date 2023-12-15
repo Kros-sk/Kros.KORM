@@ -13,7 +13,7 @@ namespace Kros.KORM.Query.Sql
     /// <seealso cref="System.Linq.Expressions.ExpressionVisitor" />
     public class ParameterExtractingExpressionVisitor : ExpressionVisitor
     {
-        private DbCommand _command;
+        private readonly DbCommand _command;
 
         private ParameterExtractingExpressionVisitor(DbCommand command)
         {

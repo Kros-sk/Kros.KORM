@@ -26,17 +26,17 @@ namespace Kros.KORM.Query
     {
         #region Private fields
 
-        private ICommandGenerator<T> _commandGenerator;
-        private IQueryProvider _provider;
-        private IQueryBase<T> _query;
-        private HashSet<T> _addedItems = new HashSet<T>();
-        private HashSet<T> _editedItems = new HashSet<T>();
-        private HashSet<T> _deletedItems = new HashSet<T>();
-        private HashSet<T> _upsertedItems = new HashSet<T>();
-        private HashSet<object> _deletedItemsIds = new HashSet<object>();
-        private List<WhereExpression> _deleteExpressions = new List<WhereExpression>();
+        private readonly ICommandGenerator<T> _commandGenerator;
+        private readonly IQueryProvider _provider;
+        private readonly IQueryBase<T> _query;
+        private readonly HashSet<T> _addedItems = new HashSet<T>();
+        private readonly HashSet<T> _editedItems = new HashSet<T>();
+        private readonly HashSet<T> _deletedItems = new HashSet<T>();
+        private readonly HashSet<T> _upsertedItems = new HashSet<T>();
+        private readonly HashSet<object> _deletedItemsIds = new HashSet<object>();
+        private readonly List<WhereExpression> _deleteExpressions = new List<WhereExpression>();
         private readonly TableInfo _tableInfo;
-        private Lazy<Type> _primaryKeyPropertyType;
+        private readonly Lazy<Type> _primaryKeyPropertyType;
         private IEnumerable<string> _upsertConditionColumnNames;
 
         #endregion

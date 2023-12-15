@@ -42,7 +42,7 @@ namespace Kros.KORM.Query.Expressions
         /// </summary>
         class SubtreeEvaluator : ExpressionVisitor
         {
-            private HashSet<Expression> _candidates;
+            private readonly HashSet<Expression> _candidates;
 
             private SubtreeEvaluator(HashSet<Expression> candidates)
             {
@@ -90,8 +90,8 @@ namespace Kros.KORM.Query.Expressions
         /// </summary>
         class Nominator : ExpressionVisitor
         {
-            private Func<Expression, bool> _canBeEvaluated;
-            private HashSet<Expression> _candidates;
+            private readonly Func<Expression, bool> _canBeEvaluated;
+            private readonly HashSet<Expression> _candidates;
             private bool _cannotBeEvaluated;
 
             private Nominator(Func<Expression, bool> fnCanBeEvaluated)

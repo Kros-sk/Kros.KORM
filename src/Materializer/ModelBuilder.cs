@@ -22,9 +22,9 @@ namespace Kros.KORM.Materializer
         {
             #region Fields
 
-            IDbCommand _command;
-            IDataReader _reader;
-            bool _closeConnectionWhenFinished;
+            private IDbCommand _command;
+            private IDataReader _reader;
+            private readonly bool _closeConnectionWhenFinished;
 
             #endregion
 
@@ -268,7 +268,7 @@ namespace Kros.KORM.Materializer
 
         #region Private Fields
 
-        private IModelFactory _modelFactory;
+        private readonly IModelFactory _modelFactory;
 
         #endregion
 
