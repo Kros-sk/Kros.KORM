@@ -229,7 +229,9 @@ namespace Kros.KORM.Data
                 throw new ArgumentOutOfRangeException(nameof(ordinal));
             }
             if (buffer == null)
+            {
                 return (long)numArray.Length;
+            }
             int num1 = (int)dataOffset;
             int num2 = Math.Min(numArray.Length - num1, length);
             if (num1 < 0)
@@ -299,7 +301,9 @@ namespace Kros.KORM.Data
                 throw new ArgumentOutOfRangeException(nameof(ordinal));
             }
             if (buffer == null)
+            {
                 return (long)chArray.Length;
+            }
             int num1 = (int)dataOffset;
             int num2 = Math.Min(chArray.Length - num1, length);
             if (num1 < 0)

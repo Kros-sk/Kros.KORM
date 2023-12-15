@@ -361,16 +361,22 @@ namespace Kros.KORM.Query.Sql
             if (expression is ConstantExpression cex)
             {
                 if (cex.Value is IQueryable query && query.Provider == this)
+                {
                     return false;
+                }
             }
             if (expression is MethodCallExpression mc &&
                 (mc.Method.DeclaringType == typeof(Enumerable) ||
                  mc.Method.DeclaringType == typeof(Queryable)))
+            {
                 return false;
+            }
 
             if (expression.NodeType == ExpressionType.Convert &&
                 expression.Type == typeof(object))
+            {
                 return true;
+            }
 
             return expression.NodeType != ExpressionType.Parameter &&
                    expression.NodeType != ExpressionType.Lambda;
