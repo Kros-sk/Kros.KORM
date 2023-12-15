@@ -294,7 +294,7 @@ namespace Kros.KORM.Metadata
             return string.IsNullOrWhiteSpace(name) ? MapColumnName(columnInfo, modelType) : name;
         }
 
-        private IConverter GetConverterFromAttribute(PropertyInfo propertyInfo)
+        private static IConverter GetConverterFromAttribute(PropertyInfo propertyInfo)
         {
             var attributes = propertyInfo.GetCustomAttributes(typeof(ConverterAttribute), true);
             if (attributes.Length == 1)
@@ -307,7 +307,7 @@ namespace Kros.KORM.Metadata
             }
         }
 
-        private string GetName(ICustomAttributeProvider attributeProvider)
+        private static string GetName(ICustomAttributeProvider attributeProvider)
         {
             var aliasAttr = attributeProvider.GetCustomAttributes(typeof(AliasAttribute), true)
                 .FirstOrDefault() as AliasAttribute;

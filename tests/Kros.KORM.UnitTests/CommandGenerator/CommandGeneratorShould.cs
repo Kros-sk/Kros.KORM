@@ -265,7 +265,7 @@ SELECT * FROM @OutputTable;";
             CommandGenerator<ConverterDto> commandGenerator = CreateCommandGenerator<ConverterDto>(tableInfo);
 
             var dto = new ConverterDto() { Id = 1, Name = null };
-            commandGenerator.SetColumnValueFromValueGenerator(idColumn, dto, ValueGenerated.Never);
+            CommandGenerator<ConverterDto>.SetColumnValueFromValueGenerator(idColumn, dto, ValueGenerated.Never);
             var convertedValue = commandGenerator.GetColumnValue(idColumn, dto, ValueGenerated.Never);
 
             convertedValue.Should().Be(AutoIncrementValueGenerator.GeneratedValue);
@@ -327,7 +327,7 @@ SELECT * FROM @OutputTable;";
 
         #region Test Classes and Methods
 
-        private List<T> GetParameterValues<T>(DbParameterCollection parameters)
+        private static List<T> GetParameterValues<T>(DbParameterCollection parameters)
         {
             var result = new List<T>();
 
@@ -339,7 +339,7 @@ SELECT * FROM @OutputTable;";
             return result;
         }
 
-        private CommandGenerator<Foo> GetFooGenerator()
+        private static CommandGenerator<Foo> GetFooGenerator()
         {
             KORM.Query.IQueryProvider provider = Substitute.For<KORM.Query.IQueryProvider>();
             provider.GetCommandForCurrentTransaction().Returns(a => { return new SqlCommand(); });
@@ -349,7 +349,7 @@ SELECT * FROM @OutputTable;";
             return new CommandGenerator<Foo>(GetFooTableInfo(), provider, query);
         }
 
-        private CommandGenerator<Foo> GetUpsertFooGenerator()
+        private static CommandGenerator<Foo> GetUpsertFooGenerator()
         {
             KORM.Query.IQueryProvider provider = Substitute.For<KORM.Query.IQueryProvider>();
             provider.GetCommandForCurrentTransaction().Returns(a => { return new SqlCommand(); });
@@ -359,10 +359,10 @@ SELECT * FROM @OutputTable;";
             return new CommandGenerator<Foo>(GetFooTableInfo(), provider, query);
         }
 
-        private IQuery<Foo> CreateFooQuery()
+        private static IQuery<Foo> CreateFooQuery()
             => CreateQuery<Foo>();
 
-        private IQuery<T> CreateQuery<T>()
+        private static IQuery<T> CreateQuery<T>()
         {
             var query = new Query<T>(
                 new DatabaseMapper(new ConventionModelMapper()),
@@ -376,11 +376,11 @@ SELECT * FROM @OutputTable;";
             return query;
         }
 
-        private TableInfo GetFooTableInfo(
+        private static TableInfo GetFooTableInfo(
             ValueGenerated valueGenerated = ValueGenerated.OnUpdate)
             => GetFooTableInfo(true, valueGenerated);
 
-        private TableInfo GetFooTableInfo(
+        private static TableInfo GetFooTableInfo(
             bool withIdRow,
             ValueGenerated valueGenerated = ValueGenerated.OnUpdate)
         {
@@ -410,7 +410,7 @@ SELECT * FROM @OutputTable;";
             return new TableInfo(columns, new List<PropertyInfo>(), null) { Name = "Foo" };
         }
 
-        private CommandGenerator<FooPrimaryKeys> GetFooPrimaryKeyGenerator()
+        private static CommandGenerator<FooPrimaryKeys> GetFooPrimaryKeyGenerator()
         {
             KORM.Query.IQueryProvider provider = Substitute.For<KORM.Query.IQueryProvider>();
             provider.GetCommandForCurrentTransaction().Returns(a => { return new SqlCommand(); });
@@ -421,7 +421,7 @@ SELECT * FROM @OutputTable;";
             return new CommandGenerator<FooPrimaryKeys>(tableInfo, provider, query);
         }
 
-        private CommandGenerator<FooIdentity> GetFooIdentityGenerator()
+        private static CommandGenerator<FooIdentity> GetFooIdentityGenerator()
         {
             KORM.Query.IQueryProvider provider = Substitute.For<KORM.Query.IQueryProvider>();
             provider.GetCommandForCurrentTransaction().Returns(a => { return new SqlCommand(); });
@@ -431,7 +431,7 @@ SELECT * FROM @OutputTable;";
             return new CommandGenerator<FooIdentity>(GetFooIdentityTableInfo(), provider, query);
         }
 
-        private IQuery<FooIdentity> CreateFooIdentityQuery()
+        private static IQuery<FooIdentity> CreateFooIdentityQuery()
         {
             var query = new Query<FooIdentity>(
                 new DatabaseMapper(new ConventionModelMapper()),
@@ -445,7 +445,7 @@ SELECT * FROM @OutputTable;";
             return query;
         }
 
-        private TableInfo GetFooIdentityTableInfo()
+        private static TableInfo GetFooIdentityTableInfo()
         {
             var columns = new List<ColumnInfo>() {
                 new ColumnInfo() { Name = "IdRow", PropertyInfo = GetPropertyInfo<Foo>("Id"),
@@ -456,9 +456,9 @@ SELECT * FROM @OutputTable;";
             return new TableInfo(columns, new List<PropertyInfo>(), null) { Name = "FooIdentity" };
         }
 
-        private PropertyInfo GetPropertyInfo<T>(string propertyName) => typeof(T).GetProperty(propertyName);
+        private static PropertyInfo GetPropertyInfo<T>(string propertyName) => typeof(T).GetProperty(propertyName);
 
-        private TableInfo CreateTableInfoFromDto<T>()
+        private static TableInfo CreateTableInfoFromDto<T>()
         {
             var columns = new List<ColumnInfo>();
             foreach (PropertyInfo property in typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance))
@@ -476,7 +476,7 @@ SELECT * FROM @OutputTable;";
             };
         }
 
-        private CommandGenerator<T> CreateCommandGenerator<T>(TableInfo tableInfo)
+        private static CommandGenerator<T> CreateCommandGenerator<T>(TableInfo tableInfo)
         {
             IDatabaseMapper mapper = Substitute.For<IDatabaseMapper>();
             mapper.GetTableInfo<T>().Returns(tableInfo);

@@ -347,7 +347,7 @@ namespace Kros.KORM.Query.Sql
             LinqStringBuilder.AppendFormat("({0} {1} {2})", GetColumnNameFromMember(node), op, value ? SqlTrue : SqlFalse);
         }
 
-        private bool IsBooleanPropertyExpression(Expression node)
+        private static bool IsBooleanPropertyExpression(Expression node)
         {
             if ((node is MemberExpression memberExp) && (memberExp.Member is PropertyInfo propInfo))
             {
@@ -684,10 +684,10 @@ namespace Kros.KORM.Query.Sql
             return ret;
         }
 
-        private Expression VisitSelect(MethodCallExpression expression)
+        private static Expression VisitSelect(MethodCallExpression expression)
             => ThrowNotSupportedException(expression);
 
-        private Expression VisitGroupBy(MethodCallExpression expression)
+        private static Expression VisitGroupBy(MethodCallExpression expression)
             => ThrowNotSupportedException(expression);
 
         /// <summary>
@@ -854,7 +854,7 @@ namespace Kros.KORM.Query.Sql
             }
         }
 
-        private bool HasBooleanOperator(BinaryExpression node)
+        private static bool HasBooleanOperator(BinaryExpression node)
             => (node.NodeType == ExpressionType.And)
                 || (node.NodeType == ExpressionType.AndAlso)
                 || (node.NodeType == ExpressionType.Or)

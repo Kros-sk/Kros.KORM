@@ -610,7 +610,7 @@ namespace Kros.KORM.Query
             }
         }
 
-        private void CheckItemInCollection(T entity, HashSet<T> collection, string message, string collectionName)
+        private static void CheckItemInCollection(T entity, HashSet<T> collection, string message, string collectionName)
         {
             if (collection.Contains(entity))
             {
