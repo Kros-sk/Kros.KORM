@@ -864,7 +864,7 @@ namespace Kros.KORM.Query.Sql
         /// Visits the constant.
         /// </summary>
         /// <param name="expression">The expression.</param>
-        /// <exception cref="System.NotSupportedException">If type of constant is <see cref="System.Object"/>.</exception>
+        /// <exception cref="NotSupportedException">If type of constant is <see cref="object"/>.</exception>
         protected override Expression VisitConstant(ConstantExpression expression)
         {
             if (expression.Value == null)

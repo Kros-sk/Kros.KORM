@@ -320,7 +320,7 @@ namespace Kros.KORM.Materializer
         /// </returns>
         public IEnumerable<T> Materialize<T>(DataTable table)
         {
-            return this.Materialize<T>(new DataTableReader(table));
+            return Materialize<T>(new DataTableReader(table));
         }
 
         /// <summary>
@@ -333,7 +333,7 @@ namespace Kros.KORM.Materializer
         /// </returns>
         public T Materialize<T>(DataRow dataRow)
         {
-            return this.Materialize<T>(new DataRowReader(dataRow)).FirstOrDefault();
+            return Materialize<T>(new DataRowReader(dataRow)).FirstOrDefault();
         }
     }
 }

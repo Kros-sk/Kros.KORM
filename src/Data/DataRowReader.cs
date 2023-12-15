@@ -18,7 +18,7 @@ namespace Kros.KORM.Data
         private DataRow _dataRow;
         private bool _isOpen = true;
         private bool _reachEORows = false;
-        private DataTable schemaTable;
+        private DataTable _schemaTable;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DataRowReader"/> class.
@@ -575,11 +575,11 @@ namespace Kros.KORM.Data
         /// </exception>
         public override DataTable GetSchemaTable()
         {
-            if (this.schemaTable == null)
+            if (_schemaTable == null)
             {
-                this.schemaTable = DataRowReader.GetSchemaTableFromDataTable(_dataTable);
+                _schemaTable = DataRowReader.GetSchemaTableFromDataTable(_dataTable);
             }
-            return this.schemaTable;
+            return _schemaTable;
         }
 
         /// <summary>
