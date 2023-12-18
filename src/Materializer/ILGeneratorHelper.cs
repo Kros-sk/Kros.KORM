@@ -1,4 +1,4 @@
-using Kros.Extensions;
+﻿using Kros.Extensions;
 using Kros.KORM.Converter;
 using Kros.KORM.Injection;
 using Kros.KORM.Metadata;
@@ -351,7 +351,6 @@ namespace Kros.KORM.Materializer
             }
             else
             {
-                // TODO: Try some structs?
                 LocalBuilder local = ilGenerator.DeclareLocal(propertyType);
                 ilGenerator.LogAndEmit(OpCodes.Ldloca_S, local.LocalIndex);
                 ilGenerator.LogAndEmit(OpCodes.Initobj, local.LocalType);
