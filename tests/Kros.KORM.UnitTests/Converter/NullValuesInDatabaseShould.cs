@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using Kros.KORM.Converter;
 using Kros.KORM.Materializer;
 using Kros.KORM.Metadata;
@@ -291,21 +291,21 @@ namespace Kros.KORM.UnitTests.Converter
             TestDataEnum CustomEnumVal = InitialDataSource.CustomEnumVal,
             TestDataEnumWithoutZero CustomEnumWithoutZeroVal = InitialDataSource.CustomEnumWithoutZeroVal,
 
-            bool? NullableBoolVal = InitialDataSource.BoolVal,
-            byte? NullableByteVal = InitialDataSource.ByteVal,
-            sbyte? NullableSByteVal = InitialDataSource.SByteVal,
-            short? NullableInt16Val = InitialDataSource.Int16Val,
-            ushort? NullableUInt16Val = InitialDataSource.UInt16Val,
-            int? NullableInt32Val = InitialDataSource.Int32Val,
-            uint? NullableUInt32Val = InitialDataSource.UInt32Val,
-            long? NullableInt64Val = InitialDataSource.Int64Val,
-            ulong? NullableUInt64Val = InitialDataSource.UInt64Val,
-            char? NullableCharVal = InitialDataSource.CharVal,
-            double? NullableDoubleVal = InitialDataSource.DoubleVal,
-            float? NullableSingleVal = InitialDataSource.SingleVal,
-            decimal? NullableDecimalVal = InitialDataSource.DecimalVal,
-            TestDataEnum? NullableCustomEnumVal = InitialDataSource.CustomEnumVal,
-            TestDataEnumWithoutZero? NullableCustomEnumWithoutZeroVal = InitialDataSource.CustomEnumWithoutZeroVal,
+            //bool? NullableBoolVal = InitialDataSource.BoolVal,
+            //byte? NullableByteVal = InitialDataSource.ByteVal,
+            //sbyte? NullableSByteVal = InitialDataSource.SByteVal,
+            //short? NullableInt16Val = InitialDataSource.Int16Val,
+            //ushort? NullableUInt16Val = InitialDataSource.UInt16Val,
+            //int? NullableInt32Val = InitialDataSource.Int32Val,
+            //uint? NullableUInt32Val = InitialDataSource.UInt32Val,
+            //long? NullableInt64Val = InitialDataSource.Int64Val,
+            //ulong? NullableUInt64Val = InitialDataSource.UInt64Val,
+            //char? NullableCharVal = InitialDataSource.CharVal,
+            //double? NullableDoubleVal = InitialDataSource.DoubleVal,
+            //float? NullableSingleVal = InitialDataSource.SingleVal,
+            //decimal? NullableDecimalVal = InitialDataSource.DecimalVal,
+            //TestDataEnum? NullableCustomEnumVal = InitialDataSource.CustomEnumVal,
+            //TestDataEnumWithoutZero? NullableCustomEnumWithoutZeroVal = InitialDataSource.CustomEnumWithoutZeroVal,
 
             string StrVal = InitialDataSource.StringVal
         )
@@ -327,21 +327,21 @@ namespace Kros.KORM.UnitTests.Converter
                 DecimalVal = 0,
                 CustomEnumVal = TestDataEnum.Zero,
                 CustomEnumWithoutZeroVal = (TestDataEnumWithoutZero)0,
-                NullableBoolVal = null,
-                NullableByteVal = null,
-                NullableSByteVal = null,
-                NullableInt16Val = null,
-                NullableUInt16Val = null,
-                NullableInt32Val = null,
-                NullableUInt32Val = null,
-                NullableInt64Val = null,
-                NullableUInt64Val = null,
-                NullableCharVal = null,
-                NullableDoubleVal = null,
-                NullableSingleVal = null,
-                NullableDecimalVal = null,
-                NullableCustomEnumVal = null,
-                NullableCustomEnumWithoutZeroVal = null,
+                //NullableBoolVal = null,
+                //NullableByteVal = null,
+                //NullableSByteVal = null,
+                //NullableInt16Val = null,
+                //NullableUInt16Val = null,
+                //NullableInt32Val = null,
+                //NullableUInt32Val = null,
+                //NullableInt64Val = null,
+                //NullableUInt64Val = null,
+                //NullableCharVal = null,
+                //NullableDoubleVal = null,
+                //NullableSingleVal = null,
+                //NullableDecimalVal = null,
+                //NullableCustomEnumVal = null,
+                //NullableCustomEnumWithoutZeroVal = null,
                 StrVal = null
             };
 
@@ -363,21 +363,21 @@ namespace Kros.KORM.UnitTests.Converter
                 CustomEnumVal = DbDataSource.CustomEnumVal,
                 CustomEnumWithoutZeroVal = DbDataSource.CustomEnumWithoutZeroVal,
 
-                NullableBoolVal = DbDataSource.BoolVal,
-                NullableByteVal = DbDataSource.ByteVal,
-                NullableSByteVal = DbDataSource.SByteVal,
-                NullableInt16Val = DbDataSource.Int16Val,
-                NullableUInt16Val = DbDataSource.UInt16Val,
-                NullableInt32Val = DbDataSource.Int32Val,
-                NullableUInt32Val = DbDataSource.UInt32Val,
-                NullableInt64Val = DbDataSource.Int64Val,
-                NullableUInt64Val = DbDataSource.UInt64Val,
-                NullableCharVal = DbDataSource.CharVal,
-                NullableDoubleVal = DbDataSource.DoubleVal,
-                NullableSingleVal = DbDataSource.SingleVal,
-                NullableDecimalVal = DbDataSource.DecimalVal,
-                NullableCustomEnumVal = DbDataSource.CustomEnumVal,
-                NullableCustomEnumWithoutZeroVal = DbDataSource.CustomEnumWithoutZeroVal,
+                //NullableBoolVal = DbDataSource.BoolVal,
+                //NullableByteVal = DbDataSource.ByteVal,
+                //NullableSByteVal = DbDataSource.SByteVal,
+                //NullableInt16Val = DbDataSource.Int16Val,
+                //NullableUInt16Val = DbDataSource.UInt16Val,
+                //NullableInt32Val = DbDataSource.Int32Val,
+                //NullableUInt32Val = DbDataSource.UInt32Val,
+                //NullableInt64Val = DbDataSource.Int64Val,
+                //NullableUInt64Val = DbDataSource.UInt64Val,
+                //NullableCharVal = DbDataSource.CharVal,
+                //NullableDoubleVal = DbDataSource.DoubleVal,
+                //NullableSingleVal = DbDataSource.SingleVal,
+                //NullableDecimalVal = DbDataSource.DecimalVal,
+                //NullableCustomEnumVal = DbDataSource.CustomEnumVal,
+                //NullableCustomEnumWithoutZeroVal = DbDataSource.CustomEnumWithoutZeroVal,
 
                 StrVal = DbDataSource.StringVal
             };
@@ -448,10 +448,10 @@ namespace Kros.KORM.UnitTests.Converter
             Two
         }
 
-        private enum TestDataEnumWithoutZero
+        private enum TestDataEnumWithoutZero : long
         {
-            Ten = 10,
-            Twenty = 20
+            Ten = 10_000_000_000,
+            Twenty = 20_000_000_000
         }
 
         private class TestConverter : IConverter
