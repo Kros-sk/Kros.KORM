@@ -200,7 +200,7 @@ SELECT * FROM @OutputTable;";
                 AddDeleteCommandParameter(cmd, paramterName, id);
                 if (iterationCount > 1)
                 {
-                    deleteQueryText.Append(",");
+                    deleteQueryText.Append(',');
                 }
                 deleteQueryText.Append(paramterName);
 
@@ -249,7 +249,7 @@ SELECT * FROM @OutputTable;";
             }
         }
 
-        private void AddDeleteCommandParameter(DbCommand cmd, string parameterName, object value)
+        private static void AddDeleteCommandParameter(DbCommand cmd, string parameterName, object value)
         {
             DbParameter newParameter = cmd.CreateParameter();
             newParameter.ParameterName = parameterName;
@@ -257,9 +257,9 @@ SELECT * FROM @OutputTable;";
             cmd.Parameters.Add(newParameter);
         }
 
-        private DbCommand FinishDeleteCommand(DbCommand cmd, StringBuilder deleteQueryText)
+        private static DbCommand FinishDeleteCommand(DbCommand cmd, StringBuilder deleteQueryText)
         {
-            deleteQueryText.Append(")");
+            deleteQueryText.Append(')');
             cmd.CommandText = deleteQueryText.ToString();
             return cmd;
         }
@@ -272,7 +272,7 @@ SELECT * FROM @OutputTable;";
         public IEnumerable<ColumnInfo> GetQueryColumns(ValueGenerated valueGenerated)
             => GetQueryColumns().Where(c => c.ValueGenerator == null || c.ValueGenerated.HasFlag(valueGenerated));
 
-        private IEnumerable<ColumnInfo> GetQueryColumns()
+        private List<ColumnInfo> GetQueryColumns()
         {
             if (_columnsInfo == null)
             {
@@ -317,7 +317,7 @@ SELECT * FROM @OutputTable;";
             return value;
         }
 
-        internal void SetColumnValueFromValueGenerator(ColumnInfo columnInfo, T item, ValueGenerated valueGenerated)
+        internal static void SetColumnValueFromValueGenerator(ColumnInfo columnInfo, T item, ValueGenerated valueGenerated)
         {
             if ((!HasValueGeneratorOnInsert(columnInfo) || valueGenerated != ValueGenerated.OnUpdate) &&
                 TryGetValueFromValueGenerators(columnInfo, valueGenerated, out object generatorValue))
@@ -326,10 +326,10 @@ SELECT * FROM @OutputTable;";
             }
         }
 
-        private bool HasValueGeneratorOnInsert(ColumnInfo columnInfo)
+        private static bool HasValueGeneratorOnInsert(ColumnInfo columnInfo)
             => (columnInfo.ValueGenerator != null && columnInfo.ValueGenerated == ValueGenerated.OnInsert);
 
-        private bool TryGetValueFromValueGenerators(ColumnInfo columnInfo, ValueGenerated valueGenerated, out object value)
+        private static bool TryGetValueFromValueGenerators(ColumnInfo columnInfo, ValueGenerated valueGenerated, out object value)
         {
             value = null;
 

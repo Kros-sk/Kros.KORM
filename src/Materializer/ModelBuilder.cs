@@ -22,9 +22,9 @@ namespace Kros.KORM.Materializer
         {
             #region Fields
 
-            IDbCommand _command;
-            IDataReader _reader;
-            bool _closeConnectionWhenFinished;
+            private IDbCommand _command;
+            private IDataReader _reader;
+            private readonly bool _closeConnectionWhenFinished;
 
             #endregion
 
@@ -196,7 +196,7 @@ namespace Kros.KORM.Materializer
 
             private Func<IDataReader, T> _modelFactory;
             private IDataReader _reader;
-            private T _currentItem = default(T);
+            private T _currentItem = default;
 
             #endregion
 
@@ -234,7 +234,7 @@ namespace Kros.KORM.Materializer
             public bool MoveNext()
             {
                 var result = _reader.Read();
-                _currentItem = result ? _modelFactory(_reader) : default(T);
+                _currentItem = result ? _modelFactory(_reader) : default;
                 return result;
             }
 
@@ -249,7 +249,7 @@ namespace Kros.KORM.Materializer
                 }
                 _modelFactory = null;
                 _reader = null;
-                _currentItem = default(T);
+                _currentItem = default;
             }
 
             /// <summary>
@@ -268,7 +268,7 @@ namespace Kros.KORM.Materializer
 
         #region Private Fields
 
-        private IModelFactory _modelFactory;
+        private readonly IModelFactory _modelFactory;
 
         #endregion
 
@@ -320,7 +320,7 @@ namespace Kros.KORM.Materializer
         /// </returns>
         public IEnumerable<T> Materialize<T>(DataTable table)
         {
-            return this.Materialize<T>(new DataTableReader(table));
+            return Materialize<T>(new DataTableReader(table));
         }
 
         /// <summary>
@@ -333,7 +333,7 @@ namespace Kros.KORM.Materializer
         /// </returns>
         public T Materialize<T>(DataRow dataRow)
         {
-            return this.Materialize<T>(new DataRowReader(dataRow)).FirstOrDefault();
+            return Materialize<T>(new DataRowReader(dataRow)).FirstOrDefault();
         }
     }
 }

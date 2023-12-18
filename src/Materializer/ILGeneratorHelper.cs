@@ -337,12 +337,25 @@ namespace Kros.KORM.Materializer
             }
         }
 
+        private static readonly FieldInfo _zeroDecimal = typeof(decimal).GetField(nameof(decimal.Zero));
+
         private static void EmitSetDefaultValueForValueTypes(this ILGenerator ilGenerator, Type propertyType)
         {
-            LocalBuilder local = ilGenerator.DeclareLocal(propertyType);
-            ilGenerator.LogAndEmit(OpCodes.Ldloca_S, local.LocalIndex);
-            ilGenerator.LogAndEmit(OpCodes.Initobj, local.LocalType);
-            ilGenerator.LogAndEmit(OpCodes.Ldloc_S, local.LocalIndex);
+            if (propertyType == typeof(decimal))
+            {
+                ilGenerator.LogAndEmit(OpCodes.Ldsfld, _zeroDecimal);
+            }
+            else if (propertyType.IsEnum)
+            {
+                ilGenerator.EmitSetDefaultValueForPrimitiveTypes(propertyType.GetEnumUnderlyingType());
+            }
+            else
+            {
+                LocalBuilder local = ilGenerator.DeclareLocal(propertyType);
+                ilGenerator.LogAndEmit(OpCodes.Ldloca_S, local.LocalIndex);
+                ilGenerator.LogAndEmit(OpCodes.Initobj, local.LocalType);
+                ilGenerator.LogAndEmit(OpCodes.Ldloc, local.LocalIndex);
+            }
         }
 
         private static Dictionary<string, MethodInfo> InitReaderValueGetters()
