@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Kros.KORM.Converter;
 using Kros.KORM.Materializer;
 using Kros.KORM.Metadata;
@@ -57,6 +57,23 @@ namespace Kros.KORM.UnitTests.Converter
             TestDataRecord expected = simulateDbNull
                 ? TestDataRecord.CreateWithNulledProperties()
                 : TestDataRecord.CreateWithDbValuesProperties();
+            actual.Should().BeEquivalentTo(expected);
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void PropagateToDataRecord_NoConstructor(bool simulateDbNull)
+        {
+            TestDataHelper<TestDataRecord_NoConstructor, TestDataRecord_NoConstructor> info
+                = new(simulateDbNull: simulateDbNull, useConverter: false);
+            DynamicMethodModelFactory modelFactory = new(info.DatabaseMapper);
+            Func<IDataReader, TestDataRecord_NoConstructor> factory = modelFactory.GetFactory<TestDataRecord_NoConstructor>(info.DataReader);
+
+            TestDataRecord_NoConstructor actual = factory(info.DataReader);
+            TestDataRecord_NoConstructor expected = simulateDbNull
+                ? TestDataRecord_NoConstructor.CreateWithNulledProperties()
+                : TestDataRecord_NoConstructor.CreateWithDbValuesProperties();
             actual.Should().BeEquivalentTo(expected);
         }
 
@@ -291,21 +308,21 @@ namespace Kros.KORM.UnitTests.Converter
             TestDataEnum CustomEnumVal = InitialDataSource.CustomEnumVal,
             TestDataEnumWithoutZero CustomEnumWithoutZeroVal = InitialDataSource.CustomEnumWithoutZeroVal,
 
-            //bool? NullableBoolVal = InitialDataSource.BoolVal,
-            //byte? NullableByteVal = InitialDataSource.ByteVal,
-            //sbyte? NullableSByteVal = InitialDataSource.SByteVal,
-            //short? NullableInt16Val = InitialDataSource.Int16Val,
-            //ushort? NullableUInt16Val = InitialDataSource.UInt16Val,
-            //int? NullableInt32Val = InitialDataSource.Int32Val,
-            //uint? NullableUInt32Val = InitialDataSource.UInt32Val,
-            //long? NullableInt64Val = InitialDataSource.Int64Val,
-            //ulong? NullableUInt64Val = InitialDataSource.UInt64Val,
-            //char? NullableCharVal = InitialDataSource.CharVal,
-            //double? NullableDoubleVal = InitialDataSource.DoubleVal,
-            //float? NullableSingleVal = InitialDataSource.SingleVal,
-            //decimal? NullableDecimalVal = InitialDataSource.DecimalVal,
-            //TestDataEnum? NullableCustomEnumVal = InitialDataSource.CustomEnumVal,
-            //TestDataEnumWithoutZero? NullableCustomEnumWithoutZeroVal = InitialDataSource.CustomEnumWithoutZeroVal,
+            bool? NullableBoolVal = InitialDataSource.BoolVal,
+            byte? NullableByteVal = InitialDataSource.ByteVal,
+            sbyte? NullableSByteVal = InitialDataSource.SByteVal,
+            short? NullableInt16Val = InitialDataSource.Int16Val,
+            ushort? NullableUInt16Val = InitialDataSource.UInt16Val,
+            int? NullableInt32Val = InitialDataSource.Int32Val,
+            uint? NullableUInt32Val = InitialDataSource.UInt32Val,
+            long? NullableInt64Val = InitialDataSource.Int64Val,
+            ulong? NullableUInt64Val = InitialDataSource.UInt64Val,
+            char? NullableCharVal = InitialDataSource.CharVal,
+            double? NullableDoubleVal = InitialDataSource.DoubleVal,
+            float? NullableSingleVal = InitialDataSource.SingleVal,
+            decimal? NullableDecimalVal = InitialDataSource.DecimalVal,
+            TestDataEnum? NullableCustomEnumVal = InitialDataSource.CustomEnumVal,
+            TestDataEnumWithoutZero? NullableCustomEnumWithoutZeroVal = InitialDataSource.CustomEnumWithoutZeroVal,
 
             string StrVal = InitialDataSource.StringVal
         )
@@ -327,21 +344,21 @@ namespace Kros.KORM.UnitTests.Converter
                 DecimalVal = 0,
                 CustomEnumVal = TestDataEnum.Zero,
                 CustomEnumWithoutZeroVal = (TestDataEnumWithoutZero)0,
-                //NullableBoolVal = null,
-                //NullableByteVal = null,
-                //NullableSByteVal = null,
-                //NullableInt16Val = null,
-                //NullableUInt16Val = null,
-                //NullableInt32Val = null,
-                //NullableUInt32Val = null,
-                //NullableInt64Val = null,
-                //NullableUInt64Val = null,
-                //NullableCharVal = null,
-                //NullableDoubleVal = null,
-                //NullableSingleVal = null,
-                //NullableDecimalVal = null,
-                //NullableCustomEnumVal = null,
-                //NullableCustomEnumWithoutZeroVal = null,
+                NullableBoolVal = null,
+                NullableByteVal = null,
+                NullableSByteVal = null,
+                NullableInt16Val = null,
+                NullableUInt16Val = null,
+                NullableInt32Val = null,
+                NullableUInt32Val = null,
+                NullableInt64Val = null,
+                NullableUInt64Val = null,
+                NullableCharVal = null,
+                NullableDoubleVal = null,
+                NullableSingleVal = null,
+                NullableDecimalVal = null,
+                NullableCustomEnumVal = null,
+                NullableCustomEnumWithoutZeroVal = null,
                 StrVal = null
             };
 
@@ -363,21 +380,128 @@ namespace Kros.KORM.UnitTests.Converter
                 CustomEnumVal = DbDataSource.CustomEnumVal,
                 CustomEnumWithoutZeroVal = DbDataSource.CustomEnumWithoutZeroVal,
 
-                //NullableBoolVal = DbDataSource.BoolVal,
-                //NullableByteVal = DbDataSource.ByteVal,
-                //NullableSByteVal = DbDataSource.SByteVal,
-                //NullableInt16Val = DbDataSource.Int16Val,
-                //NullableUInt16Val = DbDataSource.UInt16Val,
-                //NullableInt32Val = DbDataSource.Int32Val,
-                //NullableUInt32Val = DbDataSource.UInt32Val,
-                //NullableInt64Val = DbDataSource.Int64Val,
-                //NullableUInt64Val = DbDataSource.UInt64Val,
-                //NullableCharVal = DbDataSource.CharVal,
-                //NullableDoubleVal = DbDataSource.DoubleVal,
-                //NullableSingleVal = DbDataSource.SingleVal,
-                //NullableDecimalVal = DbDataSource.DecimalVal,
-                //NullableCustomEnumVal = DbDataSource.CustomEnumVal,
-                //NullableCustomEnumWithoutZeroVal = DbDataSource.CustomEnumWithoutZeroVal,
+                NullableBoolVal = DbDataSource.BoolVal,
+                NullableByteVal = DbDataSource.ByteVal,
+                NullableSByteVal = DbDataSource.SByteVal,
+                NullableInt16Val = DbDataSource.Int16Val,
+                NullableUInt16Val = DbDataSource.UInt16Val,
+                NullableInt32Val = DbDataSource.Int32Val,
+                NullableUInt32Val = DbDataSource.UInt32Val,
+                NullableInt64Val = DbDataSource.Int64Val,
+                NullableUInt64Val = DbDataSource.UInt64Val,
+                NullableCharVal = DbDataSource.CharVal,
+                NullableDoubleVal = DbDataSource.DoubleVal,
+                NullableSingleVal = DbDataSource.SingleVal,
+                NullableDecimalVal = DbDataSource.DecimalVal,
+                NullableCustomEnumVal = DbDataSource.CustomEnumVal,
+                NullableCustomEnumWithoutZeroVal = DbDataSource.CustomEnumWithoutZeroVal,
+
+                StrVal = DbDataSource.StringVal
+            };
+        }
+
+        private record TestDataRecord_NoConstructor
+        {
+            public bool BoolVal { get; set; } = InitialDataSource.BoolVal;
+            public byte ByteVal { get; set; } = InitialDataSource.ByteVal;
+            public sbyte SByteVal { get; set; } = InitialDataSource.SByteVal;
+            public short Int16Val { get; set; } = InitialDataSource.Int16Val;
+            public ushort UInt16Val { get; set; } = InitialDataSource.UInt16Val;
+            public int Int32Val { get; set; } = InitialDataSource.Int32Val;
+            public uint UInt32Val { get; set; } = InitialDataSource.UInt32Val;
+            public long Int64Val { get; set; } = InitialDataSource.Int64Val;
+            public ulong UInt64Val { get; set; } = InitialDataSource.UInt64Val;
+            public char CharVal { get; set; } = InitialDataSource.CharVal;
+            public double DoubleVal { get; set; } = InitialDataSource.DoubleVal;
+            public float SingleVal { get; set; } = InitialDataSource.SingleVal;
+            public decimal DecimalVal { get; set; } = InitialDataSource.DecimalVal;
+            public TestDataEnum CustomEnumVal { get; set; } = InitialDataSource.CustomEnumVal;
+            public TestDataEnumWithoutZero CustomEnumWithoutZeroVal { get; set; } = InitialDataSource.CustomEnumWithoutZeroVal;
+            public bool? NullableBoolVal { get; set; } = InitialDataSource.BoolVal;
+            public byte? NullableByteVal { get; set; } = InitialDataSource.ByteVal;
+            public sbyte? NullableSByteVal { get; set; } = InitialDataSource.SByteVal;
+            public short? NullableInt16Val { get; set; } = InitialDataSource.Int16Val;
+            public ushort? NullableUInt16Val { get; set; } = InitialDataSource.UInt16Val;
+            public int? NullableInt32Val { get; set; } = InitialDataSource.Int32Val;
+            public uint? NullableUInt32Val { get; set; } = InitialDataSource.UInt32Val;
+            public long? NullableInt64Val { get; set; } = InitialDataSource.Int64Val;
+            public ulong? NullableUInt64Val { get; set; } = InitialDataSource.UInt64Val;
+            public char? NullableCharVal { get; set; } = InitialDataSource.CharVal;
+            public double? NullableDoubleVal { get; set; } = InitialDataSource.DoubleVal;
+            public float? NullableSingleVal { get; set; } = InitialDataSource.SingleVal;
+            public decimal? NullableDecimalVal { get; set; } = InitialDataSource.DecimalVal;
+            public TestDataEnum? NullableCustomEnumVal { get; set; } = InitialDataSource.CustomEnumVal;
+            public TestDataEnumWithoutZero? NullableCustomEnumWithoutZeroVal { get; set; } = InitialDataSource.CustomEnumWithoutZeroVal;
+            public string StrVal { get; set; } = InitialDataSource.StringVal;
+
+            public static TestDataRecord_NoConstructor CreateWithNulledProperties() => new()
+            {
+                BoolVal = false,
+                ByteVal = 0,
+                SByteVal = 0,
+                Int16Val = 0,
+                UInt16Val = 0,
+                Int32Val = 0,
+                UInt32Val = 0,
+                Int64Val = 0,
+                UInt64Val = 0,
+                CharVal = '\0',
+                DoubleVal = 0,
+                SingleVal = 0,
+                DecimalVal = 0,
+                CustomEnumVal = TestDataEnum.Zero,
+                CustomEnumWithoutZeroVal = (TestDataEnumWithoutZero)0,
+                NullableBoolVal = null,
+                NullableByteVal = null,
+                NullableSByteVal = null,
+                NullableInt16Val = null,
+                NullableUInt16Val = null,
+                NullableInt32Val = null,
+                NullableUInt32Val = null,
+                NullableInt64Val = null,
+                NullableUInt64Val = null,
+                NullableCharVal = null,
+                NullableDoubleVal = null,
+                NullableSingleVal = null,
+                NullableDecimalVal = null,
+                NullableCustomEnumVal = null,
+                NullableCustomEnumWithoutZeroVal = null,
+                StrVal = null
+            };
+
+            public static TestDataRecord_NoConstructor CreateWithDbValuesProperties() => new()
+            {
+                BoolVal = DbDataSource.BoolVal,
+                ByteVal = DbDataSource.ByteVal,
+                SByteVal = DbDataSource.SByteVal,
+                Int16Val = DbDataSource.Int16Val,
+                UInt16Val = DbDataSource.UInt16Val,
+                Int32Val = DbDataSource.Int32Val,
+                UInt32Val = DbDataSource.UInt32Val,
+                Int64Val = DbDataSource.Int64Val,
+                UInt64Val = DbDataSource.UInt64Val,
+                CharVal = DbDataSource.CharVal,
+                DoubleVal = DbDataSource.DoubleVal,
+                SingleVal = DbDataSource.SingleVal,
+                DecimalVal = DbDataSource.DecimalVal,
+                CustomEnumVal = DbDataSource.CustomEnumVal,
+                CustomEnumWithoutZeroVal = DbDataSource.CustomEnumWithoutZeroVal,
+
+                NullableBoolVal = DbDataSource.BoolVal,
+                NullableByteVal = DbDataSource.ByteVal,
+                NullableSByteVal = DbDataSource.SByteVal,
+                NullableInt16Val = DbDataSource.Int16Val,
+                NullableUInt16Val = DbDataSource.UInt16Val,
+                NullableInt32Val = DbDataSource.Int32Val,
+                NullableUInt32Val = DbDataSource.UInt32Val,
+                NullableInt64Val = DbDataSource.Int64Val,
+                NullableUInt64Val = DbDataSource.UInt64Val,
+                NullableCharVal = DbDataSource.CharVal,
+                NullableDoubleVal = DbDataSource.DoubleVal,
+                NullableSingleVal = DbDataSource.SingleVal,
+                NullableDecimalVal = DbDataSource.DecimalVal,
+                NullableCustomEnumVal = DbDataSource.CustomEnumVal,
+                NullableCustomEnumWithoutZeroVal = DbDataSource.CustomEnumWithoutZeroVal,
 
                 StrVal = DbDataSource.StringVal
             };
