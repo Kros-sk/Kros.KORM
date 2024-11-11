@@ -1,8 +1,8 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp3.1;net46</TargetFrameworks>
-    <Version>5.1.1</Version>
+    <TargetFrameworks>net8.0</TargetFrameworks>
+    <Version>7.0.0</Version>
     <Authors>KROS a. s.</Authors>
     <Company>KROS a. s.</Company>
     <Description>KORM is fast, easy to use, micro ORM tool (Kros Object Relation Mapper).</Description>
@@ -25,7 +25,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="../README.md" Pack="true" PackagePath="/"/>
+    <None Include="../README.md" Pack="true" PackagePath="/" />
   </ItemGroup>
 
   <PropertyGroup Condition="'$(TF_BUILD)' == 'true'">
@@ -47,8 +47,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Kros.Utils" Version="1.19.0" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
+    <PackageReference Include="Kros.Utils" Version="3.0.0" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
     <PackageReference Include="System.Reflection.Emit.Lightweight" Version="4.7.0" />
     <PackageReference Include="System.ValueTuple" Version="4.5.0" />
   </ItemGroup>

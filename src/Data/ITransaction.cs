@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Kros.KORM.Data
 {
@@ -14,9 +16,19 @@ namespace Kros.KORM.Data
         void Commit();
 
         /// <summary>
+        /// Async commits all changes made to the database in the current transaction.
+        /// </summary>
+        Task CommitAsync(CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// Discards all changes made to the database in the current transaction.
         /// </summary>
         void Rollback();
+
+        /// <summary>
+        /// Async discards all changes made to the database in the current transaction.
+        /// </summary>
+        Task RollbackAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
         /// The time in seconds to wait for the <see cref="System.Data.Common.DbCommand.CommandTimeout">command</see> in this transaction to execute.

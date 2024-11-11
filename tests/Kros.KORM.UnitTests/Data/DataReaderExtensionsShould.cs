@@ -1,5 +1,6 @@
 ﻿using Castle.Core.Internal;
 using FluentAssertions;
+using Kros.Extensions;
 using Kros.KORM.Data;
 using Kros.KORM.UnitTests.Helper;
 using System;
@@ -57,7 +58,7 @@ namespace Kros.KORM.UnitTests.Data
 
         [Theory]
         [InlineData(0.45)]
-        [InlineData(22)]
+        [InlineData(22.0)]
         [InlineData(null)]
         public void GetNullableDecimal(double? value)
         {
@@ -68,7 +69,7 @@ namespace Kros.KORM.UnitTests.Data
         }
 
         [Theory]
-        [InlineData(11)]
+        [InlineData(11.0)]
         [InlineData(0.785)]
         [InlineData(null)]
         public void GetNullableDouble(double? value)
@@ -113,8 +114,8 @@ namespace Kros.KORM.UnitTests.Data
         }
 
         [Theory]
-        [InlineData(1)]
-        [InlineData(125)]
+        [InlineData(1L)]
+        [InlineData(125L)]
         [InlineData(null)]
         public void GetNullableInt64(long? value)
         {
@@ -124,8 +125,8 @@ namespace Kros.KORM.UnitTests.Data
         }
 
         [Theory]
-        [InlineData(1)]
-        [InlineData(125)]
+        [InlineData(1.0F)]
+        [InlineData(125.0F)]
         [InlineData(null)]
         public void GetNullableFloat(float? value)
         {

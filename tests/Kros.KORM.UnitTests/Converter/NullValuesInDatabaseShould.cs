@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using Kros.KORM.Converter;
 using Kros.KORM.Materializer;
 using Kros.KORM.Metadata;
@@ -448,10 +448,10 @@ namespace Kros.KORM.UnitTests.Converter
             Two
         }
 
-        private enum TestDataEnumWithoutZero
+        private enum TestDataEnumWithoutZero : long
         {
-            Ten = 10,
-            Twenty = 20
+            Ten = 10_000_000_000,
+            Twenty = 20_000_000_000
         }
 
         private class TestConverter : IConverter

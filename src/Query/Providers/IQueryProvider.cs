@@ -68,10 +68,11 @@ namespace Kros.KORM.Query
         /// Asynchronously executes action in transaction.
         /// </summary>
         /// <param name="action">Action which will be executed.</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
         /// <returns>
         /// A task that represents the asynchronous operation.
         /// </returns>
-        Task ExecuteInTransactionAsync(Func<Task> action);
+        Task ExecuteInTransactionAsync(Func<CancellationToken, Task> action, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Executes the command.
@@ -134,7 +135,7 @@ namespace Kros.KORM.Query
 
         /// <summary>
         /// Vytvorí inicializovaný príkaz <see cref="DbCommand"/>, pre aktuálnu transakciu.
-        /// Používa sa iba v rámci volania <see cref="ExecuteInTransactionAsync(Func{Task})"/>.
+        /// Používa sa iba v rámci volania <see cref="ExecuteInTransactionAsync(Func{CancellationToken, Task}, CancellationToken)"/>.
         /// </summary>
         /// <returns>Inicializovaný príkaz.</returns>
         DbCommand GetCommandForCurrentTransaction();

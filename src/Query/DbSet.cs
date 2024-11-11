@@ -26,17 +26,17 @@ namespace Kros.KORM.Query
     {
         #region Private fields
 
-        private ICommandGenerator<T> _commandGenerator;
-        private IQueryProvider _provider;
-        private IQueryBase<T> _query;
-        private HashSet<T> _addedItems = new HashSet<T>();
-        private HashSet<T> _editedItems = new HashSet<T>();
-        private HashSet<T> _deletedItems = new HashSet<T>();
-        private HashSet<T> _upsertedItems = new HashSet<T>();
-        private HashSet<object> _deletedItemsIds = new HashSet<object>();
-        private List<WhereExpression> _deleteExpressions = new List<WhereExpression>();
+        private readonly ICommandGenerator<T> _commandGenerator;
+        private readonly IQueryProvider _provider;
+        private readonly IQueryBase<T> _query;
+        private readonly HashSet<T> _addedItems = new HashSet<T>();
+        private readonly HashSet<T> _editedItems = new HashSet<T>();
+        private readonly HashSet<T> _deletedItems = new HashSet<T>();
+        private readonly HashSet<T> _upsertedItems = new HashSet<T>();
+        private readonly HashSet<object> _deletedItemsIds = new HashSet<object>();
+        private readonly List<WhereExpression> _deleteExpressions = new List<WhereExpression>();
         private readonly TableInfo _tableInfo;
-        private Lazy<Type> _primaryKeyPropertyType;
+        private readonly Lazy<Type> _primaryKeyPropertyType;
         private IEnumerable<string> _upsertConditionColumnNames;
 
         #endregion
@@ -355,17 +355,17 @@ namespace Kros.KORM.Query
             bool ignoreValueGenerators,
             CancellationToken cancellationToken = default)
         {
-            await _provider.ExecuteInTransactionAsync(async () =>
+            await _provider.ExecuteInTransactionAsync(async (token) =>
             {
-                await CommitChangesAddedItemsAsync(_addedItems, useAsync, ignoreValueGenerators, cancellationToken);
-                await CommitChangesEditedItemsAsync(_editedItems, useAsync, ignoreValueGenerators, cancellationToken);
-                await CommitChangesUpsertedItemsAsync(_upsertedItems, useAsync, cancellationToken);
-                await CommitChangesDeletedItemsAsync(_deletedItems, useAsync, cancellationToken);
-                await CommitChangesDeletedItemsByIdAsync(_deletedItemsIds, useAsync, cancellationToken);
-                await CommitChangesDeletedByConditionsAsync(_deleteExpressions, useAsync, cancellationToken);
+                await CommitChangesAddedItemsAsync(_addedItems, useAsync, ignoreValueGenerators, token);
+                await CommitChangesEditedItemsAsync(_editedItems, useAsync, ignoreValueGenerators, token);
+                await CommitChangesUpsertedItemsAsync(_upsertedItems, useAsync, token);
+                await CommitChangesDeletedItemsAsync(_deletedItems, useAsync, token);
+                await CommitChangesDeletedItemsByIdAsync(_deletedItemsIds, useAsync, token);
+                await CommitChangesDeletedByConditionsAsync(_deleteExpressions, useAsync, token);
 
                 Clear();
-            });
+            }, cancellationToken);
         }
 
         /// <summary>
@@ -402,7 +402,7 @@ namespace Kros.KORM.Query
 
         #region Private Helpers
 
-        private void PrepareCommand(IDbCommand command)
+        private void PrepareCommand(DbCommand command)
         {
             if (_provider.SupportsPrepareCommand())
             {
@@ -610,7 +610,7 @@ namespace Kros.KORM.Query
             }
         }
 
-        private void CheckItemInCollection(T entity, HashSet<T> collection, string message, string collectionName)
+        private static void CheckItemInCollection(T entity, HashSet<T> collection, string message, string collectionName)
         {
             if (collection.Contains(entity))
             {

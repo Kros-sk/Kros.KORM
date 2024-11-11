@@ -22,8 +22,8 @@ namespace Kros.KORM.Query
 
         #region Private fields
 
-        private IDatabaseMapper _databaseMapper;
-        private IQueryProvider _provider;
+        private readonly IDatabaseMapper _databaseMapper;
+        private readonly IQueryProvider _provider;
         private bool _ignoreQueryFilters = false;
 
         #endregion
