@@ -82,6 +82,19 @@ namespace Kros.KORM.Migrations
                 if (migrationScripts.Any())
                 {
                     await ExecuteMigrationScripts(helper.Database, migrationScripts);
+
+                    foreach (var action in _migrationOptions.Actions)
+                    {
+                        try
+                        {
+                            await action(helper.Database);
+                            Console.WriteLine("Post-migration action(s) executed.");
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Error executing post-migration action(s): {ex.Message}");
+                        }
+                    }
                 }
             }
         }
