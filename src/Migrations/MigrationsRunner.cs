@@ -88,6 +88,7 @@ namespace Kros.KORM.Migrations
                         try
                         {
                             await action(helper.Database);
+                            //VYMAZAť
                             Console.WriteLine("Post-migration action(s) executed.");
                         }
                         catch (Exception ex)

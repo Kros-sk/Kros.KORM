@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace Kros.KORM.Migrations
@@ -13,11 +14,11 @@ namespace Kros.KORM.Migrations
     public class MigrationOptions
     {
         private const int DefaultTimeoutInSeconds = 30;
-        private const string DefaultResourceNamespace = "SqlScripts.PostMigrationScripts";
+        private const string DefaultResourceNamespace = "Resources";
         private const string DefaultRefreshViewsScriptName = "RefreshViews.sql";
 
-        private List<IMigrationScriptsProvider> _providers = new List<IMigrationScriptsProvider>();
-        private List<Func<IDatabase, Task>> _actions = new List<Func<IDatabase, Task>>();
+        private List<IMigrationScriptsProvider> _providers = [];
+        private List<Func<IDatabase, Task>> _actions = [];
 
         /// <summary>
         /// List of <see cref="IMigrationScriptsProvider"/>.
@@ -72,14 +73,15 @@ namespace Kros.KORM.Migrations
         /// <param name="assembly"></param>
         /// <param name="scriptName"></param>
         /// <exception cref="InvalidOperationException"></exception>
-        public void RefreshViews(Assembly assembly, string scriptName = DefaultRefreshViewsScriptName)
+        public void AddRefreshViewsAction(string scriptName = DefaultRefreshViewsScriptName)
         {
+            var assembly = Assembly.GetExecutingAssembly();
             var resourceName = $"{assembly.GetName().Name}.{DefaultResourceNamespace}.{scriptName}";
+            //Console.WriteLine(resourceName);
             AddAction(async (database) =>
             {
-                using Stream stream = assembly.GetManifestResourceStream(resourceName)
-                    ?? throw new InvalidOperationException($"Resource '{resourceName}' not found.");
-                using StreamReader reader = new StreamReader(stream);
+                Stream resourceStream = assembly.GetManifestResourceStream(resourceName);
+                using var reader = new StreamReader(resourceStream, Encoding.UTF8);
                 string script = await reader.ReadToEndAsync();
                 await database.ExecuteNonQueryAsync(script);
             });
