@@ -18,7 +18,7 @@ namespace Kros.KORM.Migrations
         private const string DefaultRefreshViewsScriptName = "RefreshViews.sql";
 
         private List<IMigrationScriptsProvider> _providers = [];
-        private List<Func<IDatabase, Task>> _actions = [];
+        private List<Func<IDatabase, long, Task>> _actions = [];
 
         /// <summary>
         /// List of <see cref="IMigrationScriptsProvider"/>.
@@ -27,9 +27,9 @@ namespace Kros.KORM.Migrations
 
 
         /// <summary>
-        /// List of actions to be executed on database after migration scripts.
+        /// List of actions to be executed on database after migration scripts are executed.
         /// </summary>
-        public IEnumerable<Func<IDatabase, Task>> Actions => _actions;
+        public IEnumerable<Func<IDatabase, long, Task>> Actions => _actions;
 
         /// <summary>
         /// Timeout for the migration script command.
@@ -60,25 +60,23 @@ namespace Kros.KORM.Migrations
             => AddScriptsProvider(new FileMigrationScriptsProvider(folderPath));
 
         /// <summary>
-        /// Add action to be executed on database after migration scripts.
+        /// Add action to be executed on database after migration scripts are executed.
         /// </summary>
-        /// <param name="action"></param>
-        public void AddAction(Func<IDatabase, Task> action)
-            => _actions.Add(action);
+        /// <param name="actionToExecute"></param>
+        public void AddAfterMigrationAction(Func<IDatabase, long, Task> actionToExecute)
+        {
+            _actions.Add(actionToExecute);
+        }
 
         /// <summary>
-        /// Refresh all views in database after migration scripts.
-        /// Script for refreshing views is loaded from assembly. Default script name is 'RefreshViews.sql'.
+        /// Add action of refreshing all database views.
         /// </summary>
-        /// <param name="assembly"></param>
-        /// <param name="scriptName"></param>
-        /// <exception cref="InvalidOperationException"></exception>
+        /// <param name="scriptName">Name of the script containing query for refreshing all views. Default one is Kros.KORM\Resources\RefreshViews.sql </param>
         public void AddRefreshViewsAction(string scriptName = DefaultRefreshViewsScriptName)
         {
             var assembly = Assembly.GetExecutingAssembly();
             var resourceName = $"{assembly.GetName().Name}.{DefaultResourceNamespace}.{scriptName}";
-            //Console.WriteLine(resourceName);
-            AddAction(async (database) =>
+            AddAfterMigrationAction(async (database, _) =>
             {
                 Stream resourceStream = assembly.GetManifestResourceStream(resourceName);
                 using var reader = new StreamReader(resourceStream, Encoding.UTF8);
