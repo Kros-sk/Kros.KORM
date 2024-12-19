@@ -82,6 +82,12 @@ namespace Kros.KORM.Migrations
                 if (migrationScripts.Any())
                 {
                     await ExecuteMigrationScripts(helper.Database, migrationScripts);
+                    long maxScriptId = migrationScripts.Max(s => s.Id);
+
+                    foreach (var action in _migrationOptions.Actions)
+                    {
+                        await action(helper.Database, maxScriptId);
+                    }
                 }
             }
         }
