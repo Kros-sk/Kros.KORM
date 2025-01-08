@@ -65,6 +65,7 @@
     <EmbeddedResource Include="Resources\ScriptsForRunner\MigrateToLastVersion\20190301003_AddContactsTable.sql">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </EmbeddedResource>
+    <EmbeddedResource Include="Resources\ScriptsForRunner\MigrateWithActions\20250108001_AddPeopleColumnAge.sql" />
     <EmbeddedResource Include="SqlScripts\20190228001_InitDatabase.sql">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>

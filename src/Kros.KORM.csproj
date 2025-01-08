@@ -63,9 +63,11 @@
 
   <ItemGroup>
     <None Remove="Resources\MigrationsHistoryTableScript.sql" />
+    <None Remove="Resources\RefreshViews.sql" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\MigrationsHistoryTableScript.sql" />
+    <EmbeddedResource Include="Resources\RefreshViews.sql" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Properties\Resources.Designer.cs">

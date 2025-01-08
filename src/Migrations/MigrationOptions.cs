@@ -71,14 +71,13 @@ namespace Kros.KORM.Migrations
         /// <summary>
         /// Add action of refreshing all database views.
         /// </summary>
-        /// <param name="scriptName">Name of the script containing query for refreshing all views. Default one is Kros.KORM\Resources\RefreshViews.sql </param>
-        public void AddRefreshViewsAction(string scriptName = DefaultRefreshViewsScriptName)
+        public void AddRefreshViewsAction()
         {
             var assembly = Assembly.GetExecutingAssembly();
-            var resourceName = $"{assembly.GetName().Name}.{DefaultResourceNamespace}.{scriptName}";
+            var resourceName = $"{assembly.GetName().Name}.{DefaultResourceNamespace}.{DefaultRefreshViewsScriptName}";
             AddAfterMigrationAction(async (database, _) =>
             {
-                Stream resourceStream = assembly.GetManifestResourceStream(resourceName);
+                await using Stream resourceStream = assembly.GetManifestResourceStream(resourceName);
                 using var reader = new StreamReader(resourceStream, Encoding.UTF8);
                 string script = await reader.ReadToEndAsync();
                 await database.ExecuteNonQueryAsync(script);

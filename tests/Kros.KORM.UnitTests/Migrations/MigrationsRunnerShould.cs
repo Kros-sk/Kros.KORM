@@ -42,6 +42,10 @@ $@"INSERT INTO __KormMigrationsHistory VALUES (20190228001, 'Old', 'FromUnitTest
 INSERT INTO __KormMigrationsHistory VALUES (20190228002, 'Old', 'FromUnitTests', '20190228')
 INSERT INTO __KormMigrationsHistory VALUES (20190301001, 'InitDatabase', 'FromUnitTests', '20190301')";
 
+        private readonly static string CreateView_People =
+$@"CREATE VIEW PeopleView AS
+SELECT *
+FROM dbo.People";
         #endregion
 
         protected override string BaseConnectionString => IntegrationTestConfig.ConnectionString;
@@ -74,6 +78,18 @@ INSERT INTO __KormMigrationsHistory VALUES (20190301001, 'InitDatabase', 'FromUn
             DatabaseVersionShouldBe(20190301003);
         }
 
+        [Fact]
+        public async Task MigrateWithActions()
+        {
+            var runner = CreateMigrationsRunner(nameof(MigrateWithActions), true);
+            InitDatabase();
+
+            await runner.MigrateAsync();
+           
+            ColumnInViewShouldExist("PeopleView", "Age");
+            TableShouldExist("Roles");
+        }
+
         private void InitDatabase()
         {
             ExecuteCommand((cmd) =>
@@ -81,7 +97,9 @@ INSERT INTO __KormMigrationsHistory VALUES (20190301001, 'InitDatabase', 'FromUn
                 foreach (var script in new[] {
                     CreateTable_MigrationHistory ,
                     CreateTable_People,
-                    InsertIntoMigrationHistory })
+                    InsertIntoMigrationHistory,
+                    CreateView_People
+                })
                 {
                     cmd.CommandText = script;
                     cmd.ExecuteScalar();
@@ -94,6 +112,16 @@ INSERT INTO __KormMigrationsHistory VALUES (20190301001, 'InitDatabase', 'FromUn
             ExecuteCommand((cmd) =>
             {
                 cmd.CommandText = $"SELECT Count(*) FROM sys.tables WHERE name = '{tableName}' AND type = 'U'";
+                ((int)cmd.ExecuteScalar())
+                    .Should().Be(1);
+            });
+        }
+
+        private void ColumnInViewShouldExist(string viewName, string columnName)
+        {
+            ExecuteCommand((cmd) =>
+            {
+                cmd.CommandText = $"SELECT Count(*) FROM sys.columns WHERE object_id = OBJECT_ID('{viewName}') AND name = '{columnName}'";
                 ((int)cmd.ExecuteScalar())
                     .Should().Be(1);
             });
@@ -118,12 +146,31 @@ INSERT INTO __KormMigrationsHistory VALUES (20190301001, 'InitDatabase', 'FromUn
             });
         }
 
-        private MigrationsRunner CreateMigrationsRunner(string folderName)
+        private MigrationsRunner CreateMigrationsRunner(string folderName, bool migrateWithActions = false)
         {
             var options = new MigrationOptions();
             options.AddAssemblyScriptsProvider(
                 Assembly.GetExecutingAssembly(),
                 $"Kros.KORM.UnitTests.Resources.ScriptsForRunner.{folderName}");
+
+            if (migrateWithActions)
+            {
+                options.AddRefreshViewsAction();
+
+                options.AddAfterMigrationAction(async (db, id) =>
+                {
+                    if (id <= 20250101001)
+                    {
+                        db.ExecuteNonQuery("CREATE TABLE Departments (Id int);");
+                    }
+
+                    if (id <= 20990101001)
+                    {
+                        db.ExecuteNonQuery("CREATE TABLE Roles (Id int);");
+                    }
+                    await Task.CompletedTask;
+                });
+            }
 
             return new MigrationsRunner(ServerHelper.Connection.ConnectionString, options);
         }
