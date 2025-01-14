@@ -1,7 +1,10 @@
 ﻿using Kros.KORM.Migrations.Providers;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Kros.KORM.Migrations
 {
@@ -11,13 +14,22 @@ namespace Kros.KORM.Migrations
     public class MigrationOptions
     {
         private const int DefaultTimeoutInSeconds = 30;
+        private const string DefaultResourceNamespace = "Resources";
+        private const string DefaultRefreshViewsScriptName = "RefreshViews.sql";
 
-        private List<IMigrationScriptsProvider> _providers = new List<IMigrationScriptsProvider>();
+        private List<IMigrationScriptsProvider> _providers = [];
+        private List<Func<IDatabase, long, Task>> _actions = [];
 
         /// <summary>
         /// List of <see cref="IMigrationScriptsProvider"/>.
         /// </summary>
         public IEnumerable<IMigrationScriptsProvider> Providers => _providers;
+
+
+        /// <summary>
+        /// List of actions to be executed on database after migration scripts are executed.
+        /// </summary>
+        public IEnumerable<Func<IDatabase, long, Task>> Actions => _actions;
 
         /// <summary>
         /// Timeout for the migration script command.
@@ -46,5 +58,30 @@ namespace Kros.KORM.Migrations
         /// <param name="folderPath">Path to folder where migration scripts are stored.</param>
         public void AddFileScriptsProvider(string folderPath)
             => AddScriptsProvider(new FileMigrationScriptsProvider(folderPath));
+
+        /// <summary>
+        /// Add action to be executed on database after migration scripts are executed.
+        /// </summary>
+        /// <param name="actionToExecute"></param>
+        public void AddAfterMigrationAction(Func<IDatabase, long, Task> actionToExecute)
+        {
+            _actions.Add(actionToExecute);
+        }
+
+        /// <summary>
+        /// Add action of refreshing all database views.
+        /// </summary>
+        public void AddRefreshViewsAction()
+        {
+            var assembly = Assembly.GetExecutingAssembly();
+            var resourceName = $"{assembly.GetName().Name}.{DefaultResourceNamespace}.{DefaultRefreshViewsScriptName}";
+            AddAfterMigrationAction(async (database, _) =>
+            {
+                await using Stream resourceStream = assembly.GetManifestResourceStream(resourceName);
+                using var reader = new StreamReader(resourceStream, Encoding.UTF8);
+                string script = await reader.ReadToEndAsync();
+                await database.ExecuteNonQueryAsync(script);
+            });
+        }
     }
 }

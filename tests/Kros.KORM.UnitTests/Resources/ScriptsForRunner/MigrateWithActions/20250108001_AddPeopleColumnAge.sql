@@ -1,0 +1,1 @@
+﻿ALTER TABLE People ADD Age INT;
