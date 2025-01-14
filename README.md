@@ -912,9 +912,8 @@ builder.Services.AddKorm(builder.Configuration)
             {
                 if (id <= scriptId)
                 {
-                    database.ExecuteNonQuery("INSERT ...");
+                    await database.ExecuteNonQueryAsync("INSERT ...");
                 }
-                await Task.CompletedTask;
             });
         })
         .Migrate();
