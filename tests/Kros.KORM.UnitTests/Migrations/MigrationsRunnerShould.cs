@@ -161,14 +161,13 @@ FROM dbo.People";
                 {
                     if (id <= 20250101001)
                     {
-                        db.ExecuteNonQuery("CREATE TABLE Departments (Id int);");
+                        await db.ExecuteNonQueryAsync("CREATE TABLE Departments (Id int);");
                     }
 
                     if (id <= 20990101001)
                     {
-                        db.ExecuteNonQuery("CREATE TABLE Roles (Id int);");
+                        await db.ExecuteNonQueryAsync("CREATE TABLE Roles (Id int);");
                     }
-                    await Task.CompletedTask;
                 });
             }
 

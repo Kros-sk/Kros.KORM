@@ -893,6 +893,7 @@ using (var transaction = database.BeginTransaction(IsolationLevel.Chaos))
 ```
 
 ### Post-migration actions
+
 Option for post-migration actions and post-migration database views refresh with an option to accept the script ID up to which actions will be executed after migration is available. The default script RefreshViews.sql for refreshing views is in resources.
 Action will be executed only if the ID of the latest script of the migration is less than or equal to the user-defined ID. If the ID is not defined, the action will execute regardless.
 
