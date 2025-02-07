@@ -31,6 +31,11 @@
         public bool AutoMigrate { get; set; } = DefaultAutoMigrate;
 
         /// <summary>
+        /// Application name to be used in the connection string.
+        /// </summary>
+        public string ApplicationName { get; set; }
+
+        /// <summary>
         /// Returns info about KORM connection.
         /// </summary>
         public override string ToString()
