@@ -1,7 +1,6 @@
 ﻿using FluentAssertions;
 using Kros.Data.BulkActions;
 using Kros.Data.Schema;
-using Kros.KORM.Helper;
 using Kros.KORM.Materializer;
 using Kros.KORM.Metadata;
 using Kros.KORM.Query;
