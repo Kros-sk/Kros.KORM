@@ -278,7 +278,8 @@ namespace Kros.KORM.UnitTests.Materializer
 
             (ConstructorInfo ctor, bool _) = typeof(T).GetConstructor();
 
-            return RecordModelFactory.CreateFactoryForRecords<T>(dataReader, tableInfo, injector, ctor);
+            RecordModelFactory recordModelFactory = new();
+            return recordModelFactory.CreateFactoryForRecords<T>(dataReader, tableInfo, injector, ctor);
         }
 
         private static (TableInfo table, IInjector injector) GetTableInfo<T>()

@@ -5,6 +5,7 @@ using Kros.KORM.Injection;
 using Kros.KORM.Metadata;
 using Kros.KORM.Properties;
 using Kros.Utils;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Data;
 using System.Linq;
@@ -25,6 +26,7 @@ namespace Kros.KORM.Materializer
         private readonly IDatabaseMapper _databaseMapper;
         private readonly ICache<int, Delegate> _factoriesCache = new Cache<int, Delegate>();
         private readonly ReaderKeyGenerator _keyGenerator = new ReaderKeyGenerator();
+        private readonly ILogger<DynamicMethodModelFactory> _logger;
 
         #endregion
 
@@ -38,6 +40,7 @@ namespace Kros.KORM.Materializer
         public DynamicMethodModelFactory(IDatabaseMapper databaseMapper)
         {
             _databaseMapper = Check.NotNull(databaseMapper, nameof(databaseMapper));
+            _logger = KormLogging.CreateLogger<DynamicMethodModelFactory>();
         }
 
         #endregion
@@ -56,6 +59,7 @@ namespace Kros.KORM.Materializer
             Check.NotNull(reader, nameof(reader));
 
             int key = _keyGenerator.GenerateKey<T>(reader);
+            _logger.LogDebug("Get factory for type '{type}' with key '{key}'.", typeof(T).FullName, key);
 
             return _factoriesCache.Get(key, () => CreateFactory<T>(reader)) as Func<IDataReader, T>;
         }
@@ -63,6 +67,7 @@ namespace Kros.KORM.Materializer
         private Func<IDataReader, T> CreateFactory<T>(IDataReader reader)
         {
             Type type = typeof(T);
+            _logger.LogDebug("Create factory for type '{type}'.", typeof(T).FullName);
             if (type.IsValueType)
             {
                 return new Func<IDataReader, T>(FactoryForValueType<T>);
@@ -75,16 +80,19 @@ namespace Kros.KORM.Materializer
 
                 if (isDefault)
                 {
+                    _logger.LogDebug("Found default constructor, generating factory with property setters.");
                     return CreateFactoryForPropertySetters<T>(reader, tableInfo, injector, ctor);
                 }
                 else
                 {
-                    return RecordModelFactory.CreateFactoryForRecords<T>(reader, tableInfo, injector, ctor);
+                    _logger.LogDebug("Found non default constructor, generating factory for record type.");
+                    RecordModelFactory recordModelFactory = new();
+                    return recordModelFactory.CreateFactoryForRecords<T>(reader, tableInfo, injector, ctor);
                 }
             }
         }
 
-        private string GetFactoryName => $"korm_factory_{_factoriesCache.Count}";
+        private string GetFactoryName() => $"korm_factory_{_factoriesCache.Count}";
 
         private Func<IDataReader, T> CreateFactoryForPropertySetters<T>(
             IDataReader reader,
@@ -93,16 +101,19 @@ namespace Kros.KORM.Materializer
             ConstructorInfo ctor)
         {
             Type type = typeof(T);
-            DynamicMethod dynamicMethod = new(GetFactoryName, type, new Type[] { typeof(IDataReader) }, true);
+            string factoryName = GetFactoryName();
+            _logger.LogDebug("Start creating dynamic factory method '{factoryName}'.", factoryName);
+            DynamicMethod dynamicMethod = new(factoryName, type, new Type[] { typeof(IDataReader) }, true);
             ILGenerator ilGenerator = dynamicMethod.GetILGenerator();
 
             LocalBuilder localResult = ilGenerator.DeclareLocal(typeof(T));
-            ilGenerator.LogAndEmit(OpCodes.Newobj, ctor);
-            ilGenerator.LogAndEmit(OpCodes.Stloc_S, localResult.LocalIndex);
+            ilGenerator.LogAndEmit(OpCodes.Newobj, ctor, _logger);
+            ilGenerator.LogAndEmit(OpCodes.Stloc_S, localResult.LocalIndex, _logger);
             EmitReaderFields(reader, tableInfo, ilGenerator, injector);
-            ilGenerator.CallOnAfterMaterialize(tableInfo);
-            ilGenerator.LogAndEmit(OpCodes.Ldloc, localResult.LocalIndex);
-            ilGenerator.LogAndEmit(OpCodes.Ret);
+            ilGenerator.CallOnAfterMaterialize(tableInfo, _logger);
+            ilGenerator.LogAndEmit(OpCodes.Ldloc, localResult.LocalIndex, _logger);
+            ilGenerator.LogAndEmit(OpCodes.Ret, _logger);
+            _logger.LogDebug("End creating dynamic factory method '{factoryName}'.", factoryName);
 
             return dynamicMethod.CreateDelegate(Expression.GetFuncType(typeof(IDataReader), type)) as Func<IDataReader, T>;
         }
@@ -131,7 +142,7 @@ namespace Kros.KORM.Materializer
             }
         }
 
-        private static void EmitReaderFields(IDataReader reader,
+        private void EmitReaderFields(IDataReader reader,
             TableInfo tableInfo,
             ILGenerator ilGenerator,
             IInjector injector)
@@ -143,41 +154,53 @@ namespace Kros.KORM.Materializer
             EmitPropertyForInjecting(tableInfo, ilGenerator, injector);
         }
 
-        private static void EmitPropertyForInjecting(TableInfo tableInfo,
+        private void EmitPropertyForInjecting(TableInfo tableInfo,
             ILGenerator ilGenerator,
             IInjector injector)
         {
+            _logger.LogDebug("Emitting injectable properties.");
             foreach (PropertyInfo property in tableInfo
                 .AllModelProperties
                 .Where(p => injector.IsInjectable(p.Name)))
             {
-                ilGenerator.LogAndEmit(OpCodes.Ldloc_0);
-                ilGenerator.CallGetInjectedValue(injector, property.Name, property.PropertyType);
-                ilGenerator.LogAndEmit(OpCodes.Callvirt, property.GetSetMethod(true));
+                _logger.LogDebug("  {propertyName}", property.Name);
+                ilGenerator.LogAndEmit(OpCodes.Ldloc_0, _logger);
+                ilGenerator.CallGetInjectedValue(injector, property.Name, property.PropertyType, _logger);
+                ilGenerator.LogAndEmit(OpCodes.Callvirt, property.GetSetMethod(true), _logger);
             }
         }
 
-        private static void EmitField(
+        private void EmitField(
             IDataReader reader,
             TableInfo tableInfo,
             ILGenerator ilGenerator,
             int columnIndex)
         {
-            ColumnInfo columnInfo = tableInfo.GetColumnInfo(reader.GetName(columnIndex));
+            string fieldName = reader.GetName(columnIndex);
+            ColumnInfo columnInfo = tableInfo.GetColumnInfo(fieldName);
+            _logger.LogDebug("Emitting field {fieldIndex} from data reader: {fieldName}.", columnIndex, fieldName);
             if (columnInfo != null)
             {
-                ilGenerator.LogAndEmit(OpCodes.Ldloc_0);
+                ilGenerator.LogAndEmit(OpCodes.Ldloc_0, _logger);
                 Type srcType = reader.GetFieldType(columnIndex);
+                _logger.LogDebug("  Field type is {type}.", srcType.FullName);
                 IConverter converter = ConverterHelper.GetConverter(columnInfo, srcType);
                 if (converter is null)
                 {
-                    ilGenerator.EmitFieldWithoutConverter(srcType, columnInfo.PropertyInfo.PropertyType, columnIndex);
+                    _logger.LogDebug("  Field does not have a converter.");
+                    ilGenerator.EmitFieldWithoutConverter(srcType, columnInfo.PropertyInfo.PropertyType, columnIndex, _logger);
                 }
                 else
                 {
-                    ilGenerator.EmitFieldWithConverter(converter, columnInfo.PropertyInfo.PropertyType, columnIndex);
+                    _logger.LogDebug("  Field has a converter.");
+                    ilGenerator.EmitFieldWithConverter(converter, columnInfo.PropertyInfo.PropertyType, columnIndex, _logger);
                 }
-                ilGenerator.LogAndEmit(OpCodes.Callvirt, columnInfo.PropertyInfo.GetSetMethod(true));
+                ilGenerator.LogAndEmit(OpCodes.Callvirt, columnInfo.PropertyInfo.GetSetMethod(true), _logger);
+            }
+            else
+            {
+                _logger.LogDebug("Field was not emitted, because column '{fieldName}' was not found in table '{tableName}'.",
+                    fieldName, tableInfo.Name);
             }
         }
 
