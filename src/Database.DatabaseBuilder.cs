@@ -2,6 +2,7 @@
 using Kros.KORM.Metadata;
 using Kros.KORM.Query;
 using Kros.Utils;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Data.Common;
 
@@ -11,6 +12,7 @@ namespace Kros.KORM
     {
         private class DatabaseBuilder : IDatabaseBuilder
         {
+            private readonly ILogger<DatabaseBuilder> _logger;
             private IQueryProviderFactory _queryProviderFactory;
             private KormConnectionSettings _connectionString;
             private DbConnection _connection;
@@ -26,16 +28,20 @@ namespace Kros.KORM
                 _conventionModelMapper = new Lazy<ConventionModelMapper>(CreateModelMapper);
                 _databaseMapper = new Lazy<DatabaseMapper>(() => new DatabaseMapper(_conventionModelMapper.Value));
                 _modelBuilder = new Lazy<ModelBuilder>(CreateModelBuilder);
+                _logger = KormLogging.CreateLogger<DatabaseBuilder>();
             }
 
             private ModelBuilder CreateModelBuilder()
             {
                 if (_modelFactory != null)
                 {
+                    _logger.LogDebug("Creating model builder with custom model factory: {modelFactoryType}.",
+                        _modelFactory.GetType().FullName);
                     return new ModelBuilder(_modelFactory);
                 }
                 else
                 {
+                    _logger.LogDebug("Creating model builder with 'DynamicMethodModelFactory'.");
                     return new ModelBuilder(new DynamicMethodModelFactory(_databaseMapper.Value));
                 }
             }
