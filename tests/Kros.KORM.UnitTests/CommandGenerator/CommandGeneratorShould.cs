@@ -370,7 +370,6 @@ SELECT * FROM @OutputTable;";
                     new SqlConnection(),
                     new SqlServerSqlExpressionVisitorFactory(new DatabaseMapper(new ConventionModelMapper())),
                     Substitute.For<IModelBuilder>(),
-                    new Logger(),
                     Substitute.For<IDatabaseMapper>()));
 
             return query;
@@ -439,7 +438,6 @@ SELECT * FROM @OutputTable;";
                     new SqlConnection(),
                     new SqlServerSqlExpressionVisitorFactory(new DatabaseMapper(new ConventionModelMapper())),
                     Substitute.For<IModelBuilder>(),
-                    new Logger(),
                     Substitute.For<IDatabaseMapper>()));
 
             return query;

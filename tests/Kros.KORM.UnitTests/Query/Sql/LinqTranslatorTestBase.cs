@@ -187,7 +187,6 @@ namespace Kros.KORM.UnitTests.Query.Sql
                 : base(sqlConnection,
                      visitorFactory,
                      Substitute.For<IModelBuilder>(),
-                     Substitute.For<ILogger>(),
                      databaseMapper)
             {
                 _sqlConnection = sqlConnection;

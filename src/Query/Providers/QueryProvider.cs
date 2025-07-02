@@ -3,7 +3,6 @@ using Kros.Data;
 using Kros.Data.BulkActions;
 using Kros.Data.Schema;
 using Kros.KORM.Data;
-using Kros.KORM.Helper;
 using Kros.KORM.Materializer;
 using Kros.KORM.Metadata;
 using Kros.KORM.Properties;
@@ -11,6 +10,7 @@ using Kros.KORM.Query.Providers;
 using Kros.KORM.Query.Sql;
 using Kros.Utils;
 using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -85,7 +85,7 @@ namespace Kros.KORM.Query
 
         #region Private fields
 
-        private readonly ILogger _logger;
+        private readonly ILogger<QueryProvider> _logger;
         private readonly IDatabaseMapper _databaseMapper;
         private readonly IModelBuilder _modelBuilder;
         private readonly KormConnectionSettings _connectionSettings = null;
@@ -106,16 +106,14 @@ namespace Kros.KORM.Query
         /// <param name="connectionSettings">The connection string settings.</param>
         /// <param name="sqlGeneratorFactory">The SQL generator factory.</param>
         /// <param name="modelBuilder">The model builder.</param>
-        /// <param name="logger">The logger.</param>
         /// <param name="databaseMapper">The Database mapper.</param>
         protected QueryProvider(
             KormConnectionSettings connectionSettings,
             ISqlExpressionVisitorFactory sqlGeneratorFactory,
             IModelBuilder modelBuilder,
-            ILogger logger,
             IDatabaseMapper databaseMapper)
         {
-            _logger = Check.NotNull(logger, nameof(logger));
+            _logger = KormLogging.CreateLogger<QueryProvider>();
             _databaseMapper = Check.NotNull(databaseMapper, nameof(databaseMapper));
             _connectionSettings = Check.NotNull(connectionSettings, nameof(connectionSettings));
 
@@ -131,18 +129,16 @@ namespace Kros.KORM.Query
         /// <param name="externalConnection">The connection.</param>
         /// <param name="sqlGeneratorFactory">The SQL generator factory.</param>
         /// <param name="modelBuilder">The model builder.</param>
-        /// <param name="logger">The logger.</param>
         /// <param name="databaseMapper">The Database mapper.</param>
         protected QueryProvider(
             DbConnection externalConnection,
             ISqlExpressionVisitorFactory sqlGeneratorFactory,
             IModelBuilder modelBuilder,
-            ILogger logger,
             IDatabaseMapper databaseMapper)
         {
             _connection = Check.NotNull(externalConnection, nameof(externalConnection));
             _modelBuilder = Check.NotNull(modelBuilder, nameof(modelBuilder));
-            _logger = Check.NotNull(logger, nameof(logger));
+            _logger = KormLogging.CreateLogger<QueryProvider>();
             _databaseMapper = Check.NotNull(databaseMapper, nameof(databaseMapper));
 
             InitSqlExpressionVisitor(Check.NotNull(sqlGeneratorFactory, nameof(sqlGeneratorFactory)));
@@ -215,7 +211,7 @@ namespace Kros.KORM.Query
 
             DbCommandInfo commandInfo = CreateCommand(query);
             Data.ConnectionHelper cnHelper = OpenConnection();
-            _logger.LogCommand(commandInfo.Command);
+            LogCommand(commandInfo.Command);
             IDataReader reader = new ModelBuilder.QueryDataReader(commandInfo.Command, commandInfo.Reader,
                 cnHelper.CloseConnection);
             return _modelBuilder.Materialize<T>(reader);
@@ -239,7 +235,7 @@ namespace Kros.KORM.Query
             using (var cnHelper = OpenConnection())
             using (DbCommandInfo commandInfo = CreateCommand(query))
             {
-                _logger.LogCommand(commandInfo.Command);
+                LogCommand(commandInfo.Command);
                 if (commandInfo.Reader == null)
                 {
                     return commandInfo.Command.ExecuteScalar();
@@ -263,7 +259,7 @@ namespace Kros.KORM.Query
         public object ExecuteScalarCommand(IDbCommand command)
         {
             Check.NotNull(command, nameof(command));
-            _logger.LogCommand(command);
+            LogCommand(command);
 
             return command.ExecuteScalar();
         }
@@ -272,7 +268,7 @@ namespace Kros.KORM.Query
         public async Task<object> ExecuteScalarCommandAsync(DbCommand command, CancellationToken cancellationToken = default)
         {
             Check.NotNull(command, nameof(command));
-            _logger.LogCommand(command);
+            LogCommand(command);
 
             return await command.ExecuteScalarAsync(cancellationToken);
         }
@@ -304,7 +300,7 @@ namespace Kros.KORM.Query
         public int ExecuteNonQueryCommand(IDbCommand command)
         {
             Check.NotNull(command, nameof(command));
-            _logger.LogCommand(command);
+            LogCommand(command);
 
             return command.ExecuteNonQuery();
         }
@@ -313,7 +309,7 @@ namespace Kros.KORM.Query
         public async Task<int> ExecuteNonQueryCommandAsync(DbCommand command, CancellationToken cancellationToken = default)
         {
             Check.NotNull(command, nameof(command));
-            _logger.LogCommand(command);
+            LogCommand(command);
 
             return await command.ExecuteNonQueryAsync(cancellationToken);
         }
@@ -401,7 +397,7 @@ namespace Kros.KORM.Query
                 cnHelper = OpenConnection();
                 command = CreateCommand(storedProcedureName, parameters);
                 command.CommandType = CommandType.StoredProcedure;
-                _logger.LogCommand(command);
+                LogCommand(command);
 
                 DbParameter returnParameter = GetOrAddCommandReturnParameter(command);
 
@@ -615,7 +611,7 @@ namespace Kros.KORM.Query
         /// <summary>
         /// Connection string na databázu, ktorý bol zadaný pri vytvorení inštancie triedy
         /// (<see cref="QueryProvider(
-        /// KormConnectionSettings, ISqlExpressionVisitorFactory, IModelBuilder, ILogger, IDatabaseMapper)"/>).
+        /// KormConnectionSettings, ISqlExpressionVisitorFactory, IModelBuilder, IDatabaseMapper)"/>).
         /// Ak bola trieda vytvorená konkrétnou inštanciou spojenia, vráti <see langword="null"/>.
         /// </summary>
         protected string ConnectionString { get => _connectionSettings?.ConnectionString; }
@@ -737,6 +733,19 @@ namespace Kros.KORM.Query
                     {
                         throw new ArgumentException(string.Format(Resources.ParameterDataTypeNotSet, parameter.ParameterName));
                     }
+                }
+            }
+        }
+
+        private void LogCommand(IDbCommand command)
+        {
+            _logger.Log(KormLogging.SqlCommandLogLevel, "Executing query: {sqlQuery}", command.CommandText);
+            if (command.Parameters.Count > 0)
+            {
+                _logger.Log(KormLogging.SqlCommandLogLevel, "With parameters:");
+                foreach (IDbDataParameter param in command.Parameters)
+                {
+                    _logger.Log(KormLogging.SqlCommandLogLevel, "  {name} = {value}", param.ParameterName, param.Value);
                 }
             }
         }

@@ -2,7 +2,6 @@
 using Kros.Data.BulkActions.SqlServer;
 using Kros.Data.Schema;
 using Kros.Data.Schema.SqlServer;
-using Kros.KORM.Helper;
 using Kros.KORM.Materializer;
 using Kros.KORM.Metadata;
 using Kros.KORM.Query.Sql;
@@ -23,15 +22,13 @@ namespace Kros.KORM.Query
         /// <param name="connectionString">The connection string settings.</param>
         /// <param name="sqlGeneratorFactory">The SQL generator factory.</param>
         /// <param name="modelBuilder">The model builder.</param>
-        /// <param name="logger">The logger.</param>
         /// <param name="databaseMapper">The Database mapper.</param>
         public SqlServerQueryProvider(
             KormConnectionSettings connectionString,
             ISqlExpressionVisitorFactory sqlGeneratorFactory,
             IModelBuilder modelBuilder,
-            ILogger logger,
             IDatabaseMapper databaseMapper)
-            : base(connectionString, sqlGeneratorFactory, modelBuilder, logger, databaseMapper)
+            : base(connectionString, sqlGeneratorFactory, modelBuilder, databaseMapper)
         {
         }
 
@@ -41,15 +38,13 @@ namespace Kros.KORM.Query
         /// <param name="connection">The connection.</param>
         /// <param name="sqlGeneratorFactory">The SQL generator factory.</param>
         /// <param name="modelBuilder">The model builder.</param>
-        /// <param name="logger">The logger.</param>
         /// <param name="databaseMapper">The Database mapper.</param>
         public SqlServerQueryProvider(
             DbConnection connection,
             ISqlExpressionVisitorFactory sqlGeneratorFactory,
             IModelBuilder modelBuilder,
-            ILogger logger,
             IDatabaseMapper databaseMapper)
-            : base(connection, sqlGeneratorFactory, modelBuilder, logger, databaseMapper)
+            : base(connection, sqlGeneratorFactory, modelBuilder, databaseMapper)
         {
         }
 

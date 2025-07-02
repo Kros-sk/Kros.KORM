@@ -26,7 +26,6 @@ namespace Kros.KORM.Query
             => new SqlServerQueryProvider(connection,
                 new SqlServerSqlExpressionVisitorFactory(databaseMapper),
                 modelBuilder,
-                new Logger(),
                 databaseMapper);
 
         /// <summary>
@@ -46,7 +45,6 @@ namespace Kros.KORM.Query
                 connectionString,
                 new SqlServerSqlExpressionVisitorFactory(databaseMapper),
                 modelBuilder,
-                new Logger(),
                 databaseMapper);
 
         /// <summary>
