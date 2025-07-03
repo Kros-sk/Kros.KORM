@@ -12,6 +12,7 @@ namespace Kros.KORM.Materializer
 {
     internal static class ILGeneratorHelper
     {
+        private static readonly object _convertersLock = new();
         private static readonly List<IConverter> _converters = new List<IConverter>();
         private static readonly Dictionary<string, MethodInfo> _readerValueGetters = InitReaderValueGetters();
         private static readonly MethodInfo _fnIsDBNull = typeof(IDataRecord).GetMethod(nameof(IDataReader.IsDBNull));
@@ -22,6 +23,7 @@ namespace Kros.KORM.Materializer
         private static readonly MethodInfo _fnConvertersListGetItem = typeof(List<IConverter>).GetProperty("Item").GetGetMethod();
         private static readonly MethodInfo _fnGetValue = typeof(IDataRecord).GetMethod("GetValue", new Type[] { typeof(int) });
         private static readonly MethodInfo _fnConvert = typeof(IConverter).GetMethod("Convert");
+        private static readonly object _injectorsLock = new();
         private static readonly List<IInjector> _injectors = new List<IInjector>();
         private static readonly FieldInfo _fldInjectors = typeof(ILGeneratorHelper).GetField(nameof(_injectors),
             BindingFlags.Static | BindingFlags.GetField | BindingFlags.NonPublic);
@@ -226,8 +228,12 @@ namespace Kros.KORM.Materializer
             int fieldIndex,
             bool convertNullValue)
         {
-            int converterIndex = _converters.Count;
-            _converters.Add(converter);
+            int converterIndex;
+            lock (_convertersLock)
+            {
+                converterIndex = _converters.Count;
+                _converters.Add(converter);
+            }
 
             ilGenerator.LogAndEmit(OpCodes.Ldsfld, _fldConverters);
             ilGenerator.LogAndEmit(OpCodes.Ldc_I4, converterIndex);
@@ -390,8 +396,11 @@ namespace Kros.KORM.Materializer
             var injectorIndex = _injectors.IndexOf(injector);
             if (injectorIndex == -1)
             {
-                _injectors.Add(injector);
-                injectorIndex = _injectors.Count - 1;
+                lock (_injectorsLock)
+                {
+                    _injectors.Add(injector);
+                    injectorIndex = _injectors.Count - 1;
+                }
             }
 
             return injectorIndex;
