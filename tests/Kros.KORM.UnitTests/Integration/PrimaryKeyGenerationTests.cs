@@ -73,7 +73,7 @@ INSERT INTO People VALUES ('Thomas');";
                 IDbSet<Person> dbSet = korm.Query<Person>().AsDbSet();
                 dbSet.Add(people);
 
-                await dbSet.CommitChangesAsync();
+                await dbSet.CommitChangesAsync(TestContext.Current.CancellationToken);
 
                 people.Select(p => p.Id).Should().BeEquivalentTo(new int[] { 1, 2 });
             }
@@ -93,7 +93,7 @@ INSERT INTO People VALUES ('Thomas');";
                 IDbSet<Person> dbSet = korm.Query<Person>().AsDbSet();
                 dbSet.Add(people);
 
-                await dbSet.CommitChangesAsync();
+                await dbSet.CommitChangesAsync(TestContext.Current.CancellationToken);
 
                 people.Select(p => p.Id).Should().BeEquivalentTo(new int[] { 4, 5, 6 });
             }
@@ -112,7 +112,7 @@ INSERT INTO People VALUES ('Thomas');";
                 IDbSet<Foo> dbSet = korm.Query<Foo>().AsDbSet();
                 dbSet.Add(data);
 
-                await dbSet.CommitChangesAsync();
+                await dbSet.CommitChangesAsync(TestContext.Current.CancellationToken);
 
                 data.Select(p => p.FooId).Should().BeEquivalentTo(new int[] { 1, 2 });
             }

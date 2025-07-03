@@ -1,6 +1,5 @@
 ﻿using FluentAssertions;
 using FluentAssertions.Execution;
-using Kros.Data.SqlServer;
 using Kros.KORM.Converter;
 using Kros.KORM.Metadata;
 using Kros.KORM.Metadata.Attribute;
@@ -192,7 +191,7 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
             using (var korm = CreateDatabase(CreateTable_DataTypes))
             {
                 IDbSet<DataTypesData> dbSet = GetDbSetForCommitInsert(korm);
-                await dbSet.CommitChangesAsync();
+                await dbSet.CommitChangesAsync(TestContext.Current.CancellationToken);
                 AssertDataTypesData(korm);
             }
         }
@@ -241,7 +240,7 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
             {
                 var dbSet = GetDbSetForUpdate(korm);
 
-                await dbSet.CommitChangesAsync();
+                await dbSet.CommitChangesAsync(TestContext.Current.CancellationToken);
 
                 AssertData(korm);
             }
@@ -282,7 +281,7 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
                 var olderPat = new Person { Id = 105, Age = 19, FirstName = "Pat", LastName = "Lefty" };
                 var matJunior = new Person { Id = 106, Age = 0, FirstName = "Mat Junior", LastName = "Righty" };
 
-                await database.UpsertAsync<Person>(new Person[] { pat, mat });
+                await database.UpsertAsync<Person>(new Person[] { pat, mat }, TestContext.Current.CancellationToken);
 
                 IDbSet<Person> people = database.Query<Person>().AsDbSet()
                     .WithCustomUpsertConditionColumns(nameof(Person.FirstName), nameof(Person.LastName));
@@ -290,7 +289,7 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
                 people.Upsert(olderPat);
                 people.Upsert(matJunior);
 
-                await people.CommitChangesAsync();
+                await people.CommitChangesAsync(TestContext.Current.CancellationToken);
 
                 Person actualPat = database
                     .Query<Person>()
@@ -376,7 +375,7 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
                     new Person() { Id = 1 },
                     new Person() { Id = 2 } });
 
-                await dbSet.CommitChangesAsync();
+                await dbSet.CommitChangesAsync(TestContext.Current.CancellationToken);
 
                 korm.Query<Person>().Count().Should().Be(0);
             }
@@ -390,7 +389,7 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
                 var dbSet = korm.Query<Person>().AsDbSet();
                 dbSet.Delete(1);
 
-                await dbSet.CommitChangesAsync();
+                await dbSet.CommitChangesAsync(TestContext.Current.CancellationToken);
 
                 korm.Query<Person>()
                     .Should()
@@ -407,7 +406,7 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
                 int tmp = 1;
                 dbSet.Delete(tmp);
 
-                await dbSet.CommitChangesAsync();
+                await dbSet.CommitChangesAsync(TestContext.Current.CancellationToken);
 
                 korm.Query<Person>()
                     .Should()
@@ -424,7 +423,7 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
                 dbSet.Delete(1);
                 dbSet.Delete(2);
 
-                await dbSet.CommitChangesAsync();
+                await dbSet.CommitChangesAsync(TestContext.Current.CancellationToken);
 
                 korm.Query<Person>().Should().BeEmpty();
             }
@@ -438,7 +437,7 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
                 var dbSet = korm.Query<Person>().AsDbSet();
                 dbSet.Delete(p => p.Id == 1);
 
-                await dbSet.CommitChangesAsync();
+                await dbSet.CommitChangesAsync(TestContext.Current.CancellationToken);
 
                 korm.Query<Person>()
                     .Should()
@@ -455,7 +454,7 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
                 int tmp = 1;
                 dbSet.Delete(p => p.Id == tmp);
 
-                await dbSet.CommitChangesAsync();
+                await dbSet.CommitChangesAsync(TestContext.Current.CancellationToken);
 
                 korm.Query<Person>()
                     .Should()
@@ -475,7 +474,7 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
                 };
                 dbSet.Delete(p => p.Id == item.Value);
 
-                await dbSet.CommitChangesAsync();
+                await dbSet.CommitChangesAsync(TestContext.Current.CancellationToken);
 
                 korm.Query<Person>()
                     .Should()
@@ -493,7 +492,7 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
                 item.Sub1.Sub2.Value = 1;
                 dbSet.Delete(p => p.Id == item.Sub1.Sub2.Value);
 
-                await dbSet.CommitChangesAsync();
+                await dbSet.CommitChangesAsync(TestContext.Current.CancellationToken);
 
                 korm.Query<Person>()
                     .Should()
@@ -509,7 +508,7 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
                 var dbSet = korm.Query<Person>().AsDbSet();
                 dbSet.Delete(p => p.Id == DeleteGetId(0, DeleteGetId()));
 
-                await dbSet.CommitChangesAsync();
+                await dbSet.CommitChangesAsync(TestContext.Current.CancellationToken);
 
                 korm.Query<Person>()
                     .Should()
@@ -526,7 +525,7 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
                 var item = new DeleteItem();
                 dbSet.Delete(p => p.Id == item.GetId());
 
-                await dbSet.CommitChangesAsync();
+                await dbSet.CommitChangesAsync(TestContext.Current.CancellationToken);
 
                 korm.Query<Person>()
                     .Should()
@@ -543,7 +542,7 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
                 var item = new DeleteItem();
                 dbSet.Delete(p => p.Id == item.Sub1.Sub2.GetId(0, item.Sub1.Sub2.GetId()));
 
-                await dbSet.CommitChangesAsync();
+                await dbSet.CommitChangesAsync(TestContext.Current.CancellationToken);
 
                 korm.Query<Person>()
                     .Should()
@@ -559,7 +558,7 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
                 var dbSet = korm.Query<Person>().AsDbSet();
                 dbSet.Delete(p => p.Age >= 18 && p.Age < 20);
 
-                await dbSet.CommitChangesAsync();
+                await dbSet.CommitChangesAsync(TestContext.Current.CancellationToken);
 
                 korm.Query<Person>()
                     .Should()
@@ -575,7 +574,7 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
                 var dbSet = korm.Query<Person>().AsDbSet();
                 dbSet.Delete("Id = @1", 2);
 
-                await dbSet.CommitChangesAsync();
+                await dbSet.CommitChangesAsync(TestContext.Current.CancellationToken);
 
                 korm.Query<Person>()
                     .Should()
@@ -591,7 +590,7 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
             {
                 var dbSet = korm.Query<Person>().AsDbSet();
                 dbSet.Delete(predicate);
-                await dbSet.CommitChangesAsync();
+                await dbSet.CommitChangesAsync(TestContext.Current.CancellationToken);
 
                 korm.Query<Person>()
                     .Should()

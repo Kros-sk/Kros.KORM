@@ -65,7 +65,7 @@ namespace Kros.KORM.UnitTests.Migrations.Providers
                 Path = GetFileFullName("20190228001_InitDatabase")
             });
 
-            var expected = await File.ReadAllTextAsync(GetFileFullName("20190228001_InitDatabase"));
+            var expected = await File.ReadAllTextAsync(GetFileFullName("20190228001_InitDatabase"), TestContext.Current.CancellationToken);
             script.Should().Be(expected);
         }
 
