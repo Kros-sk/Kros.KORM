@@ -19,7 +19,7 @@ namespace Kros.KORM.UnitTests.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -57,43 +57,6 @@ namespace Kros.KORM.UnitTests.Properties {
             }
             set {
                 resourceCulture = value;
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to USE [master]
-        ///GO
-        ///
-        ///CREATE DATABASE [Projects]
-        /// CONTAINMENT = NONE
-        ///GO
-        ///
-        ///ALTER DATABASE [Projects] SET COMPATIBILITY_LEVEL = 130
-        ///GO
-        ///
-        ///IF (1 = FULLTEXTSERVICEPROPERTY(&apos;IsFullTextInstalled&apos;))
-        ///begin
-        ///EXEC [Projects].[dbo].[sp_fulltext_database] @action = &apos;enable&apos;
-        ///end
-        ///GO
-        ///
-        ///ALTER DATABASE [Projects] SET ANSI_NULL_DEFAULT OFF
-        ///GO
-        ///
-        ///ALTER DATABASE [Projects] SET ANSI_NULLS OFF
-        ///GO
-        ///
-        ///ALTER DATABASE [Projects] SET ANSI_PADDING OFF
-        ///GO
-        ///
-        ///ALTER DATABASE [Projects] SET ANSI_WARNINGS OFF
-        ///GO
-        ///
-        ///ALTER DATABASE [rest of string was truncated]&quot;;.
-        /// </summary>
-        internal static string _20190228001_InitDatabase {
-            get {
-                return ResourceManager.GetString("_20190228001_InitDatabase", resourceCulture);
             }
         }
         
