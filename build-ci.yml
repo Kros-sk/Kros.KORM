@@ -2,16 +2,10 @@ trigger:
   batch: true
   branches:
     include:
-    - master
+      - master
 
-pool: Default
-
-resources:
-  repositories:
-    - repository: templates
-      type: git
-      name: DevShared/Templates
+pool:
+  vmImage: ubuntu-latest
 
 steps:
-  - template: steps/agent-info.yml@templates
   - template: build-and-test.yml
