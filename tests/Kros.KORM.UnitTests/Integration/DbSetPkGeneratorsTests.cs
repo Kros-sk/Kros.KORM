@@ -9,7 +9,7 @@ using Xunit;
 
 namespace Kros.KORM.UnitTests.Integration
 {
-    public class DbSetPkGeneratorsTests : DatabaseTestBase
+    public class DbSetPkGeneratorsTests(KormTestsFixture kormContext) : DatabaseTestBase(kormContext)
     {
         #region Helpers
 

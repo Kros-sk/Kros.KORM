@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Kros.KORM.UnitTests.Integration
 {
-    public class QueryNullableFieldsTests : DatabaseTestBase
+    public class QueryNullableFieldsTests(KormTestsFixture kormContext) : DatabaseTestBase(kormContext)
     {
         #region Helpers
 

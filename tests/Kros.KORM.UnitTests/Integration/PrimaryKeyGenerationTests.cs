@@ -10,7 +10,7 @@ using Xunit;
 
 namespace Kros.KORM.UnitTests.Integration
 {
-    public class PrimaryKeyGenerationTests : DatabaseTestBase
+    public class PrimaryKeyGenerationTests(KormTestsFixture kormContext) : DatabaseTestBase(kormContext)
     {
         #region Nested Classes
 

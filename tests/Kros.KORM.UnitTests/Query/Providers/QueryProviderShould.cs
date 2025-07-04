@@ -20,7 +20,7 @@ using Xunit;
 
 namespace Kros.KORM.UnitTests.Query.Providers
 {
-    public class QueryProviderShould : DatabaseTestBase
+    public class QueryProviderShould(KormTestsFixture kormContext) : DatabaseTestBase(kormContext)
     {
         #region Nested classes
 

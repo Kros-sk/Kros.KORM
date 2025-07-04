@@ -11,7 +11,7 @@ using Xunit;
 
 namespace Kros.KORM.UnitTests.Integration
 {
-    public class DbSetInt64PrimaryKeyTests : DatabaseTestBase
+    public class DbSetInt64PrimaryKeyTests(KormTestsFixture kormContext) : DatabaseTestBase(kormContext)
     {
         #region Helpers
 

@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Kros.KORM.UnitTests.Integration
 {
-    public class QueryFilterShould : DatabaseTestBase
+    public class QueryFilterShould(KormTestsFixture kormContext) : DatabaseTestBase(kormContext)
     {
         #region Nested Classes
 

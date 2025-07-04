@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Kros.KORM.UnitTests.Integration
 {
-    public partial class IDatabaseExtensionsShould : DatabaseTestBase
+    public partial class IDatabaseExtensionsShould(KormTestsFixture kormContext) : DatabaseTestBase(kormContext)
     {
         #region Nested Classes
 

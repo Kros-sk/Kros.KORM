@@ -11,7 +11,7 @@ using Xunit;
 
 namespace Kros.KORM.UnitTests.Integration
 {
-    public partial class TransactionTests : DatabaseTestBase
+    public partial class TransactionTests(KormTestsFixture kormContext) : DatabaseTestBase(kormContext)
     {
         #region SQL Scripts
 

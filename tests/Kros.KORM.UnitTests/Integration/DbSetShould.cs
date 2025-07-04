@@ -16,7 +16,7 @@ using Xunit;
 
 namespace Kros.KORM.UnitTests.Integration
 {
-    public class DbSetShould : DatabaseTestBase
+    public class DbSetShould(KormTestsFixture kormContext) : DatabaseTestBase(kormContext)
     {
         #region Nested Classes
 
