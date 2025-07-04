@@ -9,7 +9,7 @@
     <Title>Kros.KORM</Title>
     <Copyright>Copyright © KROS a. s.</Copyright>
     <RootNamespace>Kros.KORM</RootNamespace>
-    <ApplicationIcon>icon.ico</ApplicationIcon>
+    <ApplicationIcon>Icon.ico</ApplicationIcon>
     <Product>Kros.KORM</Product>
     <AssemblyName>Kros.KORM</AssemblyName>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
