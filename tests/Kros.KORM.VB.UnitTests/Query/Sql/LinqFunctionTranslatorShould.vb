@@ -81,4 +81,5 @@ Namespace Kros.KORM.VB.UnitTests.Query.Sql
         End Class
 
     End Class
+
 End Namespace
