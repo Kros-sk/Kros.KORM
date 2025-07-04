@@ -1,11 +1,12 @@
 ﻿using Kros.KORM.Migrations.Providers;
-using Kros.KORM.Properties;
 using Kros.KORM.Query;
 using Kros.Utils;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -164,9 +165,19 @@ namespace Kros.KORM.Migrations
         private async Task InitMigrationsHistoryTable(IDatabase database)
         {
             var sql = $"IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = '{Migration.TableName}' AND type = 'U')" +
-                Environment.NewLine + Resources.MigrationsHistoryTableScript;
+                Environment.NewLine + await GetResourceContent("Kros.KORM.Resources.MigrationsHistoryTableScript.sql");
 
             await database.ExecuteNonQueryAsync(sql);
+        }
+
+        private static async Task<string> GetResourceContent(string resourceFile)
+        {
+            var assembly = Assembly.GetExecutingAssembly();
+            Stream resourceStream = assembly.GetManifestResourceStream(resourceFile);
+            using (var reader = new StreamReader(resourceStream, Encoding.UTF8))
+            {
+                return await reader.ReadToEndAsync();
+            }
         }
     }
 }

@@ -18,7 +18,7 @@ steps:
   - template: build-and-test.yml
 
   - task: CopyFiles@2
-    displayName: Copy package files to staging directory'
+    displayName: Copy package files to staging directory
     inputs:
       Contents: |
         **/*.nupkg
