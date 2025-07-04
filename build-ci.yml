@@ -8,4 +8,8 @@ pool:
   vmImage: ubuntu-latest
 
 steps:
+  - script: |
+      ls -R -l $(Build.SourcesDirectory)
+    displayName: List source folder
+
   - template: build-and-test.yml
