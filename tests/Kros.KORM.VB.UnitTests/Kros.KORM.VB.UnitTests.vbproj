@@ -22,8 +22,4 @@
     <ProjectReference Include="..\Kros.KORM.UnitTests\Kros.KORM.UnitTests.csproj" />
   </ItemGroup>
 
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="if exist &quot;$(ProjectDir)..\Kros.KORM.UnitTests\appsettings.local.json&quot; (&#xD;&#xA;  copy &quot;$(ProjectDir)..\Kros.KORM.UnitTests\appsettings.local.json&quot; &quot;$(TargetDir)&quot;&#xD;&#xA;)" />
-  </Target>
-
 </Project>
