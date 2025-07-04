@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Kros.KORM.UnitTests.Integration
 {
-    public class LinqTests : DatabaseTestBase
+    public class LinqTests(KormTestsFixture kormContext) : DatabaseTestBase(kormContext)
     {
         #region Nested Classes
 

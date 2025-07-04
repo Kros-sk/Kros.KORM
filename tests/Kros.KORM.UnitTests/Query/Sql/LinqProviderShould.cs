@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Kros.KORM.UnitTests.Query.Sql
 {
-    public class LinqProviderShould : DatabaseTestBase
+    public class LinqProviderShould(KormTestsFixture kormContext) : DatabaseTestBase(kormContext)
     {
         #region SQL Scripts
 

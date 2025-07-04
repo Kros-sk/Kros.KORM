@@ -19,7 +19,7 @@ namespace Kros.KORM.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -346,25 +346,6 @@ namespace Kros.KORM.Properties {
         internal static string MethodNotSupportedWhenNoPrimaryKey {
             get {
                 return ResourceManager.GetString("MethodNotSupportedWhenNoPrimaryKey", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to CREATE TABLE [dbo].[__KormMigrationsHistory](
-        ///    [MigrationId] [bigint] NOT NULL,
-        ///    [MigrationName] [nvarchar](255) NOT NULL,
-        ///    [ProductInfo] [nvarchar](255) NOT NULL,
-        ///    [Updated] [datetime2] NULL,
-        ///    CONSTRAINT [PK___KormMigrationsHistory] PRIMARY KEY CLUSTERED
-        ///    (
-        ///        [MigrationId] ASC
-        ///    )
-        ///) ON [PRIMARY]
-        ///.
-        /// </summary>
-        internal static string MigrationsHistoryTableScript {
-            get {
-                return ResourceManager.GetString("MigrationsHistoryTableScript", resourceCulture);
             }
         }
         

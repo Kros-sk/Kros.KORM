@@ -1,19 +1,23 @@
-parameters:
-  buildConfiguration: 'Release'
-
 steps:
-  - task: FileTransform@1
-    displayName: 'Transform appsettings.json'
-    inputs:
-      folderPath: '$(System.DefaultWorkingDirectory)'
-      fileType: 'json'
-      targetFiles: '**/*[Tt]est*/appsettings.json'
-
   - task: DotNetCoreCLI@2
-    displayName: 'Build'
+    displayName: Build
     inputs:
       command: build
-      projects: 'Kros.KORM.sln'
-      arguments: '--configuration ${{ parameters.buildConfiguration }}'
+      projects: Kros.KORM.sln
+      arguments: --configuration Release
 
-  - template: steps/dotnet-test-and-publish-results.yml@templates
+  - task: DotNetCoreCLI@2
+    displayName: Test
+    inputs:
+      command: test
+      projects: Kros.KORM.sln
+      publishTestResults: false
+      arguments: --configuration Release --logger trx --results-directory "$(Pipeline.Workspace)/TestResults"
+
+  - task: PublishTestResults@2
+    displayName: Publish test results
+    condition: always()
+    inputs:
+      testResultsFormat: VSTest
+      testResultsFiles: '*.trx'
+      searchFolder: $(Pipeline.Workspace)/TestResults

@@ -1,6 +1,5 @@
 ﻿using FluentAssertions;
 using Kros.Data.SqlServer;
-using Kros.KORM.UnitTests.Integration;
 using Kros.UnitTests;
 using Microsoft.Data.SqlClient;
 using System;
@@ -8,8 +7,16 @@ using Xunit;
 
 namespace Kros.KORM.UnitTests
 {
+    [Collection(KormTestsCollection.Name)]
     public class DatabaseShould
     {
+        private readonly KormTestsFixture _kormContext;
+
+        public DatabaseShould(KormTestsFixture kormContext)
+        {
+            _kormContext = kormContext;
+        }
+
         [Fact]
         public void ThrowExceptionWhenActiveConnectionIsNull()
         {
@@ -48,7 +55,7 @@ namespace Kros.KORM.UnitTests
             string dbName = $"KORM_InitIdGenerator";
             string idStoreTableName = "IdStore";
 
-            using (var testHelper = new SqlServerTestHelper(IntegrationTestConfig.ConnectionString, dbName))
+            using (var testHelper = new SqlServerTestHelper(_kormContext.GetConnectionString(), dbName) { DropDatabaseOnDispose = false })
             using (IDatabase database = new Database(testHelper.Connection))
             {
                 SqlServerIntIdGeneratorFactory.Register();

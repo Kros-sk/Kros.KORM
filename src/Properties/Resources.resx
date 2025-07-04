@@ -223,10 +223,6 @@ or only one public parametrized constructor.</value>
   <data name="MethodNotSupportedWhenNoPrimaryKey" xml:space="preserve">
     <value>Method {0} is not supported when entity does not have primary key.</value>
   </data>
-  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="MigrationsHistoryTableScript" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\migrationshistorytablescript.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
-  </data>
   <data name="MissingMethodInModelBuilder" xml:space="preserve">
     <value>ModelBuilder instance ({0}) does not have method {1}({2}).</value>
   </data>

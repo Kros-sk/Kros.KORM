@@ -27,7 +27,7 @@ namespace Kros.KORM.Migrations.Providers
                         {
                             Id = long.Parse(splits[0]),
                             Name = splits[1],
-                            Path = path
+                            Path = path.Replace('\\', '/')
                         };
                     }
                     else

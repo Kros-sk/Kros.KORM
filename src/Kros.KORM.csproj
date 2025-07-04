@@ -2,14 +2,14 @@
 
   <PropertyGroup>
     <TargetFrameworks>net8.0</TargetFrameworks>
-    <Version>7.2.0</Version>
+    <Version>7.3.0</Version>
     <Authors>KROS a. s.</Authors>
     <Company>KROS a. s.</Company>
     <Description>KORM is fast, easy to use, micro ORM tool (Kros Object Relation Mapper).</Description>
     <Title>Kros.KORM</Title>
     <Copyright>Copyright © KROS a. s.</Copyright>
     <RootNamespace>Kros.KORM</RootNamespace>
-    <ApplicationIcon>icon.ico</ApplicationIcon>
+    <ApplicationIcon>Icon.ico</ApplicationIcon>
     <Product>Kros.KORM</Product>
     <AssemblyName>Kros.KORM</AssemblyName>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -47,10 +47,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Kros.Utils" Version="3.0.2" />
+    <PackageReference Include="Kros.Utils" Version="3.1.0" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
     <PackageReference Include="System.Reflection.Emit.Lightweight" Version="4.7.0" />
-    <PackageReference Include="System.ValueTuple" Version="4.5.0" />
+    <PackageReference Include="System.ValueTuple" Version="4.6.1" />
   </ItemGroup>
 
   <PropertyGroup>

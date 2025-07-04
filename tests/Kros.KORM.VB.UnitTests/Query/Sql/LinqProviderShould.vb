@@ -1,10 +1,14 @@
-Imports FluentAssertions
+﻿Imports FluentAssertions
+Imports Kros.KORM.UnitTests
 Imports Kros.KORM.UnitTests.Base
 Imports Xunit
 
 Namespace Kros.KORM.VB.UnitTests.Query.Sql
+
+    <Collection(KormTestsCollection.Name)>
     Public Class LinqProviderShould
         Inherits DatabaseTestBase
+        Implements IClassFixture(Of KormTestsFixture)
 
 #Region "SQL Scripts"
 
@@ -25,6 +29,10 @@ INSERT INTO [{Table_TestTable}] ([Id], [Number], [Description]) VALUES (4, 40, '
 
 #End Region
 
+        Public Sub New(kormContext As KormTestsFixture)
+            MyBase.New(kormContext)
+        End Sub
+
         <Fact>
         Public Sub ExecuteFirstOrDefault()
             Using korm = CreateDatabase(CreateTable_TestTable)
@@ -42,6 +50,8 @@ INSERT INTO [{Table_TestTable}] ([Id], [Number], [Description]) VALUES (4, 40, '
 
             Public Property Description As String
         End Class
+
     End Class
+
 End Namespace
 

@@ -1,33 +1,31 @@
 trigger:
   tags:
     include:
-    - v*
+      - v*
 
-pool: Default
-
-resources:
-  repositories:
-    - repository: templates
-      type: git
-      name: DevShared/Templates
+pool:
+  vmImage: ubuntu-latest
 
 variables:
   - group: Nuget
 
 steps:
-  - template: steps/agent-info.yml@templates
-  - template: steps/delete-nupkgs.yml@templates
+  - pwsh: |
+      Get-ChildItem -Path '$(Build.ArtifactStagingDirectory)' -Recurse -Include *.nupkg, *.snupkg | Remove-Item
+      Get-ChildItem -Path '$(Build.SourcesDirectory)' -Recurse -Include *.nupkg, *.snupkg | Remove-Item
+    displayName: Clear NuGet packages
+
   - template: build-and-test.yml
 
   - task: CopyFiles@2
-    displayName: 'Copy package files to staging directory'
+    displayName: Copy package files to staging directory
     inputs:
       Contents: |
         **/*.nupkg
         **/*.snupkg
-      TargetFolder: '$(build.artifactStagingDirectory)'
+      TargetFolder: $(build.artifactStagingDirectory)
       FlattenFolders: true
 
-  - template: steps/nuget-push.yml@templates
-    parameters:
-      feed: '$(nuget.feed)'
+  - pwsh: |
+      dotnet nuget push --api-key $(nugetOrgApiKey) --source 'https://api.nuget.org/v3/index.json' '$(Build.ArtifactStagingDirectory)/*.nupkg'
+    displayName: Push to NuGet.org
