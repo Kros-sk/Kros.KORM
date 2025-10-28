@@ -46,6 +46,18 @@ SELECT * FROM @OutputTable;";
         }
 
         [Fact]
+        public void HaveCorrectInsertCommandTextWhenTableHaveGuidIdentityPrimaryKey()
+        {
+            const string expectedQuery = @"DECLARE @OutputTable TABLE (IdRow uniqueidentifier);
+INSERT INTO [FooGuidIdentity] ([Salary]) OUTPUT INSERTED.IdRow INTO @OutputTable VALUES (@Salary);
+SELECT * FROM @OutputTable;";
+
+            DbCommand insert = GetFooGuidIdentityGenerator().GetInsertCommand();
+
+            insert.CommandText.Should().Be(expectedQuery);
+        }
+
+        [Fact]
         public void HaveCorrectUpdateCommandText()
         {
             const string expectedQuery = "UPDATE [Foo] SET [Salary] = @Salary, [PropertyValueGenerator] = @PropertyValueGenerator WHERE ([IdRow] = @IdRow)";
@@ -359,8 +371,56 @@ SELECT * FROM @OutputTable;";
             return new CommandGenerator<Foo>(GetFooTableInfo(), provider, query);
         }
 
+        private static CommandGenerator<FooIdentity> GetFooIdentityGenerator()
+        {
+            KORM.Query.IQueryProvider provider = Substitute.For<KORM.Query.IQueryProvider>();
+            provider.GetCommandForCurrentTransaction().Returns(a => { return new SqlCommand(); });
+
+            IQuery<FooIdentity> query = CreateFooIdentityQuery();
+            query.Select(p => new { p.Id, p.Plat });
+            return new CommandGenerator<FooIdentity>(GetFooIdentityTableInfo(), provider, query);
+        }
+
+        private static CommandGenerator<FooGuidIdentity> GetFooGuidIdentityGenerator()
+        {
+            KORM.Query.IQueryProvider provider = Substitute.For<KORM.Query.IQueryProvider>();
+            provider.GetCommandForCurrentTransaction().Returns(a => { return new SqlCommand(); });
+
+            IQuery<FooGuidIdentity> query = CreateFooGuidIdentityQuery();
+            query.Select(p => new { p.Id, p.Plat });
+            return new CommandGenerator<FooGuidIdentity>(GetFooGuidIdentityTableInfo(), provider, query);
+        }
+
         private static Query<Foo> CreateFooQuery()
             => CreateQuery<Foo>();
+
+        private static Query<FooIdentity> CreateFooIdentityQuery()
+        {
+            var query = new Query<FooIdentity>(
+                new DatabaseMapper(new ConventionModelMapper()),
+                new SqlServerQueryProvider(
+                    new SqlConnection(),
+                    new SqlServerSqlExpressionVisitorFactory(new DatabaseMapper(new ConventionModelMapper())),
+                    Substitute.For<IModelBuilder>(),
+                    new Logger(),
+                    Substitute.For<IDatabaseMapper>()));
+
+            return query;
+        }
+
+        private static Query<FooGuidIdentity> CreateFooGuidIdentityQuery()
+        {
+            var query = new Query<FooGuidIdentity>(
+                new DatabaseMapper(new ConventionModelMapper()),
+                new SqlServerQueryProvider(
+                    new SqlConnection(),
+                    new SqlServerSqlExpressionVisitorFactory(new DatabaseMapper(new ConventionModelMapper())),
+                    Substitute.For<IModelBuilder>(),
+                    new Logger(),
+                    Substitute.For<IDatabaseMapper>()));
+
+            return query;
+        }
 
         private static Query<T> CreateQuery<T>()
         {
@@ -410,41 +470,6 @@ SELECT * FROM @OutputTable;";
             return new TableInfo(columns, new List<PropertyInfo>(), null) { Name = "Foo" };
         }
 
-        private static CommandGenerator<FooPrimaryKeys> GetFooPrimaryKeyGenerator()
-        {
-            KORM.Query.IQueryProvider provider = Substitute.For<KORM.Query.IQueryProvider>();
-            provider.GetCommandForCurrentTransaction().Returns(a => { return new SqlCommand(); });
-
-            IQuery<FooPrimaryKeys> query = CreateQuery<FooPrimaryKeys>();
-            query.Select(p => new { FK1 = 1, FK2 = 2 });
-            TableInfo tableInfo = CreateTableInfoFromDto<FooPrimaryKeys>();
-            return new CommandGenerator<FooPrimaryKeys>(tableInfo, provider, query);
-        }
-
-        private static CommandGenerator<FooIdentity> GetFooIdentityGenerator()
-        {
-            KORM.Query.IQueryProvider provider = Substitute.For<KORM.Query.IQueryProvider>();
-            provider.GetCommandForCurrentTransaction().Returns(a => { return new SqlCommand(); });
-
-            IQuery<FooIdentity> query = CreateFooIdentityQuery();
-            query.Select(p => new { p.Id, p.Plat });
-            return new CommandGenerator<FooIdentity>(GetFooIdentityTableInfo(), provider, query);
-        }
-
-        private static Query<FooIdentity> CreateFooIdentityQuery()
-        {
-            var query = new Query<FooIdentity>(
-                new DatabaseMapper(new ConventionModelMapper()),
-                new SqlServerQueryProvider(
-                    new SqlConnection(),
-                    new SqlServerSqlExpressionVisitorFactory(new DatabaseMapper(new ConventionModelMapper())),
-                    Substitute.For<IModelBuilder>(),
-                    new Logger(),
-                    Substitute.For<IDatabaseMapper>()));
-
-            return query;
-        }
-
         private static TableInfo GetFooIdentityTableInfo()
         {
             var columns = new List<ColumnInfo>() {
@@ -454,6 +479,28 @@ SELECT * FROM @OutputTable;";
             };
 
             return new TableInfo(columns, new List<PropertyInfo>(), null) { Name = "FooIdentity" };
+        }
+
+        private static TableInfo GetFooGuidIdentityTableInfo()
+        {
+            var columns = new List<ColumnInfo>() {
+                new ColumnInfo() { Name = "IdRow", PropertyInfo = GetPropertyInfo<FooGuidIdentity>("Id"),
+                    IsPrimaryKey = true, AutoIncrementMethodType = AutoIncrementMethodType.Identity },
+                new ColumnInfo() { Name = "Salary", PropertyInfo = GetPropertyInfo<FooGuidIdentity>("Plat")}
+            };
+
+            return new TableInfo(columns, new List<PropertyInfo>(), null) { Name = "FooGuidIdentity" };
+        }
+
+        private static CommandGenerator<FooPrimaryKeys> GetFooPrimaryKeyGenerator()
+        {
+            KORM.Query.IQueryProvider provider = Substitute.For<KORM.Query.IQueryProvider>();
+            provider.GetCommandForCurrentTransaction().Returns(a => { return new SqlCommand(); });
+
+            IQuery<FooPrimaryKeys> query = CreateQuery<FooPrimaryKeys>();
+            query.Select(p => new { FK1 = 1, FK2 = 2 });
+            TableInfo tableInfo = CreateTableInfoFromDto<FooPrimaryKeys>();
+            return new CommandGenerator<FooPrimaryKeys>(tableInfo, provider, query);
         }
 
         private static PropertyInfo GetPropertyInfo<T>(string propertyName) => typeof(T).GetProperty(propertyName);
@@ -538,6 +585,16 @@ SELECT * FROM @OutputTable;";
             [Alias("IdRow")]
             [Key(AutoIncrementMethodType.Identity)]
             public int Id { get; set; }
+
+            [Alias("Salary")]
+            public decimal Plat { get; set; }
+        }
+
+        private class FooGuidIdentity
+        {
+            [Alias("IdRow")]
+            [Key(AutoIncrementMethodType.Identity)]
+            public Guid Id { get; set; }
 
             [Alias("Salary")]
             public decimal Plat { get; set; }

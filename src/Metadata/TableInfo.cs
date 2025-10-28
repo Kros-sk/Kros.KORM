@@ -18,6 +18,13 @@ namespace Kros.KORM.Metadata
         private Dictionary<string, ColumnInfo> _columns;
         private Lazy<Dictionary<string, ColumnInfo>> _properties;
         private Lazy<ColumnInfo> _identityPrimaryKey;
+        private readonly IReadOnlyDictionary<Type, string> DataTypesMap =
+            new Dictionary<Type, string>()
+            {
+                { typeof(int), "int" },
+                { typeof(long), "bigint" },
+                { typeof(Guid), "uniqueidentifier" },
+            };
 
         #endregion
 
@@ -114,24 +121,10 @@ namespace Kros.KORM.Metadata
         /// <summary>
         /// Gets primary key SQL data type.
         /// </summary>
-        public string IdentityPrimaryKeySqlType
-        {
-            get
-            {
-                if (IdentityPrimaryKey is not null)
-                {
-                    if (IdentityPrimaryKey.PropertyInfo.PropertyType == typeof(long))
-                    {
-                        return "bigint";
-                    }
-                    else if (IdentityPrimaryKey.PropertyInfo.PropertyType == typeof(int))
-                    {
-                        return "int";
-                    }
-                }
-                return string.Empty;
-            }
-        }
+        public string IdentityPrimaryKeySqlType => IdentityPrimaryKey is not null &&
+            DataTypesMap.TryGetValue(IdentityPrimaryKey.PropertyInfo.PropertyType, out string sqlType)
+                ? sqlType
+                : string.Empty;
 
         #endregion
 

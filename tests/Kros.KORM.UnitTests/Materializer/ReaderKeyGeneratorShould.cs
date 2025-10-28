@@ -22,7 +22,7 @@ namespace Kros.KORM.UnitTests.Materializer
         }
 
         [Fact]
-        public void ReturnSameKeyForReadersWhitSameColumns()
+        public void ReturnSameKeyForReadersWithSameColumns()
         {
             Reader reader1 = new Reader(CreateListOfColumns());
             Reader reader2 = new Reader(CreateListOfColumns());
@@ -35,7 +35,7 @@ namespace Kros.KORM.UnitTests.Materializer
         }
 
         [Fact]
-        public void ReturnDifferentKeyForReadersWhitDifferentColumns()
+        public void ReturnDifferentKeyForReadersWithDifferentColumns()
         {
             Reader reader1 = new Reader(CreateListOfColumns());
             Reader reader2 = new Reader(new List<Tuple<string, Type>>() { new Tuple<string, Type>("FirstName", typeof(string)),
@@ -50,7 +50,7 @@ namespace Kros.KORM.UnitTests.Materializer
         }
 
         [Fact]
-        public void ReturnSameKeyForReadersWhitSameColumnsWhenChangeLetterCase()
+        public void ReturnSameKeyForReadersWithSameColumnsWhenChangeLetterCase()
         {
             Reader reader1 = new Reader(CreateListOfColumns());
             Reader reader2 = new Reader(new List<Tuple<string, Type>>() { new Tuple<string, Type>("ID", typeof(Int32)),
@@ -65,7 +65,7 @@ namespace Kros.KORM.UnitTests.Materializer
         }
 
         [Fact]
-        public void ReturnDifferentKeysForReadersWhitSameColumnsAndOtherDataTypes()
+        public void ReturnDifferentKeysForReadersWithSameColumnsAndOtherDataTypes()
         {
             Reader reader1 = new Reader(CreateListOfColumns());
             Reader reader2 = new Reader(CreateListOfColumns());
