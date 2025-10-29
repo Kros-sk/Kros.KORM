@@ -46,7 +46,7 @@ SELECT * FROM @OutputTable;";
         }
 
         [Fact]
-        public void HaveCorrectInsertCommandTextWhenTableHaveGuidIdentityPrimaryKey()
+        public void HaveCorrectInsertCommandTextWhenTableHasGuidIdentityPrimaryKey()
         {
             const string expectedQuery = @"DECLARE @OutputTable TABLE (IdRow uniqueidentifier);
 INSERT INTO [FooGuidIdentity] ([Salary]) OUTPUT INSERTED.IdRow INTO @OutputTable VALUES (@Salary);

@@ -18,7 +18,7 @@ namespace Kros.KORM.Metadata
         private Dictionary<string, ColumnInfo> _columns;
         private Lazy<Dictionary<string, ColumnInfo>> _properties;
         private Lazy<ColumnInfo> _identityPrimaryKey;
-        private readonly IReadOnlyDictionary<Type, string> DataTypesMap =
+        private static readonly IReadOnlyDictionary<Type, string> _dataTypesMap =
             new Dictionary<Type, string>()
             {
                 { typeof(int), "int" },
@@ -122,7 +122,7 @@ namespace Kros.KORM.Metadata
         /// Gets primary key SQL data type.
         /// </summary>
         public string IdentityPrimaryKeySqlType => IdentityPrimaryKey is not null &&
-            DataTypesMap.TryGetValue(IdentityPrimaryKey.PropertyInfo.PropertyType, out string sqlType)
+            _dataTypesMap.TryGetValue(IdentityPrimaryKey.PropertyInfo.PropertyType, out string sqlType)
                 ? sqlType
                 : string.Empty;
 
