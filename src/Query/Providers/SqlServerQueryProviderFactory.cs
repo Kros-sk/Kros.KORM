@@ -2,10 +2,11 @@
 using Kros.KORM.Helper;
 using Kros.KORM.Materializer;
 using Kros.KORM.Metadata;
+using Kros.KORM.Query.Providers;
 using Microsoft.Data.SqlClient;
 using System.Data.Common;
 
-namespace Kros.KORM.Query.Providers
+namespace Kros.KORM.Query
 {
     /// <summary>
     /// Factory which create sql server provider.

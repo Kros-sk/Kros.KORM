@@ -10,7 +10,6 @@ using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
 using System.Text;
-using IQueryProvider = Kros.KORM.Query.Providers.IQueryProvider;
 
 namespace Kros.KORM.CommandGenerator
 {
@@ -41,7 +40,7 @@ SELECT * FROM @OutputTable;";
         #region Private Fields
 
         private readonly TableInfo _tableInfo;
-        private readonly IQueryProvider _provider;
+        private readonly Query.IQueryProvider _provider;
         private readonly IQueryBase<T> _query;
         private List<ColumnInfo> _columnsInfo = null;
         private int _maxParametersForDeleteCommandsInPart = DEFAULT_MAX_PARAMETERS_FOR_DELETE_COMMANDS_IN_PART;
@@ -71,7 +70,7 @@ SELECT * FROM @OutputTable;";
         /// <param name="tableInfo">Information about table from database.</param>
         /// <param name="provider">Provider, that can execute queries.</param>
         /// <param name="query">Executing query.</param>
-        public CommandGenerator(TableInfo tableInfo, IQueryProvider provider, IQueryBase<T> query)
+        public CommandGenerator(TableInfo tableInfo, KORM.Query.IQueryProvider provider, IQueryBase<T> query)
         {
             Check.NotNull(tableInfo, nameof(tableInfo));
             Check.NotNull(provider, nameof(provider));

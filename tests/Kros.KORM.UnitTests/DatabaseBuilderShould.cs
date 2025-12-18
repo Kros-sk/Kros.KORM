@@ -1,7 +1,7 @@
 ﻿using FluentAssertions;
 using Kros.KORM.Materializer;
 using Kros.KORM.Metadata;
-using Kros.KORM.Query.Providers;
+using Kros.KORM.Query;
 using Kros.UnitTests;
 using NSubstitute;
 using System;

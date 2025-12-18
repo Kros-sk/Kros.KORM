@@ -7,6 +7,7 @@ using Kros.KORM.Helper;
 using Kros.KORM.Materializer;
 using Kros.KORM.Metadata;
 using Kros.KORM.Properties;
+using Kros.KORM.Query.Providers;
 using Kros.KORM.Query.Sql;
 using Kros.Utils;
 using Microsoft.Data.SqlClient;
@@ -21,12 +22,12 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Kros.KORM.Query.Providers
+namespace Kros.KORM.Query
 {
     /// <summary>
     /// Provider, which know execute query.
     /// </summary>
-    /// <seealso cref="Providers.IQueryProvider" />
+    /// <seealso cref="Kros.KORM.Query.IQueryProvider" />
     public abstract class QueryProvider : IQueryProvider
     {
         #region Nested types

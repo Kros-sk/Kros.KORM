@@ -6,7 +6,6 @@ using Kros.KORM.Data;
 using Kros.KORM.Exceptions;
 using Kros.KORM.Metadata;
 using Kros.KORM.Query;
-using Kros.KORM.Query.Providers;
 using Kros.KORM.Query.Sql;
 using NSubstitute;
 using System;
@@ -19,7 +18,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Kros.KORM.UnitTests.Query
+namespace Kros.KORM.UnitTests
 {
     /// <summary>
     /// Summary description for DbSetShould

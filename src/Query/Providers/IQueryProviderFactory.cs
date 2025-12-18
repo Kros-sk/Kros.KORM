@@ -2,7 +2,7 @@
 using Kros.KORM.Metadata;
 using System.Data.Common;
 
-namespace Kros.KORM.Query.Providers
+namespace Kros.KORM.Query
 {
     /// <summary>
     /// Interface, which describe factory for creating provider.

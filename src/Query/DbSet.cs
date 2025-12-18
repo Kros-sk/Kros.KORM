@@ -15,7 +15,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
-using IQueryProvider = Kros.KORM.Query.Providers.IQueryProvider;
 
 namespace Kros.KORM.Query
 {

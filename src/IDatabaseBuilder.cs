@@ -1,5 +1,5 @@
 ﻿using Kros.KORM.Materializer;
-using Kros.KORM.Query.Providers;
+using Kros.KORM.Query;
 using System.Data.Common;
 
 namespace Kros.KORM

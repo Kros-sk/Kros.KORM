@@ -11,7 +11,7 @@ using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Kros.KORM.Query.Providers
+namespace Kros.KORM.Query
 {
     /// <summary>
     /// Interface for provider, which know execute query.

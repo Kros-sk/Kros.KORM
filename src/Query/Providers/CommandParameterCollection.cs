@@ -2,7 +2,7 @@
 using System.Collections.ObjectModel;
 using System.Data;
 
-namespace Kros.KORM.Query.Providers
+namespace Kros.KORM.Query
 {
     /// <summary>
     /// Zoznam parametrov pre pre SQL príkaz (<see autoUpgrade="true" cref="IQueryProvider.ExecuteNonQuery(System.String)"/>),

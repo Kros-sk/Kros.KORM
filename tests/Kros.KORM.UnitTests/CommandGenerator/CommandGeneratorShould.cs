@@ -15,7 +15,6 @@ using System.Data.Common;
 using System.Linq;
 using System.Reflection;
 using Xunit;
-using IQueryProvider = Kros.KORM.Query.Providers.IQueryProvider;
 
 namespace Kros.KORM.UnitTests.CommandGenerator
 {
@@ -180,7 +179,7 @@ SELECT * FROM @OutputTable;";
                 PropertyEnumConv = TestEnum.Value2
             };
 
-            IQueryProvider provider = Substitute.For<IQueryProvider>();
+            KORM.Query.IQueryProvider provider = Substitute.For<KORM.Query.IQueryProvider>();
             provider.GetCommandForCurrentTransaction().Returns(new SqlCommand());
 
             IQuery<Foo> query = CreateFooQuery();
@@ -201,7 +200,7 @@ SELECT * FROM @OutputTable;";
         [Fact]
         public void ThrowMissingPrimaryKeyExceptionWhenGetUpdateCommand()
         {
-            IQueryProvider provider = Substitute.For<IQueryProvider>();
+            KORM.Query.IQueryProvider provider = Substitute.For<KORM.Query.IQueryProvider>();
             provider.GetCommandForCurrentTransaction().Returns(new SqlCommand());
 
             IQuery<Foo> query = CreateFooQuery();
@@ -219,7 +218,7 @@ SELECT * FROM @OutputTable;";
         [Fact]
         public void ThrowMissingPrimaryKeyExceptionWhenGetUpsertCommand()
         {
-            IQueryProvider provider = Substitute.For<IQueryProvider>();
+            KORM.Query.IQueryProvider provider = Substitute.For<KORM.Query.IQueryProvider>();
             provider.GetCommandForCurrentTransaction().Returns(new SqlCommand());
 
             IQuery<Foo> query = CreateFooQuery();
@@ -237,7 +236,7 @@ SELECT * FROM @OutputTable;";
         [Fact]
         public void ThrowMissingPrimaryKeyExceptionWhenGetDeleteCommand()
         {
-            IQueryProvider provider = Substitute.For<IQueryProvider>();
+            KORM.Query.IQueryProvider provider = Substitute.For<KORM.Query.IQueryProvider>();
             provider.GetCommandForCurrentTransaction().Returns(new SqlCommand());
 
             IQuery<Foo> query = CreateFooQuery();
@@ -291,7 +290,7 @@ SELECT * FROM @OutputTable;";
                 PropertyValueGenerator = 552
             };
 
-            IQueryProvider provider = Substitute.For<IQueryProvider>();
+            KORM.Query.IQueryProvider provider = Substitute.For<KORM.Query.IQueryProvider>();
             provider.GetCommandForCurrentTransaction().Returns(new SqlCommand());
 
             IQuery<Foo> query = CreateFooQuery();
@@ -317,7 +316,7 @@ SELECT * FROM @OutputTable;";
                 PropertyValueGenerator = 552
             };
 
-            IQueryProvider provider = Substitute.For<IQueryProvider>();
+            KORM.Query.IQueryProvider provider = Substitute.For<KORM.Query.IQueryProvider>();
             provider.GetCommandForCurrentTransaction().Returns(new SqlCommand());
 
             IQuery<Foo> query = CreateFooQuery();
@@ -353,7 +352,7 @@ SELECT * FROM @OutputTable;";
 
         private static CommandGenerator<Foo> GetFooGenerator()
         {
-            IQueryProvider provider = Substitute.For<IQueryProvider>();
+            KORM.Query.IQueryProvider provider = Substitute.For<KORM.Query.IQueryProvider>();
             provider.GetCommandForCurrentTransaction().Returns(a => { return new SqlCommand(); });
 
             IQuery<Foo> query = CreateFooQuery();
@@ -363,7 +362,7 @@ SELECT * FROM @OutputTable;";
 
         private static CommandGenerator<Foo> GetUpsertFooGenerator()
         {
-            IQueryProvider provider = Substitute.For<IQueryProvider>();
+            KORM.Query.IQueryProvider provider = Substitute.For<KORM.Query.IQueryProvider>();
             provider.GetCommandForCurrentTransaction().Returns(a => { return new SqlCommand(); });
 
             IQuery<Foo> query = CreateFooQuery();
@@ -373,7 +372,7 @@ SELECT * FROM @OutputTable;";
 
         private static CommandGenerator<FooIdentity> GetFooIdentityGenerator()
         {
-            IQueryProvider provider = Substitute.For<IQueryProvider>();
+            KORM.Query.IQueryProvider provider = Substitute.For<KORM.Query.IQueryProvider>();
             provider.GetCommandForCurrentTransaction().Returns(a => { return new SqlCommand(); });
 
             IQuery<FooIdentity> query = CreateFooIdentityQuery();
@@ -383,7 +382,7 @@ SELECT * FROM @OutputTable;";
 
         private static CommandGenerator<FooGuidIdentity> GetFooGuidIdentityGenerator()
         {
-            IQueryProvider provider = Substitute.For<IQueryProvider>();
+            KORM.Query.IQueryProvider provider = Substitute.For<KORM.Query.IQueryProvider>();
             provider.GetCommandForCurrentTransaction().Returns(a => { return new SqlCommand(); });
 
             IQuery<FooGuidIdentity> query = CreateFooGuidIdentityQuery();
@@ -494,7 +493,7 @@ SELECT * FROM @OutputTable;";
 
         private static CommandGenerator<FooPrimaryKeys> GetFooPrimaryKeyGenerator()
         {
-            IQueryProvider provider = Substitute.For<IQueryProvider>();
+            KORM.Query.IQueryProvider provider = Substitute.For<KORM.Query.IQueryProvider>();
             provider.GetCommandForCurrentTransaction().Returns(a => { return new SqlCommand(); });
 
             IQuery<FooPrimaryKeys> query = CreateQuery<FooPrimaryKeys>();
@@ -527,7 +526,7 @@ SELECT * FROM @OutputTable;";
         {
             IDatabaseMapper mapper = Substitute.For<IDatabaseMapper>();
             mapper.GetTableInfo<T>().Returns(tableInfo);
-            IQueryProvider queryProvider = Substitute.For<IQueryProvider>();
+            KORM.Query.IQueryProvider queryProvider = Substitute.For<KORM.Query.IQueryProvider>();
             var query = new Query<T>(mapper, queryProvider);
 
             return new CommandGenerator<T>(tableInfo, queryProvider, query);

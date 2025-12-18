@@ -12,7 +12,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Xunit;
-using IQueryProvider = Kros.KORM.Query.Providers.IQueryProvider;
 
 namespace Kros.KORM.UnitTests.Query
 {
@@ -110,7 +109,7 @@ namespace Kros.KORM.UnitTests.Query
         [Fact]
         public void CallProviderForExecutingQuery()
         {
-            var provider = Substitute.For<IQueryProvider>();
+            var provider = Substitute.For<KORM.Query.IQueryProvider>();
             List<Person> list = new List<Person>() { new Person() { Id = 5 } };
             provider.Execute<Person>(Arg.Any<IQuery<Person>>()).Returns(list);
 
@@ -123,7 +122,7 @@ namespace Kros.KORM.UnitTests.Query
         [Fact]
         public void CallProviderForFirstOrDefault()
         {
-            var provider = Substitute.For<IQueryProvider>();
+            var provider = Substitute.For<KORM.Query.IQueryProvider>();
             List<Person> list = new List<Person>() { new Person() { Id = 5 } };
             provider.Execute<Person>(Arg.Any<IQuery<Person>>()).Returns(list);
 
@@ -136,7 +135,7 @@ namespace Kros.KORM.UnitTests.Query
         [Fact]
         public void CallProviderForFirstOrDefaultFromInterpolatedString()
         {
-            var provider = Substitute.For<IQueryProvider>();
+            var provider = Substitute.For<KORM.Query.IQueryProvider>();
             List<Person> list = new List<Person>() { new Person() { Id = 5 } };
             provider.Execute<Person>(Arg.Any<IQuery<Person>>()).Returns(list);
 
@@ -150,7 +149,7 @@ namespace Kros.KORM.UnitTests.Query
         [Fact]
         public void ReturnTrueFromAnyIfExistItem()
         {
-            var provider = Substitute.For<IQueryProvider>();
+            var provider = Substitute.For<KORM.Query.IQueryProvider>();
 
             provider.ExecuteScalar<Person>(Arg.Any<IQuery<Person>>()).Returns(5);
 
@@ -163,7 +162,7 @@ namespace Kros.KORM.UnitTests.Query
         [Fact]
         public void ReturnTrueFromAnyIfExistItemFromInterpolatedString()
         {
-            var provider = Substitute.For<IQueryProvider>();
+            var provider = Substitute.For<KORM.Query.IQueryProvider>();
 
             provider.ExecuteScalar<Person>(Arg.Any<IQuery<Person>>()).Returns(5);
 
@@ -177,7 +176,7 @@ namespace Kros.KORM.UnitTests.Query
         [Fact]
         public void ReturnFalseFromAnyIfExistItem()
         {
-            var provider = Substitute.For<IQueryProvider>();
+            var provider = Substitute.For<KORM.Query.IQueryProvider>();
 
             provider.ExecuteScalar<Person>(Arg.Any<IQuery<Person>>()).Returns(null);
 
@@ -190,7 +189,7 @@ namespace Kros.KORM.UnitTests.Query
         [Fact]
         public void CallProviderForExecuteScalar()
         {
-            var provider = Substitute.For<IQueryProvider>();
+            var provider = Substitute.For<KORM.Query.IQueryProvider>();
 
             provider.ExecuteScalar<Person>(Arg.Any<IQuery<Person>>()).Returns(5);
 
@@ -203,7 +202,7 @@ namespace Kros.KORM.UnitTests.Query
         [Fact]
         public void ExecuteScalarReturnNullWhenValueDoesntExist()
         {
-            var provider = Substitute.For<IQueryProvider>();
+            var provider = Substitute.For<KORM.Query.IQueryProvider>();
 
             provider.ExecuteScalar<Person>(Arg.Any<IQuery<Person>>()).Returns(null);
 
@@ -216,7 +215,7 @@ namespace Kros.KORM.UnitTests.Query
         [Fact]
         public void ExecuteScalarReturnNullWhenValueIsDbNull()
         {
-            var provider = Substitute.For<IQueryProvider>();
+            var provider = Substitute.For<KORM.Query.IQueryProvider>();
 
             provider.ExecuteScalar<Person>(Arg.Any<IQuery<Person>>()).Returns(DBNull.Value);
 
@@ -229,7 +228,7 @@ namespace Kros.KORM.UnitTests.Query
         [Fact]
         public void ExecuteScalarReturnHasValueFalseIfProviderReturnNull()
         {
-            var provider = Substitute.For<IQueryProvider>();
+            var provider = Substitute.For<KORM.Query.IQueryProvider>();
 
             provider.ExecuteScalar<Person>(Arg.Any<IQuery<Person>>()).Returns(DBNull.Value);
 
@@ -242,7 +241,7 @@ namespace Kros.KORM.UnitTests.Query
         [Fact]
         public void CallProviderForExecuteStringScalar()
         {
-            var provider = Substitute.For<IQueryProvider>();
+            var provider = Substitute.For<KORM.Query.IQueryProvider>();
 
             provider.ExecuteScalar<Person>(Arg.Any<IQuery<Person>>()).Returns("Mino");
 
@@ -255,7 +254,7 @@ namespace Kros.KORM.UnitTests.Query
         [Fact]
         public void ExecuteStringScalarReturnNullIfProviderReturnNull()
         {
-            var provider = Substitute.For<IQueryProvider>();
+            var provider = Substitute.For<KORM.Query.IQueryProvider>();
 
             provider.ExecuteScalar<Person>(Arg.Any<IQuery<Person>>()).Returns(DBNull.Value);
 

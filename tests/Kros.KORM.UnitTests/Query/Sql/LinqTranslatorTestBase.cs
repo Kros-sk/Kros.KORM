@@ -17,7 +17,6 @@ using System.Data;
 using System.Data.Common;
 using System.Linq;
 using System.Linq.Expressions;
-using IQueryProvider = Kros.KORM.Query.Providers.IQueryProvider;
 
 namespace Kros.KORM.UnitTests.Query.Sql
 {
@@ -225,10 +224,10 @@ namespace Kros.KORM.UnitTests.Query.Sql
 
         internal class FakeQueryProviderFactory : IQueryProviderFactory
         {
-            public IQueryProvider Create(DbConnection connection, IModelBuilder modelBuilder, IDatabaseMapper databaseMapper)
+            public KORM.Query.IQueryProvider Create(DbConnection connection, IModelBuilder modelBuilder, IDatabaseMapper databaseMapper)
                 => new FakeQueryProvider(connection, new FakeSqlServerSqlExpressionVisitorFactory(databaseMapper), databaseMapper);
 
-            public IQueryProvider Create(KormConnectionSettings connectionString, IModelBuilder modelBuilder, IDatabaseMapper databaseMapper)
+            public KORM.Query.IQueryProvider Create(KormConnectionSettings connectionString, IModelBuilder modelBuilder, IDatabaseMapper databaseMapper)
                 => throw new NotImplementedException();
         }
 

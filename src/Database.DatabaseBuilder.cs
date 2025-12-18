@@ -1,6 +1,6 @@
 ﻿using Kros.KORM.Materializer;
 using Kros.KORM.Metadata;
-using Kros.KORM.Query.Providers;
+using Kros.KORM.Query;
 using Kros.Utils;
 using System;
 using System.Data.Common;
