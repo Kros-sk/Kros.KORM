@@ -1,5 +1,5 @@
 ﻿using Kros.KORM.Migrations.Providers;
-using Kros.KORM.Query;
+using Kros.KORM.Query.Providers;
 using Kros.Utils;
 using System;
 using System.Collections.Generic;

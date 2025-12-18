@@ -1,7 +1,7 @@
 ﻿using Kros.Utils;
 using System.Data;
 
-namespace Kros.KORM.Query
+namespace Kros.KORM.Query.Providers
 {
     /// <summary>
     /// Parameter pre SQL príkaz (<see autoUpgrade="true" cref="IQueryProvider.ExecuteNonQuery(System.String)"/>),

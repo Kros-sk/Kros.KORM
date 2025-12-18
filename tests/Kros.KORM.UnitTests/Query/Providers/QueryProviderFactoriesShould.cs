@@ -4,7 +4,6 @@ using Kros.Data.Schema;
 using Kros.KORM.Helper;
 using Kros.KORM.Materializer;
 using Kros.KORM.Metadata;
-using Kros.KORM.Query;
 using Kros.KORM.Query.Providers;
 using Kros.KORM.Query.Sql;
 using Microsoft.Data.SqlClient;

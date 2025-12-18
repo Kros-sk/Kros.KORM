@@ -9,12 +9,12 @@ using Kros.KORM.Query.Sql;
 using Microsoft.Data.SqlClient;
 using System.Data.Common;
 
-namespace Kros.KORM.Query
+namespace Kros.KORM.Query.Providers
 {
     /// <summary>
     /// Provider, which know execute query for Sql Server.
     /// </summary>
-    /// <seealso cref="Kros.KORM.Query.QueryProvider" />
+    /// <seealso cref="QueryProvider" />
     public class SqlServerQueryProvider : QueryProvider
     {
         /// <summary>

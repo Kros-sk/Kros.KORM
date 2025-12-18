@@ -4,6 +4,7 @@ using Kros.KORM.Materializer;
 using Kros.KORM.Metadata;
 using Kros.KORM.Properties;
 using Kros.KORM.Query;
+using Kros.KORM.Query.Providers;
 using Kros.Utils;
 using System;
 using System.Collections.Generic;

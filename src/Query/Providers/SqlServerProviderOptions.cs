@@ -1,7 +1,7 @@
 ﻿using Kros.Data.BulkActions.SqlServer;
 using Microsoft.Data.SqlClient;
 
-namespace Kros.KORM.Query
+namespace Kros.KORM.Query.Providers
 {
     /// <summary>
     /// Options for SQL Server database provider.

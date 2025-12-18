@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Common;
 
-namespace Kros.KORM.Query
+namespace Kros.KORM.Query.Providers
 {
     /// <summary>
     /// Represent set of registered Query provider factories.

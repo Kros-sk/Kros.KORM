@@ -1,4 +1,5 @@
-﻿using Kros.KORM.Query.Sql;
+﻿using Kros.KORM.Query.Providers;
+using Kros.KORM.Query.Sql;
 using System;
 using System.Collections.Generic;
 using System.Data;

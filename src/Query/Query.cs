@@ -1,6 +1,7 @@
 ﻿using Kros.KORM.CommandGenerator;
 using Kros.KORM.Metadata;
 using Kros.KORM.Query.Expressions;
+using Kros.KORM.Query.Providers;
 using Kros.KORM.Query.Sql;
 using Kros.Utils;
 using System;
@@ -8,6 +9,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using IQueryProvider = Kros.KORM.Query.Providers.IQueryProvider;
 
 namespace Kros.KORM.Query
 {

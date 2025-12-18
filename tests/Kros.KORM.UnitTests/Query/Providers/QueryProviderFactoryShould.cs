@@ -2,11 +2,11 @@
 using Kros.Data.SqlServer;
 using Kros.KORM.Materializer;
 using Kros.KORM.Metadata;
-using Kros.KORM.Query;
+using Kros.KORM.Query.Providers;
 using Microsoft.Data.SqlClient;
 using Xunit;
 
-namespace Kros.KORM.UnitTests.Query
+namespace Kros.KORM.UnitTests.Query.Providers
 {
     public class QueryProviderFactoryShould
     {
