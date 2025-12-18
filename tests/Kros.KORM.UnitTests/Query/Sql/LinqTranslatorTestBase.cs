@@ -228,9 +228,7 @@ namespace Kros.KORM.UnitTests.Query.Sql
                 => new FakeQueryProvider(connection, new FakeSqlServerSqlExpressionVisitorFactory(databaseMapper), databaseMapper);
 
             public KORM.Query.IQueryProvider Create(KormConnectionSettings connectionString, IModelBuilder modelBuilder, IDatabaseMapper databaseMapper)
-            {
-                throw new NotImplementedException();
-            }
+                => throw new NotImplementedException();
         }
 
         private class FakeSqlServerSqlExpressionVisitorFactory : ISqlExpressionVisitorFactory

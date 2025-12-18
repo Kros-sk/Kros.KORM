@@ -1,5 +1,4 @@
 ﻿using FluentAssertions;
-using FluentAssertions.Common;
 using Kros.KORM.CommandGenerator;
 using Kros.KORM.Converter;
 using Kros.KORM.Helper;
