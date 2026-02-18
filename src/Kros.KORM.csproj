@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>net10.0</TargetFrameworks>
-    <Version>8.0.0</Version>
+    <Version>8.1.0</Version>
     <Authors>KROS a. s.</Authors>
     <Company>KROS a. s.</Company>
     <Description>KORM is fast, easy to use, micro ORM tool (Kros Object Relation Mapper).</Description>
@@ -47,9 +47,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Kros.Utils" Version="4.0.0" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
-    <PackageReference Include="System.ValueTuple" Version="4.6.1" />
+    <PackageReference Include="Kros.Utils" Version="4.1.0" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.103" PrivateAssets="All" />
+    <PackageReference Include="System.ValueTuple" Version="4.6.2" />
   </ItemGroup>
 
   <PropertyGroup>
