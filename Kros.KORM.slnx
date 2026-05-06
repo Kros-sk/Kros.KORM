@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path=".gitignore" />
+    <File Path="build.yml" />
+    <File Path="README.md" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Kros.KORM.PerformanceTests/Kros.KORM.PerformanceTests.csproj" />
+    <Project Path="tests/Kros.KORM.UnitTests/Kros.KORM.UnitTests.csproj" />
+    <Project Path="tests/Kros.KORM.VB.UnitTests/Kros.KORM.VB.UnitTests.vbproj" />
+  </Folder>
+  <Project Path="src/Kros.KORM.csproj" />
+</Solution>
