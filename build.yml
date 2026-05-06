@@ -1,7 +1,8 @@
 trigger:
-  tags:
+  batch: false
+  branches:
     include:
-      - v*
+      - main
 
 pool:
   vmImage: ubuntu-latest
@@ -15,17 +16,43 @@ steps:
       Get-ChildItem -Path '$(Build.SourcesDirectory)' -Recurse -Include *.nupkg, *.snupkg | Remove-Item
     displayName: Clear NuGet packages
 
-  - template: build-and-test.yml
-
-  - task: CopyFiles@2
-    displayName: Copy package files to staging directory
+  - task: DotNetCoreCLI@2
+    displayName: Build
     inputs:
-      Contents: |
-        **/*.nupkg
-        **/*.snupkg
-      TargetFolder: $(build.artifactStagingDirectory)
-      FlattenFolders: true
+      command: build
+      projects: Kros.KORM.slnx
+      arguments: --configuration Release
 
-  - pwsh: |
-      dotnet nuget push --api-key $(nugetOrgApiKey) --source 'https://api.nuget.org/v3/index.json' '$(Build.ArtifactStagingDirectory)/*.nupkg'
-    displayName: Push to NuGet.org
+  - task: DotNetCoreCLI@2
+    displayName: Test
+    inputs:
+      command: test
+      projects: Kros.KORM.slnx
+      publishTestResults: false
+      arguments: --configuration Release --logger trx --results-directory "$(Common.TestResultsDirectory)"
+
+  - task: PublishTestResults@2
+    displayName: Publish test results
+    condition: always()
+    inputs:
+      testResultsFormat: VSTest
+      testResultsFiles: '*.trx'
+      searchFolder: $(Common.TestResultsDirectory)
+
+  - ${{ if eq(variables['Build.SourceBranchName'], 'main') }}:
+
+    - task: CopyFiles@2
+      displayName: Copy package files to staging directory
+      inputs:
+        Contents: |
+          **/*.nupkg
+          **/*.snupkg
+        TargetFolder: $(Build.ArtifactStagingDirectory)
+        FlattenFolders: true
+
+    - pwsh: |
+        Get-ChildItem '$(Build.ArtifactStagingDirectory)/*.nupkg' | ForEach-Object {
+          Write-Host 'Pushing package $($_.Name)'
+          dotnet nuget push --api-key $(nugetOrgApiKey) --source 'https://api.nuget.org/v3/index.json'  --skip-duplicate $_.FullName
+        }
+      displayName: Push to NuGet.org
