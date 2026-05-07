@@ -40,7 +40,7 @@ steps:
       testResultsFiles: '*.trx'
       searchFolder: $(Common.TestResultsDirectory)
 
-  - ${{ if eq(variables['Build.SourceBranchName'], 'main') }}:
+  - ${{ if in(variables['Build.SourceBranchName'], 'main', 'net48') }}:
 
     - task: CopyFiles@2
       displayName: Copy package files to staging directory
