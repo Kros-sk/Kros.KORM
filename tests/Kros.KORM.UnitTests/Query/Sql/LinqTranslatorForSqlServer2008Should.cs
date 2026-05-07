@@ -1,5 +1,4 @@
-﻿using FluentAssertions;
-using Kros.KORM.Query.Sql;
+﻿using Kros.KORM.Query.Sql;
 using System;
 using System.Linq;
 using Xunit;
@@ -18,7 +17,7 @@ namespace Kros.KORM.UnitTests.Query.Sql
                 .Skip(10);
             Action action = () => visitor.GenerateSql(query.Expression);
 
-            action.Should().Throw<InvalidOperationException>();
+            Assert.Throws<InvalidOperationException>(action);
         }
 
         [Fact]
@@ -129,7 +128,7 @@ namespace Kros.KORM.UnitTests.Query.Sql
                 .Skip(10);
             Action action = () => visitor.GenerateSql(query.Expression);
 
-            action.Should().NotThrow();
+            action();
         }
 
         #endregion

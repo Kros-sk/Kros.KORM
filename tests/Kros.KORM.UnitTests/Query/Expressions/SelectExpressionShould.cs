@@ -1,4 +1,3 @@
-﻿using FluentAssertions;
 using Kros.KORM.Metadata;
 using Kros.KORM.Metadata.Attribute;
 using Kros.KORM.Query.Expressions;
@@ -17,7 +16,7 @@ namespace Kros.KORM.UnitTests.Query.Expressions
             var expression = new ColumnsExpression("Id");
             selectExpression.SetColumnsExpression(expression);
 
-            selectExpression.ColumnsExpression.Should().Be(expression);
+            Assert.Equal(expression, selectExpression.ColumnsExpression);
         }
 
         [Fact]
@@ -26,7 +25,7 @@ namespace Kros.KORM.UnitTests.Query.Expressions
             TableInfo tableInfo = new DatabaseMapper(new ConventionModelMapper()).GetTableInfo<Person>();
             var selectExpression = new SelectExpression(tableInfo);
 
-            selectExpression.ColumnsExpression.ColumnsPart.Should().Be("Id, Name, LastName");
+            Assert.Equal("Id, Name, LastName", selectExpression.ColumnsExpression.ColumnsPart);
         }
 
         [Fact]
@@ -36,7 +35,7 @@ namespace Kros.KORM.UnitTests.Query.Expressions
             tableInfo.UseIdentifierDelimiters(Delimiters.SquareBrackets);
             var selectExpression = new SelectExpression(tableInfo);
 
-            selectExpression.ColumnsExpression.ColumnsPart.Should().Be("[Id], [Name], [LastName]");
+            Assert.Equal("[Id], [Name], [LastName]", selectExpression.ColumnsExpression.ColumnsPart);
         }
 
         [Fact]
@@ -48,7 +47,7 @@ namespace Kros.KORM.UnitTests.Query.Expressions
             var expression = new TableExpression("Person");
             selectExpression.SetTableExpression(expression);
 
-            selectExpression.TableExpression.Should().Be(expression);
+            Assert.Equal(expression, selectExpression.TableExpression);
         }
 
         [Fact]
@@ -57,7 +56,7 @@ namespace Kros.KORM.UnitTests.Query.Expressions
             TableInfo tableInfo = new DatabaseMapper(new ConventionModelMapper()).GetTableInfo<Person>();
             var selectExpression = new SelectExpression(tableInfo);
 
-            selectExpression.TableExpression.TablePart.Should().Be("TPerson");
+            Assert.Equal("TPerson", selectExpression.TableExpression.TablePart);
         }
 
         [Fact]
@@ -67,7 +66,7 @@ namespace Kros.KORM.UnitTests.Query.Expressions
             tableInfo.UseIdentifierDelimiters(Delimiters.SquareBrackets);
             var selectExpression = new SelectExpression(tableInfo);
 
-            selectExpression.TableExpression.TablePart.Should().Be("[TPerson]");
+            Assert.Equal("[TPerson]", selectExpression.TableExpression.TablePart);
         }
 
         [Fact]
@@ -79,7 +78,7 @@ namespace Kros.KORM.UnitTests.Query.Expressions
             var expression = new OrderByExpression("FirstName");
             selectExpression.SetOrderByExpression(expression);
 
-            selectExpression.OrderByExpression.Should().Be(expression);
+            Assert.Equal(expression, selectExpression.OrderByExpression);
         }
 
         [Fact]
@@ -91,7 +90,7 @@ namespace Kros.KORM.UnitTests.Query.Expressions
             var expression = new GroupByExpression("FirstName");
             selectExpression.SetGroupByExpression(expression);
 
-            selectExpression.GroupByExpression.Should().Be(expression);
+            Assert.Equal(expression, selectExpression.GroupByExpression);
         }
 
         [Fact]
@@ -103,7 +102,7 @@ namespace Kros.KORM.UnitTests.Query.Expressions
             selectExpression.SetWhereExpression(new WhereExpression("PersonId > @1", 11));
             selectExpression.SetWhereExpression(new WhereExpression("IsDeleted = 0"));
 
-            selectExpression.WhereExpression.Sql.Should().Be("(PersonId > @1) AND (IsDeleted = 0)");
+            Assert.Equal("(PersonId > @1) AND (IsDeleted = 0)", selectExpression.WhereExpression.Sql);
         }
 
         [Alias("TPerson")]

@@ -1,5 +1,4 @@
-﻿using FluentAssertions;
-using Kros.KORM.UnitTests.Base;
+﻿using Kros.KORM.UnitTests.Base;
 using System.Collections.Generic;
 using System.Linq;
 using Xunit;
@@ -43,7 +42,7 @@ INSERT INTO [{Table_TestTable}] ([Id], [Number], [Description]) VALUES (10, 100,
                     .Where(p => p.Description.Contains("or"))
                     .ToList();
 
-                actual.Select(p => p.Id).Should().BeEquivalentTo(new List<int>() { 1, 3 });
+                Assert.Equivalent(new List<int>() { 1, 3 }, actual.Select(p => p.Id));
             }
         }
 
@@ -56,7 +55,7 @@ INSERT INTO [{Table_TestTable}] ([Id], [Number], [Description]) VALUES (10, 100,
                     .Query<TestTable>()
                     .FirstOrDefault(p => p.Id == 4);
 
-                actual.Id.Should().Be(4);
+                Assert.Equal(4, actual.Id);
             }
         }
 
@@ -71,7 +70,7 @@ INSERT INTO [{Table_TestTable}] ([Id], [Number], [Description]) VALUES (10, 100,
                     .Take(2)
                     .ToList();
 
-                actual.Select(p => p.Id).Should().BeEquivalentTo(new List<int>() { 1, 2 });
+                Assert.Equivalent(new List<int>() { 1, 2 }, actual.Select(p => p.Id));
             }
         }
 
@@ -86,7 +85,7 @@ INSERT INTO [{Table_TestTable}] ([Id], [Number], [Description]) VALUES (10, 100,
                     .OrderBy(p => p.Id)
                     .ToList();
 
-                actual.Select(p => p.Id).Should().BeEquivalentTo(new List<int>() { 9, 10 });
+                Assert.Equivalent(new List<int>() { 9, 10 }, actual.Select(p => p.Id));
             }
         }
 
@@ -102,7 +101,7 @@ INSERT INTO [{Table_TestTable}] ([Id], [Number], [Description]) VALUES (10, 100,
                     .OrderBy(p => p.Id)
                     .ToList();
 
-                actual.Select(p => p.Id).Should().BeEquivalentTo(new List<int>() { 3, 4, 5 });
+                Assert.Equivalent(new List<int>() { 3, 4, 5 }, actual.Select(p => p.Id));
             }
         }
 
@@ -119,7 +118,7 @@ INSERT INTO [{Table_TestTable}] ([Id], [Number], [Description]) VALUES (10, 100,
                     .OrderBy(p => p.Id)
                     .ToList();
 
-                actual.Select(p => p.Id).Should().BeEquivalentTo(new List<int>() { 7, 8, 9 });
+                Assert.Equivalent(new List<int>() { 7, 8, 9 }, actual.Select(p => p.Id));
             }
         }
 
@@ -134,7 +133,7 @@ INSERT INTO [{Table_TestTable}] ([Id], [Number], [Description]) VALUES (10, 100,
                     .ThenBy(p => p.Id)
                     .ToList();
 
-                actual.Select(p => p.Id).Should().BeEquivalentTo(new List<int>() { 10, 9, 8, 7, 6, 5, 4, 2, 3, 1 });
+                Assert.Equivalent(new List<int>() { 10, 9, 8, 7, 6, 5, 4, 2, 3, 1 }, actual.Select(p => p.Id));
             }
         }
 
@@ -148,7 +147,7 @@ INSERT INTO [{Table_TestTable}] ([Id], [Number], [Description]) VALUES (10, 100,
                     .Where(p => p.Id > 2)
                     .Count();
 
-                actual.Should().Be(8);
+                Assert.Equal(8, actual);
             }
         }
 
@@ -161,7 +160,7 @@ INSERT INTO [{Table_TestTable}] ([Id], [Number], [Description]) VALUES (10, 100,
                     .Query<TestTable>()
                     .Min(p => p.Number);
 
-                actual.Should().Be(10);
+                Assert.Equal(10, actual);
             }
         }
 
@@ -175,7 +174,7 @@ INSERT INTO [{Table_TestTable}] ([Id], [Number], [Description]) VALUES (10, 100,
                     .Where(p => p.Number < 30)
                     .Max(p => p.Number);
 
-                actual.Should().Be(20);
+                Assert.Equal(20, actual);
             }
         }
 
@@ -188,7 +187,7 @@ INSERT INTO [{Table_TestTable}] ([Id], [Number], [Description]) VALUES (10, 100,
                     .Query<TestTable>()
                     .Sum(p => p.Number);
 
-                actual.Should().Be(540);
+                Assert.Equal(540, actual);
             }
         }
 
@@ -203,7 +202,7 @@ INSERT INTO [{Table_TestTable}] ([Id], [Number], [Description]) VALUES (10, 100,
                     .Where("Id > @1", 1)
                     .FirstOrDefault();
 
-                actual.Id.Should().Be(2);
+                Assert.Equal(2, actual.Id);
             }
         }
 
@@ -216,7 +215,7 @@ INSERT INTO [{Table_TestTable}] ([Id], [Number], [Description]) VALUES (10, 100,
                     .Query<TestTable>()
                     .Any(p => p.Id > 3);
 
-                any.Should().BeTrue();
+                Assert.True(any);
             }
         }
 
@@ -229,7 +228,7 @@ INSERT INTO [{Table_TestTable}] ([Id], [Number], [Description]) VALUES (10, 100,
                     .Query<TestTable>()
                     .Any(p => p.Id > 50);
 
-                any.Should().BeFalse();
+                Assert.False(any);
             }
         }
 

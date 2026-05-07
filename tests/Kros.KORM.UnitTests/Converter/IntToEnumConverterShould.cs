@@ -1,5 +1,4 @@
-﻿using FluentAssertions;
-using Kros.KORM.Converter;
+﻿using Kros.KORM.Converter;
 using Xunit;
 
 namespace Kros.KORM.UnitTests.Converter
@@ -13,7 +12,7 @@ namespace Kros.KORM.UnitTests.Converter
 
             var actual = converter.Convert(2);
 
-            actual.Should().Be(TestEnum.Value2);
+            Assert.Equal(TestEnum.Value2, actual);
         }
 
         [Fact]
@@ -23,7 +22,7 @@ namespace Kros.KORM.UnitTests.Converter
 
             var actual = converter.ConvertBack(TestEnum.Value3);
 
-            actual.Should().Be(3);            
+            Assert.Equal(3, actual);
         }
 
         private enum TestEnum

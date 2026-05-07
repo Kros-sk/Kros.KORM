@@ -1,5 +1,4 @@
-﻿using FluentAssertions;
-using Kros.Data;
+﻿using Kros.Data;
 using Kros.Data.BulkActions;
 using Kros.KORM.CommandGenerator;
 using Kros.KORM.Data;
@@ -27,6 +26,8 @@ namespace Kros.KORM.UnitTests
     {
         #region Tests
 
+        private static int GetCount<T>(IEnumerable<T> values) => System.Linq.Enumerable.Count(values);
+
         [Fact]
         public void AddItemToPendingChanges()
         {
@@ -41,7 +42,7 @@ namespace Kros.KORM.UnitTests
                 new Person() { Id = 4, Name = "D", Age = 4 }
             };
 
-            dbSet.AddedItems.Should().HaveCount(4);
+            Assert.Equal(4, GetCount(dbSet.AddedItems));
         }
 
         private static TableInfo CreateTableInfo() =>
@@ -64,7 +65,7 @@ namespace Kros.KORM.UnitTests
 
             dbSet.Add(people);
 
-            dbSet.AddedItems.Should().HaveCount(4);
+            Assert.Equal(4, GetCount(dbSet.AddedItems));
         }
 
         [Fact]
@@ -80,7 +81,7 @@ namespace Kros.KORM.UnitTests
             dbSet.Edit(new Person() { Id = 3, Name = "C", Age = 3 });
             dbSet.Edit(new Person() { Id = 4, Name = "D", Age = 4 });
 
-            dbSet.EditedItems.Should().HaveCount(4);
+            Assert.Equal(4, GetCount(dbSet.EditedItems));
         }
 
         [Fact]
@@ -101,7 +102,7 @@ namespace Kros.KORM.UnitTests
 
             dbSet.Edit(people);
 
-            dbSet.EditedItems.Should().HaveCount(4);
+            Assert.Equal(4, GetCount(dbSet.EditedItems));
         }
 
         [Fact]
@@ -117,7 +118,7 @@ namespace Kros.KORM.UnitTests
             dbSet.Delete(new Person() { Id = 3, Name = "C", Age = 3 });
             dbSet.Delete(new Person() { Id = 4, Name = "D", Age = 4 });
 
-            dbSet.DeletedItems.Should().HaveCount(4);
+            Assert.Equal(4, GetCount(dbSet.DeletedItems));
         }
 
         [Fact]
@@ -138,7 +139,7 @@ namespace Kros.KORM.UnitTests
 
             dbSet.Delete(people);
 
-            dbSet.DeletedItems.Should().HaveCount(4);
+            Assert.Equal(4, GetCount(dbSet.DeletedItems));
         }
 
         [Fact]
@@ -153,7 +154,7 @@ namespace Kros.KORM.UnitTests
 
             dbSet.Delete(newPerson);
             Action action = () => dbSet.Add(newPerson);
-            action.Should().Throw<AlreadyInCollectionException>();
+            Assert.Throws<AlreadyInCollectionException>(action);
         }
 
         [Fact]
@@ -168,7 +169,7 @@ namespace Kros.KORM.UnitTests
 
             dbSet.Add(newPerson);
             Action action = () => dbSet.Edit(newPerson);
-            action.Should().Throw<AlreadyInCollectionException>();
+            Assert.Throws<AlreadyInCollectionException>(action);
         }
 
         [Fact]
@@ -184,7 +185,7 @@ namespace Kros.KORM.UnitTests
             dbSet.Edit(newPerson);
             Action action = () => dbSet.Delete(newPerson);
 
-            action.Should().Throw<AlreadyInCollectionException>();
+            Assert.Throws<AlreadyInCollectionException>(action);
         }
 
         [Fact]
@@ -205,9 +206,9 @@ namespace Kros.KORM.UnitTests
 
             dbSet.Clear();
 
-            dbSet.AddedItems.Should().BeEmpty();
-            dbSet.EditedItems.Should().BeEmpty();
-            dbSet.DeletedItems.Should().BeEmpty();
+            Assert.Empty(dbSet.AddedItems);
+            Assert.Empty(dbSet.EditedItems);
+            Assert.Empty(dbSet.DeletedItems);
         }
 
         [Fact]
@@ -234,9 +235,9 @@ namespace Kros.KORM.UnitTests
 
             dbSet.CommitChanges();
 
-            dbSet.AddedItems.Should().BeEmpty();
-            dbSet.EditedItems.Should().BeEmpty();
-            dbSet.DeletedItems.Should().BeEmpty();
+            Assert.Empty(dbSet.AddedItems);
+            Assert.Empty(dbSet.EditedItems);
+            Assert.Empty(dbSet.DeletedItems);
         }
 
         [Fact]
@@ -260,9 +261,9 @@ namespace Kros.KORM.UnitTests
 
             Action action = () => dbSet.CommitChanges();
 
-            action.Should()
-                .Throw<InvalidOperationException>()
-                .WithMessage("*FakeProvider*Person*");
+            var ex = Assert.Throws<InvalidOperationException>(action);
+            Assert.Contains("FakeProvider", ex.Message);
+            Assert.Contains("Person", ex.Message);
         }
 
         [Theory]
@@ -294,13 +295,12 @@ namespace Kros.KORM.UnitTests
 
             if (throwException)
             {
-                action.Should()
-                    .Throw<ArgumentException>()
-                    .WithMessage("*System.Int32*");
+                var ex = Assert.Throws<ArgumentException>(action);
+                Assert.Contains("System.Int32", ex.Message);
             }
             else
             {
-                action.Should().NotThrow();
+                action();
             }
         }
 

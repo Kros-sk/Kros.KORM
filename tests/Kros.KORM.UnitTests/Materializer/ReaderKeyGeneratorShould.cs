@@ -1,4 +1,3 @@
-﻿using FluentAssertions;
 using Kros.KORM.Materializer;
 using System;
 using System.Collections.Generic;
@@ -18,7 +17,7 @@ namespace Kros.KORM.UnitTests.Materializer
             var expected = "SYSTEM.STRINGIDINT32FIRSTNAMESTRINGLASTNAMESTRING".GetHashCode();
             var actual = generator.GenerateKey<string>(reader);
 
-            actual.Should().Be(expected);
+            Assert.Equal(expected, actual);
         }
 
         [Fact]
@@ -31,7 +30,7 @@ namespace Kros.KORM.UnitTests.Materializer
             var key1 = generator.GenerateKey<string>(reader1);
             var key2 = generator.GenerateKey<string>(reader2);
 
-            key1.Should().Be(key2);
+            Assert.Equal(key2, key1);
         }
 
         [Fact]
@@ -46,7 +45,7 @@ namespace Kros.KORM.UnitTests.Materializer
             var key1 = generator.GenerateKey<string>(reader1);
             var key2 = generator.GenerateKey<string>(reader2);
 
-            key1.Should().NotBe(key2);
+            Assert.NotEqual(key2, key1);
         }
 
         [Fact]
@@ -61,7 +60,7 @@ namespace Kros.KORM.UnitTests.Materializer
             var key1 = generator.GenerateKey<Int32>(reader1);
             var key2 = generator.GenerateKey<Int32>(reader2);
 
-            key1.Should().Be(key2);
+            Assert.Equal(key2, key1);
         }
 
         [Fact]
@@ -74,7 +73,7 @@ namespace Kros.KORM.UnitTests.Materializer
             var key1 = generator.GenerateKey<Int32>(reader1);
             var key2 = generator.GenerateKey<string>(reader2);
 
-            key1.Should().NotBe(key2);
+            Assert.NotEqual(key2, key1);
         }
 
         [Fact]
@@ -89,7 +88,7 @@ namespace Kros.KORM.UnitTests.Materializer
             var key1 = generator.GenerateKey<Int32>(reader1);
             var key2 = generator.GenerateKey<Int32>(reader2);
 
-            key1.Should().NotBe(key2);
+            Assert.NotEqual(key2, key1);
         }
 
         private static List<Tuple<string, Type>> CreateListOfColumns()

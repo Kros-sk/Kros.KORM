@@ -1,4 +1,3 @@
-﻿using FluentAssertions;
 using Kros.KORM.Helper;
 using Microsoft.Data.SqlClient;
 using System.Text;
@@ -27,7 +26,7 @@ namespace Kros.KORM.UnitTests.Helper
             log = sb.ToString();
             log = log.Substring(log.IndexOf("-"), log.Length - log.IndexOf("-"));
 
-            log.Should().BeEquivalentTo("- SELECT * FROM PERSON WHERE Name = @1  WITH PARAMETERS (Milan)");
+            Assert.Equivalent("- SELECT * FROM PERSON WHERE Name = @1  WITH PARAMETERS (Milan)", log);
         }
     }
 }

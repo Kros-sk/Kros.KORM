@@ -1,4 +1,3 @@
-﻿using FluentAssertions;
 using Kros.Data.BulkActions;
 using Kros.Data.Schema;
 using Kros.KORM.Helper;
@@ -221,7 +220,8 @@ END";
             {
                 QueryProvider provider = CreateQueryProvider(helper.Connection);
                 Action executeNonQuery = () => provider.ExecuteNonQuery("NO QUERY", parameters);
-                executeNonQuery.Should().Throw<ArgumentException>().WithMessage("*@Param2*");
+                var ex = Assert.Throws<ArgumentException>(executeNonQuery);
+                Assert.Contains("@Param2", ex.Message);
             }
         }
 
@@ -240,7 +240,7 @@ END";
 
                 QueryProvider provider = CreateQueryProvider(helper.Connection);
                 int result = provider.ExecuteNonQuery(query, parameters);
-                result.Should().Be(1); // Inserted 1 row.
+                Assert.Equal(1, result); // Inserted 1 row.
             }
         }
 
@@ -258,7 +258,7 @@ END";
 
                 QueryProvider provider = CreateQueryProvider(helper.Connection);
                 int result = provider.ExecuteNonQuery(query, parameters);
-                result.Should().Be(2); // Updated 2 rows.
+                Assert.Equal(2, result); // Updated 2 rows.
             }
         }
 
@@ -271,7 +271,7 @@ END";
 
                 QueryProvider provider = CreateQueryProvider(helper.Connection);
                 int result = provider.ExecuteNonQuery(query);
-                result.Should().Be(3); // Deleted 3 rows.
+                Assert.Equal(3, result); // Deleted 3 rows.
             }
         }
 
@@ -286,7 +286,7 @@ END";
                     query: query,
                     cancellationToken: TestContext.Current.CancellationToken,
                     paramValues: new object[] { 6, 666, "Sed ac lobortis magna." });
-                result.Should().Be(1); // Inserted 1 row.
+                Assert.Equal(1, result); // Inserted 1 row.
             }
         }
 
@@ -306,7 +306,7 @@ END";
                 QueryProvider provider = CreateQueryProvider(helper.Connection);
                 int result = await provider.ExecuteNonQueryAsync(query: query,
                     cancellationToken: TestContext.Current.CancellationToken, parameters: parameters);
-                result.Should().Be(1); // Inserted 1 row.
+                Assert.Equal(1, result); // Inserted 1 row.
             }
         }
 
@@ -319,7 +319,7 @@ END";
 
                 QueryProvider provider = CreateQueryProvider(helper.Connection);
                 int result = await provider.ExecuteNonQueryAsync(query, TestContext.Current.CancellationToken);
-                result.Should().Be(3); // Deleted 3 rows.
+                Assert.Equal(3, result); // Deleted 3 rows.
             }
         }
 
@@ -336,7 +336,8 @@ END";
             {
                 QueryProvider provider = CreateQueryProvider(helper.Connection);
                 Action executeStoredProcedure = () => provider.ExecuteStoredProcedure<int>("NoProcedure", parameters);
-                executeStoredProcedure.Should().Throw<ArgumentException>().WithMessage("*@Param2*");
+                var ex = Assert.Throws<ArgumentException>(executeStoredProcedure);
+                Assert.Contains("@Param2", ex.Message);
             }
         }
 
@@ -358,7 +359,7 @@ END";
                 QueryProvider provider = CreateQueryProvider(helper.Connection);
                 int result = provider.ExecuteStoredProcedure<int>(Procedure_ScalarResult, parameters);
 
-                result.Should().Be(expected);
+                Assert.Equal(expected, result);
             }
         }
 
@@ -372,7 +373,7 @@ END";
                 QueryProvider provider = CreateQueryProvider(helper.Connection);
                 DateTime result = provider.ExecuteStoredProcedure<DateTime>(Procedure_RowResultWithOneValue);
 
-                result.Should().Be(expected);
+                Assert.Equal(expected, result);
             }
         }
 
@@ -394,8 +395,8 @@ END";
                 QueryProvider provider = CreateQueryProvider(helper.Connection);
                 int result = provider.ExecuteStoredProcedure<int>(Procedure_OutputParameter, parameters);
 
-                parameters["@OutputParam"].Value.Should().Be(inputParamValue * 2);
-                parameters["@InputOutputParam"].Value.Should().Be(inputOutputParamValue * 2);
+                Assert.Equal(inputParamValue * 2, parameters["@OutputParam"].Value);
+                Assert.Equal(inputOutputParamValue * 2, parameters["@InputOutputParam"].Value);
             }
         }
 
@@ -414,7 +415,7 @@ END";
                 QueryProvider provider = CreateQueryProvider(helper.Connection);
                 TestItem result = provider.ExecuteStoredProcedure<TestItem>(Procedure_RowResultWithMultipleValues, parameters);
 
-                result.Should().Be(new TestItem(1, 10, "Lorem ipsum"));
+                Assert.Equal(new TestItem(1, 10, "Lorem ipsum"), result);
             }
         }
 
@@ -427,11 +428,11 @@ END";
                 QueryProvider provider = CreateQueryProvider(helper.Connection);
                 List<TestItem> result = provider.ExecuteStoredProcedure<IEnumerable<TestItem>>(Procedure_TableResult).ToList();
 
-                result.Should().BeEquivalentTo(new TestItem[] {
+                Assert.Equivalent(new TestItem[] {
                     new TestItem(1, 10, "Lorem ipsum"),
                     new TestItem(2, 20, null),
                     new TestItem(3, 30, "Hello world"),
-                });
+                }, result);
             }
         }
 
@@ -444,11 +445,11 @@ END";
                 QueryProvider provider = CreateQueryProvider(helper.Connection.ConnectionString);
                 List<TestItem> result = provider.ExecuteStoredProcedure<IEnumerable<TestItem>>(Procedure_TableResult).ToList();
 
-                result.Should().BeEquivalentTo(new TestItem[] {
+                Assert.Equivalent(new TestItem[] {
                     new TestItem(1, 10, "Lorem ipsum"),
                     new TestItem(2, 20, null),
                     new TestItem(3, 30, "Hello world"),
-                });
+                }, result);
             }
         }
 
@@ -461,8 +462,7 @@ END";
                 QueryProvider provider = CreateQueryProvider(helper.Connection);
                 List<TestItem> result = provider.ExecuteStoredProcedure<IEnumerable<TestItem>>(Procedure_TableResult).ToList();
 
-                IsAnyReaderOpened(helper.Connection, Table_TestTable)
-                    .Should().BeTrue();
+                Assert.True(IsAnyReaderOpened(helper.Connection, Table_TestTable));
             }
         }
 

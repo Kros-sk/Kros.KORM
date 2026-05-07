@@ -1,4 +1,3 @@
-﻿using FluentAssertions;
 using Kros.KORM.Helper;
 using Xunit;
 
@@ -9,7 +8,7 @@ namespace Kros.KORM.UnitTests.Helper
         [Fact]
         public void ReturnPropertyName()
         {
-            PropertyName<Foo>.GetPropertyName(p => p.Prop1).Should().Be("Prop1");
+            Assert.Equal("Prop1", PropertyName<Foo>.GetPropertyName(p => p.Prop1));
         }
 
         private class Foo

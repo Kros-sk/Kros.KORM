@@ -1,5 +1,4 @@
-﻿using FluentAssertions;
-using Kros.Data;
+﻿using Kros.Data;
 using Kros.KORM.Metadata;
 using Kros.KORM.Metadata.Attribute;
 using Kros.KORM.UnitTests.Base;
@@ -136,12 +135,12 @@ END";
             dbSet.Add(item2);
             dbSet.CommitChanges();
 
-            item1.Id.Should().Be(1);
-            item2.Id.Should().Be(2);
+            Assert.Equal(1, item1.Id);
+            Assert.Equal(2, item2.Id);
 
             foreach (var item in korm.Query<Data_AutoIncrementId_WithTriggerValue>())
             {
-                item.AutoValue.Should().Be(item.Age * 10);
+                Assert.Equal(item.Age * 10, item.AutoValue);
             }
         }
 
@@ -158,12 +157,12 @@ END";
             dbSet.Add(item2);
             dbSet.CommitChanges();
 
-            item1.Id.Should().Be(1);
-            item2.Id.Should().Be(2);
+            Assert.Equal(1, item1.Id);
+            Assert.Equal(2, item2.Id);
 
             foreach (var item in korm.Query<Data_AutoIncrementId_WithTriggerValue>())
             {
-                item.AutoValue.Should().Be(item.Age * -1);
+                Assert.Equal(item.Age * -1, item.AutoValue);
             }
         }
 
@@ -180,12 +179,12 @@ END";
             dbSet.Add(item2);
             dbSet.CommitChanges();
 
-            item1.Id.Should().Be(1);
-            item2.Id.Should().Be(2);
+            Assert.Equal(1, item1.Id);
+            Assert.Equal(2, item2.Id);
 
             foreach (var item in korm.Query<Data_ManualId_WithTriggerValue>())
             {
-                item.AutoValue.Should().Be(item.Age * 10);
+                Assert.Equal(item.Age * 10, item.AutoValue);
             }
         }
 
@@ -202,12 +201,12 @@ END";
             dbSet.Add(item2);
             dbSet.CommitChanges();
 
-            item1.Id.Should().Be(1);
-            item2.Id.Should().Be(2);
+            Assert.Equal(1, item1.Id);
+            Assert.Equal(2, item2.Id);
 
             foreach (var item in korm.Query<Data_ManualId_WithTriggerValue>())
             {
-                item.AutoValue.Should().Be(item.Age * -1);
+                Assert.Equal(item.Age * -1, item.AutoValue);
             }
         }
 
@@ -233,8 +232,8 @@ END";
 
             foreach (var item in korm.Query<Data_AutoIncrementId_WithTriggerValue>())
             {
-                item.Age.Should().Be(item.Id * 20);
-                item.AutoValue.Should().Be(item.Age * 100);
+                Assert.Equal(item.Id * 20, item.Age);
+                Assert.Equal(item.Age * 100, item.AutoValue);
             }
         }
 
@@ -262,8 +261,8 @@ END";
 
             foreach (var item in korm.Query<Data_AutoIncrementId_WithTriggerValue>())
             {
-                item.Age.Should().Be(item.Id * 200);
-                item.AutoValue.Should().Be(item.Age / 2);
+                Assert.Equal(item.Id * 200, item.Age);
+                Assert.Equal(item.Age / 2, item.AutoValue);
             }
         }
     }

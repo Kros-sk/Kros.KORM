@@ -1,5 +1,4 @@
-﻿using FluentAssertions;
-using Kros.KORM.CommandGenerator;
+﻿using Kros.KORM.CommandGenerator;
 using Kros.KORM.Converter;
 using Kros.KORM.Helper;
 using Kros.KORM.Materializer;
@@ -29,7 +28,7 @@ namespace Kros.KORM.UnitTests.CommandGenerator
 
             DbCommand insert = GetFooGenerator().GetInsertCommand();
 
-            insert.CommandText.Should().Be(expectedQuery);
+            Assert.Equal(expectedQuery, insert.CommandText);
         }
 
         [Fact]
@@ -41,7 +40,7 @@ SELECT * FROM @OutputTable;";
 
             DbCommand insert = GetFooIdentityGenerator().GetInsertCommand();
 
-            insert.CommandText.Should().Be(expectedQuery);
+            Assert.Equal(expectedQuery, insert.CommandText);
         }
 
         [Fact]
@@ -53,7 +52,7 @@ SELECT * FROM @OutputTable;";
 
             DbCommand insert = GetFooGuidIdentityGenerator().GetInsertCommand();
 
-            insert.CommandText.Should().Be(expectedQuery);
+            Assert.Equal(expectedQuery, insert.CommandText);
         }
 
         [Fact]
@@ -63,7 +62,7 @@ SELECT * FROM @OutputTable;";
 
             DbCommand update = GetFooGenerator().GetUpdateCommand();
 
-            update.CommandText.Should().Be(expectedQuery);
+            Assert.Equal(expectedQuery, update.CommandText);
         }
 
         [Fact]
@@ -77,7 +76,7 @@ SELECT * FROM @OutputTable;";
 
             DbCommand upsert = GetFooGenerator().GetUpsertCommand();
 
-            upsert.CommandText.Should().Be(expectedQuery);
+            Assert.Equal(expectedQuery, upsert.CommandText);
         }
 
         [Fact]
@@ -92,7 +91,7 @@ SELECT * FROM @OutputTable;";
 
             DbCommand upsert = commandGenerator.GetUpsertCommand();
 
-            upsert.CommandText.Should().Be(expectedQuery);
+            Assert.Equal(expectedQuery, upsert.CommandText);
         }
 
         [Fact]
@@ -106,7 +105,7 @@ SELECT * FROM @OutputTable;";
 
             DbCommand upsert = GetUpsertFooGenerator().GetUpsertCommand(new[] { "FirstName", "PropertyEnum" });
 
-            upsert.CommandText.Should().Be(expectedQuery);
+            Assert.Equal(expectedQuery, upsert.CommandText);
         }
 
         [Fact]
@@ -117,7 +116,7 @@ SELECT * FROM @OutputTable;";
             {
                 DbCommand update = generator.GetUpsertCommand(new[] { "FirstName", "MissingColumn" });
             };
-            action.Should().Throw<InvalidOperationException>();
+            Assert.Throws<InvalidOperationException>(action);
         }
 
         [Fact]
@@ -127,7 +126,7 @@ SELECT * FROM @OutputTable;";
 
             DbCommand delete = GetFooGenerator().GetDeleteCommand();
 
-            delete.CommandText.Should().Be(expectedQuery);
+            Assert.Equal(expectedQuery, delete.CommandText);
         }
 
         [Fact]
@@ -137,8 +136,8 @@ SELECT * FROM @OutputTable;";
 
             var result = GetFooGenerator().GetDeleteCommands(Enumerable.Range(1, 15)).ToList();
 
-            result.Should().HaveCount(1);
-            result[0].CommandText.Should().Be(expectedQuery);
+            Assert.Single(result);
+            Assert.Equal(expectedQuery, result[0].CommandText);
         }
 
         [Fact]
@@ -156,14 +155,14 @@ SELECT * FROM @OutputTable;";
 
             var result = generator.GetDeleteCommands(Enumerable.Range(1, 25)).ToList();
 
-            result.Should().HaveCount(3);
-            result[0].CommandText.Should().Be(expectedQuery_0);
-            result[1].CommandText.Should().Be(expectedQuery_1);
-            result[2].CommandText.Should().Be(expectedQuery_2);
+            Assert.Equal(3, result.Count);
+            Assert.Equal(expectedQuery_0, result[0].CommandText);
+            Assert.Equal(expectedQuery_1, result[1].CommandText);
+            Assert.Equal(expectedQuery_2, result[2].CommandText);
 
-            GetParameterValues<int>(result[0].Parameters).Should().Equal(expectedParameters_0);
-            GetParameterValues<int>(result[1].Parameters).Should().Equal(expectedParameters_1);
-            GetParameterValues<int>(result[2].Parameters).Should().Equal(expectedParameters_2);
+            Assert.Equal(expectedParameters_0, GetParameterValues<int>(result[0].Parameters));
+            Assert.Equal(expectedParameters_1, GetParameterValues<int>(result[1].Parameters));
+            Assert.Equal(expectedParameters_2, GetParameterValues<int>(result[2].Parameters));
         }
 
         [Fact]
@@ -189,12 +188,12 @@ SELECT * FROM @OutputTable;";
             DbCommand insert = generator.GetInsertCommand();
             generator.FillCommand(insert, item, ValueGenerated.OnInsert);
 
-            insert.Parameters["@IdRow"].Value.Should().Be(336);
-            insert.Parameters["@Salary"].Value.Should().Be((decimal)1500);
-            insert.Parameters["@FirstName"].Value.Should().Be("Homer");
-            insert.Parameters["@PropertyGuid"].Value.Should().Be(new Guid("{C0DC6F49-10A5-4AB7-9B9C-4152C25238BF}"));
-            insert.Parameters["@PropertyEnum"].Value.Should().Be(1);
-            insert.Parameters["@PropertyEnumConv"].Value.Should().Be("V2");
+            Assert.Equal(336, insert.Parameters["@IdRow"].Value);
+            Assert.Equal((decimal)1500, insert.Parameters["@Salary"].Value);
+            Assert.Equal("Homer", insert.Parameters["@FirstName"].Value);
+            Assert.Equal(new Guid("{C0DC6F49-10A5-4AB7-9B9C-4152C25238BF}"), insert.Parameters["@PropertyGuid"].Value);
+            Assert.Equal(1, insert.Parameters["@PropertyEnum"].Value);
+            Assert.Equal("V2", insert.Parameters["@PropertyEnumConv"].Value);
         }
 
         [Fact]
@@ -212,7 +211,7 @@ SELECT * FROM @OutputTable;";
             {
                 DbCommand update = generator.GetUpdateCommand();
             };
-            action.Should().Throw<KORM.Exceptions.MissingPrimaryKeyException>();
+            Assert.Throws<KORM.Exceptions.MissingPrimaryKeyException>(action);
         }
 
         [Fact]
@@ -230,7 +229,7 @@ SELECT * FROM @OutputTable;";
             {
                 DbCommand update = generator.GetUpsertCommand();
             };
-            action.Should().Throw<KORM.Exceptions.MissingPrimaryKeyException>();
+            Assert.Throws<KORM.Exceptions.MissingPrimaryKeyException>(action);
         }
 
         [Fact]
@@ -247,7 +246,7 @@ SELECT * FROM @OutputTable;";
             {
                 DbCommand update = generator.GetDeleteCommand();
             };
-            action.Should().Throw<KORM.Exceptions.MissingPrimaryKeyException>();
+            Assert.Throws<KORM.Exceptions.MissingPrimaryKeyException>(action);
         }
 
         [Fact]
@@ -262,7 +261,7 @@ SELECT * FROM @OutputTable;";
             var dto = new ConverterDto() { Id = 1, Name = null };
             var convertedValue = commandGenerator.GetColumnValue(nameColumn, dto, ValueGenerated.Never);
 
-            convertedValue.Should().Be("NULL");
+            Assert.Equal("NULL", convertedValue);
         }
 
         [Fact]
@@ -279,7 +278,7 @@ SELECT * FROM @OutputTable;";
             CommandGenerator<ConverterDto>.SetColumnValueFromValueGenerator(idColumn, dto, ValueGenerated.Never);
             var convertedValue = commandGenerator.GetColumnValue(idColumn, dto, ValueGenerated.Never);
 
-            convertedValue.Should().Be(AutoIncrementValueGenerator.GeneratedValue);
+            Assert.Equal(AutoIncrementValueGenerator.GeneratedValue, convertedValue);
         }
 
         [Fact]
@@ -302,10 +301,10 @@ SELECT * FROM @OutputTable;";
             DbCommand update = generator.GetUpdateCommand();
 
             generator.FillCommand(insert, item, ValueGenerated.OnInsert);
-            insert.Parameters["@PropertyValueGenerator"].Value.Should().Be(123);
+            Assert.Equal(123, insert.Parameters["@PropertyValueGenerator"].Value);
 
             generator.FillCommand(update, item, ValueGenerated.OnUpdate);
-            update.Parameters["@PropertyValueGenerator"].Value.Should().Be(123);
+            Assert.Equal(123, update.Parameters["@PropertyValueGenerator"].Value);
         }
 
         [Fact]
@@ -328,10 +327,10 @@ SELECT * FROM @OutputTable;";
             DbCommand update = generator.GetUpdateCommand();
 
             generator.FillCommand(insert, item, ValueGenerated.OnInsert, true);
-            insert.Parameters["@PropertyValueGenerator"].Value.Should().Be(552);
+            Assert.Equal(552, insert.Parameters["@PropertyValueGenerator"].Value);
 
             generator.FillCommand(update, item, ValueGenerated.OnUpdate, true);
-            update.Parameters["@PropertyValueGenerator"].Value.Should().Be(552);
+            Assert.Equal(552, update.Parameters["@PropertyValueGenerator"].Value);
         }
 
         #endregion

@@ -1,4 +1,3 @@
-﻿using FluentAssertions;
 using Kros.KORM.Metadata;
 using System;
 using Xunit;
@@ -23,7 +22,7 @@ namespace Kros.KORM.UnitTests.Metadata
             var actual = columnInfo.GetValue(car);
             var expected = "Honda";
 
-            actual.Should().Be(expected);
+            Assert.Equal(expected, actual);
         }
 
         [Fact]
@@ -42,7 +41,7 @@ namespace Kros.KORM.UnitTests.Metadata
             var actual = columnInfo.GetValue(car);
             var expected = 5;
 
-            actual.Should().Be(expected);
+            Assert.Equal(expected, actual);
         }
 
         [Fact]
@@ -61,7 +60,7 @@ namespace Kros.KORM.UnitTests.Metadata
             var actual = columnInfo.GetValue(car);
             var expected = new DateTime(2010, 1, 1);
 
-            actual.Should().Be(expected);
+            Assert.Equal(expected, actual);
         }
 
         [Fact]
@@ -81,7 +80,7 @@ namespace Kros.KORM.UnitTests.Metadata
             var actual = columnInfo.GetValue(car);
             var expected = "Mazda";
 
-            actual.Should().Be(expected);
+            Assert.Equal(expected, actual);
         }
 
         [Fact]
@@ -101,7 +100,7 @@ namespace Kros.KORM.UnitTests.Metadata
             var actual = columnInfo.GetValue(car);
             var expected = 4;
 
-            actual.Should().Be(expected);
+            Assert.Equal(expected, actual);
         }
 
         [Fact]
@@ -121,7 +120,7 @@ namespace Kros.KORM.UnitTests.Metadata
             var actual = columnInfo.GetValue(car);
             var expected = new DateTime(2015, 1, 1);
 
-            actual.Should().Be(expected);
+            Assert.Equal(expected, actual);
         }
 
         private class Car

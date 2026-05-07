@@ -1,4 +1,3 @@
-﻿using FluentAssertions;
 using Kros.Data;
 using Kros.KORM.Metadata;
 using Kros.KORM.Metadata.Attribute;
@@ -121,7 +120,8 @@ $@"CREATE TABLE [dbo].[{TestTableNameB}] (
         {
             using TestDatabase db = CreateTestDatabase();
             Action action = () => { IDbSet<PersonInvalid> setA = db.Query<PersonInvalid>().AsDbSet(); };
-            action.Should().Throw<InvalidOperationException>().WithMessage("*Custom*");
+            var ex = Assert.Throws<InvalidOperationException>(action);
+            Assert.Contains("Custom", ex.Message);
         }
 
         [Fact]
@@ -143,17 +143,17 @@ $@"CREATE TABLE [dbo].[{TestTableNameB}] (
             }
 
             object generatorInDb = GetGenerator();
-            generatorInDb.Should().BeNull();
+            Assert.Null(generatorInDb);
 
             IDbSet<PersonDbConfig> set = db.Query<PersonDbConfig>().AsDbSet();
             var person = new PersonDbConfig { Name = "Alice" };
             set.Add(person);
             set.CommitChanges();
 
-            person.IdA.Should().Be(1);
+            Assert.Equal(1, person.IdA);
 
             generatorInDb = GetGenerator();
-            generatorInDb.Should().NotBeNull();
+            Assert.NotNull(generatorInDb);
         }
 
         [Fact]
@@ -178,12 +178,12 @@ $@"CREATE TABLE [dbo].[{TestTableNameB}] (
             InsertItems(setA, personA3);
             InsertItems(setB, personB3);
 
-            personA1.IdA.Should().Be(1);
-            personA2.IdA.Should().Be(3);
-            personA3.IdA.Should().Be(5);
-            personB1.Pk.Should().Be(2);
-            personB2.Pk.Should().Be(4);
-            personB3.Pk.Should().Be(6);
+            Assert.Equal(1, personA1.IdA);
+            Assert.Equal(3, personA2.IdA);
+            Assert.Equal(5, personA3.IdA);
+            Assert.Equal(2, personB1.Pk);
+            Assert.Equal(4, personB2.Pk);
+            Assert.Equal(6, personB3.Pk);
         }
 
         [Fact]
@@ -212,19 +212,19 @@ $@"CREATE TABLE [dbo].[{TestTableNameB}] (
             InsertItems(setA, new[] { personA4, personA5, personA6 });
             InsertItems(setB, new[] { personB4, personB5, personB6 });
 
-            personA1.IdA.Should().Be(1);
-            personA2.IdA.Should().Be(2);
-            personA3.IdA.Should().Be(3);
-            personA4.IdA.Should().Be(7);
-            personA5.IdA.Should().Be(8);
-            personA6.IdA.Should().Be(9);
+            Assert.Equal(1, personA1.IdA);
+            Assert.Equal(2, personA2.IdA);
+            Assert.Equal(3, personA3.IdA);
+            Assert.Equal(7, personA4.IdA);
+            Assert.Equal(8, personA5.IdA);
+            Assert.Equal(9, personA6.IdA);
 
-            personB1.Pk.Should().Be(4);
-            personB2.Pk.Should().Be(5);
-            personB3.Pk.Should().Be(6);
-            personB4.Pk.Should().Be(10);
-            personB5.Pk.Should().Be(11);
-            personB6.Pk.Should().Be(12);
+            Assert.Equal(4, personB1.Pk);
+            Assert.Equal(5, personB2.Pk);
+            Assert.Equal(6, personB3.Pk);
+            Assert.Equal(10, personB4.Pk);
+            Assert.Equal(11, personB5.Pk);
+            Assert.Equal(12, personB6.Pk);
         }
 
         [Fact]
@@ -249,12 +249,12 @@ $@"CREATE TABLE [dbo].[{TestTableNameB}] (
             InsertItems(setMain, personMain3);
             InsertItems(setTemp, personTemp3);
 
-            personMain1.IdA.Should().Be(1);
-            personMain2.IdA.Should().Be(3);
-            personMain3.IdA.Should().Be(5);
-            personTemp1.IdB.Should().Be(2);
-            personTemp2.IdB.Should().Be(4);
-            personTemp3.IdB.Should().Be(6);
+            Assert.Equal(1, personMain1.IdA);
+            Assert.Equal(3, personMain2.IdA);
+            Assert.Equal(5, personMain3.IdA);
+            Assert.Equal(2, personTemp1.IdB);
+            Assert.Equal(4, personTemp2.IdB);
+            Assert.Equal(6, personTemp3.IdB);
         }
     }
 }

@@ -1,4 +1,3 @@
-﻿using FluentAssertions;
 using Kros.KORM.Query.Expressions;
 using Xunit;
 
@@ -11,7 +10,7 @@ namespace Kros.KORM.UnitTests.Query.Expressions
         {
             var expression = new OrderByExpression("FirstName, LastName");
 
-            expression.OrderByPart.Should().Be("FirstName, LastName");
+            Assert.Equal("FirstName, LastName", expression.OrderByPart);
         }
 
         [Fact]
@@ -19,7 +18,7 @@ namespace Kros.KORM.UnitTests.Query.Expressions
         {
             var expression = new OrderByExpression("Order by FirstName, LastName desc");
 
-            expression.OrderByPart.Should().Be("FirstName, LastName desc");
+            Assert.Equal("FirstName, LastName desc", expression.OrderByPart);
         }
 
         [Fact]
@@ -27,7 +26,7 @@ namespace Kros.KORM.UnitTests.Query.Expressions
         {
             var expression = new OrderByExpression("Order   by FirstName, LastName");
 
-            expression.OrderByPart.Should().Be("FirstName, LastName");
+            Assert.Equal("FirstName, LastName", expression.OrderByPart);
         }
 
         [Fact]
@@ -35,7 +34,7 @@ namespace Kros.KORM.UnitTests.Query.Expressions
         {
             var expression = new OrderByExpression("FirstName", "LastName desc");
 
-            expression.OrderByPart.Should().Be("FirstName, LastName desc");
+            Assert.Equal("FirstName, LastName desc", expression.OrderByPart);
         }
 
         private class Person

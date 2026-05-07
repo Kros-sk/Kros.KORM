@@ -1,4 +1,3 @@
-﻿using FluentAssertions;
 using Kros.KORM.Query.Sql;
 using Microsoft.Data.SqlClient;
 using System;
@@ -19,12 +18,12 @@ namespace Kros.KORM.UnitTests.Query.Sql
 
             ParameterExtractingExpressionVisitor.ExtractParametersToCommand(command, query.Expression);
 
-            command.Parameters.Count.Should().Be(2);
-            command.Parameters[0].ParameterName.Should().Be("@Id");
-            command.Parameters[0].Value.Should().Be(1);
+            Assert.Equal(2, command.Parameters.Count);
+            Assert.Equal("@Id", command.Parameters[0].ParameterName);
+            Assert.Equal(1, command.Parameters[0].Value);
 
-            command.Parameters[1].ParameterName.Should().Be("@Age");
-            command.Parameters[1].Value.Should().Be(18);
+            Assert.Equal("@Age", command.Parameters[1].ParameterName);
+            Assert.Equal(18, command.Parameters[1].Value);
         }
 
         [Fact]
@@ -39,15 +38,15 @@ namespace Kros.KORM.UnitTests.Query.Sql
 
             ParameterExtractingExpressionVisitor.ExtractParametersToCommand(command, query.Expression);
 
-            command.Parameters.Count.Should().Be(3);
-            command.Parameters[0].ParameterName.Should().Be("@Id");
-            command.Parameters[0].Value.Should().Be(0);
+            Assert.Equal(3, command.Parameters.Count);
+            Assert.Equal("@Id", command.Parameters[0].ParameterName);
+            Assert.Equal(0, command.Parameters[0].Value);
 
-            command.Parameters[1].ParameterName.Should().Be("@Name");
-            command.Parameters[1].Value.Should().Be("Victor");
+            Assert.Equal("@Name", command.Parameters[1].ParameterName);
+            Assert.Equal("Victor", command.Parameters[1].Value);
 
-            command.Parameters[2].ParameterName.Should().Be("@Name1");
-            command.Parameters[2].Value.Should().Be("Thomas");
+            Assert.Equal("@Name1", command.Parameters[2].ParameterName);
+            Assert.Equal("Thomas", command.Parameters[2].Value);
         }
 
         [Fact]
@@ -63,15 +62,15 @@ namespace Kros.KORM.UnitTests.Query.Sql
 
                 ParameterExtractingExpressionVisitor.ExtractParametersToCommand(command, query.Expression);
 
-                command.Parameters.Count.Should().Be(3);
-                command.Parameters[0].ParameterName.Should().Be("@0");
-                command.Parameters[0].Value.Should().Be(0);
+                Assert.Equal(3, command.Parameters.Count);
+                Assert.Equal("@0", command.Parameters[0].ParameterName);
+                Assert.Equal(0, command.Parameters[0].Value);
 
-                command.Parameters[1].ParameterName.Should().Be("@1");
-                command.Parameters[1].Value.Should().Be("Victor");
+                Assert.Equal("@1", command.Parameters[1].ParameterName);
+                Assert.Equal("Victor", command.Parameters[1].Value);
 
-                command.Parameters[2].ParameterName.Should().Be("@2");
-                command.Parameters[2].Value.Should().Be("Milan");
+                Assert.Equal("@2", command.Parameters[2].ParameterName);
+                Assert.Equal("Milan", command.Parameters[2].Value);
             }
         }
 
@@ -88,15 +87,15 @@ namespace Kros.KORM.UnitTests.Query.Sql
 
             ParameterExtractingExpressionVisitor.ExtractParametersToCommand(command, query.Expression);
 
-            command.Parameters.Count.Should().Be(3);
-            command.Parameters[0].ParameterName.Should().Be("@Id");
-            command.Parameters[0].Value.Should().Be(0);
+            Assert.Equal(3, command.Parameters.Count);
+            Assert.Equal("@Id", command.Parameters[0].ParameterName);
+            Assert.Equal(0, command.Parameters[0].Value);
 
-            command.Parameters[1].ParameterName.Should().Be("@Name");
-            command.Parameters[1].Value.Should().Be("Victor");
+            Assert.Equal("@Name", command.Parameters[1].ParameterName);
+            Assert.Equal("Victor", command.Parameters[1].Value);
 
-            command.Parameters[2].ParameterName.Should().Be("@Name1");
-            command.Parameters[2].Value.Should().Be("Thomas");
+            Assert.Equal("@Name1", command.Parameters[2].ParameterName);
+            Assert.Equal("Thomas", command.Parameters[2].Value);
         }
 
         [Fact]
@@ -111,18 +110,18 @@ namespace Kros.KORM.UnitTests.Query.Sql
 
             ParameterExtractingExpressionVisitor.ExtractParametersToCommand(command, query.Expression);
 
-            command.Parameters.Count.Should().Be(4);
-            command.Parameters[0].ParameterName.Should().Be("@1");
-            command.Parameters[0].Value.Should().Be(1);
+            Assert.Equal(4, command.Parameters.Count);
+            Assert.Equal("@1", command.Parameters[0].ParameterName);
+            Assert.Equal(1, command.Parameters[0].Value);
 
-            command.Parameters[1].ParameterName.Should().Be("@2");
-            command.Parameters[1].Value.Should().Be(3);
+            Assert.Equal("@2", command.Parameters[1].ParameterName);
+            Assert.Equal(3, command.Parameters[1].Value);
 
-            command.Parameters[2].ParameterName.Should().Be("@3");
-            command.Parameters[2].Value.Should().Be(5);
+            Assert.Equal("@3", command.Parameters[2].ParameterName);
+            Assert.Equal(5, command.Parameters[2].Value);
 
-            command.Parameters[3].ParameterName.Should().Be("@4");
-            command.Parameters[3].Value.Should().Be(6);
+            Assert.Equal("@4", command.Parameters[3].ParameterName);
+            Assert.Equal(6, command.Parameters[3].Value);
         }
 
         [Fact]
@@ -137,15 +136,15 @@ namespace Kros.KORM.UnitTests.Query.Sql
 
             ParameterExtractingExpressionVisitor.ExtractParametersToCommand(command, query.Expression);
 
-            command.Parameters.Count.Should().Be(3);
-            command.Parameters[0].ParameterName.Should().Be("@A");
-            command.Parameters[0].Value.Should().Be(1);
+            Assert.Equal(3, command.Parameters.Count);
+            Assert.Equal("@A", command.Parameters[0].ParameterName);
+            Assert.Equal(1, command.Parameters[0].Value);
 
-            command.Parameters[1].ParameterName.Should().Be("@2");
-            command.Parameters[1].Value.Should().Be("Milan");
+            Assert.Equal("@2", command.Parameters[1].ParameterName);
+            Assert.Equal("Milan", command.Parameters[1].Value);
 
-            command.Parameters[2].ParameterName.Should().Be("@3");
-            command.Parameters[2].Value.Should().Be(DBNull.Value);
+            Assert.Equal("@3", command.Parameters[2].ParameterName);
+            Assert.Equal(DBNull.Value, command.Parameters[2].Value);
         }
 
         [Fact]
@@ -160,12 +159,12 @@ namespace Kros.KORM.UnitTests.Query.Sql
 
             ParameterExtractingExpressionVisitor.ExtractParametersToCommand(command, query.Expression);
 
-            command.Parameters.Count.Should().Be(2);
-            command.Parameters[0].ParameterName.Should().Be("@A");
-            command.Parameters[0].Value.Should().Be(string.Empty);
+            Assert.Equal(2, command.Parameters.Count);
+            Assert.Equal("@A", command.Parameters[0].ParameterName);
+            Assert.Equal(string.Empty, command.Parameters[0].Value);
 
-            command.Parameters[1].ParameterName.Should().Be("@1");
-            command.Parameters[1].Value.Should().Be(DBNull.Value);
+            Assert.Equal("@1", command.Parameters[1].ParameterName);
+            Assert.Equal(DBNull.Value, command.Parameters[1].Value);
         }
 
         [Fact]
@@ -175,24 +174,24 @@ namespace Kros.KORM.UnitTests.Query.Sql
             var database = new Database(connection);
 
             var query = database.Query<Person>()
-                .Where(@"Col1 = @1 AND Col2 <> @2 AND 
+                .Where(@"Col1 = @1 AND Col2 <> @2 AND
                       Col3 <> @3 AND Col4 = @4 AND ROUND((Col5 - Col6), 6) > 0", 1, 2, 3, 4);
             var command = connection.CreateCommand();
 
             ParameterExtractingExpressionVisitor.ExtractParametersToCommand(command, query.Expression);
 
-            command.Parameters.Count.Should().Be(4);
-            command.Parameters[0].ParameterName.Should().Be("@1");
-            command.Parameters[0].Value.Should().Be(1);
+            Assert.Equal(4, command.Parameters.Count);
+            Assert.Equal("@1", command.Parameters[0].ParameterName);
+            Assert.Equal(1, command.Parameters[0].Value);
 
-            command.Parameters[1].ParameterName.Should().Be("@2");
-            command.Parameters[1].Value.Should().Be(2);
+            Assert.Equal("@2", command.Parameters[1].ParameterName);
+            Assert.Equal(2, command.Parameters[1].Value);
 
-            command.Parameters[2].ParameterName.Should().Be("@3");
-            command.Parameters[2].Value.Should().Be(3);
+            Assert.Equal("@3", command.Parameters[2].ParameterName);
+            Assert.Equal(3, command.Parameters[2].Value);
 
-            command.Parameters[3].ParameterName.Should().Be("@4");
-            command.Parameters[3].Value.Should().Be(4);
+            Assert.Equal("@4", command.Parameters[3].ParameterName);
+            Assert.Equal(4, command.Parameters[3].Value);
         }
 
         private class Person

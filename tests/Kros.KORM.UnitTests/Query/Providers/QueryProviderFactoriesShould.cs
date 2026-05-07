@@ -1,4 +1,3 @@
-﻿using FluentAssertions;
 using Kros.Data.BulkActions;
 using Kros.Data.Schema;
 using Kros.KORM.Helper;
@@ -23,7 +22,7 @@ namespace Kros.KORM.UnitTests.Query.Providers
         {
             CustomQueryProviderFactory.Register();
 
-            QueryProviderFactories.GetFactory("System.Data.CustomDb").Should().BeOfType<CustomQueryProviderFactory>();
+            Assert.IsType<CustomQueryProviderFactory>(QueryProviderFactories.GetFactory("System.Data.CustomDb"));
         }
 
         [Fact]
@@ -31,7 +30,7 @@ namespace Kros.KORM.UnitTests.Query.Providers
         {
             CustomQueryProviderFactory.Register();
 
-            QueryProviderFactories.GetFactory(new SqlConnection()).Should().BeOfType<CustomQueryProviderFactory>();
+            Assert.IsType<CustomQueryProviderFactory>(QueryProviderFactories.GetFactory(new SqlConnection()));
         }
 
         [Fact]
@@ -41,7 +40,7 @@ namespace Kros.KORM.UnitTests.Query.Providers
 
             Action action = () => QueryProviderFactories.GetFactory(new CustomConnection());
 
-            action.Should().Throw<InvalidOperationException>();
+            Assert.Throws<InvalidOperationException>(action);
         }
 
         [Fact]
@@ -51,7 +50,7 @@ namespace Kros.KORM.UnitTests.Query.Providers
 
             Action action = () => QueryProviderFactories.GetFactory("System.Odbc");
 
-            action.Should().Throw<InvalidOperationException>();
+            Assert.Throws<InvalidOperationException>(action);
         }
 
         public void Dispose()

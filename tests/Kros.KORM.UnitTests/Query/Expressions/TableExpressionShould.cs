@@ -1,4 +1,3 @@
-﻿using FluentAssertions;
 using Kros.KORM.Query.Expressions;
 using Xunit;
 
@@ -11,7 +10,7 @@ namespace Kros.KORM.UnitTests.Query.Expressions
         {
             var expression = new TableExpression("Person as p join Avatar as a ON (p.Id = a.PersonId)");
 
-            expression.TablePart.Should().Be("Person as p join Avatar as a ON (p.Id = a.PersonId)");
+            Assert.Equal("Person as p join Avatar as a ON (p.Id = a.PersonId)", expression.TablePart);
         }
 
         [Fact]
@@ -19,7 +18,7 @@ namespace Kros.KORM.UnitTests.Query.Expressions
         {
             var expression = new TableExpression("From Person as p join Avatar as a ON (p.Id = a.PersonId)");
 
-            expression.TablePart.Should().Be("Person as p join Avatar as a ON (p.Id = a.PersonId)");
+            Assert.Equal("Person as p join Avatar as a ON (p.Id = a.PersonId)", expression.TablePart);
         }
     }
 }

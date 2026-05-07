@@ -1,4 +1,3 @@
-﻿using FluentAssertions;
 using Kros.KORM.Injection;
 using Kros.KORM.Metadata;
 using NSubstitute;
@@ -24,7 +23,7 @@ namespace Kros.KORM.UnitTests.Metadata
 
             var actual = databaseModelMapper.GetTableInfo<Foo>();
 
-            actual.Should().Be(expected);
+            Assert.Equal(expected, actual);
         }
 
         [Fact]
@@ -36,7 +35,7 @@ namespace Kros.KORM.UnitTests.Metadata
 
             var databaseModelMapper = new DatabaseMapper(modelMapper);
 
-            databaseModelMapper.GetInjector<Foo>().Should().Be(injector);
+            Assert.Equal(injector, databaseModelMapper.GetInjector<Foo>());
         }
 
         private class Injector : IInjector

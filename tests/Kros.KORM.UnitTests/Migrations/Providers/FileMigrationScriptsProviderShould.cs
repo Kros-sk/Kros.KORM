@@ -1,4 +1,3 @@
-﻿using FluentAssertions;
 using Kros.KORM.Migrations.Providers;
 using System.IO;
 using System.Linq;
@@ -26,31 +25,28 @@ namespace Kros.KORM.UnitTests.Migrations.Providers
             var provider = new FileMigrationScriptsProvider(_folderFullPath);
             var scripts = provider.GetScripts().ToList();
 
-            scripts.Count.Should().Be(3);
-            scripts[0].Should()
-                .BeEquivalentTo(
+            Assert.Equal(3, scripts.Count);
+            Assert.Equivalent(
                 new ScriptInfo(provider)
                 {
                     Id = 20190228001,
                     Name = "InitDatabase",
                     Path = GetFileFullName("20190228001_InitDatabase")
-                });
-            scripts[1].Should()
-                .BeEquivalentTo(
+                }, scripts[0]);
+            Assert.Equivalent(
                 new ScriptInfo(provider)
                 {
                     Id = 20190301001,
                     Name = "AddPeopleTable",
                     Path = GetFileFullName("20190301001_AddPeopleTable")
-                });
-            scripts[2].Should()
-                .BeEquivalentTo(
+                }, scripts[1]);
+            Assert.Equivalent(
                 new ScriptInfo(provider)
                 {
                     Id = 20190301002,
                     Name = "AddProjectTable",
                     Path = GetFileFullName("20190301002_AddProjectTable")
-                });
+                }, scripts[2]);
         }
 
         [Fact]
@@ -65,7 +61,7 @@ namespace Kros.KORM.UnitTests.Migrations.Providers
             });
 
             var expected = await File.ReadAllTextAsync(GetFileFullName("20190228001_InitDatabase"), TestContext.Current.CancellationToken);
-            script.Should().Be(expected);
+            Assert.Equal(expected, script);
         }
 
         private string GetFileFullName(string fileName)

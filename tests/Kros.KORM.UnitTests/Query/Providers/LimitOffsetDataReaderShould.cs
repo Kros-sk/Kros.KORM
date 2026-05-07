@@ -1,4 +1,3 @@
-﻿using FluentAssertions;
 using Kros.KORM.Query.Providers;
 using NSubstitute;
 using System;
@@ -18,24 +17,24 @@ namespace Kros.KORM.UnitTests.Query.Providers
             Action action;
 
             action = () => new LimitOffsetDataReader(-1, 10);
-            action.Should().Throw<ArgumentException>()
-                .And.ParamName.Should().Be("limit", "Limit must be equal or greater than 0.");
+            var ex1 = Assert.Throws<ArgumentException>(action);
+            Assert.Equal("limit", ex1.ParamName);
 
             action = () => new LimitOffsetDataReader(10, -1);
-            action.Should().Throw<ArgumentException>()
-                .And.ParamName.Should().Be("offset", "Offset must be equal or greater than 0.");
+            var ex2 = Assert.Throws<ArgumentException>(action);
+            Assert.Equal("offset", ex2.ParamName);
 
             action = () => new LimitOffsetDataReader(1, 0);
-            action.Should().NotThrow();
+            action();
 
             var reader = new LimitOffsetDataReader(10, 10);
             action = () => reader.SetInnerReader(null);
-            action.Should().Throw<ArgumentNullException>("Inner reader cannot be null.");
+            Assert.Throws<ArgumentNullException>(action);
 
             reader = new LimitOffsetDataReader(10, 10);
             reader.SetInnerReader(CreateInnerReader());
             action = () => reader.SetInnerReader(CreateInnerReader());
-            action.Should().Throw<InvalidOperationException>("Inner reader can be set only once.");
+            Assert.Throws<InvalidOperationException>(action);
         }
 
         [Fact]
@@ -77,11 +76,11 @@ namespace Kros.KORM.UnitTests.Query.Providers
             IDataReader innerReader = CreateInnerReader();
             limitOffsetReader.SetInnerReader(innerReader);
 
-            limitOffsetReader.Read().Should().BeFalse();
+            Assert.False(limitOffsetReader.Read());
             innerReader.Received(11).Read();
 
             innerReader.ClearReceivedCalls();
-            limitOffsetReader.Read().Should().BeFalse();
+            Assert.False(limitOffsetReader.Read());
             innerReader.Received(1).Read();
         }
 
@@ -139,7 +138,7 @@ namespace Kros.KORM.UnitTests.Query.Providers
                 readerData.Add(reader.GetInt32(0));
             }
 
-            readerData.Should().BeEquivalentTo(expectedData);
+            Assert.Equivalent(expectedData, readerData);
         }
 
         #endregion
