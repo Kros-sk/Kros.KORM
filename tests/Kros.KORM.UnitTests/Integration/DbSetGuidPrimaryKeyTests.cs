@@ -1,4 +1,3 @@
-﻿using FluentAssertions;
 using Kros.KORM.Metadata;
 using Kros.KORM.Metadata.Attribute;
 using Kros.KORM.Query;
@@ -72,7 +71,7 @@ $@"CREATE TABLE [dbo].[{Table_TestTable}] (
 
                 foreach (var item in sourcePeople)
                 {
-                    item.Id.Should().NotBeEmpty();
+                    Assert.NotEqual(Guid.Empty, item.Id);
                 }
 
                 var dbItems = korm.Query<Person>().OrderBy(p => p.FirstName);
@@ -82,7 +81,7 @@ $@"CREATE TABLE [dbo].[{Table_TestTable}] (
                     sourceEnumerator.MoveNext();
                     var source = sourceEnumerator.Current;
 
-                    dbItem.FirstName.Should().Be(source.FirstName);
+                    Assert.Equal(source.FirstName, dbItem.FirstName);
                 }
             }
         }
@@ -110,7 +109,7 @@ $@"CREATE TABLE [dbo].[{Table_TestTable}] (
 
                 for (var i = 0; i < sourcePeople.Count; i++)
                 {
-                    sourcePeople[i].Id.Should().Be(guids[i]);
+                    Assert.Equal(guids[i], sourcePeople[i].Id);
                 }
 
                 var people = korm.Query<Person>().OrderBy(p => p.FirstName);
@@ -120,8 +119,8 @@ $@"CREATE TABLE [dbo].[{Table_TestTable}] (
                     sourceEnumerator.MoveNext();
                     var source = sourceEnumerator.Current;
 
-                    item.Id.Should().Be(source.Id);
-                    item.FirstName.Should().Be(source.FirstName);
+                    Assert.Equal(source.Id, item.Id);
+                    Assert.Equal(source.FirstName, item.FirstName);
                 }
             }
         }
@@ -141,10 +140,10 @@ $@"CREATE TABLE [dbo].[{Table_TestTable}] (
                 dbSet.Add(sourcePeople);
                 dbSet.CommitChanges();
 
-                sourcePeople.Select(p => p.Id).Should().BeEquivalentTo(new[] { Guid.Empty, Guid.Empty, Guid.Empty });
+                Assert.Equivalent(new[] { Guid.Empty, Guid.Empty, Guid.Empty }, sourcePeople.Select(p => p.Id));
 
                 var people = korm.Query<Person>().AsEnumerable();
-                people.Select(p => p.Id).Should().BeEquivalentTo(new[] { Guid.Empty, Guid.Empty, Guid.Empty });
+                Assert.Equivalent(new[] { Guid.Empty, Guid.Empty, Guid.Empty }, people.Select(p => p.Id));
             }
         }
     }

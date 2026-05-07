@@ -1,4 +1,3 @@
-﻿using FluentAssertions;
 using Kros.KORM.Converter;
 using Kros.KORM.Metadata;
 using System;
@@ -46,9 +45,7 @@ namespace Kros.KORM.UnitTests.Metadata
             TableInfo tableInfoExpected = CreateExpectedTableInfo(columns, "BuilderTest");
 
             AreSame(tableInfo, tableInfoExpected);
-            modelMapper.GetInjector<BuilderTestEntity>().IsInjectable("DateTime")
-                .Should()
-                .BeTrue("DateTime property has injector.");
+            Assert.True(modelMapper.GetInjector<BuilderTestEntity>().IsInjectable("DateTime"));
         }
 
         [Fact]
@@ -187,28 +184,26 @@ namespace Kros.KORM.UnitTests.Metadata
 
             ColumnInfo intProp1 = tableInfo.GetColumnInfo(nameof(ConvertersEntity.IntProp1));
             ColumnInfo intProp2 = tableInfo.GetColumnInfo(nameof(ConvertersEntity.IntProp1));
-            intProp1.Converter
-                .Should().BeOfType<IntConverter>()
-                .And.Be(intProp2.Converter);
+            Assert.IsType<IntConverter>(intProp1.Converter);
+            Assert.Equal(intProp2.Converter, intProp1.Converter);
 
             ColumnInfo stringProp1 = tableInfo.GetColumnInfo(nameof(ConvertersEntity.StringProp1));
             ColumnInfo stringProp2 = tableInfo.GetColumnInfo(nameof(ConvertersEntity.StringProp2));
             ColumnInfo stringProp3 = tableInfo.GetColumnInfo(nameof(ConvertersEntity.StringProp3));
             ColumnInfo stringProp4 = tableInfo.GetColumnInfo(nameof(ConvertersEntity.StringProp4));
-            stringProp1.Converter
-                .Should().BeOfType<StringConverter1>()
-                .And.Be(stringProp2.Converter)
-                .And.Be(stringProp3.Converter)
-                .And.Be(stringProp4.Converter);
+            Assert.IsType<StringConverter1>(stringProp1.Converter);
+            Assert.Equal(stringProp2.Converter, stringProp1.Converter);
+            Assert.Equal(stringProp3.Converter, stringProp1.Converter);
+            Assert.Equal(stringProp4.Converter, stringProp1.Converter);
 
             ColumnInfo stringPropWithOwnConverter = tableInfo.GetColumnInfo(nameof(ConvertersEntity.StringPropWithOwnConverter));
-            stringPropWithOwnConverter.Converter.Should().BeOfType<StringConverter2>();
+            Assert.IsType<StringConverter2>(stringPropWithOwnConverter.Converter);
 
             ColumnInfo stringPropWithoutConverter = tableInfo.GetColumnInfo(nameof(ConvertersEntity.StringPropWithoutConverter));
-            stringPropWithoutConverter.Converter.Should().BeNull();
+            Assert.Null(stringPropWithoutConverter.Converter);
 
-            tableInfo.GetColumnInfo(nameof(ConvertersEntity.BoolProp)).Converter.Should().BeNull();
-            tableInfo.GetColumnInfo(nameof(ConvertersEntity.DateTimeProp)).Converter.Should().BeNull();
+            Assert.Null(tableInfo.GetColumnInfo(nameof(ConvertersEntity.BoolProp)).Converter);
+            Assert.Null(tableInfo.GetColumnInfo(nameof(ConvertersEntity.DateTimeProp)).Converter);
         }
 
         [Fact]
@@ -221,7 +216,7 @@ namespace Kros.KORM.UnitTests.Metadata
                     .Property(p => p.StringProp1).UseConverter<StringConverter2>()
                     .Property(p => p.StringProp1).IgnoreConverter();
             };
-            builderAction.Should().Throw<InvalidOperationException>();
+            Assert.Throws<InvalidOperationException>(builderAction);
         }
 
         [Fact]
@@ -240,8 +235,7 @@ namespace Kros.KORM.UnitTests.Metadata
 
             TableInfo tableInfo = modelMapper.GetTableInfo<FooQueryFilter>();
 
-            tableInfo.QueryFilter
-                .Should().NotBeNull();
+            Assert.NotNull(tableInfo.QueryFilter);
         }
 
         [Fact]
@@ -257,8 +251,7 @@ namespace Kros.KORM.UnitTests.Metadata
 
             TableInfo tableInfo = modelMapper.GetTableInfo<FooQueryFilter>();
 
-            tableInfo.QueryFilter
-                .Should().BeNull();
+            Assert.Null(tableInfo.QueryFilter);
         }
 
         [Fact]
@@ -274,10 +267,8 @@ namespace Kros.KORM.UnitTests.Metadata
                 => modelBuilder.Table("Foo")
                 .UseQueryFilter<FooQueryFilter>(f => f.Id > 2);
 
-            action
-                .Should()
-                .Throw<InvalidOperationException>()
-                .WithMessage("*Foo*");
+            var ex = Assert.Throws<InvalidOperationException>(action);
+            Assert.Contains("Foo", ex.Message);
         }
 
         [Fact]
@@ -292,7 +283,7 @@ namespace Kros.KORM.UnitTests.Metadata
             modelBuilder.Build(modelMapper);
 
             TableInfo tableInfo = modelMapper.GetTableInfo<BuilderTestEntity>();
-            tableInfo.Delimiters.Should().Be(Delimiters.Empty);
+            Assert.Equal(Delimiters.Empty, tableInfo.Delimiters);
         }
 
         [Fact]
@@ -308,7 +299,7 @@ namespace Kros.KORM.UnitTests.Metadata
             modelBuilder.Build(modelMapper);
 
             TableInfo tableInfo = modelMapper.GetTableInfo<BuilderTestEntity>();
-            tableInfo.Delimiters.Should().Be(Delimiters.SquareBrackets);
+            Assert.Equal(Delimiters.SquareBrackets, tableInfo.Delimiters);
         }
 
         private static TableInfo CreateExpectedTableInfo(List<ColumnInfo> columns, string tableName)
@@ -323,27 +314,27 @@ namespace Kros.KORM.UnitTests.Metadata
 
         private void AreSame(TableInfo actual, TableInfo expected)
         {
-            actual.Name.Should().Be(expected.Name);
-            actual.HasIdentityPrimaryKey.Should().Be(expected.HasIdentityPrimaryKey);
-            actual.Columns.Should().HaveCount(expected.Columns.Count());
+            Assert.Equal(expected.Name, actual.Name);
+            Assert.Equal(expected.HasIdentityPrimaryKey, actual.HasIdentityPrimaryKey);
+            Assert.Equal(expected.Columns.Count(), actual.Columns.Count());
 
             foreach (ColumnInfo columnInfo in expected.Columns)
             {
                 ColumnInfo actualColumnInfo = actual.GetColumnInfo(columnInfo.Name);
-                actualColumnInfo.Should().NotBeNull();
-                actualColumnInfo.Name.Should().Be(columnInfo.Name);
-                actualColumnInfo.IsPrimaryKey.Should().Be(columnInfo.IsPrimaryKey);
+                Assert.NotNull(actualColumnInfo);
+                Assert.Equal(columnInfo.Name, actualColumnInfo.Name);
+                Assert.Equal(columnInfo.IsPrimaryKey, actualColumnInfo.IsPrimaryKey);
                 if (columnInfo.Converter is null)
                 {
-                    actualColumnInfo.Converter.Should().BeNull();
+                    Assert.Null(actualColumnInfo.Converter);
                 }
                 else
                 {
-                    actualColumnInfo.Converter.Should().BeOfType(columnInfo.Converter.GetType());
+                    Assert.IsType(columnInfo.Converter.GetType(), actualColumnInfo.Converter);
                 }
                 if (columnInfo.ValueGenerator != null)
                 {
-                    actualColumnInfo.ValueGenerator.Should().BeOfType(columnInfo.ValueGenerator.GetType());
+                    Assert.IsType(columnInfo.ValueGenerator.GetType(), actualColumnInfo.ValueGenerator);
                 }
             }
         }

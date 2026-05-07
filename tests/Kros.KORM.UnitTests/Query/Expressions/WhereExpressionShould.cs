@@ -1,4 +1,3 @@
-﻿using FluentAssertions;
 using Kros.KORM.Query.Expressions;
 using Kros.KORM.Query.Sql;
 using Microsoft.Data.SqlClient;
@@ -13,7 +12,7 @@ namespace Kros.KORM.UnitTests.Query.Expressions
         {
             var expression = new WhereExpression("PersonId > @1 and Age > @2", 1, 18);
 
-            expression.Sql.Should().Be("PersonId > @1 and Age > @2");
+            Assert.Equal("PersonId > @1 and Age > @2", expression.Sql);
         }
 
         [Fact]
@@ -21,7 +20,7 @@ namespace Kros.KORM.UnitTests.Query.Expressions
         {
             var expression = new WhereExpression("where PersonId > @1 and Age > @2");
 
-            expression.Sql.Should().Be("PersonId > @1 and Age > @2");
+            Assert.Equal("PersonId > @1 and Age > @2", expression.Sql);
         }
 
         [Fact]
@@ -29,7 +28,7 @@ namespace Kros.KORM.UnitTests.Query.Expressions
         {
             var expression = new WhereExpression("PersonId > @1 and Age > @2", 1, 18);
 
-            expression.Parameters.Should().Equal(1, 18);
+            Assert.Equal(new object[] { 1, 18 }, expression.Parameters);
         }
 
         [Fact]
@@ -39,8 +38,8 @@ namespace Kros.KORM.UnitTests.Query.Expressions
             var expression = new WhereExpression("(PersonId > @1) and (Age > @2)", 1, 18);
             ParameterExtractingExpressionVisitor.ExtractParametersToCommand(command, expression);
 
-            command.Parameters[0].ParameterName.Should().Be("@1");
-            command.Parameters[1].ParameterName.Should().Be("@2");
+            Assert.Equal("@1", command.Parameters[0].ParameterName);
+            Assert.Equal("@2", command.Parameters[1].ParameterName);
         }
 
         [Fact]
@@ -48,7 +47,7 @@ namespace Kros.KORM.UnitTests.Query.Expressions
         {
             var expression = new WhereExpression("where PersonId > @1 and Age > @2 and exists (select id from address where address.id = id)");
 
-            expression.Sql.Should().Be("PersonId > @1 and Age > @2 and exists (select id from address where address.id = id)");
+            Assert.Equal("PersonId > @1 and Age > @2 and exists (select id from address where address.id = id)", expression.Sql);
         }
 
         [Fact]
@@ -57,8 +56,8 @@ namespace Kros.KORM.UnitTests.Query.Expressions
             var expression = new WhereExpression("PersonId > @1", 11);
 
             WhereExpression actual = expression.And(new WhereExpression("Age > @q1", 18));
-            actual.Sql.Should().Be("(PersonId > @1) AND (Age > @q1)");
-            actual.Parameters.Should().Equal(11, 18);
+            Assert.Equal("(PersonId > @1) AND (Age > @q1)", actual.Sql);
+            Assert.Equal(new object[] { 11, 18 }, actual.Parameters);
         }
 
         [Fact]
@@ -67,8 +66,8 @@ namespace Kros.KORM.UnitTests.Query.Expressions
             var expression = new WhereExpression("IsDeleted = 0");
 
             WhereExpression actual = expression.And(new WhereExpression("Age > @q1", 18));
-            actual.Sql.Should().Be("(IsDeleted = 0) AND (Age > @q1)");
-            actual.Parameters.Should().Equal(18);
+            Assert.Equal("(IsDeleted = 0) AND (Age > @q1)", actual.Sql);
+            Assert.Equal(new object[] { 18 }, actual.Parameters);
         }
 
         [Fact]
@@ -77,8 +76,8 @@ namespace Kros.KORM.UnitTests.Query.Expressions
             var expression = new WhereExpression("PersonId > @1", 11);
 
             WhereExpression actual = expression.And(new WhereExpression("IsDeleted = 0"));
-            actual.Sql.Should().Be("(PersonId > @1) AND (IsDeleted = 0)");
-            actual.Parameters.Should().Equal(11);
+            Assert.Equal("(PersonId > @1) AND (IsDeleted = 0)", actual.Sql);
+            Assert.Equal(new object[] { 11 }, actual.Parameters);
         }
 
         [Fact]
@@ -87,8 +86,8 @@ namespace Kros.KORM.UnitTests.Query.Expressions
             var expression = new WhereExpression("PersonId > 1");
 
             WhereExpression actual = expression.And(new WhereExpression("IsDeleted = 0"));
-            actual.Sql.Should().Be("(PersonId > 1) AND (IsDeleted = 0)");
-            actual.Parameters.Should().BeEmpty();
+            Assert.Equal("(PersonId > 1) AND (IsDeleted = 0)", actual.Sql);
+            Assert.Empty(actual.Parameters);
         }
     }
 }

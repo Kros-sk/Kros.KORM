@@ -1,5 +1,4 @@
-﻿using FluentAssertions;
-using Kros.KORM.Metadata.Attribute;
+﻿using Kros.KORM.Metadata.Attribute;
 using Kros.KORM.UnitTests.Base;
 using System.Collections.Generic;
 using System.Linq;
@@ -38,6 +37,20 @@ $@"INSERT INTO {Table_TestTable} ([Id], [Data], [NullableString], [NullableInt])
             public string Data { get; set; }
             public string NullableString { get; set; }
             public int? NullableInt { get; set; }
+
+            public override int GetHashCode() => base.GetHashCode();
+
+            public override bool Equals(object obj)
+            {
+                if (obj is PersonClass person)
+                {
+                    return Id == person.Id
+                        && string.Equals(Data, person.Data, System.StringComparison.Ordinal)
+                        && string.Equals(NullableString, person.NullableString, System.StringComparison.Ordinal)
+                        && NullableInt == person.NullableInt;
+                }
+                return base.Equals(obj);
+            }
         }
 
         [Alias(Table_TestTable)]
@@ -94,11 +107,7 @@ $@"INSERT INTO {Table_TestTable} ([Id], [Data], [NullableString], [NullableInt])
             using TestDatabase korm = CreateTestDatabase();
             var data = korm.Query<PersonClass>().OrderBy(item => item.Id).ToList();
 
-            data.Should().BeEquivalentTo(expectedData, config =>
-            {
-                config.WithStrictOrdering();
-                return config;
-            });
+            Assert.Equal(expectedData, data);
         }
 
         [Fact]
@@ -138,11 +147,7 @@ $@"INSERT INTO {Table_TestTable} ([Id], [Data], [NullableString], [NullableInt])
             using TestDatabase korm = CreateTestDatabase();
             var data = korm.Query<PersonRecord>().OrderBy(item => item.Id).ToList();
 
-            data.Should().BeEquivalentTo(expectedData, config =>
-            {
-                config.WithStrictOrdering();
-                return config;
-            });
+            Assert.Equal(expectedData, data);
         }
     }
 }

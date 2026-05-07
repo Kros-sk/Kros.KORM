@@ -1,4 +1,3 @@
-﻿using FluentAssertions;
 using Kros.KORM.Metadata;
 using Kros.KORM.Metadata.Attribute;
 using Kros.KORM.Query;
@@ -75,7 +74,7 @@ INSERT INTO People VALUES ('Thomas');";
 
                 await dbSet.CommitChangesAsync(TestContext.Current.CancellationToken);
 
-                people.Select(p => p.Id).Should().BeEquivalentTo(new int[] { 1, 2 });
+                Assert.Equivalent(new int[] { 1, 2 }, people.Select(p => p.Id));
             }
         }
 
@@ -95,7 +94,7 @@ INSERT INTO People VALUES ('Thomas');";
 
                 await dbSet.CommitChangesAsync(TestContext.Current.CancellationToken);
 
-                people.Select(p => p.Id).Should().BeEquivalentTo(new int[] { 4, 5, 6 });
+                Assert.Equivalent(new int[] { 4, 5, 6 }, people.Select(p => p.Id));
             }
         }
 
@@ -114,7 +113,7 @@ INSERT INTO People VALUES ('Thomas');";
 
                 await dbSet.CommitChangesAsync(TestContext.Current.CancellationToken);
 
-                data.Select(p => p.FooId).Should().BeEquivalentTo(new int[] { 1, 2 });
+                Assert.Equivalent(new int[] { 1, 2 }, data.Select(p => p.FooId));
             }
         }
     }

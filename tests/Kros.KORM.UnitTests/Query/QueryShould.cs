@@ -1,4 +1,3 @@
-﻿using FluentAssertions;
 using Kros.KORM.Helper;
 using Kros.KORM.Materializer;
 using Kros.KORM.Metadata;
@@ -22,7 +21,7 @@ namespace Kros.KORM.UnitTests.Query
         {
             var expression = CreateQuery().Expression;
 
-            expression.Should().BeOfType<SelectExpression>();
+            Assert.IsType<SelectExpression>(expression);
         }
 
         [Fact]
@@ -30,7 +29,7 @@ namespace Kros.KORM.UnitTests.Query
         {
             var expression = (CreateQuery().Sql("Select * from TPerson").Expression as SqlExpression);
 
-            expression.Sql.Should().Be("Select * from TPerson");
+            Assert.Equal("Select * from TPerson", expression.Sql);
         }
 
         [Fact]
@@ -39,7 +38,7 @@ namespace Kros.KORM.UnitTests.Query
             var query = CreateQuery();
             var expression = (query.Sql($"SELECT * FROM TPerson").Expression as SqlExpression);
 
-            expression.Sql.Should().Be("SELECT * FROM TPerson");
+            Assert.Equal("SELECT * FROM TPerson", expression.Sql);
         }
 
         [Fact]
@@ -48,7 +47,7 @@ namespace Kros.KORM.UnitTests.Query
             var query = CreateQuery();
             var expression = (query.Sql($"SELECT * FROM TPerson WHERE Id = {11}").Expression as SqlExpression);
 
-            expression.Sql.Should().Be("SELECT * FROM TPerson WHERE Id = @0");
+            Assert.Equal("SELECT * FROM TPerson WHERE Id = @0", expression.Sql);
         }
 
         [Fact]
@@ -58,7 +57,7 @@ namespace Kros.KORM.UnitTests.Query
 
             var expression = (query.Select("Id, Name").Expression as SelectExpression);
 
-            expression.ColumnsExpression.ColumnsPart.Should().Be("Id, Name");
+            Assert.Equal("Id, Name", expression.ColumnsExpression.ColumnsPart);
         }
 
         [Fact]
@@ -68,7 +67,7 @@ namespace Kros.KORM.UnitTests.Query
 
             var expression = (query.Select("Id", "Name").Expression as SelectExpression);
 
-            expression.ColumnsExpression.ColumnsPart.Should().Be("Id, Name");
+            Assert.Equal("Id, Name", expression.ColumnsExpression.ColumnsPart);
         }
 
         [Fact]
@@ -78,7 +77,7 @@ namespace Kros.KORM.UnitTests.Query
 
             var expression = (query.Select((p) => new { p.Id, p.FirstName }).Expression as SelectExpression);
 
-            expression.ColumnsExpression.ColumnsPart.Should().Be("Id, Name");
+            Assert.Equal("Id, Name", expression.ColumnsExpression.ColumnsPart);
         }
 
         [Fact]
@@ -90,10 +89,10 @@ namespace Kros.KORM.UnitTests.Query
                                    .From("Person as p join Avatar as a on (p.Id = a.PersonId)")
                                    .Where("Id> @1", 0).OrderBy("Name").Expression as SelectExpression);
 
-            expression.ColumnsExpression.ColumnsPart.Should().Be("Id, Name, FirstName");
-            expression.TableExpression.TablePart.Should().Be("Person as p join Avatar as a on (p.Id = a.PersonId)");
-            expression.WhereExpression.Sql.Should().Be("Id> @1");
-            expression.OrderByExpression.OrderByPart.Should().Be("Name");
+            Assert.Equal("Id, Name, FirstName", expression.ColumnsExpression.ColumnsPart);
+            Assert.Equal("Person as p join Avatar as a on (p.Id = a.PersonId)", expression.TableExpression.TablePart);
+            Assert.Equal("Id> @1", expression.WhereExpression.Sql);
+            Assert.Equal("Name", expression.OrderByExpression.OrderByPart);
         }
 
         [Fact]
@@ -103,7 +102,7 @@ namespace Kros.KORM.UnitTests.Query
 
             var expression = (query.GroupBy("Name, LastName").Expression as SelectExpression);
 
-            expression.GroupByExpression.GroupByPart.Should().Be("Name, LastName");
+            Assert.Equal("Name, LastName", expression.GroupByExpression.GroupByPart);
         }
 
         [Fact]
@@ -116,7 +115,7 @@ namespace Kros.KORM.UnitTests.Query
             var query = new Query<Person>(new DatabaseMapper(new ConventionModelMapper()), provider);
             var person = query.AsEnumerable().FirstOrDefault();
 
-            person.Id.Should().Be(5);
+            Assert.Equal(5, person.Id);
         }
 
         [Fact]
@@ -129,7 +128,7 @@ namespace Kros.KORM.UnitTests.Query
             var query = new Query<Person>(new DatabaseMapper(new ConventionModelMapper()), provider);
             var person = query.FirstOrDefault("Id> @1", 5);
 
-            person.Id.Should().Be(5);
+            Assert.Equal(5, person.Id);
         }
 
         [Fact]
@@ -143,7 +142,7 @@ namespace Kros.KORM.UnitTests.Query
             var query = new Query<Person>(new DatabaseMapper(new ConventionModelMapper()), provider);
             var person = query.FirstOrDefault($"Id > {id}");
 
-            person.Id.Should().Be(5);
+            Assert.Equal(5, person.Id);
         }
 
         [Fact]
@@ -156,7 +155,7 @@ namespace Kros.KORM.UnitTests.Query
             var query = new Query<Person>(new DatabaseMapper(new ConventionModelMapper()), provider);
             var any = query.Any("Id> @1", 5);
 
-            any.Should().BeTrue();
+            Assert.True(any);
         }
 
         [Fact]
@@ -170,7 +169,7 @@ namespace Kros.KORM.UnitTests.Query
             var query = new Query<Person>(new DatabaseMapper(new ConventionModelMapper()), provider);
             var any = query.Any($"Id > {id}");
 
-            any.Should().BeTrue();
+            Assert.True(any);
         }
 
         [Fact]
@@ -183,7 +182,7 @@ namespace Kros.KORM.UnitTests.Query
             var query = new Query<Person>(new DatabaseMapper(new ConventionModelMapper()), provider);
             var any = query.Any("Id > @1", 5);
 
-            any.Should().BeFalse();
+            Assert.False(any);
         }
 
         [Fact]
@@ -196,7 +195,7 @@ namespace Kros.KORM.UnitTests.Query
             var query = new Query<Person>(new DatabaseMapper(new ConventionModelMapper()), provider);
             var scalar = query.ExecuteScalar<int>();
 
-            scalar.Should().Be(5);
+            Assert.Equal(5, scalar);
         }
 
         [Fact]
@@ -209,7 +208,7 @@ namespace Kros.KORM.UnitTests.Query
             var query = new Query<Person>(new DatabaseMapper(new ConventionModelMapper()), provider);
             var scalar = query.ExecuteScalar<int>();
 
-            scalar.HasValue.Should().BeFalse();
+            Assert.False(scalar.HasValue);
         }
 
         [Fact]
@@ -222,7 +221,7 @@ namespace Kros.KORM.UnitTests.Query
             var query = new Query<Person>(new DatabaseMapper(new ConventionModelMapper()), provider);
             var scalar = query.ExecuteScalar<int>();
 
-            scalar.HasValue.Should().BeFalse();
+            Assert.False(scalar.HasValue);
         }
 
         [Fact]
@@ -235,7 +234,7 @@ namespace Kros.KORM.UnitTests.Query
             var query = new Query<Person>(new DatabaseMapper(new ConventionModelMapper()), provider);
             var scalar = query.ExecuteScalar<int>();
 
-            scalar.HasValue.Should().BeFalse();
+            Assert.False(scalar.HasValue);
         }
 
         [Fact]
@@ -248,7 +247,7 @@ namespace Kros.KORM.UnitTests.Query
             var query = new Query<Person>(new DatabaseMapper(new ConventionModelMapper()), provider);
             var scalar = query.ExecuteStringScalar();
 
-            scalar.Should().Be("Mino");
+            Assert.Equal("Mino", scalar);
         }
 
         [Fact]
@@ -261,7 +260,7 @@ namespace Kros.KORM.UnitTests.Query
             var query = new Query<Person>(new DatabaseMapper(new ConventionModelMapper()), provider);
             var scalar = query.ExecuteStringScalar();
 
-            scalar.Should().BeNull();
+            Assert.Null(scalar);
         }
 
         private IQuery<Person> CreateQuery()

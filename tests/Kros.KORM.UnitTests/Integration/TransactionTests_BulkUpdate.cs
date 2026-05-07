@@ -1,5 +1,4 @@
-﻿using FluentAssertions;
-using Kros.KORM.Query;
+﻿using Kros.KORM.Query;
 using Kros.KORM.UnitTests.Base;
 using System;
 using System.Collections.Generic;
@@ -74,7 +73,7 @@ namespace Kros.KORM.UnitTests.Integration
                 IEnumerable<Invoice> items = null;
                 Action bulkUpdateAction = () => dbSet.BulkUpdate(items);
 
-                bulkUpdateAction.Should().Throw<ArgumentNullException>();
+                Assert.Throws<ArgumentNullException>(bulkUpdateAction);
             }
         }
 
@@ -221,7 +220,7 @@ namespace Kros.KORM.UnitTests.Integration
 
                 transaction.Rollback();
 
-                korm.Query<Invoice>().Should().BeEquivalentTo(CreateOriginalTestData());
+                Assert.Equivalent(CreateOriginalTestData(), korm.Query<Invoice>());
             }
 
             DatabaseShouldContainInvoices(database.ConnectionString, CreateOriginalTestData());

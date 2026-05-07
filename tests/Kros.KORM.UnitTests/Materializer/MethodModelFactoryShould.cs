@@ -1,4 +1,3 @@
-﻿using FluentAssertions;
 using Kros.KORM.Converter;
 using Kros.KORM.Injection;
 using Kros.KORM.Materializer;
@@ -30,17 +29,17 @@ namespace Kros.KORM.UnitTests.Materializer
 
             var foo = fact(data);
 
-            foo.Id.Should().Be(1);
-            foo.PropertyString.Should().Be("Hello");
-            foo.PropertyDouble.Should().Be(45.78);
-            foo.PropertyDecimal.Should().Be(785.78M);
-            foo.PropertyDateTime.Should().Be(new DateTime(1980, 7, 24));
-            foo.DateTimeOffset.Should().Be(new DateTimeOffset(1985, 9, 20, 10, 11, 22, 123, TimeSpan.FromHours(5)));
-            foo.DateTimeOffsetNullable.Should().Be(new DateTimeOffset(1985, 9, 20, 10, 11, 22, 123, TimeSpan.FromHours(5)));
-            foo.Float.Should().Be(12.8F);
-            foo.FloatNullable.Should().Be(45.89F);
-            foo.Is.Should().BeTrue();
-            foo.PropertyGuid.Should().Be(new Guid("ddc995d7-4dda-41ca-abab-7f45e651784a"));
+            Assert.Equal(1, foo.Id);
+            Assert.Equal("Hello", foo.PropertyString);
+            Assert.Equal(45.78, foo.PropertyDouble);
+            Assert.Equal(785.78M, foo.PropertyDecimal);
+            Assert.Equal(new DateTime(1980, 7, 24), foo.PropertyDateTime);
+            Assert.Equal(new DateTimeOffset(1985, 9, 20, 10, 11, 22, 123, TimeSpan.FromHours(5)), foo.DateTimeOffset);
+            Assert.Equal(new DateTimeOffset(1985, 9, 20, 10, 11, 22, 123, TimeSpan.FromHours(5)), foo.DateTimeOffsetNullable);
+            Assert.Equal(12.8F, foo.Float);
+            Assert.Equal(45.89F, foo.FloatNullable);
+            Assert.True(foo.Is);
+            Assert.Equal(new Guid("ddc995d7-4dda-41ca-abab-7f45e651784a"), foo.PropertyGuid);
         }
 
         [Fact]
@@ -59,9 +58,9 @@ namespace Kros.KORM.UnitTests.Materializer
 
             var foo = fact(data);
 
-            foo.PropertyString.Should().BeNull();
-            foo.PropertyDouble.Should().Be(0);
-            foo.PropertyGuid.Should().BeEmpty();
+            Assert.Null(foo.PropertyString);
+            Assert.Equal(0, foo.PropertyDouble);
+            Assert.Empty(foo.PropertyGuid.ToString().Replace("-", "").Replace("0", ""));
         }
 
         [Fact]
@@ -77,7 +76,7 @@ namespace Kros.KORM.UnitTests.Materializer
 
             var foo = fact(data);
 
-            foo.PropertyEnum.Should().Be(TestEnum.Value3);
+            Assert.Equal(TestEnum.Value3, foo.PropertyEnum);
         }
 
         [Fact]
@@ -94,7 +93,7 @@ namespace Kros.KORM.UnitTests.Materializer
 
             var foo = fact(data);
 
-            foo.PropertyEnumConv.Should().Be(TestEnum.Value2);
+            Assert.Equal(TestEnum.Value2, foo.PropertyEnumConv);
         }
 
         [Fact]
@@ -112,7 +111,7 @@ namespace Kros.KORM.UnitTests.Materializer
 
             var foo = fact(data);
 
-            foo.Id.Should().Be(25);
+            Assert.Equal(25, foo.Id);
         }
 
         [Fact]
@@ -127,7 +126,7 @@ namespace Kros.KORM.UnitTests.Materializer
 
             var foo = fact(data);
 
-            foo.Age.Should().Be(18.5);
+            Assert.Equal(18.5, foo.Age);
         }
 
         [Fact]
@@ -143,7 +142,7 @@ namespace Kros.KORM.UnitTests.Materializer
 
             var foo = fact(data);
 
-            foo.Bar.Should().Be(0);
+            Assert.Equal(0, foo.Bar);
         }
 
         [Fact]
@@ -176,7 +175,7 @@ namespace Kros.KORM.UnitTests.Materializer
             var fact = factory.GetFactory<Foo>(data);
 
             var foo = fact(data);
-            foo.PropertyDateTimeNullable.Should().Be(new DateTime(2005, 1, 5));
+            Assert.Equal(new DateTime(2005, 1, 5), foo.PropertyDateTimeNullable);
         }
 
         [Fact]
@@ -193,7 +192,7 @@ namespace Kros.KORM.UnitTests.Materializer
                 actual.Add(fact(reader));
             }
 
-            actual.Should().BeEquivalentTo(new List<int>() { 2, 5, 9, 15, 3 });
+            Assert.Equivalent(new List<int>() { 2, 5, 9, 15, 3 }, actual);
         }
 
         [Fact]
@@ -217,8 +216,8 @@ namespace Kros.KORM.UnitTests.Materializer
             var fact = factory.GetFactory<Bar>(data);
 
             var bar = fact(data);
-            bar.Prop3.Should().Be(6);
-            bar.Prop4.Should().Be(111);
+            Assert.Equal(6, bar.Prop3);
+            Assert.Equal(111, bar.Prop4);
         }
 
         [Fact]
@@ -244,7 +243,7 @@ namespace Kros.KORM.UnitTests.Materializer
             var fact = factory.GetFactory<Bar>(data);
 
             var bar = fact(data);
-            bar.Image.Should().BeEquivalentTo(image);
+            Assert.Equivalent(image, bar.Image);
         }
 
         [Fact]
@@ -272,7 +271,7 @@ namespace Kros.KORM.UnitTests.Materializer
 
             Action act = () => bar = fact(data);
 
-            act.Should().Throw<InvalidCastException>();
+            Assert.Throws<InvalidCastException>(act);
         }
 
         [Fact]
@@ -291,11 +290,11 @@ namespace Kros.KORM.UnitTests.Materializer
 
             var foo = fact(data);
 
-            foo.Service.Should().Be(service);
+            Assert.Equal(service, foo.Service);
 
             data.Read();
             foo = fact(data);
-            foo.Service.Should().Be(service);
+            Assert.Equal(service, foo.Service);
         }
 
         #endregion

@@ -1,5 +1,4 @@
-﻿using FluentAssertions;
-using Kros.KORM.Metadata;
+﻿using Kros.KORM.Metadata;
 using Kros.KORM.Metadata.Attribute;
 using Kros.KORM.Query.Expressions;
 using Kros.KORM.Query.Sql;
@@ -22,7 +21,7 @@ namespace Kros.KORM.UnitTests.Query.Sql
 
             var queryInfo = generator.GenerateSql(expression);
 
-            queryInfo.Query.Should().BeEquivalentTo(originSql);
+            Assert.Equivalent(originSql, queryInfo.Query);
         }
 
         [Fact]
@@ -35,7 +34,7 @@ namespace Kros.KORM.UnitTests.Query.Sql
 
             var queryInfo = generator.GenerateSql(expression);
 
-            queryInfo.Query.Should().Be("SELECT Id, FirstName FROM TPerson");
+            Assert.Equal("SELECT Id, FirstName FROM TPerson", queryInfo.Query);
         }
 
         [Fact]
@@ -47,7 +46,7 @@ namespace Kros.KORM.UnitTests.Query.Sql
 
             var queryInfo = generator.GenerateSql(expression);
 
-            queryInfo.Query.Should().Be("SELECT Id, Name, LastName FROM TPerson");
+            Assert.Equal("SELECT Id, Name, LastName FROM TPerson", queryInfo.Query);
         }
 
         [Fact]
@@ -61,7 +60,7 @@ namespace Kros.KORM.UnitTests.Query.Sql
 
             var queryInfo = generator.GenerateSql(expression);
 
-            queryInfo.Query.Should().Be("SELECT Id, FirstName FROM TPerson as p join Avatar as a on (p.Id = a.PersonId)");
+            Assert.Equal("SELECT Id, FirstName FROM TPerson as p join Avatar as a on (p.Id = a.PersonId)", queryInfo.Query);
         }
 
         [Fact]
@@ -75,7 +74,7 @@ namespace Kros.KORM.UnitTests.Query.Sql
 
             var queryInfo = generator.GenerateSql(expression);
 
-            queryInfo.Query.Should().Be("SELECT TOP 1 1 FROM TPerson");
+            Assert.Equal("SELECT TOP 1 1 FROM TPerson", queryInfo.Query);
         }
 
         [Fact]
@@ -91,8 +90,8 @@ namespace Kros.KORM.UnitTests.Query.Sql
 
             var queryInfo = generator.GenerateSql(expression);
 
-            queryInfo.Query.Should().Be(@"SELECT Id, FirstName FROM TPerson as p join Avatar as a on (p.Id = a.PersonId) " +
-                "WHERE (p.Id > @1 and p.Age > @2) ORDER BY FirstName, LastName desc");
+            Assert.Equal(@"SELECT Id, FirstName FROM TPerson as p join Avatar as a on (p.Id = a.PersonId) " +
+                "WHERE (p.Id > @1 and p.Age > @2) ORDER BY FirstName, LastName desc", queryInfo.Query);
         }
 
         [Fact]
@@ -107,7 +106,7 @@ namespace Kros.KORM.UnitTests.Query.Sql
 
             var queryInfo = generator.GenerateSql(expression);
 
-            queryInfo.Query.Should().Be(@"SELECT LastName, Min(Age) FROM TPerson GROUP BY LastName");
+            Assert.Equal(@"SELECT LastName, Min(Age) FROM TPerson GROUP BY LastName", queryInfo.Query);
         }
 
         [Fact]
@@ -118,8 +117,8 @@ namespace Kros.KORM.UnitTests.Query.Sql
 
             WhereExpression whereExpression = generator.GenerateWhereCondition(where);
 
-            whereExpression.Sql.Should().Be("((Id = @1) AND (Name LIKE @2 + '%'))");
-            whereExpression.Parameters.Should().BeEquivalentTo(new object[] { 1, "M" });
+            Assert.Equal("((Id = @1) AND (Name LIKE @2 + '%'))", whereExpression.Sql);
+            Assert.Equivalent(new object[] { 1, "M" }, whereExpression.Parameters);
         }
 
         [Fact]
@@ -130,7 +129,7 @@ namespace Kros.KORM.UnitTests.Query.Sql
 
             WhereExpression whereExpression = generator.GenerateWhereCondition(where, "Filter");
 
-            whereExpression.Sql.Should().Be("((Id = @Filter1) AND (Name LIKE @Filter2 + '%'))");
+            Assert.Equal("((Id = @Filter1) AND (Name LIKE @Filter2 + '%'))", whereExpression.Sql);
         }
 
         [Fact]
@@ -144,10 +143,10 @@ namespace Kros.KORM.UnitTests.Query.Sql
 
             WhereExpression whereExpression = generator.GenerateWhereCondition(where);
 
-            whereExpression.Sql.Should().Be("(((UPPER(Name) LIKE '%' + @1) " +
+            Assert.Equal("(((UPPER(Name) LIKE '%' + @1) " +
                 "AND (SUBSTRING(RTRIM(LTRIM(LastName)), @2 + 1, @3) = @4)) " +
-                "AND (CASE WHEN Name = LastName THEN 0 WHEN Name < LastName THEN -1 ELSE 1 END = @5))");
-            whereExpression.Parameters.Should().BeEquivalentTo(new object[] { "M", 1, 2, "er", 1 });
+                "AND (CASE WHEN Name = LastName THEN 0 WHEN Name < LastName THEN -1 ELSE 1 END = @5))", whereExpression.Sql);
+            Assert.Equivalent(new object[] { "M", 1, 2, "er", 1 }, whereExpression.Parameters);
         }
 
         private static DefaultQuerySqlGenerator CreateQuerySqlGenerator()

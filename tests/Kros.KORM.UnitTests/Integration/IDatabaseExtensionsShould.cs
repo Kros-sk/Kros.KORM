@@ -1,5 +1,4 @@
-﻿using FluentAssertions;
-using Kros.KORM.Metadata;
+﻿using Kros.KORM.Metadata;
 using Kros.KORM.Metadata.Attribute;
 using Kros.KORM.UnitTests.Base;
 using System.Linq;
@@ -54,10 +53,8 @@ INSERT INTO {Table_TestTable} VALUES (2, 22, 'Kilie', 'Bistrol');";
 
                 await database.AddAsync(person, TestContext.Current.CancellationToken);
 
-                database.Query<Person>()
-                    .FirstOrDefault(p => p.Id == 3)
-                    .Should()
-                    .BeEquivalentTo(person);
+                Assert.Equivalent(person, database.Query<Person>()
+                    .FirstOrDefault(p => p.Id == 3));
             }
         }
 
@@ -70,9 +67,7 @@ INSERT INTO {Table_TestTable} VALUES (2, 22, 'Kilie', 'Bistrol');";
 
                 await database.DeleteAsync(person, TestContext.Current.CancellationToken);
 
-                database.Query<Person>()
-                    .Should()
-                    .NotContain(p => p.Id == 2);
+                Assert.DoesNotContain(database.Query<Person>(), p => p.Id == 2);
             }
         }
 
@@ -83,9 +78,7 @@ INSERT INTO {Table_TestTable} VALUES (2, 22, 'Kilie', 'Bistrol');";
             {
                 await database.DeleteAsync<Person>(2, TestContext.Current.CancellationToken);
 
-                database.Query<Person>()
-                    .Should()
-                    .NotContain(p => p.Id == 2);
+                Assert.DoesNotContain(database.Query<Person>(), p => p.Id == 2);
             }
         }
 
@@ -96,9 +89,7 @@ INSERT INTO {Table_TestTable} VALUES (2, 22, 'Kilie', 'Bistrol');";
             {
                 await database.DeleteAsync<Person>(p => p.Id == 2, TestContext.Current.CancellationToken);
 
-                database.Query<Person>()
-                    .Should()
-                    .NotContain(p => p.Id == 2);
+                Assert.DoesNotContain(database.Query<Person>(), p => p.Id == 2);
             }
         }
 
@@ -109,9 +100,7 @@ INSERT INTO {Table_TestTable} VALUES (2, 22, 'Kilie', 'Bistrol');";
             {
                 await database.DeleteAsync<Person>(condition: "Id = @1", TestContext.Current.CancellationToken, parameters: 2);
 
-                database.Query<Person>()
-                    .Should()
-                    .NotContain(p => p.Id == 2);
+                Assert.DoesNotContain(database.Query<Person>(), p => p.Id == 2);
             }
         }
 
@@ -124,10 +113,8 @@ INSERT INTO {Table_TestTable} VALUES (2, 22, 'Kilie', 'Bistrol');";
 
                 await database.EditAsync(person, TestContext.Current.CancellationToken);
 
-                database.Query<Person>()
-                    .FirstOrDefault(p => p.Id == 2)
-                    .Should()
-                    .BeEquivalentTo(person);
+                Assert.Equivalent(person, database.Query<Person>()
+                    .FirstOrDefault(p => p.Id == 2));
             }
         }
 
@@ -144,9 +131,9 @@ INSERT INTO {Table_TestTable} VALUES (2, 22, 'Kilie', 'Bistrol');";
                     .Query<Person>()
                     .FirstOrDefault(p => p.Id == 2);
 
-                actual.Age.Should().Be(18);
-                actual.FirstName.Should().Be("Kilie");
-                actual.LastName.Should().Be("Bistrol");
+                Assert.Equal(18, actual.Age);
+                Assert.Equal("Kilie", actual.FirstName);
+                Assert.Equal("Bistrol", actual.LastName);
             }
         }
 
@@ -162,9 +149,9 @@ INSERT INTO {Table_TestTable} VALUES (2, 22, 'Kilie', 'Bistrol');";
                     .Query<Person>()
                     .FirstOrDefault(p => p.Id == person.Id);
 
-                actual.Age.Should().Be(18);
-                actual.FirstName.Should().Be("Bob");
-                actual.LastName.Should().Be("Bobek");
+                Assert.Equal(18, actual.Age);
+                Assert.Equal("Bob", actual.FirstName);
+                Assert.Equal("Bobek", actual.LastName);
             }
         }
 
@@ -183,9 +170,9 @@ INSERT INTO {Table_TestTable} VALUES (2, 22, 'Kilie', 'Bistrol');";
                     .Query<Person>()
                     .FirstOrDefault(p => p.Id == person.Id);
 
-                actual.Age.Should().Be(99);
-                actual.FirstName.Should().Be("Bob");
-                actual.LastName.Should().Be("Bobek");
+                Assert.Equal(99, actual.Age);
+                Assert.Equal("Bob", actual.FirstName);
+                Assert.Equal("Bobek", actual.LastName);
             }
         }
 
@@ -210,13 +197,13 @@ INSERT INTO {Table_TestTable} VALUES (2, 22, 'Kilie', 'Bistrol');";
                     .Query<Person>()
                     .FirstOrDefault(p => p.Id == mat.Id);
 
-                actualPat.Age.Should().Be(18);
-                actualPat.FirstName.Should().Be("Pat");
-                actualPat.LastName.Should().Be("Handy");
+                Assert.Equal(18, actualPat.Age);
+                Assert.Equal("Pat", actualPat.FirstName);
+                Assert.Equal("Handy", actualPat.LastName);
 
-                actualMat.Age.Should().Be(19);
-                actualMat.FirstName.Should().Be("Mat");
-                actualMat.LastName.Should().Be("Handy");
+                Assert.Equal(19, actualMat.Age);
+                Assert.Equal("Mat", actualMat.FirstName);
+                Assert.Equal("Handy", actualMat.LastName);
             }
         }
     }

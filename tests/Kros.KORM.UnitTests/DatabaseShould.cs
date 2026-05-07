@@ -1,5 +1,4 @@
-﻿using FluentAssertions;
-using Kros.Data.SqlServer;
+﻿using Kros.Data.SqlServer;
 using Kros.UnitTests;
 using Microsoft.Data.SqlClient;
 using System;
@@ -26,7 +25,7 @@ namespace Kros.KORM.UnitTests
                 IDatabase database = new Database(connection);
             };
 
-            action.Should().Throw<ArgumentNullException>();
+            Assert.Throws<ArgumentNullException>(action);
         }
 
         [Fact]
@@ -35,7 +34,7 @@ namespace Kros.KORM.UnitTests
             using (var connection = new SqlConnection())
             using (var database = new Database(connection))
             {
-                database.ModelBuilder.Should().NotBeNull();
+                Assert.NotNull(database.ModelBuilder);
             }
         }
 
@@ -45,7 +44,7 @@ namespace Kros.KORM.UnitTests
             using (var connection = new SqlConnection())
             using (var database = new Database(connection))
             {
-                database.Query<Person>().Should().NotBeNull();
+                Assert.NotNull(database.Query<Person>());
             }
         }
 
@@ -64,7 +63,7 @@ namespace Kros.KORM.UnitTests
                 var result = database.ExecuteScalar(
                     $"IF EXISTS (SELECT 1 FROM sys.Tables WHERE Name = N'{idStoreTableName}' AND Type = N'U') " +
                      "SELECT 'true' ELSE SELECT 'false'");
-                result.Should().Be("true");
+                Assert.Equal("true", result);
             }
         }
 

@@ -1,5 +1,4 @@
-﻿using FluentAssertions;
-using Kros.Extensions;
+﻿using Kros.Extensions;
 using Kros.KORM.Converter;
 using Kros.KORM.Helper;
 using Kros.KORM.Injection;
@@ -30,9 +29,9 @@ namespace Kros.KORM.UnitTests.Materializer
 
             FooWithDifferentPropertyNames foo = factory(data);
 
-            foo.Id.Should().Be(22);
-            foo.Name.Should().Be("Foo");
-            foo.Salary.Should().Be(120.5);
+            Assert.Equal(22, foo.Id);
+            Assert.Equal("Foo", foo.Name);
+            Assert.Equal(120.5, foo.Salary);
         }
 
         [Theory()]
@@ -65,16 +64,16 @@ namespace Kros.KORM.UnitTests.Materializer
 
             FooWithDifferentTypes bar = factory(data);
 
-            bar.Id.Should().Be(id);
-            bar.Name.Should().Be(name);
-            bar.Age.Should().Be(age);
-            bar.Salary.Should().Be((decimal?)salary);
-            bar.DayOfBirth.Should().BeSameDateAs(dayOfBirth.ParseDateTime());
-            bar.IsEmployed.Should().Be(isEmployed);
-            bar.TenantId.Should().Be(tenantId);
-            bar.Gender.Should().Be(gender);
-            bar.FloatValue.Should().Be(floatValue);
-            bar.ChangedDate.Should().BeSameDateAs(changedDate.ParseDateTime());
+            Assert.Equal(id, bar.Id);
+            Assert.Equal(name, bar.Name);
+            Assert.Equal(age, bar.Age);
+            Assert.Equal((decimal?)salary, bar.Salary);
+            Assert.Equal(dayOfBirth.ParseDateTime(), bar.DayOfBirth);
+            Assert.Equal(isEmployed, bar.IsEmployed);
+            Assert.Equal(new Guid(tenantId), bar.TenantId);
+            Assert.Equal(gender, bar.Gender);
+            Assert.Equal(floatValue, bar.FloatValue);
+            Assert.Equal(changedDate.ParseDateTime(), bar.ChangedDate);
         }
 
         [Theory()]
@@ -92,9 +91,9 @@ namespace Kros.KORM.UnitTests.Materializer
 
             FooWithDefaultConversion bar = factory(data);
 
-            bar.Id.Should().Be(id);
-            bar.Salary.Should().Be(salary);
-            bar.Gender.Should().Be(gender);
+            Assert.Equal(id, bar.Id);
+            Assert.Equal(salary, bar.Salary);
+            Assert.Equal(gender, bar.Gender);
         }
 
         [Theory()]
@@ -112,8 +111,8 @@ namespace Kros.KORM.UnitTests.Materializer
 
             FooWithConverters bar = factory(data);
 
-            bar.TenantId.Should().BeEquivalentTo(tenantId);
-            bar.Gender.Should().Be((Gender)converter.Convert(gender));
+            Assert.Equivalent(new Guid(tenantId), new Guid(bar.TenantId));
+            Assert.Equal((Gender)converter.Convert(gender), bar.Gender);
         }
 
         [Fact()]
@@ -128,9 +127,9 @@ namespace Kros.KORM.UnitTests.Materializer
 
             FooWithInjectableProperty bar = factory(data);
 
-            bar.Id.Should().Be(11);
-            bar.Service.Should().NotBeNull();
-            bar.Service.GetValue().Should().Be(22);
+            Assert.Equal(11, bar.Id);
+            Assert.NotNull(bar.Service);
+            Assert.Equal(22, bar.Service.GetValue());
         }
 
         [Theory()]
@@ -147,8 +146,8 @@ namespace Kros.KORM.UnitTests.Materializer
 
             FooWithOnAfterMaterialize bar = factory(data);
 
-            bar.Id.Should().Be(id);
-            bar.Value.Should().Be(value);
+            Assert.Equal(id, bar.Id);
+            Assert.Equal(value, bar.Value);
         }
 
         [Theory()]
@@ -174,16 +173,16 @@ namespace Kros.KORM.UnitTests.Materializer
 
             FooWithNullableTypes bar = factory(data);
 
-            bar.LongValue.Should().Be(longValue);
-            bar.CharValue.Should().Be(charValue);
-            bar.IntValue.Should().Be(intValue);
-            bar.DecimalValue.Should().Be((decimal?)decimalValue);
-            bar.BoolValue.Should().Be(boolValue);
-            bar.ByteValue.Should().Be(byteValue);
-            bar.DateTimeValue.Should().Be(dt);
-            bar.DoubleValue.Should().Be(doubleValue);
-            bar.GuidValue.Should().Be(guid);
-            bar.FloatValue.Should().Be(floatValue);
+            Assert.Equal(longValue, bar.LongValue);
+            Assert.Equal(charValue, bar.CharValue);
+            Assert.Equal(intValue, bar.IntValue);
+            Assert.Equal((decimal?)decimalValue, bar.DecimalValue);
+            Assert.Equal(boolValue, bar.BoolValue);
+            Assert.Equal(byteValue, bar.ByteValue);
+            Assert.Equal(dt, bar.DateTimeValue);
+            Assert.Equal(doubleValue, bar.DoubleValue);
+            Assert.Equal(guid, bar.GuidValue);
+            Assert.Equal(floatValue, bar.FloatValue);
         }
 
         [Fact()]
@@ -199,9 +198,8 @@ namespace Kros.KORM.UnitTests.Materializer
                     = GetFactory<FooWithDifferentPropertiesAsCtorParams>(data);
             };
 
-            action.Should()
-                .Throw<InvalidOperationException>()
-                .WithMessage($"*'name'*'{typeof(FooWithDifferentPropertiesAsCtorParams).FullName}'*");
+            var ex = Assert.Throws<InvalidOperationException>(action);
+            Assert.Matches(@".*'name'.*'" + System.Text.RegularExpressions.Regex.Escape(typeof(FooWithDifferentPropertiesAsCtorParams).FullName) + @"'.*", ex.Message);
         }
 
         public record FooWithDifferentPropertyNames(int Id, [property: Alias("FirstName")] string Name, double Salary);

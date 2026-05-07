@@ -1,4 +1,3 @@
-﻿using FluentAssertions;
 using Kros.KORM.Injection;
 using System;
 using Xunit;
@@ -15,7 +14,7 @@ namespace Kros.KORM.UnitTests.Injection
             configurator.FillProperty(p => p.Value, () => "lorem");
 
             var foo = new Foo() { Id = 1 };
-            configurator.GetValue("Value").Should().Be("lorem");
+            Assert.Equal("lorem", configurator.GetValue("Value"));
         }
 
         [Fact]
@@ -26,7 +25,7 @@ namespace Kros.KORM.UnitTests.Injection
             configurator.FillProperty("Value", () => "lorem");
 
             var foo = new Foo() { Id = 1 };
-            configurator.GetValue("Value").Should().Be("lorem");
+            Assert.Equal("lorem", configurator.GetValue("Value"));
         }
 
         [Fact]
@@ -37,7 +36,7 @@ namespace Kros.KORM.UnitTests.Injection
             var foo = new Foo() { Id = 1 };
             Action action = () => configurator.GetValue("Value");
 
-            action.Should().Throw<InvalidOperationException>();
+            Assert.Throws<InvalidOperationException>(action);
         }
 
         [Fact]
@@ -47,7 +46,7 @@ namespace Kros.KORM.UnitTests.Injection
 
             configurator.FillProperty(p => p.Value, () => "lorem");
 
-            configurator.IsInjectable("Value").Should().BeTrue();
+            Assert.True(configurator.IsInjectable("Value"));
         }
 
         [Fact]
@@ -57,7 +56,7 @@ namespace Kros.KORM.UnitTests.Injection
 
             configurator.FillProperty("Value", () => "lorem");
 
-            configurator.IsInjectable("Value").Should().BeTrue();
+            Assert.True(configurator.IsInjectable("Value"));
         }
 
         [Fact]
@@ -67,7 +66,7 @@ namespace Kros.KORM.UnitTests.Injection
 
             configurator.FillProperty(p => p.Value, () => "lorem");
 
-            configurator.IsInjectable("Id").Should().BeFalse();
+            Assert.False(configurator.IsInjectable("Id"));
         }
 
         private class Foo

@@ -1,5 +1,4 @@
-﻿using FluentAssertions;
-using Kros.KORM.Converter;
+﻿using Kros.KORM.Converter;
 using Kros.KORM.Exceptions;
 using Kros.KORM.Injection;
 using Kros.KORM.Materializer;
@@ -179,13 +178,13 @@ namespace Kros.KORM.UnitTests.Metadata
 
             var columns = tableInfo.Columns.ToList();
 
-            columns.Count.Should().Be(6);
-            columns[0].Name.Should().Be("PostCode", "Property \"Code\" has alias \"PostCode\".");
-            columns[1].Name.Should().Be("FirstName", "Property \"PropertyString\" has alias \"FirstName\".");
-            columns[2].Name.Should().Be("LastName");
-            columns[3].Name.Should().Be("PropertyDouble");
-            columns[4].Name.Should().Be("PropertyEnum");
-            columns[5].Name.Should().Be("DataTypeProperty");
+            Assert.Equal(6, columns.Count);
+            Assert.Equal("PostCode", columns[0].Name);
+            Assert.Equal("FirstName", columns[1].Name);
+            Assert.Equal("LastName", columns[2].Name);
+            Assert.Equal("PropertyDouble", columns[3].Name);
+            Assert.Equal("PropertyEnum", columns[4].Name);
+            Assert.Equal("DataTypeProperty", columns[5].Name);
         }
 
         [Fact]
@@ -200,8 +199,8 @@ namespace Kros.KORM.UnitTests.Metadata
             var address = tableInfo.GetColumnInfoByPropertyName(nameof(Foo.PropertyString));
             var salary = tableInfo.GetColumnInfoByPropertyName(nameof(Foo.PropertyDouble));
 
-            address.Name.Should().Be("Address");
-            salary.Name.Should().Be("Salary");
+            Assert.Equal("Address", address.Name);
+            Assert.Equal("Salary", salary.Name);
         }
 
         [Fact]
@@ -216,8 +215,8 @@ namespace Kros.KORM.UnitTests.Metadata
             var address = tableInfo.GetColumnInfoByPropertyName(nameof(Foo.PropertyString));
             var salary = tableInfo.GetColumnInfoByPropertyName(nameof(Foo.PropertyDouble));
 
-            address.Name.Should().Be("Address");
-            salary.Name.Should().Be("Salary");
+            Assert.Equal("Address", address.Name);
+            Assert.Equal("Salary", salary.Name);
         }
 
         [Fact]
@@ -227,7 +226,7 @@ namespace Kros.KORM.UnitTests.Metadata
 
             var tableInfo = modelMapper.GetTableInfo<Foo>();
 
-            tableInfo.Name.Should().Be("Foo");
+            Assert.Equal("Foo", tableInfo.Name);
         }
 
         [Fact]
@@ -238,7 +237,7 @@ namespace Kros.KORM.UnitTests.Metadata
 
             var tableInfo = modelMapper.GetTableInfo<Foo>();
 
-            tableInfo.Name.Should().Be("Foo2");
+            Assert.Equal("Foo2", tableInfo.Name);
         }
 
         [Fact]
@@ -247,7 +246,7 @@ namespace Kros.KORM.UnitTests.Metadata
             var modelMapper = new ConventionModelMapper();
             var tableInfo = modelMapper.GetTableInfo<AliasedModel>();
 
-            tableInfo.Name.Should().Be("Person", $"Model \"{nameof(AliasedModel)}\" has table alias \"Person\".");
+            Assert.Equal("Person", tableInfo.Name);
         }
 
         [Fact]
@@ -256,16 +255,14 @@ namespace Kros.KORM.UnitTests.Metadata
             var modelMapper = new ConventionModelMapper();
             var tableInfo = modelMapper.GetTableInfo<SinglePrivateKey>();
 
-            const string pkMessage = "Column \"RecordId\" is attributed as key and attribute has precedence over convention (\"Id\" column).";
             const int propertiesCount = 3;
-            tableInfo.Columns.Should().HaveCount(propertiesCount,
-                "\"{0}\" has {1} properties.", nameof(SinglePrivateKey), propertiesCount);
-            tableInfo.Columns.Count(c => c.IsPrimaryKey).Should().Be(1, pkMessage);
+            Assert.Equal(propertiesCount, tableInfo.Columns.Count());
+            Assert.Equal(1, tableInfo.Columns.Count(c => c.IsPrimaryKey));
 
             var key = tableInfo.PrimaryKey.ToList();
-            key.Should().HaveCount(1, pkMessage);
-            key[0].Name.Should().Be("RecordId");
-            key[0].IsPrimaryKey.Should().BeTrue();
+            Assert.Single(key);
+            Assert.Equal("RecordId", key[0].Name);
+            Assert.True(key[0].IsPrimaryKey);
         }
 
         [Fact]
@@ -276,11 +273,9 @@ namespace Kros.KORM.UnitTests.Metadata
                 .SetPrimaryKey<FluentPrivateKey>("RecordId", AutoIncrementMethodType.Identity, null);
 
             var tableInfo = modelMapper.GetTableInfo<FluentPrivateKey>();
-            tableInfo.PrimaryKey
-                .Should()
-                .HaveCount(1)
-                .And
-                .ContainSingle((c) => c.Name == "RecordId" && c.AutoIncrementMethodType == AutoIncrementMethodType.Identity);
+            var pkList = tableInfo.PrimaryKey.ToList();
+            Assert.Single(pkList);
+            Assert.Single(pkList, (c) => c.Name == "RecordId" && c.AutoIncrementMethodType == AutoIncrementMethodType.Identity);
         }
 
         [Fact]
@@ -291,11 +286,9 @@ namespace Kros.KORM.UnitTests.Metadata
                 .SetPrimaryKey<FluentPrivateKey>("RecordId", AutoIncrementMethodType.Identity, "LoremIpsum");
 
             var tableInfo = modelMapper.GetTableInfo<FluentPrivateKey>();
-            tableInfo.PrimaryKey
-                .Should()
-                .HaveCount(1)
-                .And
-                .ContainSingle((c) => c.Name == "RecordId"
+            var pkList = tableInfo.PrimaryKey.ToList();
+            Assert.Single(pkList);
+            Assert.Single(pkList, (c) => c.Name == "RecordId"
                     && c.AutoIncrementMethodType == AutoIncrementMethodType.Identity
                     && c.AutoIncrementGeneratorName == "LoremIpsum");
         }
@@ -306,22 +299,20 @@ namespace Kros.KORM.UnitTests.Metadata
             var modelMapper = new ConventionModelMapper();
             var tableInfo = modelMapper.GetTableInfo<CompositePrivateKey>();
 
-            const string pkMessage = "3 columns are attributed as key.";
             const int propertiesCount = 4;
-            tableInfo.Columns.Should().HaveCount(propertiesCount,
-                "\"{0}\" has {1} properties.", nameof(CompositePrivateKey), propertiesCount);
-            tableInfo.Columns.Count(c => c.IsPrimaryKey).Should().Be(3, pkMessage);
+            Assert.Equal(propertiesCount, tableInfo.Columns.Count());
+            Assert.Equal(3, tableInfo.Columns.Count(c => c.IsPrimaryKey));
 
             var key = tableInfo.PrimaryKey.ToList();
-            key.Should().HaveCount(3, pkMessage);
-            key[0].Name.Should().Be("RecordId1", $"Property {nameof(CompositePrivateKey.RecordId1)} has order 1.");
-            key[0].IsPrimaryKey.Should().BeTrue();
+            Assert.Equal(3, key.Count);
+            Assert.Equal("RecordId1", key[0].Name);
+            Assert.True(key[0].IsPrimaryKey);
 
-            key[1].Name.Should().Be("RecordId2", $"Property {nameof(CompositePrivateKey.RecordId2)} has order 2.");
-            key[1].IsPrimaryKey.Should().BeTrue();
+            Assert.Equal("RecordId2", key[1].Name);
+            Assert.True(key[1].IsPrimaryKey);
 
-            key[2].Name.Should().Be("RecordId3", $"Property {nameof(CompositePrivateKey.RecordId3)} has order 3.");
-            key[2].IsPrimaryKey.Should().BeTrue();
+            Assert.Equal("RecordId3", key[2].Name);
+            Assert.True(key[2].IsPrimaryKey);
         }
 
         [Fact]
@@ -330,8 +321,7 @@ namespace Kros.KORM.UnitTests.Metadata
             var modelMapper = new ConventionModelMapper();
             Action tableInfoAction = () => modelMapper.GetTableInfo<CompositePrivateKeyWithInvalidOrder>();
 
-            tableInfoAction.Should().Throw<CompositePrimaryKeyException>(
-                "Composite primary key columns must have specified order and this order must be unique for every column.");
+            Assert.Throws<CompositePrimaryKeyException>(tableInfoAction);
         }
 
         [Fact]
@@ -340,8 +330,7 @@ namespace Kros.KORM.UnitTests.Metadata
             var modelMapper = new ConventionModelMapper();
             Action tableInfoAction = () => modelMapper.GetTableInfo<CompositePrivateKeyWithInvalidName>();
 
-            tableInfoAction.Should().Throw<CompositePrimaryKeyException>(
-                "If composite primary key has specified name, this name must be the same for all the columns.");
+            Assert.Throws<CompositePrimaryKeyException>(tableInfoAction);
         }
 
         [Fact]
@@ -350,8 +339,7 @@ namespace Kros.KORM.UnitTests.Metadata
             var modelMapper = new ConventionModelMapper();
             Action tableInfoAction = () => modelMapper.GetTableInfo<CompositePrivateKeyWithInvalidAutoIncrementMethodType>();
 
-            tableInfoAction.Should().Throw<CompositePrimaryKeyException>(
-                $"All columns of the composite primary key must have \"{nameof(KeyAttribute.AutoIncrementMethodType)}\" set to \"{nameof(AutoIncrementMethodType.None)}\".");
+            Assert.Throws<CompositePrimaryKeyException>(tableInfoAction);
         }
 
         [Fact]
@@ -359,17 +347,15 @@ namespace Kros.KORM.UnitTests.Metadata
         {
             var modelMapper = new ConventionModelMapper();
 
-            const string pkMessage = "No attributed key was found, co column \"Id\" is primary key by convention.";
-
             var tableInfo = modelMapper.GetTableInfo<ConventionalPrivateKey>();
-            tableInfo.Columns.Should().HaveCount(2);
-            tableInfo.Columns.Count(c => c.IsPrimaryKey).Should().Be(1, pkMessage);
+            Assert.Equal(2, tableInfo.Columns.Count());
+            Assert.Equal(1, tableInfo.Columns.Count(c => c.IsPrimaryKey));
 
             var key = tableInfo.PrimaryKey.ToList();
-            key.Should().HaveCount(1, pkMessage);
+            Assert.Single(key);
 
-            key[0].Name.Should().Be("Id", "Column \"Id\" is primary key by convention.");
-            key[0].IsPrimaryKey.Should().BeTrue();
+            Assert.Equal("Id", key[0].Name);
+            Assert.True(key[0].IsPrimaryKey);
         }
 
         [Fact]
@@ -378,9 +364,9 @@ namespace Kros.KORM.UnitTests.Metadata
             var modelMapper = new ConventionModelMapper();
             var tableInfo = modelMapper.GetTableInfo<NoPrivateKeyModel>();
 
-            tableInfo.Columns.Should().HaveCount(2);
-            tableInfo.Columns.Count(c => c.IsPrimaryKey).Should().Be(0);
-            tableInfo.PrimaryKey.Should().HaveCount(0);
+            Assert.Equal(2, tableInfo.Columns.Count());
+            Assert.Equal(0, tableInfo.Columns.Count(c => c.IsPrimaryKey));
+            Assert.Empty(tableInfo.PrimaryKey);
         }
 
         [Fact]
@@ -391,7 +377,7 @@ namespace Kros.KORM.UnitTests.Metadata
 
             var columnWithConverter = tableInfo.Columns.Single(c => c.Name == "PropertyEnum");
 
-            columnWithConverter.Converter.Should().BeOfType<TestConverter>();
+            Assert.IsType<TestConverter>(columnWithConverter.Converter);
         }
 
         [Fact]
@@ -403,7 +389,7 @@ namespace Kros.KORM.UnitTests.Metadata
 
             var columnWithConverter = tableInfo.Columns.Single(c => c.Name == "LastName");
 
-            columnWithConverter.Converter.Should().BeOfType<TestConverter>();
+            Assert.IsType<TestConverter>(columnWithConverter.Converter);
         }
 
         [Fact]
@@ -413,7 +399,7 @@ namespace Kros.KORM.UnitTests.Metadata
 
             var tableInfo = modelMapper.GetTableInfo<Foo>();
 
-            tableInfo.GetColumnInfo("ReadOnlyProperty").Should().BeNull();
+            Assert.Null(tableInfo.GetColumnInfo("ReadOnlyProperty"));
         }
 
         [Fact]
@@ -423,7 +409,7 @@ namespace Kros.KORM.UnitTests.Metadata
 
             var tableInfo = modelMapper.GetTableInfo<Foo>();
 
-            tableInfo.GetColumnInfo("Ignore").Should().BeNull();
+            Assert.Null(tableInfo.GetColumnInfo("Ignore"));
         }
 
         [Fact]
@@ -434,7 +420,7 @@ namespace Kros.KORM.UnitTests.Metadata
 
             var tableInfo = modelMapper.GetTableInfo<Foo>();
 
-            tableInfo.GetColumnInfo("LastName").Should().BeNull();
+            Assert.Null(tableInfo.GetColumnInfo("LastName"));
         }
 
         [Fact]
@@ -444,7 +430,7 @@ namespace Kros.KORM.UnitTests.Metadata
 
             var tableInfo = modelMapper.GetTableInfo<FooWithAutoIncrement>();
 
-            tableInfo.PrimaryKey.Single().AutoIncrementMethodType.Should().Be(AutoIncrementMethodType.Custom);
+            Assert.Equal(AutoIncrementMethodType.Custom, tableInfo.PrimaryKey.Single().AutoIncrementMethodType);
         }
 
         [Fact]
@@ -454,9 +440,10 @@ namespace Kros.KORM.UnitTests.Metadata
 
             var tableInfo = modelMapper.GetTableInfo<Foo>();
 
-            tableInfo.PrimaryKey
-                .Any(p => p.AutoIncrementMethodType != AutoIncrementMethodType.None)
-                .Should().BeFalse();
+#pragma warning disable xUnit2012 // Do not use boolean check to check if a value exists in a collection
+            Assert.False(tableInfo.PrimaryKey
+                .Any(p => p.AutoIncrementMethodType != AutoIncrementMethodType.None));
+#pragma warning restore xUnit2012 // Do not use boolean check to check if a value exists in a collection
         }
 
         [Fact]
@@ -489,14 +476,14 @@ namespace Kros.KORM.UnitTests.Metadata
 
             var tableInfo = modelMapper.GetTableInfo<CustomConventionModel>();
 
-            tableInfo.Name.Should().Be("customconventionmodel");
+            Assert.Equal("customconventionmodel", tableInfo.Name);
 
             var columns = tableInfo.Columns.ToList();
-            columns.Count.Should().Be(2);
-            columns[1].Name.Should().Be("PROPERTYDOUBLE");
+            Assert.Equal(2, columns.Count);
+            Assert.Equal("PROPERTYDOUBLE", columns[1].Name);
 
-            tableInfo.PrimaryKey.Should().HaveCount(1);
-            tableInfo.PrimaryKey.FirstOrDefault().Name.Should().Be("OID");
+            Assert.Single(tableInfo.PrimaryKey);
+            Assert.Equal("OID", tableInfo.PrimaryKey.FirstOrDefault().Name);
         }
 
         [Fact]
@@ -505,7 +492,7 @@ namespace Kros.KORM.UnitTests.Metadata
             var modelMapper = new ConventionModelMapper();
 
             TableInfo tableInfo = modelMapper.GetTableInfo<AliasedModel>();
-            tableInfo.OnAfterMaterialize.Name.Should().Be("OnAfterMaterialize");
+            Assert.Equal("OnAfterMaterialize", tableInfo.OnAfterMaterialize.Name);
         }
 
         [Fact]
@@ -517,7 +504,7 @@ namespace Kros.KORM.UnitTests.Metadata
                 .FillProperty(p => p.PropertyString, () => "lorem")
                 .FillProperty(p => p.PropertyDouble, () => 1);
 
-            modelMapper.GetInjector<Foo>().Should().Be(configurator);
+            Assert.Same(configurator, modelMapper.GetInjector<Foo>());
         }
 
         [Fact]
@@ -529,7 +516,7 @@ namespace Kros.KORM.UnitTests.Metadata
 
             ((IModelMapperInternal)modelMapper).SetInjector<Foo>((IInjector)configurator);
 
-            modelMapper.GetInjector<Foo>().Should().Be(configurator);
+            Assert.Same(configurator, modelMapper.GetInjector<Foo>());
         }
 
         [Fact]
@@ -537,7 +524,7 @@ namespace Kros.KORM.UnitTests.Metadata
         {
             var modelMapper = new ConventionModelMapper();
 
-            modelMapper.GetInjector<Foo>().Should().NotBeNull();
+            Assert.NotNull(modelMapper.GetInjector<Foo>());
         }
 
         #endregion

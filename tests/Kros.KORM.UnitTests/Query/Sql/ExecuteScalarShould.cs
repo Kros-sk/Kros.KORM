@@ -1,5 +1,4 @@
-﻿using FluentAssertions;
-using Kros.KORM.UnitTests.Base;
+﻿using Kros.KORM.UnitTests.Base;
 using Xunit;
 
 namespace Kros.KORM.UnitTests.Query.Sql
@@ -33,7 +32,7 @@ INSERT INTO [{Table_TestTable}] ([Id], [Number], [Description]) VALUES (4, 40, '
                 var query = $"SELECT [Id] FROM {Table_TestTable} WHERE [Description] = @description";
                 var actual = korm.ExecuteScalar<int>(query, "Hello world");
 
-                actual.Value.Should().Be(3);
+                Assert.Equal(3, actual.Value);
             }
         }
 
@@ -45,7 +44,7 @@ INSERT INTO [{Table_TestTable}] ([Id], [Number], [Description]) VALUES (4, 40, '
                 var query = $"SELECT [Description] FROM {Table_TestTable} WHERE [Id] = @id";
                 var actual = korm.ExecuteScalar(query, 3);
 
-                actual.Should().Be("Hello world");
+                Assert.Equal("Hello world", actual);
             }
         }
 
@@ -56,7 +55,7 @@ INSERT INTO [{Table_TestTable}] ([Id], [Number], [Description]) VALUES (4, 40, '
             {
                 var actual = korm.ExecuteScalar<int>($"SELECT [Number] FROM {Table_TestTable} WHERE [Id] = @id", -1);
 
-                actual.Should().NotHaveValue();
+                Assert.False(actual.HasValue);
             }
         }
     }

@@ -1,4 +1,3 @@
-﻿using FluentAssertions;
 using Kros.KORM.Extensions;
 using System;
 using System.Data;
@@ -11,71 +10,71 @@ namespace Kros.KORM.UnitTests.Extensions
         [Fact]
         public void ConvertToDbType()
         {
-            typeof(bool).ToDbType().Should().Be(DbType.Boolean);
-            typeof(bool?).ToDbType().Should().Be(DbType.Boolean);
-            typeof(byte[]).ToDbType().Should().Be(DbType.Binary);
-            typeof(byte).ToDbType().Should().Be(DbType.Byte);
-            typeof(byte?).ToDbType().Should().Be(DbType.Byte);
-            typeof(sbyte).ToDbType().Should().Be(DbType.SByte);
-            typeof(sbyte?).ToDbType().Should().Be(DbType.SByte);
-            typeof(short).ToDbType().Should().Be(DbType.Int16);
-            typeof(short?).ToDbType().Should().Be(DbType.Int16);
-            typeof(ushort).ToDbType().Should().Be(DbType.UInt16);
-            typeof(ushort?).ToDbType().Should().Be(DbType.UInt16);
-            typeof(int).ToDbType().Should().Be(DbType.Int32);
-            typeof(int?).ToDbType().Should().Be(DbType.Int32);
-            typeof(uint).ToDbType().Should().Be(DbType.UInt32);
-            typeof(uint?).ToDbType().Should().Be(DbType.UInt32);
-            typeof(long).ToDbType().Should().Be(DbType.Int64);
-            typeof(long?).ToDbType().Should().Be(DbType.Int64);
-            typeof(ulong).ToDbType().Should().Be(DbType.UInt64);
-            typeof(ulong?).ToDbType().Should().Be(DbType.UInt64);
-            typeof(float).ToDbType().Should().Be(DbType.Single);
-            typeof(float?).ToDbType().Should().Be(DbType.Single);
-            typeof(decimal).ToDbType().Should().Be(DbType.Decimal);
-            typeof(decimal?).ToDbType().Should().Be(DbType.Decimal);
-            typeof(double).ToDbType().Should().Be(DbType.Double);
-            typeof(double?).ToDbType().Should().Be(DbType.Double);
-            typeof(DateTime).ToDbType().Should().Be(DbType.DateTime);
-            typeof(DateTime?).ToDbType().Should().Be(DbType.DateTime);
-            typeof(Guid).ToDbType().Should().Be(DbType.Guid);
-            typeof(object).ToDbType().Should().Be(DbType.Binary);
-            typeof(string).ToDbType().Should().Be(DbType.String);
+            Assert.Equal(DbType.Boolean, typeof(bool).ToDbType());
+            Assert.Equal(DbType.Boolean, typeof(bool?).ToDbType());
+            Assert.Equal(DbType.Binary, typeof(byte[]).ToDbType());
+            Assert.Equal(DbType.Byte, typeof(byte).ToDbType());
+            Assert.Equal(DbType.Byte, typeof(byte?).ToDbType());
+            Assert.Equal(DbType.SByte, typeof(sbyte).ToDbType());
+            Assert.Equal(DbType.SByte, typeof(sbyte?).ToDbType());
+            Assert.Equal(DbType.Int16, typeof(short).ToDbType());
+            Assert.Equal(DbType.Int16, typeof(short?).ToDbType());
+            Assert.Equal(DbType.UInt16, typeof(ushort).ToDbType());
+            Assert.Equal(DbType.UInt16, typeof(ushort?).ToDbType());
+            Assert.Equal(DbType.Int32, typeof(int).ToDbType());
+            Assert.Equal(DbType.Int32, typeof(int?).ToDbType());
+            Assert.Equal(DbType.UInt32, typeof(uint).ToDbType());
+            Assert.Equal(DbType.UInt32, typeof(uint?).ToDbType());
+            Assert.Equal(DbType.Int64, typeof(long).ToDbType());
+            Assert.Equal(DbType.Int64, typeof(long?).ToDbType());
+            Assert.Equal(DbType.UInt64, typeof(ulong).ToDbType());
+            Assert.Equal(DbType.UInt64, typeof(ulong?).ToDbType());
+            Assert.Equal(DbType.Single, typeof(float).ToDbType());
+            Assert.Equal(DbType.Single, typeof(float?).ToDbType());
+            Assert.Equal(DbType.Decimal, typeof(decimal).ToDbType());
+            Assert.Equal(DbType.Decimal, typeof(decimal?).ToDbType());
+            Assert.Equal(DbType.Double, typeof(double).ToDbType());
+            Assert.Equal(DbType.Double, typeof(double?).ToDbType());
+            Assert.Equal(DbType.DateTime, typeof(DateTime).ToDbType());
+            Assert.Equal(DbType.DateTime, typeof(DateTime?).ToDbType());
+            Assert.Equal(DbType.Guid, typeof(Guid).ToDbType());
+            Assert.Equal(DbType.Binary, typeof(object).ToDbType());
+            Assert.Equal(DbType.String, typeof(string).ToDbType());
         }
 
         [Fact]
         public void ConvertToSqlDataType()
         {
-            typeof(bool).ToSqlDataType().Should().Be("bit");
-            typeof(bool?).ToSqlDataType().Should().Be("bit");
-            typeof(byte[]).ToSqlDataType().Should().Be("varBinary");
-            typeof(byte).ToSqlDataType().Should().Be("tinyInt");
-            typeof(byte?).ToSqlDataType().Should().Be("tinyInt");
-            typeof(sbyte).ToSqlDataType().Should().Be("tinyInt");
-            typeof(sbyte?).ToSqlDataType().Should().Be("tinyInt");
-            typeof(short).ToSqlDataType().Should().Be("smallInt");
-            typeof(short?).ToSqlDataType().Should().Be("smallInt");
-            typeof(ushort).ToSqlDataType().Should().Be("smallInt");
-            typeof(ushort?).ToSqlDataType().Should().Be("smallInt");
-            typeof(int).ToSqlDataType().Should().Be("int");
-            typeof(int?).ToSqlDataType().Should().Be("int");
-            typeof(uint).ToSqlDataType().Should().Be("int");
-            typeof(uint?).ToSqlDataType().Should().Be("int");
-            typeof(long).ToSqlDataType().Should().Be("bigInt");
-            typeof(long?).ToSqlDataType().Should().Be("bigInt");
-            typeof(ulong).ToSqlDataType().Should().Be("bigInt");
-            typeof(ulong?).ToSqlDataType().Should().Be("bigInt");
-            typeof(float).ToSqlDataType().Should().Be("real");
-            typeof(float?).ToSqlDataType().Should().Be("real");
-            typeof(decimal).ToSqlDataType().Should().Be("decimal");
-            typeof(decimal?).ToSqlDataType().Should().Be("decimal");
-            typeof(double).ToSqlDataType().Should().Be("float");
-            typeof(double?).ToSqlDataType().Should().Be("float");
-            typeof(DateTime).ToSqlDataType().Should().Be("dateTime");
-            typeof(DateTime?).ToSqlDataType().Should().Be("dateTime");
-            typeof(Guid).ToSqlDataType().Should().Be("uniqueIdentifier");
-            typeof(object).ToSqlDataType().Should().Be("varBinary");
-            typeof(string).ToSqlDataType().Should().Be("nVarChar(255)");
+            Assert.Equal("bit", typeof(bool).ToSqlDataType());
+            Assert.Equal("bit", typeof(bool?).ToSqlDataType());
+            Assert.Equal("varBinary", typeof(byte[]).ToSqlDataType());
+            Assert.Equal("tinyInt", typeof(byte).ToSqlDataType());
+            Assert.Equal("tinyInt", typeof(byte?).ToSqlDataType());
+            Assert.Equal("tinyInt", typeof(sbyte).ToSqlDataType());
+            Assert.Equal("tinyInt", typeof(sbyte?).ToSqlDataType());
+            Assert.Equal("smallInt", typeof(short).ToSqlDataType());
+            Assert.Equal("smallInt", typeof(short?).ToSqlDataType());
+            Assert.Equal("smallInt", typeof(ushort).ToSqlDataType());
+            Assert.Equal("smallInt", typeof(ushort?).ToSqlDataType());
+            Assert.Equal("int", typeof(int).ToSqlDataType());
+            Assert.Equal("int", typeof(int?).ToSqlDataType());
+            Assert.Equal("int", typeof(uint).ToSqlDataType());
+            Assert.Equal("int", typeof(uint?).ToSqlDataType());
+            Assert.Equal("bigInt", typeof(long).ToSqlDataType());
+            Assert.Equal("bigInt", typeof(long?).ToSqlDataType());
+            Assert.Equal("bigInt", typeof(ulong).ToSqlDataType());
+            Assert.Equal("bigInt", typeof(ulong?).ToSqlDataType());
+            Assert.Equal("real", typeof(float).ToSqlDataType());
+            Assert.Equal("real", typeof(float?).ToSqlDataType());
+            Assert.Equal("decimal", typeof(decimal).ToSqlDataType());
+            Assert.Equal("decimal", typeof(decimal?).ToSqlDataType());
+            Assert.Equal("float", typeof(double).ToSqlDataType());
+            Assert.Equal("float", typeof(double?).ToSqlDataType());
+            Assert.Equal("dateTime", typeof(DateTime).ToSqlDataType());
+            Assert.Equal("dateTime", typeof(DateTime?).ToSqlDataType());
+            Assert.Equal("uniqueIdentifier", typeof(Guid).ToSqlDataType());
+            Assert.Equal("varBinary", typeof(object).ToSqlDataType());
+            Assert.Equal("nVarChar(255)", typeof(string).ToSqlDataType());
         }
     }
 }

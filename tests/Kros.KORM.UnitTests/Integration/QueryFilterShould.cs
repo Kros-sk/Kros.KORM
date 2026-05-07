@@ -1,5 +1,4 @@
-﻿using FluentAssertions;
-using Kros.KORM.Metadata;
+﻿using Kros.KORM.Metadata;
 using Kros.KORM.UnitTests.Base;
 using System.Linq;
 using Xunit;
@@ -49,7 +48,7 @@ INSERT INTO [Foo] VALUES (4, 3, 'Jakub');";
                     .ToList()
                     .Select(p => p.Id);
 
-                ids.Should().BeEquivalentTo(new int[] { 2 });
+                Assert.Equivalent(new int[] { 2 }, ids);
             }
         }
 
@@ -65,7 +64,7 @@ INSERT INTO [Foo] VALUES (4, 3, 'Jakub');";
                     .ToList()
                     .Select(p => p.Id);
 
-                ids.Should().BeEquivalentTo(new int[] { 2, 3, 4 });
+                Assert.Equivalent(new int[] { 2, 3, 4 }, ids);
             }
         }
 
@@ -78,7 +77,7 @@ INSERT INTO [Foo] VALUES (4, 3, 'Jakub');";
                 Foo foo = database.Query<Foo>()
                     .FirstOrDefault(p => p.Id == 3);
 
-                foo.Should().BeNull();
+                Assert.Null(foo);
             }
         }
 
@@ -91,7 +90,7 @@ INSERT INTO [Foo] VALUES (4, 3, 'Jakub');";
                 int sum = database.Query<Foo>()
                     .Sum(p => p.Id);
 
-                sum.Should().Be(3);
+                Assert.Equal(3, sum);
             }
         }
 
@@ -105,7 +104,7 @@ INSERT INTO [Foo] VALUES (4, 3, 'Jakub');";
                     .IgnoreQueryFilters()
                     .Sum(p => p.Id);
 
-                sum.Should().Be(10);
+                Assert.Equal(10, sum);
             }
         }
 

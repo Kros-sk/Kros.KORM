@@ -1,4 +1,3 @@
-﻿using FluentAssertions;
 using Kros.KORM.Metadata;
 using Kros.KORM.Metadata.Attribute;
 using Kros.KORM.Query.Expressions;
@@ -13,7 +12,7 @@ namespace Kros.KORM.UnitTests.Query.Expressions
         {
             var expression = new ColumnsExpression("Id, FirstName, LastName");
 
-            expression.ColumnsPart.Should().Be("Id, FirstName, LastName");
+            Assert.Equal("Id, FirstName, LastName", expression.ColumnsPart);
         }
 
         [Fact]
@@ -21,7 +20,7 @@ namespace Kros.KORM.UnitTests.Query.Expressions
         {
             var expression = new ColumnsExpression("Select Id, FirstName, LastName");
 
-            expression.ColumnsPart.Should().Be("Id, FirstName, LastName");
+            Assert.Equal("Id, FirstName, LastName", expression.ColumnsPart);
         }
 
         [Fact]
@@ -29,7 +28,7 @@ namespace Kros.KORM.UnitTests.Query.Expressions
         {
             var expression = new ColumnsExpression("Id", "FirstName", "LastName");
 
-            expression.ColumnsPart.Should().Be("Id, FirstName, LastName");
+            Assert.Equal("Id, FirstName, LastName", expression.ColumnsPart);
         }
 
         [Fact]
@@ -38,7 +37,7 @@ namespace Kros.KORM.UnitTests.Query.Expressions
             var expression = ColumnsExpression.Create<Person, object>((p) => new { p.Id, p.FirstName, p.LastName },
                 GetTableInfo());
 
-            expression.ColumnsPart.Should().Be("Id, Name, LastName");
+            Assert.Equal("Id, Name, LastName", expression.ColumnsPart);
         }
 
         private TableInfo GetTableInfo()

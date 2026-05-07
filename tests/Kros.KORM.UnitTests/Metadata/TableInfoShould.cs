@@ -1,4 +1,3 @@
-﻿using FluentAssertions;
 using Kros.KORM.Metadata;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,7 +26,7 @@ namespace Kros.KORM.UnitTests.Metadata
             var actual = tableInfo.Columns;
             var expected = columns;
 
-            actual.Should().BeEquivalentTo(expected);
+            Assert.Equivalent(expected, actual);
         }
 
         [Fact]
@@ -52,7 +51,7 @@ namespace Kros.KORM.UnitTests.Metadata
             var actual = tableInfo.PrimaryKey;
             var expected = columns.Where(x => x.IsPrimaryKey).ToList();
 
-            actual.Should().BeEquivalentTo(expected);
+            Assert.Equivalent(expected, actual);
         }
 
         [Fact]
@@ -67,7 +66,7 @@ namespace Kros.KORM.UnitTests.Metadata
 
             var tableInfo = new TableInfo(columns, new List<PropertyInfo>() ,methInfo);
 
-            tableInfo.OnAfterMaterialize.Should().BeSameAs(methInfo);
+            Assert.Same(methInfo, tableInfo.OnAfterMaterialize);
         }
 
         [Fact]
@@ -88,7 +87,7 @@ namespace Kros.KORM.UnitTests.Metadata
             var actual = tableInfo.GetColumnInfo("ID");
             var expected = id;
 
-            actual.Should().Be(expected);
+            Assert.Equal(expected, actual);
         }
 
         [Fact]
@@ -109,7 +108,7 @@ namespace Kros.KORM.UnitTests.Metadata
             var actual = tableInfo.GetColumnInfo("id");
             var expected = id;
 
-            actual.Should().Be(expected);
+            Assert.Equal(expected, actual);
         }
 
         [Fact]
@@ -130,7 +129,7 @@ namespace Kros.KORM.UnitTests.Metadata
             var actual = tableInfo.GetColumnInfo("car");
             ColumnInfo expected = null;
 
-            actual.Should().Be(expected);
+            Assert.Equal(expected, actual);
         }
 
         [Fact]
@@ -166,7 +165,7 @@ namespace Kros.KORM.UnitTests.Metadata
             var actual = tableInfo.GetColumnInfo(typeof(Person).GetProperty("Id"));
             var expected = id;
 
-            actual.Should().Be(expected);
+            Assert.Equal(expected, actual);
         }
 
         [Fact]
@@ -174,7 +173,7 @@ namespace Kros.KORM.UnitTests.Metadata
         {
             TableInfo tableInfo = CreateTableInfo();
 
-            tableInfo.Delimiters.Should().Be(Delimiters.Empty);
+            Assert.Equal(Delimiters.Empty, tableInfo.Delimiters);
         }
 
         [Fact]
@@ -183,7 +182,7 @@ namespace Kros.KORM.UnitTests.Metadata
             TableInfo tableInfo = CreateTableInfo();
 
             tableInfo.UseIdentifierDelimiters(Delimiters.SquareBrackets);
-            tableInfo.Delimiters.Should().Be(Delimiters.SquareBrackets);
+            Assert.Equal(Delimiters.SquareBrackets, tableInfo.Delimiters);
         }
 
         [Theory]
@@ -196,7 +195,7 @@ namespace Kros.KORM.UnitTests.Metadata
             tableInfo.UseIdentifierDelimiters(Delimiters.SquareBrackets);
             ColumnInfo columnInfo = tableInfo.GetColumnInfo(columnName);
 
-            columnInfo.Name.Should().Be(expected);
+            Assert.Equal(expected, columnInfo.Name);
         }
 
         private static TableInfo CreateTableInfo()

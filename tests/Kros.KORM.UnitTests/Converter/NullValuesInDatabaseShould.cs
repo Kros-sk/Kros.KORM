@@ -1,5 +1,4 @@
-﻿using FluentAssertions;
-using Kros.KORM.Converter;
+﻿using Kros.KORM.Converter;
 using Kros.KORM.Materializer;
 using Kros.KORM.Metadata;
 using Kros.KORM.UnitTests.Base;
@@ -27,7 +26,7 @@ namespace Kros.KORM.UnitTests.Converter
             TestDataClass expected = simulateDbNull
                 ? TestDataClass.CreateWithNulledProperties()
                 : TestDataClass.CreateWithDbValuesProperties();
-            actual.Should().BeEquivalentTo(expected);
+            Assert.Equal(expected, actual);
         }
 
         [Theory]
@@ -41,7 +40,7 @@ namespace Kros.KORM.UnitTests.Converter
 
             ConvertedTestDataClass actual = factory(info.DataReader);
             ConvertedTestDataClass expected = simulateDbNull ? new(ConverterDbNullValue) : new(ConverterDefaultValue);
-            actual.Should().BeEquivalentTo(expected);
+            Assert.Equal(expected, actual);
         }
 
         [Theory]
@@ -57,7 +56,7 @@ namespace Kros.KORM.UnitTests.Converter
             TestDataRecord expected = simulateDbNull
                 ? TestDataRecord.CreateWithNulledProperties()
                 : TestDataRecord.CreateWithDbValuesProperties();
-            actual.Should().BeEquivalentTo(expected);
+            Assert.Equal(expected, actual);
         }
 
         [Theory]
@@ -73,7 +72,7 @@ namespace Kros.KORM.UnitTests.Converter
             ConvertedTestDataRecord expected = simulateDbNull
                 ? ConvertedTestDataRecord.Create(ConverterDbNullValue)
                 : ConvertedTestDataRecord.Create(ConverterDefaultValue);
-            actual.Should().BeEquivalentTo(expected);
+            Assert.Equal(expected, actual);
         }
 
         #region Helpers
@@ -81,7 +80,7 @@ namespace Kros.KORM.UnitTests.Converter
         private const string ConverterDefaultValue = "Default";
         private const string ConverterDbNullValue = "DB NULL";
 
-        private class TestDataClass
+        private record TestDataClass
         {
             public TestDataClass() : this(initProperties: true) { }
 
@@ -219,9 +218,9 @@ namespace Kros.KORM.UnitTests.Converter
             public TestDataEnumWithoutZero? NullableCustomEnumWithoutZeroVal { get; set; }
         }
 
-        private class ConvertedTestDataClass
+        private record ConvertedTestDataClass
         {
-            public ConvertedTestDataClass() : this(null) { }
+            public ConvertedTestDataClass() : this((string)null) { }
 
             public ConvertedTestDataClass(string value)
             {

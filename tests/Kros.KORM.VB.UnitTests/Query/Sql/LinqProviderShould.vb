@@ -1,4 +1,3 @@
-﻿Imports FluentAssertions
 Imports Kros.KORM.UnitTests
 Imports Kros.KORM.UnitTests.Base
 Imports Xunit
@@ -39,7 +38,7 @@ INSERT INTO [{Table_TestTable}] ([Id], [Number], [Description]) VALUES (4, 40, '
                 Dim desc = "Hello world"
                 Dim actual = korm.Query(Of TestTable)().FirstOrDefault(Function(p) p.Description = desc)
 
-                actual.Id.Should().Be(3)
+                Assert.Equal(3, actual.Id)
             End Using
         End Sub
 

@@ -1,4 +1,3 @@
-﻿using FluentAssertions;
 using Kros.Data.SqlServer;
 using Kros.KORM.Materializer;
 using Kros.KORM.Metadata;
@@ -17,7 +16,7 @@ namespace Kros.KORM.UnitTests.Query
 
             var provider = factory.Create(new SqlConnection(), CreateModelBuilder(), DatabaseMapper);
 
-            provider.Should().NotBeNull();
+            Assert.NotNull(provider);
         }
 
         [Fact]
@@ -27,7 +26,7 @@ namespace Kros.KORM.UnitTests.Query
 
             var provider = factory.Create(new SqlConnection(), CreateModelBuilder(), DatabaseMapper);
 
-            provider.Should().NotBeNull();
+            Assert.NotNull(provider);
         }
 
         private static DatabaseMapper DatabaseMapper => new DatabaseMapper(new ConventionModelMapper());
@@ -39,7 +38,7 @@ namespace Kros.KORM.UnitTests.Query
             var connectionString = new KormConnectionSettings() { ConnectionString = "", KormProvider = "System.Data.OleDb" };
             var provider = factory.Create(connectionString, CreateModelBuilder(), DatabaseMapper);
 
-            provider.Should().NotBeNull();
+            Assert.NotNull(provider);
         }
 
         [Fact]
@@ -50,7 +49,7 @@ namespace Kros.KORM.UnitTests.Query
 
             var provider = factory.Create(connectionString, CreateModelBuilder(), DatabaseMapper);
 
-            provider.Should().NotBeNull();
+            Assert.NotNull(provider);
         }
 
         [Fact]
@@ -61,7 +60,7 @@ namespace Kros.KORM.UnitTests.Query
 
             var provider = factory.Create(connectionString, CreateModelBuilder(), DatabaseMapper);
 
-            provider.Should().NotBeNull();
+            Assert.NotNull(provider);
         }
 
         private static ModelBuilder CreateModelBuilder()

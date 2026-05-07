@@ -1,4 +1,3 @@
-﻿using FluentAssertions;
 using Kros.KORM.Helper;
 using System;
 using Xunit;
@@ -18,19 +17,19 @@ namespace Kros.KORM.UnitTests.Helper
         public void ShouldGetConstructor(Type type, bool hasCtor, bool isDefault)
         {
             (System.Reflection.ConstructorInfo ctor, bool isDefault) info = type.GetConstructor();
-            info.isDefault.Should().Be(isDefault);
+            Assert.Equal(isDefault, info.isDefault);
             if (hasCtor)
             {
-                info.ctor.Should().NotBeNull();
+                Assert.NotNull(info.ctor);
             }
             else
             {
-                info.ctor.Should().BeNull();
+                Assert.Null(info.ctor);
             }
 
             if (hasCtor && info.isDefault)
             {
-                info.ctor.GetParameters().Should().BeEmpty();
+                Assert.Empty(info.ctor.GetParameters());
             }
         }
 

@@ -1,6 +1,4 @@
-﻿using FluentAssertions;
-using FluentAssertions.Execution;
-using Kros.KORM.Converter;
+﻿using Kros.KORM.Converter;
 using Kros.KORM.Metadata;
 using Kros.KORM.Metadata.Attribute;
 using Kros.KORM.Query;
@@ -304,22 +302,19 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
                     .Query<Person>()
                     .FirstOrDefault(p => p.Id == olderPat.Id);
 
-                using (new AssertionScope())
-                {
-                    actualPat.Age.Should().Be(19);
-                    actualPat.FirstName.Should().Be("Pat");
-                    actualPat.LastName.Should().Be("Lefty");
+                Assert.Equal(19, actualPat.Age);
+                Assert.Equal("Pat", actualPat.FirstName);
+                Assert.Equal("Lefty", actualPat.LastName);
 
-                    actualMat.Age.Should().Be(19);
-                    actualMat.FirstName.Should().Be("Mat");
-                    actualMat.LastName.Should().Be("Righty");
+                Assert.Equal(19, actualMat.Age);
+                Assert.Equal("Mat", actualMat.FirstName);
+                Assert.Equal("Righty", actualMat.LastName);
 
-                    actualMatJunior.Age.Should().Be(0);
-                    actualMatJunior.FirstName.Should().Be("Mat Junior");
-                    actualMatJunior.LastName.Should().Be("Righty");
+                Assert.Equal(0, actualMatJunior.Age);
+                Assert.Equal("Mat Junior", actualMatJunior.FirstName);
+                Assert.Equal("Righty", actualMatJunior.LastName);
 
-                    actualOlderPat.Should().BeNull();
-                }
+                Assert.Null(actualOlderPat);
             }
         }
 
@@ -377,7 +372,7 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
 
                 await dbSet.CommitChangesAsync(TestContext.Current.CancellationToken);
 
-                korm.Query<Person>().Count().Should().Be(0);
+                Assert.Equal(0, korm.Query<Person>().Count());
             }
         }
 
@@ -391,9 +386,7 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
 
                 await dbSet.CommitChangesAsync(TestContext.Current.CancellationToken);
 
-                korm.Query<Person>()
-                    .Should()
-                    .NotContain(p => p.Id == 1);
+                Assert.DoesNotContain(korm.Query<Person>(), p => p.Id == 1);
             }
         }
 
@@ -408,9 +401,7 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
 
                 await dbSet.CommitChangesAsync(TestContext.Current.CancellationToken);
 
-                korm.Query<Person>()
-                    .Should()
-                    .NotContain(p => p.Id == 1);
+                Assert.DoesNotContain(korm.Query<Person>(), p => p.Id == 1);
             }
         }
 
@@ -425,7 +416,7 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
 
                 await dbSet.CommitChangesAsync(TestContext.Current.CancellationToken);
 
-                korm.Query<Person>().Should().BeEmpty();
+                Assert.Empty(korm.Query<Person>());
             }
         }
 
@@ -439,9 +430,7 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
 
                 await dbSet.CommitChangesAsync(TestContext.Current.CancellationToken);
 
-                korm.Query<Person>()
-                    .Should()
-                    .NotContain(p => p.Id == 1);
+                Assert.DoesNotContain(korm.Query<Person>(), p => p.Id == 1);
             }
         }
 
@@ -456,9 +445,7 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
 
                 await dbSet.CommitChangesAsync(TestContext.Current.CancellationToken);
 
-                korm.Query<Person>()
-                    .Should()
-                    .NotContain(p => p.Id == 1);
+                Assert.DoesNotContain(korm.Query<Person>(), p => p.Id == 1);
             }
         }
 
@@ -476,9 +463,7 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
 
                 await dbSet.CommitChangesAsync(TestContext.Current.CancellationToken);
 
-                korm.Query<Person>()
-                    .Should()
-                    .NotContain(p => p.Id == 1);
+                Assert.DoesNotContain(korm.Query<Person>(), p => p.Id == 1);
             }
         }
 
@@ -494,9 +479,7 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
 
                 await dbSet.CommitChangesAsync(TestContext.Current.CancellationToken);
 
-                korm.Query<Person>()
-                    .Should()
-                    .NotContain(p => p.Id == 1);
+                Assert.DoesNotContain(korm.Query<Person>(), p => p.Id == 1);
             }
         }
 
@@ -510,9 +493,7 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
 
                 await dbSet.CommitChangesAsync(TestContext.Current.CancellationToken);
 
-                korm.Query<Person>()
-                    .Should()
-                    .NotContain(p => p.Id == 1);
+                Assert.DoesNotContain(korm.Query<Person>(), p => p.Id == 1);
             }
         }
 
@@ -527,9 +508,7 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
 
                 await dbSet.CommitChangesAsync(TestContext.Current.CancellationToken);
 
-                korm.Query<Person>()
-                    .Should()
-                    .NotContain(p => p.Id == 1);
+                Assert.DoesNotContain(korm.Query<Person>(), p => p.Id == 1);
             }
         }
 
@@ -544,9 +523,7 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
 
                 await dbSet.CommitChangesAsync(TestContext.Current.CancellationToken);
 
-                korm.Query<Person>()
-                    .Should()
-                    .NotContain(p => p.Id == 1);
+                Assert.DoesNotContain(korm.Query<Person>(), p => p.Id == 1);
             }
         }
 
@@ -560,9 +537,7 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
 
                 await dbSet.CommitChangesAsync(TestContext.Current.CancellationToken);
 
-                korm.Query<Person>()
-                    .Should()
-                    .NotContain(p => p.Id == 1);
+                Assert.DoesNotContain(korm.Query<Person>(), p => p.Id == 1);
             }
         }
 
@@ -576,9 +551,7 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
 
                 await dbSet.CommitChangesAsync(TestContext.Current.CancellationToken);
 
-                korm.Query<Person>()
-                    .Should()
-                    .NotContain(p => p.Id == 2);
+                Assert.DoesNotContain(korm.Query<Person>(), p => p.Id == 2);
             }
         }
 
@@ -592,10 +565,9 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
                 dbSet.Delete(predicate);
                 await dbSet.CommitChangesAsync(TestContext.Current.CancellationToken);
 
-                korm.Query<Person>()
-                    .Should()
-                    .HaveCount(1)
-                    .And.NotContain(p => p.Id == deletedId);
+                var remaining = korm.Query<Person>().ToList();
+                Assert.Single(remaining);
+                Assert.DoesNotContain(remaining, p => p.Id == deletedId);
             }
         }
 
@@ -622,7 +594,7 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
 
                 dbSet.CommitChanges();
 
-                korm.Query<Person>().Should().BeEmpty();
+                Assert.Empty(korm.Query<Person>());
             }
         }
 
@@ -838,7 +810,7 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
                     .Take(3)
                     .ToList();
 
-                data.Should().BeEquivalentTo(expectedData);
+                Assert.Equivalent(expectedData, data);
             }
         }
 
@@ -858,7 +830,7 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
                     .Skip(17)
                     .ToList();
 
-                data.Should().BeEquivalentTo(expectedData);
+                Assert.Equivalent(expectedData, data);
             }
         }
 
@@ -879,7 +851,7 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
                     .Take(3)
                     .ToList();
 
-                data.Should().BeEquivalentTo(expectedData);
+                Assert.Equivalent(expectedData, data);
             }
         }
 
@@ -895,7 +867,7 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
                     .Skip(100)
                     .ToList();
 
-                data.Should().BeEquivalentTo(expectedData);
+                Assert.Equivalent(expectedData, data);
             }
         }
 
@@ -915,7 +887,7 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
                     .Take(100)
                     .ToList();
 
-                data.Should().BeEquivalentTo(expectedData);
+                Assert.Equivalent(expectedData, data);
             }
         }
 
@@ -961,7 +933,7 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
         private static void AssertDataTypesData(IDatabase korm)
         {
             List<DataTypesData> actualData = korm.Query<DataTypesData>().OrderBy(item => item.Id).ToList();
-            actualData.Should().BeEquivalentTo(GetDataTypesData());
+            Assert.Equivalent(GetDataTypesData(), actualData);
         }
 
         private static IEnumerable<Person> GetPersonData()
@@ -995,13 +967,13 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
         {
             var person = korm.Query<Person>().FirstOrDefault(p => p.Id == 1);
 
-            person.Should().NotBeNull();
-            person.Id.Should().Be(1);
-            person.Age.Should().Be(32);
-            person.FirstName.Should().Be("Milan");
-            person.LastName.Should().Be("Martiniak");
-            person.Address.Should().BeEquivalentTo(new List<string>() { "Petzvalova", "Pekna", "Zelena" });
-            person.TestLongText.Should().Be("Lorem ipsum dolor sit amet 1.");
+            Assert.NotNull(person);
+            Assert.Equal(1, person.Id);
+            Assert.Equal(32, person.Age);
+            Assert.Equal("Milan", person.FirstName);
+            Assert.Equal("Martiniak", person.LastName);
+            Assert.Equivalent(new List<string>() { "Petzvalova", "Pekna", "Zelena" }, person.Address);
+            Assert.Equal("Lorem ipsum dolor sit amet 1.", person.TestLongText);
         }
 
         #endregion

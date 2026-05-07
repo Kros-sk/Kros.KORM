@@ -1,4 +1,3 @@
-﻿using FluentAssertions;
 using Kros.KORM.Migrations.Providers;
 using System.IO;
 using System.Linq;
@@ -20,7 +19,7 @@ namespace Kros.KORM.UnitTests.Migrations.Providers
             AssemblyMigrationScriptsProvider provider = CreateDefaultProvider();
             var scripts = provider.GetScripts().ToList();
 
-            scripts.Should().BeEquivalentTo(new[] {
+            Assert.Equivalent(new[] {
                 new ScriptInfo(provider)
                 {
                     Id = 20190228001,
@@ -39,7 +38,7 @@ namespace Kros.KORM.UnitTests.Migrations.Providers
                     Name = "AddProjectTable",
                     Path = GetNamespace("20190301002_AddProjectTable")
                 }
-            });
+            }, scripts);
         }
 
         private static AssemblyMigrationScriptsProvider CreateDefaultProvider()
@@ -58,7 +57,7 @@ namespace Kros.KORM.UnitTests.Migrations.Providers
                 "Kros.KORM.UnitTests.Resources.AnotherSqlScripts");
             var scripts = provider.GetScripts().ToList();
 
-            scripts.Should().BeEquivalentTo(new[]
+            Assert.Equivalent(new[]
             {
                 new ScriptInfo(provider)
                 {
@@ -78,7 +77,7 @@ namespace Kros.KORM.UnitTests.Migrations.Providers
                     Name = "Script_with_separator",
                     Path = GetNamespace("20190227003_Script_with_separator")
                 }
-            });
+            }, scripts);
         }
 
         [Fact]
@@ -95,7 +94,7 @@ namespace Kros.KORM.UnitTests.Migrations.Providers
             var expected = await GetStringFromResourceFileAsync(
                 "Kros.KORM.UnitTests.SqlScripts.20190228001_InitDatabase.sql");
 
-            script.Should().Be(expected);
+            Assert.Equal(expected, script);
         }
 
         private static async Task<string> GetStringFromResourceFileAsync(string resourceFile)

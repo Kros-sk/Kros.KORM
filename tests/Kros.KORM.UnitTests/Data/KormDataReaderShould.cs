@@ -1,4 +1,3 @@
-﻿using FluentAssertions;
 using Kros.KORM.CommandGenerator;
 using Kros.KORM.Data;
 using Kros.KORM.Metadata;
@@ -20,7 +19,7 @@ namespace Kros.KORM.UnitTests.Data
 
             using (var reader = new KormDataReader<Foo>(data, commandGenerator))
             {
-                reader.FieldCount.Should().Be(1);
+                Assert.Equal(1, reader.FieldCount);
             }
         }
 
@@ -33,7 +32,7 @@ namespace Kros.KORM.UnitTests.Data
 
             using (var reader = new KormDataReader<Foo>(data, commandGenerator))
             {
-                reader.GetName(1).Should().Be("Prop2");
+                Assert.Equal("Prop2", reader.GetName(1));
             }
         }
 
@@ -46,7 +45,7 @@ namespace Kros.KORM.UnitTests.Data
 
             using (var reader = new KormDataReader<Foo>(data, commandGenerator))
             {
-                reader.GetOrdinal("Prop2").Should().Be(1);
+                Assert.Equal(1, reader.GetOrdinal("Prop2"));
             }
         }
 
@@ -67,7 +66,7 @@ namespace Kros.KORM.UnitTests.Data
                     count++;
                 }
 
-                count.Should().Be(2);
+                Assert.Equal(2, count);
             }
         }
 

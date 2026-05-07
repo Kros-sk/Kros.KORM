@@ -1,5 +1,4 @@
-﻿using FluentAssertions;
-using Kros.KORM.Materializer;
+﻿using Kros.KORM.Materializer;
 using Kros.KORM.Metadata;
 using Kros.KORM.Metadata.Attribute;
 using Kros.KORM.UnitTests.Helper;
@@ -25,12 +24,12 @@ namespace Kros.KORM.UnitTests.Materializer
 
             var data = builder.Materialize<Foo>(reader).ToList();
 
-            data.Should().HaveCount(2);
-            data[0].Id.Should().Be(1);
-            data[0].PropertyGuid.Should().Be("ddc995d7-4dda-41ca-abab-7f45e651784a");
+            Assert.Equal(2, data.Count());
+            Assert.Equal(1, data[0].Id);
+            Assert.Equal(new Guid("ddc995d7-4dda-41ca-abab-7f45e651784a"), data[0].PropertyGuid);
 
-            data[1].PropertyString.Should().Be("Kitty");
-            data[1].PropertyDateTime.Should().Be(new DateTime(1984, 4, 20));
+            Assert.Equal("Kitty", data[1].PropertyString);
+            Assert.Equal(new DateTime(1984, 4, 20), data[1].PropertyDateTime);
         }
 
         [Fact]
@@ -44,7 +43,7 @@ namespace Kros.KORM.UnitTests.Materializer
 
             var data = builder.Materialize<Foo>(reader).ToList();
 
-            data.Should().HaveCount(0);
+            Assert.Empty(data);
         }
 
         [Fact]
@@ -55,15 +54,15 @@ namespace Kros.KORM.UnitTests.Materializer
 
             var data = builder.Materialize<Foo>(dataTable).ToList();
 
-            data.Should().HaveCount(3);
-            data[0].Id.Should().Be(1);
-            data[0].PropertyDateTime.Should().Be(new DateTime(1990, 1, 1));
+            Assert.Equal(3, data.Count());
+            Assert.Equal(1, data[0].Id);
+            Assert.Equal(new DateTime(1990, 1, 1), data[0].PropertyDateTime);
 
-            data[1].PropertyEnum.Should().Be(TestEnum.Value3);
-            data[1].PropertyDateTime.Should().Be(new DateTime(1975, 10, 11));
+            Assert.Equal(TestEnum.Value3, data[1].PropertyEnum);
+            Assert.Equal(new DateTime(1975, 10, 11), data[1].PropertyDateTime);
 
-            data[2].Id.Should().Be(12);
-            data[2].PropertyString.Should().BeNull();
+            Assert.Equal(12, data[2].Id);
+            Assert.Null(data[2].PropertyString);
         }
 
         [Fact]
@@ -102,8 +101,8 @@ namespace Kros.KORM.UnitTests.Materializer
 
             var data = builder.Materialize<Foo>(dataTable.Rows[0]);
 
-            data.Id.Should().Be(1);
-            data.PropertyDateTime.Should().Be(new DateTime(1990, 1, 1));
+            Assert.Equal(1, data.Id);
+            Assert.Equal(new DateTime(1990, 1, 1), data.PropertyDateTime);
         }
 
         #endregion
@@ -120,9 +119,9 @@ namespace Kros.KORM.UnitTests.Materializer
             List<Dictionary<string, object>> ret = new List<Dictionary<string, object>>();
 
             AddRow(ret, 1, "Hello", 45.78, (decimal)785.78, new DateTime(1980, 7, 24),
-                true, new Guid("ddc995d7-4dda-41ca-abab-7f45e651784a"), TestEnum.Value2);
+                true, new Guid("ddc995d7-4dda-41ca-abab-7f45e651784a"));
             AddRow(ret, 2, "Kitty", 47.98, (decimal)75.8, new DateTime(1984, 4, 20),
-                true, new Guid("ddc995d7-4dda-41ca-abab-7f45e6517844"), TestEnum.Value1);
+                true, new Guid("ddc995d7-4dda-41ca-abab-7f45e6517844"));
 
             return ret;
         }
@@ -134,8 +133,7 @@ namespace Kros.KORM.UnitTests.Materializer
                                                             decimal salary,
                                                            DateTime birthday,
                                                                bool iS,
-                                                               Guid guid,
-                                                           TestEnum enumV)
+                                                               Guid guid)
         {
             Dictionary<string, object> row = new Dictionary<string, object>() { { "Id", id },
                                                                                 { "FirstName", firstName },
