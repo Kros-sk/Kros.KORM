@@ -9,7 +9,6 @@
     <Title>Kros.KORM</Title>
     <Copyright>Copyright © KROS a. s.</Copyright>
     <RootNamespace>Kros.KORM</RootNamespace>
-    <ApplicationIcon>Icon.ico</ApplicationIcon>
     <Product>Kros.KORM</Product>
     <AssemblyName>Kros.KORM</AssemblyName>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -24,10 +23,6 @@
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
-  <ItemGroup>
-    <None Include="../README.md" Pack="true" PackagePath="/" />
-  </ItemGroup>
-
   <PropertyGroup Condition="'$(TF_BUILD)' == 'true'">
     <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
   </PropertyGroup>
@@ -36,7 +31,8 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <PackageIcon>icon.png</PackageIcon>
+    <PackageIcon>logo.png</PackageIcon>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageId>Kros.KORM</PackageId>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/Kros-sk/Kros.KORM</PackageProjectUrl>
@@ -57,7 +53,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="Resources\icon.png" Pack="true" PackagePath="" />
+    <None Include="../logo.png" Pack="true" PackagePath="/" />
+    <None Include="../README.md" Pack="true" PackagePath="/" />
   </ItemGroup>
 
   <ItemGroup>
