@@ -11,7 +11,8 @@ public sealed class KormTestsFixture : IAsyncDisposable, IAsyncLifetime
 
     public KormTestsFixture()
     {
-        _msSqlContainer = new MsSqlBuilder().Build();
+        // https://testcontainers.com/modules/mssql/?language=dotnet
+        _msSqlContainer = new MsSqlBuilder("mcr.microsoft.com/mssql/server:2022-CU10-ubuntu-22.04").Build();
     }
 
     internal string GetConnectionString() => _msSqlContainer.GetConnectionString();
