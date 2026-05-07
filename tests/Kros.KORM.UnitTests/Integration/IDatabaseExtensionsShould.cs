@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Kros.KORM.UnitTests.Integration
 {
-    public partial class IDatabaseExtensionsShould : DatabaseTestBase
+    public partial class IDatabaseExtensionsShould(KormTestsFixture kormContext) : DatabaseTestBase(kormContext)
     {
         #region Nested Classes
 
@@ -52,7 +52,7 @@ INSERT INTO {Table_TestTable} VALUES (2, 22, 'Kilie', 'Bistrol');";
             {
                 var person = new Person() { Id = 3, Age = 18, FirstName = "Bob", LastName = "Bobek" };
 
-                await database.AddAsync(person);
+                await database.AddAsync(person, TestContext.Current.CancellationToken);
 
                 database.Query<Person>()
                     .FirstOrDefault(p => p.Id == 3)
@@ -68,7 +68,7 @@ INSERT INTO {Table_TestTable} VALUES (2, 22, 'Kilie', 'Bistrol');";
             {
                 var person = new Person() { Id = 2 };
 
-                await database.DeleteAsync(person);
+                await database.DeleteAsync(person, TestContext.Current.CancellationToken);
 
                 database.Query<Person>()
                     .Should()
@@ -81,7 +81,7 @@ INSERT INTO {Table_TestTable} VALUES (2, 22, 'Kilie', 'Bistrol');";
         {
             using (IDatabase database = CreateDatabase(CreateTable_TestTable, InsertDataScript))
             {
-                await database.DeleteAsync<Person>(2);
+                await database.DeleteAsync<Person>(2, TestContext.Current.CancellationToken);
 
                 database.Query<Person>()
                     .Should()
@@ -94,7 +94,7 @@ INSERT INTO {Table_TestTable} VALUES (2, 22, 'Kilie', 'Bistrol');";
         {
             using (IDatabase database = CreateDatabase(CreateTable_TestTable, InsertDataScript))
             {
-                await database.DeleteAsync<Person>(p => p.Id == 2);
+                await database.DeleteAsync<Person>(p => p.Id == 2, TestContext.Current.CancellationToken);
 
                 database.Query<Person>()
                     .Should()
@@ -107,7 +107,8 @@ INSERT INTO {Table_TestTable} VALUES (2, 22, 'Kilie', 'Bistrol');";
         {
             using (IDatabase database = CreateDatabase(CreateTable_TestTable, InsertDataScript))
             {
-                await database.DeleteAsync<Person>(condition: "Id = @1", parameters: 2);
+                await database.DeleteAsync<Person>(condition: "Id = @1", parameters: 2,
+                    cancellationToken: TestContext.Current.CancellationToken);
 
                 database.Query<Person>()
                     .Should()
@@ -122,7 +123,7 @@ INSERT INTO {Table_TestTable} VALUES (2, 22, 'Kilie', 'Bistrol');";
             {
                 var person = new Person() { Id = 2, Age = 18, FirstName = "Bob", LastName = "Bobek" };
 
-                await database.EditAsync(person);
+                await database.EditAsync(person, TestContext.Current.CancellationToken);
 
                 database.Query<Person>()
                     .FirstOrDefault(p => p.Id == 2)
@@ -138,7 +139,8 @@ INSERT INTO {Table_TestTable} VALUES (2, 22, 'Kilie', 'Bistrol');";
             {
                 var person = new Person() { Id = 2, Age = 18, FirstName = "Bob", LastName = "Bobek" };
 
-                await database.EditAsync(entity: person, columns: new string[] { "Id", "Age" });
+                await database.EditAsync(entity: person, columns: new string[] { "Id", "Age" },
+                    cancellationToken: TestContext.Current.CancellationToken);
 
                 Person actual = database
                     .Query<Person>()
@@ -156,7 +158,7 @@ INSERT INTO {Table_TestTable} VALUES (2, 22, 'Kilie', 'Bistrol');";
             using (IDatabase database = CreateDatabase(CreateTable_TestTable, InsertDataScript))
             {
                 var person = new Person { Id = 101, Age = 18, FirstName = "Bob", LastName = "Bobek" };
-                await database.UpsertAsync(person);
+                await database.UpsertAsync(person, TestContext.Current.CancellationToken);
 
                 Person actual = database
                     .Query<Person>()
@@ -174,10 +176,11 @@ INSERT INTO {Table_TestTable} VALUES (2, 22, 'Kilie', 'Bistrol');";
             using (IDatabase database = CreateDatabase(CreateTable_TestTable, InsertDataScript))
             {
                 var person = new Person { Id = 102, Age = 18, FirstName = "Bob", LastName = "Bobek" };
-                await database.AddAsync(person);
+                await database.AddAsync(person, TestContext.Current.CancellationToken);
 
                 person = new Person { Id = 102, Age = 99, FirstName = "Marlyn", LastName = "Manson" };
-                await database.UpsertAsync(person, columns: new string[] { "Id", "Age" });
+                await database.UpsertAsync(person, columns: new string[] { "Id", "Age" },
+                    cancellationToken: TestContext.Current.CancellationToken);
 
                 Person actual = database
                     .Query<Person>()
@@ -196,12 +199,12 @@ INSERT INTO {Table_TestTable} VALUES (2, 22, 'Kilie', 'Bistrol');";
             {
                 var pat = new Person { Id = 103, Age = 18, FirstName = "Pat" };
                 var mat = new Person { Id = 104, Age = 19, FirstName = "Mat" };
-                await database.AddAsync(pat);
+                await database.AddAsync(pat, TestContext.Current.CancellationToken);
 
                 pat.LastName = "Handy";
                 mat.LastName = "Handy";
 
-                await database.UpsertAsync<Person>(new Person[] { pat, mat });
+                await database.UpsertAsync<Person>(new Person[] { pat, mat }, TestContext.Current.CancellationToken);
 
                 Person actualPat = database
                     .Query<Person>()

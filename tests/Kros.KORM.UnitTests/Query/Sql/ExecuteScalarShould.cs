@@ -4,7 +4,7 @@ using Xunit;
 
 namespace Kros.KORM.UnitTests.Query.Sql
 {
-    public class ExecuteScalarShould: DatabaseTestBase
+    public class ExecuteScalarShould(KormTestsFixture kormContext) : DatabaseTestBase(kormContext)
     {
         #region SQL Scripts
 

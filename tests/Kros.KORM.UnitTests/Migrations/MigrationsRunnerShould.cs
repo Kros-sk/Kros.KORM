@@ -1,7 +1,6 @@
 ﻿using FluentAssertions;
 using Kros.Data;
 using Kros.KORM.Migrations;
-using Kros.KORM.UnitTests.Integration;
 using Kros.UnitTests;
 using Microsoft.Data.SqlClient;
 using System;
@@ -11,7 +10,8 @@ using Xunit;
 
 namespace Kros.KORM.UnitTests.Migrations
 {
-    public class MigrationsRunnerShould : SqlServerDatabaseTestBase
+    [Collection(KormTestsCollection.Name)]
+    public class MigrationsRunnerShould(KormTestsFixture kormContext) : SqlServerDatabaseTestBase
     {
         #region Sql Scripts
 
@@ -44,7 +44,9 @@ INSERT INTO __KormMigrationsHistory VALUES (20190301001, 'InitDatabase', 'FromUn
 
         #endregion
 
-        protected override string BaseConnectionString => IntegrationTestConfig.ConnectionString;
+        private readonly KormTestsFixture _kormContext = kormContext;
+
+        protected override string BaseConnectionString => _kormContext.GetConnectionString();
 
         [Fact]
         public async Task ExecuteInitialMigration()

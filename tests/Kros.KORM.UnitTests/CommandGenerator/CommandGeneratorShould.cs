@@ -467,7 +467,7 @@ SELECT * FROM @OutputTable;";
                 {
                     Name = property.Name,
                     PropertyInfo = property,
-                    IsPrimaryKey = property.IsDecoratedWith<KeyAttribute>()
+                    IsPrimaryKey = property.GetCustomAttribute<KeyAttribute>() is not null
                 });
             }
             return new TableInfo(columns, new List<PropertyInfo>(), null)

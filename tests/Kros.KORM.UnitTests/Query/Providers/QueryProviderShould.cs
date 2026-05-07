@@ -20,7 +20,7 @@ using Xunit;
 
 namespace Kros.KORM.UnitTests.Query.Providers
 {
-    public class QueryProviderShould : DatabaseTestBase
+    public class QueryProviderShould(KormTestsFixture kormContext) : DatabaseTestBase(kormContext)
     {
         #region Nested classes
 
@@ -51,7 +51,9 @@ namespace Kros.KORM.UnitTests.Query.Providers
                 return new TestQueryProvider(connection);
             }
 
+#pragma warning disable IDE0060 // Remove unused parameter
             private TestQueryProvider(DbConnection internalConnection, bool isInternalConnection)
+#pragma warning restore IDE0060 // Remove unused parameter
                 : base(
                       new KormConnectionSettings() { ConnectionString = "QueryProviderTestConnectionString", KormProvider = "QueryProviderTest" },
                       Substitute.For<ISqlExpressionVisitorFactory>(),
@@ -282,7 +284,8 @@ END";
                 QueryProvider provider = CreateQueryProvider(helper.Connection);
                 int result = await provider.ExecuteNonQueryAsync(
                     query: query,
-                    paramValues: new object[] { 6, 666, "Sed ac lobortis magna." });
+                    paramValues: new object[] { 6, 666, "Sed ac lobortis magna." },
+                    cancellationToken: TestContext.Current.CancellationToken);
                 result.Should().Be(1); // Inserted 1 row.
             }
         }
@@ -301,7 +304,8 @@ END";
                 };
 
                 QueryProvider provider = CreateQueryProvider(helper.Connection);
-                int result = await provider.ExecuteNonQueryAsync(query: query, parameters: parameters);
+                int result = await provider.ExecuteNonQueryAsync(query: query, parameters: parameters,
+                    cancellationToken: TestContext.Current.CancellationToken);
                 result.Should().Be(1); // Inserted 1 row.
             }
         }
@@ -314,7 +318,7 @@ END";
                 var query = $"DELETE FROM {Table_TestTable}";
 
                 QueryProvider provider = CreateQueryProvider(helper.Connection);
-                int result = await provider.ExecuteNonQueryAsync(query);
+                int result = await provider.ExecuteNonQueryAsync(query, TestContext.Current.CancellationToken);
                 result.Should().Be(3); // Deleted 3 rows.
             }
         }

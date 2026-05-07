@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Kros.KORM.UnitTests.Integration
 {
-    public class QueryFilterShould : DatabaseTestBase
+    public class QueryFilterShould(KormTestsFixture kormContext) : DatabaseTestBase(kormContext)
     {
         #region Nested Classes
 
@@ -49,7 +49,7 @@ INSERT INTO [Foo] VALUES (4, 3, 'Jakub');";
                     .ToList()
                     .Select(p => p.Id);
 
-                ids.Should().BeEquivalentTo(2);
+                ids.Should().BeEquivalentTo([2]);
             }
         }
 
@@ -65,7 +65,7 @@ INSERT INTO [Foo] VALUES (4, 3, 'Jakub');";
                     .ToList()
                     .Select(p => p.Id);
 
-                ids.Should().BeEquivalentTo(2, 3, 4);
+                ids.Should().BeEquivalentTo([2, 3, 4]);
             }
         }
 

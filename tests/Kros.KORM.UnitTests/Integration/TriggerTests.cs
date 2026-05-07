@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Kros.KORM.UnitTests.Integration
 {
-    public class TriggerTests : DatabaseTestBase
+    public class TriggerTests(KormTestsFixture kormContext) : DatabaseTestBase(kormContext)
     {
         #region Helpers
 

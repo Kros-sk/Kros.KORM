@@ -10,7 +10,7 @@ using Xunit;
 
 namespace Kros.KORM.UnitTests.Integration
 {
-    public partial class TransactionTests : DatabaseTestBase
+    public partial class TransactionTests(KormTestsFixture kormContext) : DatabaseTestBase(kormContext)
     {
         #region SQL Scripts
 
@@ -261,7 +261,7 @@ $@" CREATE PROCEDURE [dbo].[WaitForTwoSeconds] AS
         {
             DoTestWithConnection(
                 openConnection,
-                (db) => ExplicitTransactionBulkInsertCommitNotCalled(db, BulkInsertAddItems),
+                (db) => ExplicitTransactionBulkInsertCommitNotCalled(BulkInsertAddItems),
                 CreateDatabase);
         }
 
@@ -272,11 +272,11 @@ $@" CREATE PROCEDURE [dbo].[WaitForTwoSeconds] AS
         {
             DoTestWithConnection(
                 openConnection,
-                (db) => ExplicitTransactionBulkInsertCommitNotCalled(db, BulkInsertEnumerableItems),
+                (db) => ExplicitTransactionBulkInsertCommitNotCalled(BulkInsertEnumerableItems),
                 CreateDatabase);
         }
 
-        private void ExplicitTransactionBulkInsertCommitNotCalled(TestDatabase database, Action<IDbSet<Invoice>> action)
+        private void ExplicitTransactionBulkInsertCommitNotCalled(Action<IDbSet<Invoice>> action)
         {
             using (var korm = CreateDatabase())
             {

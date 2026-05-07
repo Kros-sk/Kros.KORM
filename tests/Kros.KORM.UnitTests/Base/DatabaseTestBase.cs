@@ -3,28 +3,27 @@ using Kros.UnitTests;
 using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
+using Xunit;
 
 namespace Kros.KORM.UnitTests.Base
 {
     /// <summary>
     /// Base class for database integration tests
     /// </summary>
-    public abstract class DatabaseTestBase
+    [Collection(KormTestsCollection.Name)]
+    public abstract class DatabaseTestBase(KormTestsFixture kormContext)
     {
+        private readonly KormTestsFixture _kormContext = kormContext;
+
         /// <summary>
         /// Connection string to testing database server.
         /// </summary>
-        protected virtual string BaseConnectionString { get; private set; }
+        protected virtual string BaseConnectionString => _kormContext.GetConnectionString();
 
         /// <summary>
         /// Base database name.
         /// </summary>
         protected virtual string BaseDatabaseName => $"KORM_{this.ToString()}";
-
-        public DatabaseTestBase()
-        {
-            BaseConnectionString = Integration.IntegrationTestConfig.ConnectionString;
-        }
 
         protected virtual IDatabase CreateDatabase(string initScript)
             => new TestDatabase(new SqlServerTestHelper(BaseConnectionString, BaseDatabaseName, initScript));

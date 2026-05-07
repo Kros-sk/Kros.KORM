@@ -12,7 +12,7 @@ using Xunit;
 
 namespace Kros.KORM.UnitTests.Converter
 {
-    public class NullValuesInDatabaseShould : DatabaseTestBase
+    public class NullValuesInDatabaseShould(KormTestsFixture kormContext) : DatabaseTestBase(kormContext)
     {
         [Theory]
         [InlineData(true)]

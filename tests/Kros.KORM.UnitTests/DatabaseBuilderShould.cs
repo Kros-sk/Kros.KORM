@@ -2,7 +2,6 @@
 using Kros.KORM.Materializer;
 using Kros.KORM.Metadata;
 using Kros.KORM.Query;
-using Kros.KORM.UnitTests.Integration;
 using Kros.UnitTests;
 using NSubstitute;
 using System;
@@ -13,7 +12,8 @@ using Xunit;
 
 namespace Kros.KORM.UnitTests
 {
-    public class DatabaseBuilderShould : SqlServerDatabaseTestBase
+    [Collection(KormTestsCollection.Name)]
+    public class DatabaseBuilderShould(KormTestsFixture kormContext) : SqlServerDatabaseTestBase
     {
         #region Nested Classes
 
@@ -45,7 +45,9 @@ $@"CREATE TABLE [dbo].[Foo] (
 
         #endregion
 
-        protected override string BaseConnectionString => IntegrationTestConfig.ConnectionString;
+        private readonly KormTestsFixture _kormContext = kormContext;
+
+        protected override string BaseConnectionString => _kormContext.GetConnectionString();
 
         protected override IEnumerable<string> DatabaseInitScripts
         {
