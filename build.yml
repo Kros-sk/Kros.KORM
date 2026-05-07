@@ -6,7 +6,8 @@ trigger:
       - net48
 
 pool:
-  vmImage: ubuntu-latest
+  name: Default
+  demands: Agent.OS -equals Windows_NT
 
 variables:
   - group: Nuget
