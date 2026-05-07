@@ -1,33 +1,60 @@
 trigger:
-  tags:
+  batch: false
+  branches:
     include:
-    - v*
+      - main
+      - net48
 
-pool: Default
-
-resources:
-  repositories:
-    - repository: templates
-      type: git
-      name: DevShared/Templates
+pool:
+  name: Default
+  demands: Agent.OS -equals Windows_NT
 
 variables:
   - group: Nuget
 
 steps:
-  - template: steps/agent-info.yml@templates
-  - template: steps/delete-nupkgs.yml@templates
-  - template: build-and-test.yml
+  - pwsh: |
+      Get-ChildItem -Path '$(Build.ArtifactStagingDirectory)' -Recurse -Include *.nupkg, *.snupkg | Remove-Item
+      Get-ChildItem -Path '$(Build.SourcesDirectory)' -Recurse -Include *.nupkg, *.snupkg | Remove-Item
+    displayName: Clear NuGet packages
 
-  - task: CopyFiles@2
-    displayName: 'Copy package files to staging directory'
+  - task: DotNetCoreCLI@2
+    displayName: Build
     inputs:
-      Contents: |
-        **/*.nupkg
-        **/*.snupkg
-      TargetFolder: '$(build.artifactStagingDirectory)'
-      FlattenFolders: true
+      command: build
+      projects: Kros.KORM.slnx
+      arguments: --configuration Release
 
-  - template: steps/nuget-push.yml@templates
-    parameters:
-      feed: '$(nuget.feed)'
+  - task: DotNetCoreCLI@2
+    displayName: Test
+    inputs:
+      command: test
+      projects: Kros.KORM.slnx
+      publishTestResults: false
+      arguments: --configuration Release --logger trx --results-directory "$(Common.TestResultsDirectory)"
+
+  - task: PublishTestResults@2
+    displayName: Publish test results
+    condition: always()
+    inputs:
+      testResultsFormat: VSTest
+      testResultsFiles: '*.trx'
+      searchFolder: $(Common.TestResultsDirectory)
+
+  - ${{ if in(variables['Build.SourceBranchName'], 'main', 'net48') }}:
+
+    - task: CopyFiles@2
+      displayName: Copy package files to staging directory
+      inputs:
+        Contents: |
+          **/*.nupkg
+          **/*.snupkg
+        TargetFolder: $(Build.ArtifactStagingDirectory)
+        FlattenFolders: true
+
+    - pwsh: |
+        Get-ChildItem '$(Build.ArtifactStagingDirectory)/*.nupkg' | ForEach-Object {
+          Write-Host 'Pushing package $($_.Name)'
+          dotnet nuget push --api-key $(nugetOrgApiKey) --source 'https://api.nuget.org/v3/index.json'  --skip-duplicate $_.FullName
+        }
+      displayName: Push to NuGet.org
