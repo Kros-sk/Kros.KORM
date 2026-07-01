@@ -20,6 +20,21 @@ namespace Kros.KORM.Materializer
     /// <seealso cref="IModelFactory" />
     public class DynamicMethodModelFactory : IModelFactory
     {
+        /// <summary>
+        /// When set to <see langword="true"/>, a DB <c>NULL</c> value does NOT overwrite the model property.
+        /// The property setter (and any converter) is skipped, so the property keeps the value assigned
+        /// in the constructor / its CLR default. This restores the KORM 4.x behavior and prevents
+        /// <see cref="NullReferenceException"/> for converters that do not handle <see langword="null"/>
+        /// on non-nullable value types.
+        /// The default is <see langword="false"/> (KORM 5.x behavior: the setter is always called and
+        /// a DB <c>NULL</c> is materialized as the type default).
+        /// </summary>
+        /// <remarks>
+        /// Set this once during application startup, before the first query is executed. Materialization
+        /// delegates are cached, so changing the value afterwards does not affect already-built factories.
+        /// </remarks>
+        public static bool SkipNullValues { get; set; }
+
         #region Private fields
 
         private readonly IDatabaseMapper _databaseMapper;
@@ -166,18 +181,29 @@ namespace Kros.KORM.Materializer
             ColumnInfo columnInfo = tableInfo.GetColumnInfo(reader.GetName(columnIndex));
             if (columnInfo != null)
             {
-                ilGenerator.LogAndEmit(OpCodes.Ldloc_0);
                 Type srcType = reader.GetFieldType(columnIndex);
                 IConverter converter = ConverterHelper.GetConverter(columnInfo, srcType);
-                if (converter is null)
+                Type propertyType = columnInfo.PropertyInfo.PropertyType;
+                MethodInfo setter = columnInfo.PropertyInfo.GetSetMethod(true);
+
+                if (SkipNullValues)
                 {
-                    ilGenerator.EmitFieldWithoutConverter(srcType, columnInfo.PropertyInfo.PropertyType, columnIndex);
+                    // KORM 4.x behavior: on DB NULL do not touch the property at all.
+                    ilGenerator.EmitFieldSkipNull(converter, srcType, propertyType, columnIndex, setter);
                 }
                 else
                 {
-                    ilGenerator.EmitFieldWithConverter(converter, columnInfo.PropertyInfo.PropertyType, columnIndex);
+                    ilGenerator.LogAndEmit(OpCodes.Ldloc_0);
+                    if (converter is null)
+                    {
+                        ilGenerator.EmitFieldWithoutConverter(srcType, propertyType, columnIndex);
+                    }
+                    else
+                    {
+                        ilGenerator.EmitFieldWithConverter(converter, propertyType, columnIndex);
+                    }
+                    ilGenerator.LogAndEmit(OpCodes.Callvirt, setter);
                 }
-                ilGenerator.LogAndEmit(OpCodes.Callvirt, columnInfo.PropertyInfo.GetSetMethod(true));
             }
         }
 

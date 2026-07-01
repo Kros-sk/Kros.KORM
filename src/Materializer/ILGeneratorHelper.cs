@@ -150,6 +150,42 @@ namespace Kros.KORM.Materializer
             ilGenerator.MarkLabel(labelEnd);
         }
 
+        /// <summary>
+        /// Emits code which sets the property only when the reader value is NOT DB NULL.
+        /// When the value is DB NULL, the property setter (and any converter) is skipped entirely,
+        /// so the property keeps the value assigned in the constructor / its CLR default.
+        /// This mirrors the KORM 4.x behavior.
+        /// </summary>
+        public static void EmitFieldSkipNull(
+            this ILGenerator ilGenerator,
+            IConverter converter,
+            Type srcType,
+            Type propertyType,
+            int columnIndex,
+            MethodInfo setter)
+        {
+            // Emit: if (reader.IsDbNull(columnIndex)) { /* do nothing */ }
+            Label labelEnd = ilGenerator.DefineLabel();
+            ilGenerator.LogAndEmit(OpCodes.Ldarg_0);
+            ilGenerator.LogAndEmit(OpCodes.Ldc_I4, columnIndex);
+            ilGenerator.LogAndEmit(OpCodes.Callvirt, _fnIsDBNull);
+            ilGenerator.LogAndEmit(OpCodes.Brtrue, labelEnd);
+
+            // Emit: else { target.Property = <value from reader>; }
+            ilGenerator.LogAndEmit(OpCodes.Ldloc_0);
+            if (converter is null)
+            {
+                ilGenerator.CallReaderGetValueWithoutConverter(columnIndex, propertyType, srcType);
+            }
+            else
+            {
+                ilGenerator.CallConverter(converter, propertyType, columnIndex, convertNullValue: false);
+            }
+            ilGenerator.LogAndEmit(OpCodes.Callvirt, setter);
+
+            ilGenerator.MarkLabel(labelEnd);
+        }
+
         private static ILGenerator CallReaderMethod(
             this ILGenerator ilGenerator,
             int fieldIndex,

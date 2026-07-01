@@ -65,6 +65,162 @@ namespace Kros.KORM.UnitTests.Materializer
         }
 
         [Fact]
+        public void SkipSettingPropertiesForDbNullWhenSkipNullValuesEnabled()
+        {
+            DynamicMethodModelFactory.SkipNullValues = true;
+            try
+            {
+                DynamicMethodModelFactory factory = CreateFactory();
+                var rows = CreateData();
+                // Column with a converter that is not null-safe (TestEnumConverter calls value.ToString()).
+                rows[0].Add("PropertyEnumConv", "V2");
+                using InMemoryDataReader data = new InMemoryDataReader(rows);
+                data.Read();
+
+                data.CurrentValues[2] = DBNull.Value; // Something -> non-nullable PropertyDouble
+                data.CurrentValues[data.GetOrdinal("PropertyEnumConv")] = DBNull.Value;
+
+                var fact = factory.GetFactory<Foo>(data);
+
+                // Must not throw NullReferenceException even though the converter is not null-safe.
+                var foo = fact(data);
+
+                // DB NULL does not overwrite the property; it keeps its CLR default (v4.x behavior).
+                foo.PropertyDouble.Should().Be(0);
+                foo.PropertyEnumConv.Should().Be(default(TestEnum));
+            }
+            finally
+            {
+                DynamicMethodModelFactory.SkipNullValues = false;
+            }
+        }
+
+        [Fact]
+        public void ThrowForDbNullWithNullUnsafeConverterWhenSkipNullValuesDisabled()
+        {
+            // Default (v5.x) behavior: the converter is invoked with null for DB NULL,
+            // so a converter that is not null-safe throws. Documents why SkipNullValues exists.
+            DynamicMethodModelFactory factory = CreateFactory();
+            var rows = CreateData();
+            rows[0].Add("PropertyEnumConv", "V2");
+            using InMemoryDataReader data = new InMemoryDataReader(rows);
+            data.Read();
+
+            data.CurrentValues[data.GetOrdinal("PropertyEnumConv")] = DBNull.Value;
+
+            var fact = factory.GetFactory<Foo>(data);
+
+            ((Action)(() => fact(data))).Should().Throw<NullReferenceException>();
+        }
+
+        [Fact]
+        public void KeepConstructorValueForDbNullWhenSkipNullValuesEnabled()
+        {
+            DynamicMethodModelFactory.SkipNullValues = true;
+            try
+            {
+                DynamicMethodModelFactory factory = CreateCtorModelFactory();
+                var rows = new List<Dictionary<string, object>>
+                {
+                    new Dictionary<string, object> { { "Value", 999 }, { "Name", "fromDb" }, { "NullableValue", 999 } }
+                };
+                using InMemoryDataReader data = new InMemoryDataReader(rows);
+                data.Read();
+                data.CurrentValues[0] = DBNull.Value; // Value (non-nullable int) -> NULL
+                data.CurrentValues[1] = DBNull.Value; // Name (reference type) -> NULL
+                data.CurrentValues[2] = DBNull.Value; // NullableValue (int?) -> NULL
+
+                var fact = factory.GetFactory<CtorDefaultModel>(data);
+                CtorDefaultModel obj = fact(data);
+
+                // DB NULL does not overwrite -> values assigned in the constructor are kept.
+                obj.Value.Should().Be(42);
+                obj.Name.Should().Be("init");
+                obj.NullableValue.Should().Be(7);
+            }
+            finally
+            {
+                DynamicMethodModelFactory.SkipNullValues = false;
+            }
+        }
+
+        [Fact]
+        public void OverwriteConstructorValueWithDefaultForDbNullWhenSkipNullValuesDisabled()
+        {
+            // Default (v5.x) behavior: DB NULL overwrites the property with the type default,
+            // losing the value assigned in the constructor.
+            DynamicMethodModelFactory factory = CreateCtorModelFactory();
+            var rows = new List<Dictionary<string, object>>
+            {
+                new Dictionary<string, object> { { "Value", 999 }, { "Name", "fromDb" }, { "NullableValue", 999 } }
+            };
+            using InMemoryDataReader data = new InMemoryDataReader(rows);
+            data.Read();
+            data.CurrentValues[0] = DBNull.Value;
+            data.CurrentValues[1] = DBNull.Value;
+            data.CurrentValues[2] = DBNull.Value;
+
+            var fact = factory.GetFactory<CtorDefaultModel>(data);
+            CtorDefaultModel obj = fact(data);
+
+            // Reference and nullable value types are overwritten with null...
+            obj.Name.Should().BeNull();
+            obj.NullableValue.Should().BeNull();
+            // ...and non-nullable value types with the type default (no crash without a converter).
+            obj.Value.Should().Be(0);
+        }
+
+        [Fact]
+        public void ThrowForDbNullOnNonNullableValueTypeWithConverterWhenSkipNullValuesDisabled()
+        {
+            // Default (v5.x) behavior: the converter is invoked with null for DB NULL and returns null.
+            // Assigning null to a NON-NULLABLE value-type property (Unbox_Any on null) throws.
+            DynamicMethodModelFactory factory = CreateFactoryFor<ConverterModel>(
+                new ColumnInfo()
+                {
+                    Name = "NonNullableWithConverter",
+                    PropertyInfo = GetPropertyInfo<ConverterModel>("NonNullableWithConverter"),
+                    Converter = new ReturnNullConverter()
+                });
+            var rows = new List<Dictionary<string, object>>
+            {
+                new Dictionary<string, object> { { "NonNullableWithConverter", 1 } }
+            };
+            using InMemoryDataReader data = new InMemoryDataReader(rows);
+            data.Read();
+            data.CurrentValues[0] = DBNull.Value;
+
+            var fact = factory.GetFactory<ConverterModel>(data);
+
+            ((Action)(() => fact(data))).Should().Throw<NullReferenceException>();
+        }
+
+        [Fact]
+        public void SetNullForDbNullOnNullableValueTypeWithConverterWhenSkipNullValuesDisabled()
+        {
+            // Same converter returning null, but a NULLABLE property: assigning null succeeds (no crash).
+            DynamicMethodModelFactory factory = CreateFactoryFor<ConverterModel>(
+                new ColumnInfo()
+                {
+                    Name = "NullableWithConverter",
+                    PropertyInfo = GetPropertyInfo<ConverterModel>("NullableWithConverter"),
+                    Converter = new ReturnNullConverter()
+                });
+            var rows = new List<Dictionary<string, object>>
+            {
+                new Dictionary<string, object> { { "NullableWithConverter", 1 } }
+            };
+            using InMemoryDataReader data = new InMemoryDataReader(rows);
+            data.Read();
+            data.CurrentValues[0] = DBNull.Value;
+
+            var fact = factory.GetFactory<ConverterModel>(data);
+            ConverterModel obj = fact(data);
+
+            obj.NullableWithConverter.Should().BeNull();
+        }
+
+        [Fact]
         public void CreateFactoryWhichKnowFillingObjectsWithEnums()
         {
             DynamicMethodModelFactory factory = CreateFactory();
@@ -340,6 +496,23 @@ namespace Kros.KORM.UnitTests.Materializer
             return modelMapper;
         }
 
+        private DynamicMethodModelFactory CreateCtorModelFactory()
+            => CreateFactoryFor<CtorDefaultModel>(
+                new ColumnInfo() { Name = "Value", PropertyInfo = GetPropertyInfo<CtorDefaultModel>("Value") },
+                new ColumnInfo() { Name = "Name", PropertyInfo = GetPropertyInfo<CtorDefaultModel>("Name") },
+                new ColumnInfo() { Name = "NullableValue", PropertyInfo = GetPropertyInfo<CtorDefaultModel>("NullableValue") });
+
+        private DynamicMethodModelFactory CreateFactoryFor<T>(params ColumnInfo[] columns)
+        {
+            TableInfo tableInfo = new TableInfo(columns, columns.Select(p => p.PropertyInfo), null);
+
+            var modelMapper = Substitute.For<IModelMapper>();
+            modelMapper.GetTableInfo<T>().Returns(tableInfo);
+            modelMapper.GetTableInfo(Arg.Any<Type>()).Returns(tableInfo);
+
+            return CreateFactory(modelMapper);
+        }
+
         private TableInfo CreateTableInfo()
         {
             List<ColumnInfo> columns = new List<ColumnInfo>() {
@@ -479,6 +652,37 @@ namespace Kros.KORM.UnitTests.Materializer
 
             [NoMap()]
             public TestService Service { get; set; }
+        }
+
+        private class CtorDefaultModel
+        {
+            public CtorDefaultModel()
+            {
+                Value = 42;
+                Name = "init";
+                NullableValue = 7;
+            }
+
+            public int Value { get; set; }
+
+            public string Name { get; set; }
+
+            public int? NullableValue { get; set; }
+        }
+
+        // Converter that passes the value through unchanged, i.e. returns null for a DB NULL.
+        private class ReturnNullConverter : IConverter
+        {
+            public object Convert(object value) => value;
+
+            public object ConvertBack(object value) => value;
+        }
+
+        private class ConverterModel
+        {
+            public int NonNullableWithConverter { get; set; }
+
+            public int? NullableWithConverter { get; set; }
         }
 
         public class TestService
