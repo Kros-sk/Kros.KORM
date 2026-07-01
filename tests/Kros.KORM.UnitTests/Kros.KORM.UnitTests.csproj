@@ -28,6 +28,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- QueryProviderFactories uses a process-wide static registry that these tests mutate and
+         assert on. xUnit runs test collections in parallel by default, which races against that
+         shared state (see QueryProviderFactoriesShould). Disable parallelization for determinism. -->
+    <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="Resources\AnotherSqlScripts\20190227001_InitDatabase.sql" />
     <None Remove="Resources\AnotherSqlScripts\20190227002_AddProjectTable.sql" />
     <None Remove="Resources\AnotherSqlScripts\20190227003_Script_with_separator.sql" />
