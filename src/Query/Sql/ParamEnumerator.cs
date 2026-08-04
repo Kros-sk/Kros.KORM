@@ -1,5 +1,4 @@
 ﻿using Kros.Utils;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -15,7 +14,7 @@ namespace Kros.KORM.Query.Sql
         public ParamEnumerator(string sql)
         {
             Check.NotNullOrWhiteSpace(sql, nameof(sql));
-            _sql = sql.Replace(Environment.NewLine, " ");
+            _sql = sql.Replace('\r', ' ').Replace('\n', ' ').Replace('\t', ' ');
             _sql = _sql.Replace("(", " ");
             _sql = _sql.Replace(")", " ");
         }
