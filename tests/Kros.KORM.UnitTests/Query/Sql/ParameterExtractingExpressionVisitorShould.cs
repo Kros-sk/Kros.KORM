@@ -100,6 +100,66 @@ namespace Kros.KORM.UnitTests.Query.Sql
         }
 
         [Fact]
+        public void ExtractParamsFromSqlExpressionWithLfLineEndings()
+        {
+            var connection = new SqlConnection();
+            var database = new Database(connection);
+
+            var query = database.Query<Person>()
+                .Sql("Select * from Person where Id = @Id\n\tAND Age > @Age\nORDER BY Name", 1, 18);
+            var command = connection.CreateCommand();
+
+            ParameterExtractingExpressionVisitor.ExtractParametersToCommand(command, query.Expression);
+
+            Assert.Equal(2, command.Parameters.Count);
+            Assert.Equal("@Id", command.Parameters[0].ParameterName);
+            Assert.Equal(1, command.Parameters[0].Value);
+
+            Assert.Equal("@Age", command.Parameters[1].ParameterName);
+            Assert.Equal(18, command.Parameters[1].Value);
+        }
+
+        [Fact]
+        public void ExtractParamsFromSqlExpressionWithCrLfLineEndings()
+        {
+            var connection = new SqlConnection();
+            var database = new Database(connection);
+
+            var query = database.Query<Person>()
+                .Sql("Select * from Person where Id = @Id\r\n\tAND Age > @Age\r\nORDER BY Name", 1, 18);
+            var command = connection.CreateCommand();
+
+            ParameterExtractingExpressionVisitor.ExtractParametersToCommand(command, query.Expression);
+
+            Assert.Equal(2, command.Parameters.Count);
+            Assert.Equal("@Id", command.Parameters[0].ParameterName);
+            Assert.Equal(1, command.Parameters[0].Value);
+
+            Assert.Equal("@Age", command.Parameters[1].ParameterName);
+            Assert.Equal(18, command.Parameters[1].Value);
+        }
+
+        [Fact]
+        public void ExtractParamsFromSqlExpressionWithTabAfterParameter()
+        {
+            var connection = new SqlConnection();
+            var database = new Database(connection);
+
+            var query = database.Query<Person>()
+                .Sql("Select * from Person where Id = @Id\tAND Age > @Age", 1, 18);
+            var command = connection.CreateCommand();
+
+            ParameterExtractingExpressionVisitor.ExtractParametersToCommand(command, query.Expression);
+
+            Assert.Equal(2, command.Parameters.Count);
+            Assert.Equal("@Id", command.Parameters[0].ParameterName);
+            Assert.Equal(1, command.Parameters[0].Value);
+
+            Assert.Equal("@Age", command.Parameters[1].ParameterName);
+            Assert.Equal(18, command.Parameters[1].Value);
+        }
+
+        [Fact]
         public void ExtractParamsFromSqlExpressionWithInOperator()
         {
             var connection = new SqlConnection();
