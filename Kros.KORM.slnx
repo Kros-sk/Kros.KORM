@@ -2,7 +2,7 @@
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />
     <File Path=".gitignore" />
-    <File Path="build.yml" />
+    <File Path=".github/workflows/build.yml" />
     <File Path="README.md" />
   </Folder>
   <Folder Name="/tests/">
