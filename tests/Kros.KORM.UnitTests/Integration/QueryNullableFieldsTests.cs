@@ -1,5 +1,4 @@
-﻿using FluentAssertions;
-using Kros.KORM.Metadata.Attribute;
+﻿using Kros.KORM.Metadata.Attribute;
 using Kros.KORM.UnitTests.Base;
 using System.Collections.Generic;
 using System.Linq;
@@ -94,11 +93,11 @@ $@"INSERT INTO {Table_TestTable} ([Id], [Data], [NullableString], [NullableInt])
             using TestDatabase korm = CreateTestDatabase();
             var data = korm.Query<PersonClass>().OrderBy(item => item.Id).ToList();
 
-            data.Should().BeEquivalentTo(expectedData, config =>
+            Assert.Equal(expectedData.Count, data.Count);
+            for (int i = 0; i < data.Count; i++)
             {
-                config.WithStrictOrdering();
-                return config;
-            });
+                Assert.Equivalent(expectedData[i], data[i], strict: true);
+            }
         }
 
         [Fact]
@@ -138,11 +137,7 @@ $@"INSERT INTO {Table_TestTable} ([Id], [Data], [NullableString], [NullableInt])
             using TestDatabase korm = CreateTestDatabase();
             var data = korm.Query<PersonRecord>().OrderBy(item => item.Id).ToList();
 
-            data.Should().BeEquivalentTo(expectedData, config =>
-            {
-                config.WithStrictOrdering();
-                return config;
-            });
+            Assert.Equal(expectedData, data);
         }
     }
 }

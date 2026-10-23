@@ -1,5 +1,4 @@
-﻿using FluentAssertions;
-using Kros.KORM.Converter;
+﻿using Kros.KORM.Converter;
 using Xunit;
 
 namespace Kros.KORM.UnitTests.Converter
@@ -13,7 +12,7 @@ namespace Kros.KORM.UnitTests.Converter
 
             var actual = converter.Convert(156.5);
 
-            actual.Should().Be(156);
+            Assert.Equal(156, actual);
         }
 
         [Fact]
@@ -23,7 +22,7 @@ namespace Kros.KORM.UnitTests.Converter
 
             var actual = converter.Convert((decimal)156.5);
 
-            actual.Should().Be(156.5);
+            Assert.Equal(156.5, actual);
         }
 
         [Fact]
@@ -33,7 +32,7 @@ namespace Kros.KORM.UnitTests.Converter
 
             var actual = converter.ConvertBack(156);
 
-            actual.Should().Be(156D);
+            Assert.Equal(156D, actual);
         }
     }
 }

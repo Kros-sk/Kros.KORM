@@ -1,5 +1,4 @@
-﻿using FluentAssertions;
-using Kros.KORM.Metadata;
+﻿using Kros.KORM.Metadata;
 using System;
 using Xunit;
 
@@ -20,8 +19,9 @@ namespace Kros.KORM.UnitTests.Metadata
 
             TableInfo tableInfo = modelMapper.GetTableInfo<BuilderTestEntity>();
 
-            tableInfo.GetColumnInfoByPropertyName("GeneratedValue").ValueGenerated.Should().Be(ValueGenerated.OnInsert);
-            tableInfo.GetColumnInfoByPropertyName("GeneratedValue").ValueGenerator.Should().BeOfType<CurrentTimeValueGenerator>();
+            Assert.Equal(ValueGenerated.OnInsert, tableInfo.GetColumnInfoByPropertyName("GeneratedValue").ValueGenerated);
+            Assert.IsType<CurrentTimeValueGenerator>(
+                tableInfo.GetColumnInfoByPropertyName("GeneratedValue").ValueGenerator);
         }
 
         [Fact]
@@ -35,7 +35,7 @@ namespace Kros.KORM.UnitTests.Metadata
                     .Property(p => p.GeneratedValue)
                     .UseCurrentTimeValueGenerator(ValueGenerated.Never);
 
-            act.Should().Throw<NotSupportedException>();
+            Assert.Throws<NotSupportedException>(act);
         }
 
         private class BuilderTestEntity
