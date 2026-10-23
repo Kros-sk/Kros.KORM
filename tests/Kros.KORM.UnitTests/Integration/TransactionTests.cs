@@ -1,5 +1,4 @@
-﻿using FluentAssertions;
-using Kros.KORM.Metadata.Attribute;
+﻿using Kros.KORM.Metadata.Attribute;
 using Kros.KORM.Query;
 using Kros.KORM.UnitTests.Base;
 using Microsoft.Data.SqlClient;
@@ -99,7 +98,7 @@ $@" CREATE PROCEDURE [dbo].[WaitForTwoSeconds] AS
             var dbSet = korm.Query<Invoice>().AsDbSet();
 
             Action bulkInsertAction = () => dbSet.BulkInsert(null);
-            bulkInsertAction.Should().Throw<ArgumentNullException>();
+            Assert.Throws<ArgumentNullException>(bulkInsertAction);
         }
 
         [Theory]
@@ -311,7 +310,7 @@ $@" CREATE PROCEDURE [dbo].[WaitForTwoSeconds] AS
 
                 transaction.Rollback();
 
-                korm.Query<Invoice>().Should().BeEmpty();
+                Assert.Empty(korm.Query<Invoice>());
                 DatabaseShouldBeEmpty(korm);
             }
         }
@@ -340,7 +339,7 @@ $@" CREATE PROCEDURE [dbo].[WaitForTwoSeconds] AS
 
                 transaction.Rollback();
 
-                korm.Query<Invoice>().Should().BeEmpty();
+                Assert.Empty(korm.Query<Invoice>());
                 DatabaseShouldBeEmpty(korm);
             }
         }
@@ -389,7 +388,7 @@ $@" CREATE PROCEDURE [dbo].[WaitForTwoSeconds] AS
 
                 transaction.Rollback();
 
-                korm.Query<Invoice>().Should().BeEmpty();
+                Assert.Empty(korm.Query<Invoice>());
                 DatabaseShouldBeEmpty(database);
             }
         }
@@ -414,7 +413,7 @@ $@" CREATE PROCEDURE [dbo].[WaitForTwoSeconds] AS
 
                 transaction.Rollback();
 
-                korm.Query<Invoice>().Should().BeEmpty();
+                Assert.Empty(korm.Query<Invoice>());
                 DatabaseShouldBeEmpty(database);
             }
         }
@@ -455,7 +454,8 @@ $@" CREATE PROCEDURE [dbo].[WaitForTwoSeconds] AS
                 string sql = @"EXEC WaitForTwoSeconds";
                 Action commit = () => { korm.ExecuteScalar(sql); };
 
-                commit.Should().Throw<SqlException>().Which.Message.Contains("Timeout");
+                SqlException ex = Assert.Throws<SqlException>(commit);
+                Assert.Contains("Timeout", ex.Message);
             }
         }
 
@@ -470,7 +470,7 @@ $@" CREATE PROCEDURE [dbo].[WaitForTwoSeconds] AS
                 using (var nestedTransaction = korm.BeginTransaction())
                 {
                     nestedTransaction.CommandTimeout = 3;
-                    nestedTransaction.CommandTimeout.Should().Be(1);
+                    Assert.Equal(1, nestedTransaction.CommandTimeout);
                 }
             }
         }
@@ -486,7 +486,7 @@ $@" CREATE PROCEDURE [dbo].[WaitForTwoSeconds] AS
                 {
                     mainTransaction.CommandTimeout = 1;
                     nestedTransaction.CommandTimeout = 3;
-                    nestedTransaction.CommandTimeout.Should().Be(30);
+                    Assert.Equal(30, nestedTransaction.CommandTimeout);
                 }
             }
         }
@@ -501,7 +501,7 @@ $@" CREATE PROCEDURE [dbo].[WaitForTwoSeconds] AS
                 transaction.CommandTimeout = 3;
                 Action commit = () => { korm.ExecuteStoredProcedure<Object>("WaitForTwoSeconds"); };
 
-                commit.Should().NotThrow<SqlException>();
+                Assert.Null(Record.Exception(commit));
             }
         }
 
@@ -518,13 +518,13 @@ $@" CREATE PROCEDURE [dbo].[WaitForTwoSeconds] AS
             {
                 if (openConnection) database.Connection.Open();
                 testAction(database);
-                database.Connection.State.Should().Be(openConnection ? ConnectionState.Open : ConnectionState.Closed);
+                Assert.Equal(openConnection ? ConnectionState.Open : ConnectionState.Closed, database.Connection.State);
             }
         }
 
         private void DatabaseShouldContainInvoices(Database korm, IEnumerable<Invoice> expected)
         {
-            korm.Query<Invoice>().Should().BeEquivalentTo(expected);
+            Assert.Equivalent(expected, korm.Query<Invoice>(), strict: true);
         }
 
         private void DatabaseShouldBeEmpty(TestDatabase korm)

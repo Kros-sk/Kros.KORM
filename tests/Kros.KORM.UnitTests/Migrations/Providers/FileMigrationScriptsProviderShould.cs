@@ -1,5 +1,4 @@
-﻿using FluentAssertions;
-using Kros.KORM.Migrations.Providers;
+﻿using Kros.KORM.Migrations.Providers;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -27,31 +26,34 @@ namespace Kros.KORM.UnitTests.Migrations.Providers
             var provider = new FileMigrationScriptsProvider(_folderFullPath);
             var scripts = provider.GetScripts().ToList();
 
-            scripts.Count.Should().Be(3);
-            scripts[0].Should()
-                .BeEquivalentTo(
+            Assert.Equal(3, scripts.Count);
+            Assert.Equivalent(
                 new ScriptInfo(provider)
                 {
                     Id = 20190228001,
                     Name = "InitDatabase",
                     Path = GetFileFullName("20190228001_InitDatabase")
-                });
-            scripts[1].Should()
-                .BeEquivalentTo(
+                },
+                scripts[0],
+                strict: true);
+            Assert.Equivalent(
                 new ScriptInfo(provider)
                 {
                     Id = 20190301001,
                     Name = "AddPeopleTable",
                     Path = GetFileFullName("20190301001_AddPeopleTable")
-                });
-            scripts[2].Should()
-                .BeEquivalentTo(
+                },
+                scripts[1],
+                strict: true);
+            Assert.Equivalent(
                 new ScriptInfo(provider)
                 {
                     Id = 20190301002,
                     Name = "AddProjectTable",
                     Path = GetFileFullName("20190301002_AddProjectTable")
-                });
+                },
+                scripts[2],
+                strict: true);
         }
 
         [Fact]
@@ -66,7 +68,7 @@ namespace Kros.KORM.UnitTests.Migrations.Providers
             });
 
             var expected = File.ReadAllText(GetFileFullName("20190228001_InitDatabase"));
-            script.Should().Be(expected);
+            Assert.Equal(expected, script);
         }
 
         private string GetFileFullName(string fileName)

@@ -1,5 +1,4 @@
-﻿using FluentAssertions;
-using Kros.KORM.UnitTests.Base;
+﻿using Kros.KORM.UnitTests.Base;
 using System.Linq;
 using Xunit;
 
@@ -40,7 +39,7 @@ INSERT INTO [Foo] VALUES (4);";
                     .Where(p => p.Id == -1)
                     .Sum(p => p.Id);
 
-                sum.Should().Be(0);
+                Assert.Equal(0, sum);
             }
         }
     }

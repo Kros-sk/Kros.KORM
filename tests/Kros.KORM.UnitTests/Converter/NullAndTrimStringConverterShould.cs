@@ -1,5 +1,4 @@
-﻿using FluentAssertions;
-using Kros.KORM.Converter;
+﻿using Kros.KORM.Converter;
 using System;
 using System.Collections.Generic;
 using Xunit;
@@ -12,7 +11,7 @@ namespace Kros.KORM.UnitTests.Converter
         public void NotCreateUselessInstance()
         {
             Action action = () => new NullAndTrimStringConverter(false, false);
-            action.Should().Throw<ArgumentException>();
+            Assert.Throws<ArgumentException>(action);
         }
 
         [Theory]
@@ -20,7 +19,7 @@ namespace Kros.KORM.UnitTests.Converter
         public void ConvertValuesWhenConvertNullValuesIsTrue(object value, object expected, string because)
         {
             var converter = new NullAndTrimStringConverter(true, false);
-            converter.ConvertBack(value).Should().Be(expected, because);
+            Assert.Equal(expected, converter.ConvertBack(value));
         }
 
         public static IEnumerable<object[]> DataConvertNullValuesIsTrue()
@@ -37,7 +36,7 @@ namespace Kros.KORM.UnitTests.Converter
         public void ConvertValuesWhenTrimStringValueIsTrue(object value, object expected, string because)
         {
             var converter = new NullAndTrimStringConverter(false, true);
-            converter.ConvertBack(value).Should().Be(expected, because);
+            Assert.Equal(expected, converter.ConvertBack(value));
         }
 
         public static IEnumerable<object[]> DataTrimStringValuesIsTrue()
@@ -55,7 +54,7 @@ namespace Kros.KORM.UnitTests.Converter
         public void ConvertValuesWhenConvertNullValuesAndTrimStringValueAreTrue(object value, object expected, string because)
         {
             var converter = new NullAndTrimStringConverter(true, true);
-            converter.ConvertBack(value).Should().Be(expected, because);
+            Assert.Equal(expected, converter.ConvertBack(value));
         }
 
         public static IEnumerable<object[]> DataConvertNullValuesAndTrimStringValueAreTrue()

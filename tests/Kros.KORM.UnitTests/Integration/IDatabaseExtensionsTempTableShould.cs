@@ -1,5 +1,4 @@
-﻿using FluentAssertions;
-using Kros.Extensions;
+﻿using Kros.Extensions;
 using Kros.KORM.Metadata.Attribute;
 using Kros.KORM.UnitTests.Base;
 using Microsoft.Data.SqlClient;
@@ -39,7 +38,7 @@ namespace Kros.KORM.UnitTests.Integration
                           SET P.Age = 18
                           FROM People AS P INNER JOIN {tableName} AS T ON (P.Id = T.Value)"));
 
-                affectedCount.Should().Be(4);
+                Assert.Equal(4, affectedCount);
             }
         }
 
@@ -56,7 +55,7 @@ namespace Kros.KORM.UnitTests.Integration
                           SET P.Age = 18
                           FROM People AS P INNER JOIN {tableName} AS T ON (P.Id = T.Id)"));
 
-                affectedCount.Should().Be(4);
+                Assert.Equal(4, affectedCount);
             }
         }
 
@@ -72,7 +71,8 @@ namespace Kros.KORM.UnitTests.Integration
                         $@"UPDATE P
                           SET P.Age = 18
                           FROM People AS P INNER JOIN {tableName} AS T ON (P.Id = T.Number)"));
-                act.Should().Throw<SqlException>().WithMessage("Invalid column name 'Number'.");
+                SqlException ex = Assert.Throws<SqlException>(act);
+                Assert.Equal("Invalid column name 'Number'.", ex.Message);
             }
         }
 
@@ -88,7 +88,8 @@ namespace Kros.KORM.UnitTests.Integration
                         $@"UPDATE P
                           SET P.Age = 18
                           FROM People AS P INNER JOIN {tableName} AS T ON (P.Id = T.Value)"));
-                act.Should().Throw<SqlException>().WithMessage("Invalid column name 'Value'.");
+                SqlException ex = Assert.Throws<SqlException>(act);
+                Assert.Equal("Invalid column name 'Value'.", ex.Message);
             }
         }
 
@@ -105,7 +106,7 @@ namespace Kros.KORM.UnitTests.Integration
                           SET P.Age = 18
                           FROM People AS P INNER JOIN {tableName} AS T ON (P.Id = T.Id)"));
 
-                affectedCount.Should().Be(1);
+                Assert.Equal(1, affectedCount);
             }
         }
 
@@ -122,7 +123,7 @@ namespace Kros.KORM.UnitTests.Integration
                           SET P.Age = 18
                           FROM People AS P INNER JOIN {tableName} AS T ON (P.Id = T.Value)"));
 
-                affectedCount.Should().Be(4);
+                Assert.Equal(4, affectedCount);
             }
         }
 
@@ -139,7 +140,7 @@ namespace Kros.KORM.UnitTests.Integration
                           SET P.Age = 18
                           FROM People AS P INNER JOIN {tableName} AS T ON (P.Id = T.Id)"));
 
-                affectedCount.Should().Be(4);
+                Assert.Equal(4, affectedCount);
             }
         }
 
@@ -154,7 +155,7 @@ namespace Kros.KORM.UnitTests.Integration
                     (database, tableName) => database.Query<Person>()
                     .From($"People AS P INNER JOIN {tableName} AS T ON (P.Id = T.Value)")
                     .ToList());
-                result.Should().HaveCount(4);
+                Assert.Equal(4, result.Count());
             }
         }
 
@@ -171,7 +172,7 @@ namespace Kros.KORM.UnitTests.Integration
                     .From($"People AS P INNER JOIN {tableName} AS T ON (P.Id = T.Id)")
                     .ToList());
 
-                result.Should().HaveCount(4);
+                Assert.Equal(4, result.Count());
             }
         }
 
@@ -188,7 +189,7 @@ namespace Kros.KORM.UnitTests.Integration
                     .ToList()
                     .AsTask());
 
-                result.Should().HaveCount(4);
+                Assert.Equal(4, result.Count());
             }
         }
 
@@ -206,7 +207,7 @@ namespace Kros.KORM.UnitTests.Integration
                     .ToList()
                     .AsTask());
 
-                result.Should().HaveCount(4);
+                Assert.Equal(4, result.Count());
             }
         }
 
@@ -224,7 +225,7 @@ namespace Kros.KORM.UnitTests.Integration
                           SET P.FirstName = T.Value
                           FROM People AS P INNER JOIN {tableName} AS T ON (P.Id = T.[Key])"));
 
-                affectedCount.Should().Be(2);
+                Assert.Equal(2, affectedCount);
             }
         }
 
@@ -242,7 +243,7 @@ namespace Kros.KORM.UnitTests.Integration
                           SET P.FirstName = T.Value
                           FROM People AS P INNER JOIN {tableName} AS T ON (P.Id = T.[Key])"));
 
-                affectedCount.Should().Be(2);
+                Assert.Equal(2, affectedCount);
             }
         }
 
@@ -267,7 +268,7 @@ namespace Kros.KORM.UnitTests.Integration
                             .ToList();
                     });
 
-                result.Should().HaveCount(2);
+                Assert.Equal(2, result.Count());
             }
         }
 
@@ -293,7 +294,7 @@ namespace Kros.KORM.UnitTests.Integration
                             .AsTask();
                     });
 
-                result.Should().HaveCount(2);
+                Assert.Equal(2, result.Count());
             }
         }
 

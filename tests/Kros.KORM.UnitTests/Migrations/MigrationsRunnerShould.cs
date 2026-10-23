@@ -1,5 +1,4 @@
-﻿using FluentAssertions;
-using Kros.Data;
+﻿using Kros.Data;
 using Kros.KORM.Migrations;
 using Kros.UnitTests;
 using Microsoft.Data.SqlClient;
@@ -96,8 +95,7 @@ INSERT INTO __KormMigrationsHistory VALUES (20190301001, 'InitDatabase', 'FromUn
             ExecuteCommand((cmd) =>
             {
                 cmd.CommandText = $"SELECT Count(*) FROM sys.tables WHERE name = '{tableName}' AND type = 'U'";
-                ((int)cmd.ExecuteScalar())
-                    .Should().Be(1);
+                Assert.Equal(1, ((int)cmd.ExecuteScalar()));
             });
         }
 
@@ -115,8 +113,7 @@ INSERT INTO __KormMigrationsHistory VALUES (20190301001, 'InitDatabase', 'FromUn
             ExecuteCommand((cmd) =>
             {
                 cmd.CommandText = $"SELECT TOP 1 MigrationId FROM __KormMigrationsHistory ORDER BY MigrationId DESC";
-                ((long)cmd.ExecuteScalar())
-                    .Should().Be(databaseVersion);
+                Assert.Equal(databaseVersion, ((long)cmd.ExecuteScalar()));
             });
         }
 

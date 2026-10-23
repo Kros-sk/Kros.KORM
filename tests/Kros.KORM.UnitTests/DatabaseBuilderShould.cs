@@ -1,5 +1,4 @@
-﻿using FluentAssertions;
-using Kros.KORM.Materializer;
+﻿using Kros.KORM.Materializer;
 using Kros.KORM.Metadata;
 using Kros.KORM.Query;
 using Kros.UnitTests;
@@ -154,7 +153,7 @@ $@"CREATE TABLE [dbo].[Foo] (
                 .UseConnection(ServerHelper.Connection)
                 .Build();
 
-            build.Should().Throw<InvalidOperationException>();
+            Assert.Throws<InvalidOperationException>(build);
         }
 
         [Fact]
@@ -164,7 +163,7 @@ $@"CREATE TABLE [dbo].[Foo] (
                 .Builder
                 .Build();
 
-            build.Should().Throw<InvalidOperationException>();
+            Assert.Throws<InvalidOperationException>(build);
         }
 
         [Fact]
@@ -176,9 +175,7 @@ $@"CREATE TABLE [dbo].[Foo] (
                .UseDatabaseConfiguration<DatabaseConfiguration>()
                .Build();
 
-            database.Query<Bar>()
-                .FirstOrDefault(b => b.RowId == 1)
-                .Age.Should().Be(11);
+            Assert.Equal(11, database.Query<Bar>().FirstOrDefault(b => b.RowId == 1).Age);
         }
 
         [Fact]
@@ -190,14 +187,10 @@ $@"CREATE TABLE [dbo].[Foo] (
                 .UseDatabaseConfiguration<DatabaseConfiguration>();
 
             IDatabase database = builder.Build();
-            database.Query<Bar>()
-                .FirstOrDefault(b => b.RowId == 1)
-                .Age.Should().Be(11);
+            Assert.Equal(11, database.Query<Bar>().FirstOrDefault(b => b.RowId == 1).Age);
 
             IDatabase database2 = builder.Build();
-            database2.Query<Bar>()
-                .FirstOrDefault(b => b.RowId == 1)
-                .Age.Should().Be(11);
+            Assert.Equal(11, database2.Query<Bar>().FirstOrDefault(b => b.RowId == 1).Age);
         }
 
         [Fact]
@@ -214,10 +207,7 @@ $@"CREATE TABLE [dbo].[Foo] (
 
             void ShouldThrowException(Action action)
             {
-                action
-                    .Should()
-                    .Throw<InvalidOperationException>(
-                    "The configuration is not allowed if the Build method has already been called.");
+                Assert.Throws<InvalidOperationException>(action);
             }
 
             ShouldThrowException(() => builder.UseConnection(ServerHelper.Connection));
@@ -230,16 +220,14 @@ $@"CREATE TABLE [dbo].[Foo] (
 
         private static void DatabaseShouldNotBeNull(IDatabase database)
         {
-            database.Should().NotBeNull();
-            database.ModelBuilder.Should().NotBeNull();
-            database.DbProviderFactory.Should().NotBeNull();
+            Assert.NotNull(database);
+            Assert.NotNull(database.ModelBuilder);
+            Assert.NotNull(database.DbProviderFactory);
         }
 
         private static void DatabaseShouldHaveItem(IDatabase database)
         {
-            database.Query<Foo>()
-                .FirstOrDefault(f => f.Id == 1)
-                .Value.Should().Be(11);
+            Assert.Equal(11, database.Query<Foo>().FirstOrDefault(f => f.Id == 1).Value);
         }
 
         public class DatabaseConfiguration : DatabaseConfigurationBase

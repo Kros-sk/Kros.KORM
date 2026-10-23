@@ -1,5 +1,4 @@
-﻿using FluentAssertions;
-using Kros.KORM.Converter;
+﻿using Kros.KORM.Converter;
 using System;
 using Xunit;
 
@@ -15,7 +14,7 @@ namespace Kros.KORM.UnitTests.Converter
             var converter = new GuidToStringConverter();
             var actual = converter.Convert(Guid.Parse(TEST_GUID));
 
-            actual.Should().Be(TEST_GUID);
+            Assert.Equal(TEST_GUID, actual);
         }
 
         [Fact]
@@ -24,7 +23,7 @@ namespace Kros.KORM.UnitTests.Converter
             var converter = new GuidToStringConverter();
             var actual = converter.ConvertBack(TEST_GUID);
 
-            actual.Should().Be(Guid.Parse(TEST_GUID));
+            Assert.Equal(Guid.Parse(TEST_GUID), actual);
         }
         
     }
