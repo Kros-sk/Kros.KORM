@@ -156,10 +156,11 @@ namespace Kros.KORM.Query
         /// <summary>
         /// Asynchronously bulk inserts pending added items.
         /// </summary>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
         /// <returns>
         /// A task that represents the asynchronous bulk insert operation.
         /// </returns>
-        Task BulkInsertAsync();
+        Task BulkInsertAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Asynchronously bulk inserts pending added items.
@@ -167,10 +168,11 @@ namespace Kros.KORM.Query
         /// <param name="options">
         /// Database specific provider options. For SQL Server use <see cref="SqlServerProviderOptions"/>.
         /// </param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
         /// <returns>
         /// A task that represents the asynchronous bulk insert operation.
         /// </returns>
-        Task BulkInsertAsync(object options);
+        Task BulkInsertAsync(object options, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Bulk inserts <paramref name="items"/>.
@@ -191,10 +193,11 @@ namespace Kros.KORM.Query
         /// Asynchronously bulk inserts <paramref name="items"/>.
         /// </summary>
         /// <param name="items">The items to insert.</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
         /// <returns>
         /// A task that represents the asynchronous bulk insert operation.
         /// </returns>
-        Task BulkInsertAsync(IEnumerable<T> items);
+        Task BulkInsertAsync(IEnumerable<T> items, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Asynchronously bulk inserts <paramref name="items"/>.
@@ -203,10 +206,11 @@ namespace Kros.KORM.Query
         /// <param name="options">
         /// Database specific provider options. For SQL Server use <see cref="SqlServerProviderOptions"/>.
         /// </param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
         /// <returns>
         /// A task that represents the asynchronous bulk insert operation.
         /// </returns>
-        Task BulkInsertAsync(IEnumerable<T> items, object options);
+        Task BulkInsertAsync(IEnumerable<T> items, object options, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Bulk updates pending edited items.
@@ -219,10 +223,11 @@ namespace Kros.KORM.Query
         /// <summary>
         /// Asynchronously bulk updates pending edited items.
         /// </summary>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
         /// <returns>
         /// A task that represents the asynchronous bulk update operation.
         /// </returns>
-        Task BulkUpdateAsync();
+        Task BulkUpdateAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Bulk updates <paramref name="items"/>.
@@ -234,10 +239,11 @@ namespace Kros.KORM.Query
         /// Asyncronously bulk updates <paramref name="items"/>.
         /// </summary>
         /// <param name="items">The items to update.</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
         /// <returns>
         /// A task that represents the asynchronous bulk update operation.
         /// </returns>
-        Task BulkUpdateAsync(IEnumerable<T> items);
+        Task BulkUpdateAsync(IEnumerable<T> items, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Bulk updates pending edited items with specific action.
@@ -271,10 +277,11 @@ namespace Kros.KORM.Query
         /// <c>string</c> - the temp table name.
         /// </item>
         /// </list></param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
         /// <returns>
         /// A task that represents the asynchronous bulk update operation.
         /// </returns>
-        Task BulkUpdateAsync(Action<IDbConnection, IDbTransaction, string> tempTableAction);
+        Task BulkUpdateAsync(Action<IDbConnection, IDbTransaction, string> tempTableAction, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Bulk updates <paramref name="items"/> with specific action.
@@ -310,10 +317,11 @@ namespace Kros.KORM.Query
         /// <c>string</c> - the temp table name.
         /// </item>
         /// </list></param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
         /// <returns>
         /// A task that represents the asynchronous bulk update operation.
         /// </returns>
-        Task BulkUpdateAsync(IEnumerable<T> items, Action<IDbConnection, IDbTransaction, string> tempTableAction);
+        Task BulkUpdateAsync(IEnumerable<T> items, Action<IDbConnection, IDbTransaction, string> tempTableAction, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// IDbSet with custom upsert condition columns.
