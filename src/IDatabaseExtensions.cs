@@ -41,10 +41,15 @@ namespace Kros.KORM
         /// <typeparam name="TEntity">Entities type.</typeparam>
         /// <param name="database"><see cref="IDatabase"/> instance.</param>
         /// <param name="entities">Entities to add.</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
         public static async Task BulkAddAsync<TEntity>(
             this IDatabase database,
-            IEnumerable<TEntity> entities) where TEntity : class
-            => await ProcessBulkOperationAsync(database, async (IDbSet<TEntity> dbSet) => await dbSet.BulkInsertAsync(entities));
+            IEnumerable<TEntity> entities,
+            CancellationToken cancellationToken = default) where TEntity : class
+            => await ProcessBulkOperationAsync(
+                database,
+                async (IDbSet<TEntity> dbSet, CancellationToken ct) => await dbSet.BulkInsertAsync(entities, ct),
+                cancellationToken);
 
         /// <summary>
         /// Adds <paramref name="entities"/> to the database via bulk insert.
@@ -55,13 +60,16 @@ namespace Kros.KORM
         /// <param name="options">
         /// Database specific provider options. For SQL Server use <see cref="SqlServerProviderOptions"/>.
         /// </param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
         public static async Task BulkAddAsync<TEntity>(
             this IDatabase database,
             IEnumerable<TEntity> entities,
-            object options) where TEntity : class
+            object options,
+            CancellationToken cancellationToken = default) where TEntity : class
             => await ProcessBulkOperationAsync(
                 database,
-                async (IDbSet<TEntity> dbSet) => await dbSet.BulkInsertAsync(entities, options));
+                async (IDbSet<TEntity> dbSet, CancellationToken ct) => await dbSet.BulkInsertAsync(entities, options, ct),
+                cancellationToken);
 
         /// <summary>
         /// Deletes the <paramref name="entity"/> from the database.
@@ -156,10 +164,15 @@ namespace Kros.KORM
         /// <typeparam name="TEntity">Entities type.</typeparam>
         /// <param name="database"><see cref="IDatabase"/> instance.</param>
         /// <param name="entities">Entities to edit.</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
         public static async Task BulkEditAsync<TEntity>(
             this IDatabase database,
-            IEnumerable<TEntity> entities) where TEntity : class
-            => await ProcessBulkOperationAsync(database, async (IDbSet<TEntity> dbSet) => await dbSet.BulkUpdateAsync(entities));
+            IEnumerable<TEntity> entities,
+            CancellationToken cancellationToken = default) where TEntity : class
+            => await ProcessBulkOperationAsync(
+                database,
+                async (IDbSet<TEntity> dbSet, CancellationToken ct) => await dbSet.BulkUpdateAsync(entities, ct),
+                cancellationToken);
 
         /// <summary>
         /// Edits the <paramref name="entity"/> in the database.
@@ -236,11 +249,12 @@ namespace Kros.KORM
 
         private static async Task ProcessBulkOperationAsync<TEntity>(
             IDatabase database,
-            Func<IDbSet<TEntity>, Task> action,
+            Func<IDbSet<TEntity>, CancellationToken, Task> action,
+            CancellationToken cancellationToken = default,
             params string[] columns) where TEntity : class
         {
             IDbSet<TEntity> dbSet = GetDbSet<TEntity>(database, columns);
-            await action(dbSet);
+            await action(dbSet, cancellationToken);
         }
     }
 }

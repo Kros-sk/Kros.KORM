@@ -1,7 +1,11 @@
 ﻿using Kros.KORM.Metadata;
 using Kros.KORM.Metadata.Attribute;
+using Kros.KORM.Query;
 using Kros.KORM.UnitTests.Base;
+using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -204,6 +208,80 @@ INSERT INTO {Table_TestTable} VALUES (2, 22, 'Kilie', 'Bistrol');";
                 Assert.Equal(19, actualMat.Age);
                 Assert.Equal("Mat", actualMat.FirstName);
                 Assert.Equal("Handy", actualMat.LastName);
+            }
+        }
+
+        private static IEnumerable<Person> GetPeople() =>
+        [
+            new Person { Id = 3, Age = 30, FirstName = "Ann", LastName = "Lee" },
+            new Person { Id = 4, Age = 40, FirstName = "Bob", LastName = "Roe" },
+        ];
+
+        [Fact]
+        public async Task BulkAddEntitiesAsync()
+        {
+            using (IDatabase database = CreateDatabase(CreateTable_TestTable, InsertDataScript))
+            {
+                await database.BulkAddAsync(GetPeople(), TestContext.Current.CancellationToken);
+
+                Assert.Equal(4, database.Query<Person>().Count());
+                Person actual = database.Query<Person>().First(p => p.Id == 3);
+                Assert.Equivalent(GetPeople().First(), actual);
+            }
+        }
+
+        [Fact]
+        public async Task BulkAddEntitiesWithOptionsAsync()
+        {
+            using (IDatabase database = CreateDatabase(CreateTable_TestTable, InsertDataScript))
+            {
+                await database.BulkAddAsync(GetPeople(), new SqlServerProviderOptions(), TestContext.Current.CancellationToken);
+
+                Assert.Equal(4, database.Query<Person>().Count());
+            }
+        }
+
+        [Fact]
+        public async Task BulkEditEntitiesAsync()
+        {
+            using (IDatabase database = CreateDatabase(CreateTable_TestTable, InsertDataScript))
+            {
+                var people = new List<Person>
+                {
+                    new Person { Id = 1, Age = 50, FirstName = "Jack", LastName = "Smith" },
+                    new Person { Id = 2, Age = 60, FirstName = "Jill", LastName = "Bistrol" },
+                };
+
+                await database.BulkEditAsync(people, TestContext.Current.CancellationToken);
+
+                Assert.Equal("Jack", database.Query<Person>().First(p => p.Id == 1).FirstName);
+                Assert.Equal(60, database.Query<Person>().First(p => p.Id == 2).Age);
+            }
+        }
+
+        [Fact]
+        public async Task BulkAddAsync_ThrowsWhenTokenAlreadyCancelled()
+        {
+            using (IDatabase database = CreateDatabase(CreateTable_TestTable, InsertDataScript))
+            {
+                await Assert.ThrowsAnyAsync<OperationCanceledException>(
+                    () => database.BulkAddAsync(GetPeople(), new CancellationToken(canceled: true)));
+
+                Assert.Equal(2, database.Query<Person>().Count());
+            }
+        }
+
+        [Fact]
+        public async Task BulkEditAsync_ThrowsWhenTokenAlreadyCancelled()
+        {
+            using (IDatabase database = CreateDatabase(CreateTable_TestTable, InsertDataScript))
+            {
+                var people = new List<Person> { new Person { Id = 1, Age = 50, FirstName = "Jack", LastName = "Smith" } };
+
+                await Assert.ThrowsAnyAsync<OperationCanceledException>(
+                    () => database.BulkEditAsync(people, new CancellationToken(canceled: true)));
+
+                Assert.Equal("John", database.Query<Person>().First(p => p.Id == 1).FirstName);
             }
         }
     }
