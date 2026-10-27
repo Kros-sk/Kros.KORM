@@ -86,11 +86,23 @@ namespace Kros.KORM.UnitTests.Helper
 
         public int RollbackAsyncCount { get; private set; }
 
+        /// <summary>
+        /// When set, <see cref="Commit"/> throws this exception (simulates a failed commit).
+        /// </summary>
+        public Exception ThrowOnCommit { get; set; }
+
         protected override DbConnection DbConnection => _connection;
 
         public override IsolationLevel IsolationLevel => _isolationLevel;
 
-        public override void Commit() => CommitCount++;
+        public override void Commit()
+        {
+            if (ThrowOnCommit is not null)
+            {
+                throw ThrowOnCommit;
+            }
+            CommitCount++;
+        }
 
         public override Task CommitAsync(CancellationToken cancellationToken = default)
         {

@@ -30,6 +30,7 @@ namespace Kros.KORM.Data
             private readonly Lazy<DbTransaction> _transaction;
             private readonly TransactionHelper _transactionHelper;
             private bool _wasCommitOrRollback = false;
+            private bool _ended = false;
 
             public Transaction(TransactionHelper transactionHelper, ConnectionHelper connectionHelper, IsolationLevel isolationLevel)
             {
@@ -63,10 +64,10 @@ namespace Kros.KORM.Data
                     catch
                     {
                         // Failed (or cancelled) commit must not leave this transaction on the stack.
-                        _transactionHelper.EndTransaction(false);
+                        EndOnce(false);
                         throw;
                     }
-                    _transactionHelper.EndTransaction(true);
+                    EndOnce(true);
                 }
             }
 
@@ -92,7 +93,20 @@ namespace Kros.KORM.Data
                 }
                 finally
                 {
-                    _transactionHelper.EndTransaction(false);
+                    EndOnce(false);
+                }
+            }
+
+            /// <summary>
+            /// Removes this transaction from the stack of <see cref="TransactionHelper"/>, but only once.
+            /// A caller usually rolls back after a failed commit, which must not pop the stack again.
+            /// </summary>
+            private void EndOnce(bool success)
+            {
+                if (!_ended)
+                {
+                    _ended = true;
+                    _transactionHelper.EndTransaction(success);
                 }
             }
 
@@ -114,7 +128,7 @@ namespace Kros.KORM.Data
                     {
                         // No command has run, so there is no DB transaction to roll back.
                         _wasCommitOrRollback = true;
-                        _transactionHelper.EndTransaction(false);
+                        EndOnce(false);
                     }
                 }
                 if (_transaction.IsValueCreated)

@@ -5,6 +5,7 @@ using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -489,7 +490,7 @@ $@" CREATE PROCEDURE [dbo].[WaitForTwoSeconds] AS
             await Assert.ThrowsAnyAsync<OperationCanceledException>(() => dbSet.CommitChangesAsync(cts.Token));
 
             Assert.Empty(database.Query<Invoice>());
-            InvoicesTableShouldBeEmpty(database.ConnectionString);
+            DatabaseShouldBeEmpty(database);
 
             // A new transaction must be a real top-level transaction (not nested under the cancelled one),
             // so its rollback really rolls the data back.
@@ -502,7 +503,46 @@ $@" CREATE PROCEDURE [dbo].[WaitForTwoSeconds] AS
                 transaction.Rollback();
             }
 
-            InvoicesTableShouldBeEmpty(database.ConnectionString);
+            DatabaseShouldBeEmpty(database);
+
+            using (var transaction = database.BeginTransaction())
+            {
+                var invoices = database.Query<Invoice>().AsDbSet();
+                invoices.Add(CreateTestData());
+                invoices.CommitChanges();
+
+                transaction.Commit();
+            }
+
+            DatabaseShouldContainInvoices(database.ConnectionString, CreateTestData());
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task ExecuteInTransactionAsync_CancelledRightBeforeCommit_SurfacesCancellationAndRollsBack(
+            bool openConnection)
+        {
+            await DoTestWithConnectionAsync(openConnection, ExecuteInTransactionCancelledRightBeforeCommit, CreateDatabase);
+        }
+
+        private async Task ExecuteInTransactionCancelledRightBeforeCommit(TestDatabase database)
+        {
+            var provider = (IQueryProvider)database.Query<Invoice>().Provider;
+            using var cts = new CancellationTokenSource();
+
+            // The work succeeds and the token is cancelled after it, so the commit itself is cancelled.
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => provider.ExecuteInTransactionAsync(
+                async ct =>
+                {
+                    using DbCommand command = provider.GetCommandForCurrentTransaction();
+                    command.CommandText = "INSERT INTO [Invoices] ([Id], [Code], [Description]) VALUES (1, '0001', 'Item 1')";
+                    await command.ExecuteNonQueryAsync(ct);
+                    cts.Cancel();
+                },
+                cts.Token));
+
+            DatabaseShouldBeEmpty(database);
 
             using (var transaction = database.BeginTransaction())
             {
@@ -691,14 +731,10 @@ $@" CREATE PROCEDURE [dbo].[WaitForTwoSeconds] AS
             Assert.Equivalent(expected, korm.Query<Invoice>());
         }
 
-        private void DatabaseShouldBeEmpty(TestDatabase korm)
+        private static void DatabaseShouldBeEmpty(TestDatabase database)
         {
-            DatabaseShouldContainInvoices(korm.ConnectionString, new List<Invoice>());
-        }
-
-        private static void InvoicesTableShouldBeEmpty(string connectionString)
-        {
-            using (var korm = new Database(connectionString))
+            // Checked through a separate connection, so it sees only committed data.
+            using (var korm = new Database(database.ConnectionString))
             {
                 Assert.Empty(korm.Query<Invoice>());
             }

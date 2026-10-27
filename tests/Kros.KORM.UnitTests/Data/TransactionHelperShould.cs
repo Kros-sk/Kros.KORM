@@ -116,6 +116,50 @@ namespace Kros.KORM.UnitTests.Data
         }
 
         [Fact]
+        public async Task CommitAsync_WithCancelledToken_ThenRollbackAsync_SurfacesCancellationAndEndsOnce()
+        {
+            var cn = new FakeDbConnection();
+            var helper = new TransactionHelper(cn);
+            using (var tx = helper.BeginTransaction())
+            {
+                _ = helper.CurrentTransaction;
+
+                await Assert.ThrowsAnyAsync<OperationCanceledException>(
+                    () => tx.CommitAsync(new CancellationToken(canceled: true)));
+                await tx.RollbackAsync(CancellationToken.None);
+
+                Assert.Equal(1, cn.LastTransaction.RollbackAsyncCount);
+                Assert.Null(helper.CurrentTransaction);
+            }
+            Assert.Equal(1, cn.CloseCount);
+
+            using var next = helper.BeginTransaction();
+            Assert.NotNull(helper.CurrentTransaction);
+            Assert.Equal(2, cn.OpenCount);
+            await next.CommitAsync(TestContext.Current.CancellationToken);
+            Assert.Equal(1, cn.LastTransaction.CommitAsyncCount);
+            Assert.Null(helper.CurrentTransaction);
+        }
+
+        [Fact]
+        public void Commit_WhenDbCommitFails_ThenRollback_SurfacesOriginalExceptionAndEndsOnce()
+        {
+            var cn = new FakeDbConnection();
+            var helper = new TransactionHelper(cn);
+            using var tx = helper.BeginTransaction();
+            _ = helper.CurrentTransaction;
+            var commitException = new InvalidOperationException("Commit failed.");
+            cn.LastTransaction.ThrowOnCommit = commitException;
+
+            var ex = Assert.Throws<InvalidOperationException>(() => tx.Commit());
+            Assert.Same(commitException, ex);
+            tx.Rollback();
+
+            Assert.Equal(1, cn.LastTransaction.RollbackCount);
+            Assert.Null(helper.CurrentTransaction);
+        }
+
+        [Fact]
         public void Dispose_WithoutAnyCommand_DoesNotCreateDbTransaction()
         {
             var cn = new FakeDbConnection();
