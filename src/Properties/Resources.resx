@@ -272,6 +272,9 @@ or only one public parametrized constructor.</value>
   <data name="QueryProviderFactoryNotRegisteredForProvider" xml:space="preserve">
     <value>QueryProviderFactory for provider '{0}' is not registered.</value>
   </data>
+  <data name="QueryableIsNotKormQuery" xml:space="preserve">
+    <value>The queryable is not a KORM query.</value>
+  </data>
   <data name="ResultMustBeGenericIEnumerable" xml:space="preserve">
     <value>Result type must be generic type IEnumerable&lt;T&gt;.</value>
   </data>

@@ -167,5 +167,27 @@ INSERT INTO [Foo] VALUES (4, 3, 'Jakub');";
 
             Assert.Equivalent(new[] { 3, 4 }, items.Select(p => p.Id));
         }
+
+        [Fact]
+        public async Task OrderedLinqQueryFirstOrDefaultAsyncReturnsLastRow()
+        {
+            using TestDatabase database = CreateDatabase(CreateTable_FooTable, InsertIntoFooScript);
+
+            Foo foo = await database.Query<Foo>()
+                .OrderByDescending(p => p.Id)
+                .FirstOrDefaultAsync(TestContext.Current.CancellationToken);
+
+            Assert.NotNull(foo);
+            Assert.Equal(4, foo.Id);
+        }
+
+        [Fact]
+        public async Task ToListAsyncOnNonKormQueryableThrows()
+        {
+            IQueryable<int> source = new[] { 1 }.AsQueryable();
+
+            await Assert.ThrowsAsync<InvalidOperationException>(
+                () => source.ToListAsync(TestContext.Current.CancellationToken));
+        }
     }
 }

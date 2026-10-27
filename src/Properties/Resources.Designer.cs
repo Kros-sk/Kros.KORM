@@ -494,6 +494,15 @@ namespace Kros.KORM.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The queryable is not a KORM query..
+        /// </summary>
+        internal static string QueryableIsNotKormQuery {
+            get {
+                return ResourceManager.GetString("QueryableIsNotKormQuery", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Result type must be generic type IEnumerable&lt;T&gt;..
         /// </summary>
         internal static string ResultMustBeGenericIEnumerable {
