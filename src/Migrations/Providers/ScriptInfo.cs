@@ -1,4 +1,5 @@
 ﻿using Kros.Utils;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Kros.KORM.Migrations.Providers
@@ -40,7 +41,9 @@ namespace Kros.KORM.Migrations.Providers
         /// <summary>
         /// Get script content.
         /// </summary>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
         /// <returns>Script content.</returns>
-        public async Task<string> GetScriptAsync() => await _provider.GetScriptAsync(this);
+        public Task<string> GetScriptAsync(CancellationToken cancellationToken = default)
+            => _provider.GetScriptAsync(this, cancellationToken);
     }
 }
