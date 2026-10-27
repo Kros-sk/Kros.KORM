@@ -325,6 +325,7 @@ namespace Kros.KORM.UnitTests
         private class FakeProvider : IQueryProvider
         {
             async Task IQueryProvider.ExecuteInTransactionAsync(Func<CancellationToken, Task> action, CancellationToken cancellationToken) => await action(cancellationToken);
+            void IQueryProvider.ExecuteInTransaction(Action action) => action();
             int IQueryProvider.ExecuteNonQueryCommand(IDbCommand command) => command.ExecuteNonQuery();
             bool IQueryProvider.SupportsIdentity() => false;
             bool IQueryProvider.SupportsPrepareCommand() => true;

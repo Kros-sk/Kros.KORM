@@ -75,6 +75,12 @@ namespace Kros.KORM.Query
         Task ExecuteInTransactionAsync(Func<CancellationToken, Task> action, CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// Executes the action in a transaction. The connection is opened synchronously.
+        /// </summary>
+        /// <param name="action">Action which will be executed.</param>
+        void ExecuteInTransaction(Action action);
+
+        /// <summary>
         /// Executes the command.
         /// </summary>
         /// <param name="command">The command.</param>

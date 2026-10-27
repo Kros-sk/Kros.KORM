@@ -280,7 +280,7 @@ namespace Kros.KORM.Query
         /// <inheritdoc/>
         public async Task ExecuteInTransactionAsync(Func<CancellationToken, Task> action, CancellationToken cancellationToken = default)
         {
-            using (OpenConnection())
+            using (await OpenConnectionAsync(cancellationToken))
             using (var transaction = _transactionHelper.Value.BeginTransaction())
             {
                 try
@@ -291,6 +291,25 @@ namespace Kros.KORM.Query
                 catch
                 {
                     await transaction.RollbackAsync(cancellationToken);
+                    throw;
+                }
+            }
+        }
+
+        /// <inheritdoc/>
+        public void ExecuteInTransaction(Action action)
+        {
+            using (OpenConnection())
+            using (var transaction = _transactionHelper.Value.BeginTransaction())
+            {
+                try
+                {
+                    action();
+                    transaction.Commit();
+                }
+                catch
+                {
+                    transaction.Rollback();
                     throw;
                 }
             }
@@ -374,7 +393,7 @@ namespace Kros.KORM.Query
         {
             CheckCommandParameters(parameters);
 
-            using (OpenConnection())
+            using (await OpenConnectionAsync(cancellationToken))
             using (DbCommand command = CreateCommand(query, parameters))
             {
                 return await ExecuteNonQueryCommandAsync(command, cancellationToken);
@@ -648,6 +667,9 @@ namespace Kros.KORM.Query
         {
             return new Data.ConnectionHelper(Connection);
         }
+
+        private Task<Data.ConnectionHelper> OpenConnectionAsync(CancellationToken cancellationToken)
+            => Data.ConnectionHelper.OpenAsync(Connection, cancellationToken);
 
         private DbCommandInfo CreateCommand<T>(IQuery<T> query)
         {

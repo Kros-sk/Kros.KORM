@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -320,6 +321,18 @@ END";
                 QueryProvider provider = CreateQueryProvider(helper.Connection);
                 int result = await provider.ExecuteNonQueryAsync(query, TestContext.Current.CancellationToken);
                 Assert.Equal(3, result); // Deleted 3 rows.
+            }
+        }
+
+        [Fact]
+        public async Task ExecuteNonQueryAsync_ThrowsWhenTokenAlreadyCancelled_AndLeavesConnectionClosed()
+        {
+            using (var database = CreateDatabase(CreateTable_TestTable) as TestDatabase)
+            {
+                await Assert.ThrowsAnyAsync<OperationCanceledException>(
+                    () => database.ExecuteNonQueryAsync("SELECT 1", new CancellationToken(canceled: true)));
+
+                Assert.Equal(ConnectionState.Closed, database.Connection.State);
             }
         }
 

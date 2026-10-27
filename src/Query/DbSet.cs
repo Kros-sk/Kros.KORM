@@ -344,28 +344,25 @@ namespace Kros.KORM.Query
         /// Commits all pending changes to the database.
         /// </summary>
         public void CommitChanges(bool ignoreValueGenerators = false)
-            => CommitChangesCoreAsync(false, ignoreValueGenerators).GetAwaiter().GetResult();
+            => _provider.ExecuteInTransaction(
+                () => CommitAllChangesAsync(false, ignoreValueGenerators, CancellationToken.None).GetAwaiter().GetResult());
 
         /// <inheritdoc/>
         public Task CommitChangesAsync(CancellationToken cancellationToken = default, bool ignoreValueGenerators = false)
-            => CommitChangesCoreAsync(true, ignoreValueGenerators, cancellationToken);
+            => _provider.ExecuteInTransactionAsync(
+                token => CommitAllChangesAsync(true, ignoreValueGenerators, token),
+                cancellationToken);
 
-        private async Task CommitChangesCoreAsync(
-            bool useAsync,
-            bool ignoreValueGenerators,
-            CancellationToken cancellationToken = default)
+        private async Task CommitAllChangesAsync(bool useAsync, bool ignoreValueGenerators, CancellationToken cancellationToken)
         {
-            await _provider.ExecuteInTransactionAsync(async (token) =>
-            {
-                await CommitChangesAddedItemsAsync(_addedItems, useAsync, ignoreValueGenerators, token);
-                await CommitChangesEditedItemsAsync(_editedItems, useAsync, ignoreValueGenerators, token);
-                await CommitChangesUpsertedItemsAsync(_upsertedItems, useAsync, token);
-                await CommitChangesDeletedItemsAsync(_deletedItems, useAsync, token);
-                await CommitChangesDeletedItemsByIdAsync(_deletedItemsIds, useAsync, token);
-                await CommitChangesDeletedByConditionsAsync(_deleteExpressions, useAsync, token);
+            await CommitChangesAddedItemsAsync(_addedItems, useAsync, ignoreValueGenerators, cancellationToken);
+            await CommitChangesEditedItemsAsync(_editedItems, useAsync, ignoreValueGenerators, cancellationToken);
+            await CommitChangesUpsertedItemsAsync(_upsertedItems, useAsync, cancellationToken);
+            await CommitChangesDeletedItemsAsync(_deletedItems, useAsync, cancellationToken);
+            await CommitChangesDeletedItemsByIdAsync(_deletedItemsIds, useAsync, cancellationToken);
+            await CommitChangesDeletedByConditionsAsync(_deleteExpressions, useAsync, cancellationToken);
 
-                Clear();
-            }, cancellationToken);
+            Clear();
         }
 
         /// <summary>

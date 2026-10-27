@@ -5,6 +5,7 @@ using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -425,6 +426,23 @@ $@" CREATE PROCEDURE [dbo].[WaitForTwoSeconds] AS
 
                 DatabaseShouldContainInvoices(database.ConnectionString, CreateTestData());
             }
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task CommitChangesAsync_ThrowsWhenTokenAlreadyCancelled_AndKeepsConnectionState(bool openConnection)
+        {
+            await DoTestWithConnectionAsync(openConnection, CommitChangesWithCancelledToken, CreateDatabase);
+        }
+
+        private async Task CommitChangesWithCancelledToken(TestDatabase database)
+        {
+            var dbSet = database.Query<Invoice>().AsDbSet();
+            dbSet.Add(CreateTestData());
+
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(
+                () => dbSet.CommitChangesAsync(new CancellationToken(canceled: true)));
         }
 
         [Theory]
