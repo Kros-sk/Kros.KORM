@@ -290,6 +290,17 @@ namespace Kros.KORM
         public string ExecuteScalar(string query, params object[] args)
             => Query<object>().Sql(query, args).ExecuteStringScalar();
 
+        /// <inheritdoc/>
+        public Task<TResult?> ExecuteScalarAsync<TResult>(
+            string query,
+            CancellationToken cancellationToken = default,
+            params object[] args) where TResult : struct
+            => Query<object>().Sql(query, args).ExecuteScalarAsync<TResult>(cancellationToken);
+
+        /// <inheritdoc/>
+        public Task<string> ExecuteScalarAsync(string query, CancellationToken cancellationToken = default, params object[] args)
+            => Query<object>().Sql(query, args).ExecuteStringScalarAsync(cancellationToken);
+
         /// <inheritdoc cref="IQueryProvider.ExecuteStoredProcedure{TResult}(string)"/>
         public TResult ExecuteStoredProcedure<TResult>(string storedProcedureName)
             => _queryProvider.ExecuteStoredProcedure<TResult>(storedProcedureName);
@@ -297,6 +308,19 @@ namespace Kros.KORM
         /// <inheritdoc cref="IQueryProvider.ExecuteStoredProcedure{TResult}(string, CommandParameterCollection)"/>
         public TResult ExecuteStoredProcedure<TResult>(string storedProcedureName, CommandParameterCollection parameters)
             => _queryProvider.ExecuteStoredProcedure<TResult>(storedProcedureName, parameters);
+
+        /// <inheritdoc cref="IQueryProvider.ExecuteStoredProcedureAsync{TResult}(string, CancellationToken)"/>
+        public Task<TResult> ExecuteStoredProcedureAsync<TResult>(
+            string storedProcedureName,
+            CancellationToken cancellationToken = default)
+            => _queryProvider.ExecuteStoredProcedureAsync<TResult>(storedProcedureName, cancellationToken);
+
+        /// <inheritdoc cref="IQueryProvider.ExecuteStoredProcedureAsync{TResult}(string, CommandParameterCollection, CancellationToken)"/>
+        public Task<TResult> ExecuteStoredProcedureAsync<TResult>(
+            string storedProcedureName,
+            CommandParameterCollection parameters,
+            CancellationToken cancellationToken = default)
+            => _queryProvider.ExecuteStoredProcedureAsync<TResult>(storedProcedureName, parameters, cancellationToken);
 
         /// <inheritdoc/>
         public ITransaction BeginTransaction()

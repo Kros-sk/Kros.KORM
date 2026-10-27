@@ -289,6 +289,63 @@ namespace Kros.KORM.Query
         TResult ExecuteStoredProcedure<TResult>(string storedProcedureName, CommandParameterCollection parameters);
 
         /// <summary>
+        /// Asynchronously executes the stored procedure and returns its result. The result can be scalar value
+        /// (primitive or complex &#8211; class type), or a list of values
+        /// (<see cref="IEnumerable{T}">IEnumerable&lt;T&gt;</see> or
+        /// <see cref="IAsyncEnumerable{T}">IAsyncEnumerable&lt;T&gt;</see>).
+        /// </summary>
+        /// <typeparam name="TResult">
+        /// The type of the result. It can be scalar primitive or complex (class) value,
+        /// <see cref="IEnumerable{T}"/> or <see cref="IAsyncEnumerable{T}"/> of some value.
+        /// If the <c>TResult</c> is primitive scalar value, the result is converted to that.
+        /// If <c>TResult</c> is a class, the result of stored procedure is converted (materialized) to that class type.
+        /// If <c>TResult</c> is <see cref="IEnumerable{T}"/> or <see cref="IAsyncEnumerable{T}"/>,
+        /// the result of procedure is converted (materialized) to that.
+        /// </typeparam>
+        /// <param name="storedProcedureName">Name of the stored procedure.</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+        /// <returns>
+        /// A task that represents the asynchronous operation. The task result contains the result of the stored procedure.
+        /// </returns>
+        /// <remarks>
+        /// When <typeparamref name="TResult"/> is <see cref="IEnumerable{T}"/>, the stored procedure is executed
+        /// asynchronously, but its rows are read synchronously while the returned sequence is enumerated.
+        /// Use <see cref="IAsyncEnumerable{T}"/> to read the rows asynchronously. The returned sequence holds the
+        /// connection open until it is completely enumerated or disposed and it can be enumerated only once.
+        /// </remarks>
+        /// <exception cref="InvalidOperationException">
+        /// <list type="bullet">
+        /// <item>
+        /// Result type <typeparamref name="TResult"/> is non-generic <see cref="IEnumerable"/>. If it is
+        /// <see cref="IEnumerable"/>, it must be generic <see cref="IEnumerable{T}"/>.
+        /// </item>
+        /// <item>
+        /// Instance of <see cref="IModelBuilder"/> initialized in constructor does not have method with signature
+        /// <c>Materialize(IDataReader)</c> or <c>MaterializeAsync(IDataReader)</c>.
+        /// </item>
+        /// </list>
+        /// </exception>
+        Task<TResult> ExecuteStoredProcedureAsync<TResult>(
+            string storedProcedureName,
+            CancellationToken cancellationToken = default);
+
+        /// <inheritdoc cref="ExecuteStoredProcedureAsync{TResult}(string, CancellationToken)"/>
+        /// <param name="storedProcedureName">Name of the stored procedure.</param>
+        /// <param name="parameters">The stored procedure parameters. Values of output parameters
+        /// (<see cref="ParameterDirection.Output">ParameterDirection.Output</see>
+        /// <see cref="ParameterDirection.InputOutput">ParameterDirection.InputOutput</see>)
+        /// are set back to corresponding parameter in collection</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+        /// <exception cref="ArgumentException">
+        /// Value of any of the parameters in <paramref name="parameters"/> is <see langword="null"/> or <see cref="DBNull"/>
+        /// and its data type (<see cref="CommandParameter.DataType"/>) is not set.
+        /// </exception>
+        Task<TResult> ExecuteStoredProcedureAsync<TResult>(
+            string storedProcedureName,
+            CommandParameterCollection parameters,
+            CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// Begins the transaction using the specified isolation level.
         /// </summary>
         /// <param name="isolationLevel">The database isolation level with which the underlying store transaction will be created.</param>

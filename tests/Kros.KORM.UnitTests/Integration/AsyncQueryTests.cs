@@ -205,5 +205,38 @@ INSERT INTO [Foo] VALUES (4, 3, 'Jakub');";
             Assert.Equal(4, (await database.Query<Foo>().ToListAsync(cancellationToken: ct)).Count);
             Assert.NotNull(await database.Query<Foo>().FirstOrDefaultAsync());
         }
+
+        [Fact]
+        public async Task DatabaseExecuteScalarAsyncReturnsTypedValue()
+        {
+            using TestDatabase database = CreateDatabase(CreateTable_FooTable, InsertIntoFooScript);
+
+            int? count = await database.ExecuteScalarAsync<int>(
+                "SELECT COUNT(*) FROM Foo WHERE Id > @1", TestContext.Current.CancellationToken, 1);
+
+            Assert.Equal(3, count);
+        }
+
+        [Fact]
+        public async Task DatabaseExecuteScalarAsyncReturnsString()
+        {
+            using TestDatabase database = CreateDatabase(CreateTable_FooTable, InsertIntoFooScript);
+
+            string value = await database.ExecuteScalarAsync(
+                "SELECT Value FROM Foo WHERE Id = @1", TestContext.Current.CancellationToken, 1);
+
+            Assert.Equal("Milan", value);
+        }
+
+        [Fact]
+        public async Task DatabaseExecuteScalarAsyncReturnsNullForEmptyResult()
+        {
+            using TestDatabase database = CreateDatabase(CreateTable_FooTable, InsertIntoFooScript);
+
+            int? value = await database.ExecuteScalarAsync<int>(
+                "SELECT Id FROM Foo WHERE Id = @1", TestContext.Current.CancellationToken, 42);
+
+            Assert.Null(value);
+        }
     }
 }

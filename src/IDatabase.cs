@@ -184,6 +184,36 @@ namespace Kros.KORM
         string ExecuteScalar(string query, params object[] args);
 
         /// <summary>
+        /// Asynchronously executes the query and returns the first column of the first row as nullable <typeparamref name="TResult"/>.
+        /// </summary>
+        /// <remarks>Additional columns or rows are ignored.</remarks>
+        /// <typeparam name="TResult">The type of the result.</typeparam>
+        /// <param name="query">Arbitrary SQL query.</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+        /// <param name="args">The query parameters.</param>
+        /// <returns>
+        /// A task that represents the asynchronous operation. The task result contains the first column of the first row
+        /// in the result set, or <see langword="null"/> if the result set is empty.
+        /// </returns>
+        Task<TResult?> ExecuteScalarAsync<TResult>(
+            string query,
+            CancellationToken cancellationToken = default,
+            params object[] args) where TResult : struct;
+
+        /// <summary>
+        /// Asynchronously executes the query and returns the first column of the first row as string.
+        /// </summary>
+        /// <remarks>Additional columns or rows are ignored.</remarks>
+        /// <param name="query">Arbitrary SQL query.</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+        /// <param name="args">The query parameters.</param>
+        /// <returns>
+        /// A task that represents the asynchronous operation. The task result contains the first column of the first row
+        /// in the result set, or <see langword="null"/> if the result set is empty.
+        /// </returns>
+        Task<string> ExecuteScalarAsync(string query, CancellationToken cancellationToken = default, params object[] args);
+
+        /// <summary>
         /// Executes the stored procedure.
         /// </summary>
         /// <typeparam name="TResult">The type of the result.</typeparam>
@@ -203,6 +233,46 @@ namespace Kros.KORM
         /// Result of the stored procedure.
         /// </returns>
         TResult ExecuteStoredProcedure<TResult>(string storedProcedureName, CommandParameterCollection parameters);
+
+        /// <summary>
+        /// Asynchronously executes the stored procedure.
+        /// </summary>
+        /// <typeparam name="TResult">The type of the result.</typeparam>
+        /// <param name="storedProcedureName">Name of the stored procedure.</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+        /// <returns>
+        /// A task that represents the asynchronous operation. The task result contains the result of the stored procedure.
+        /// </returns>
+        /// <remarks>
+        /// When <typeparamref name="TResult"/> is <see cref="System.Collections.Generic.IEnumerable{T}"/>,
+        /// the stored procedure is executed asynchronously, but its rows are read synchronously while the returned
+        /// sequence is enumerated. Use <see cref="System.Collections.Generic.IAsyncEnumerable{T}"/> to read the rows
+        /// asynchronously.
+        /// </remarks>
+        Task<TResult> ExecuteStoredProcedureAsync<TResult>(
+            string storedProcedureName,
+            CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Asynchronously executes the stored procedure with parameters.
+        /// </summary>
+        /// <typeparam name="TResult">The type of the result.</typeparam>
+        /// <param name="storedProcedureName">Name of the stored procedure.</param>
+        /// <param name="parameters">The stored procedure parameters.</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+        /// <returns>
+        /// A task that represents the asynchronous operation. The task result contains the result of the stored procedure.
+        /// </returns>
+        /// <remarks>
+        /// When <typeparamref name="TResult"/> is <see cref="System.Collections.Generic.IEnumerable{T}"/>,
+        /// the stored procedure is executed asynchronously, but its rows are read synchronously while the returned
+        /// sequence is enumerated. Use <see cref="System.Collections.Generic.IAsyncEnumerable{T}"/> to read the rows
+        /// asynchronously.
+        /// </remarks>
+        Task<TResult> ExecuteStoredProcedureAsync<TResult>(
+            string storedProcedureName,
+            CommandParameterCollection parameters,
+            CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Begins the transaction.

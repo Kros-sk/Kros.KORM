@@ -358,6 +358,8 @@ namespace Kros.KORM.UnitTests
             Task<object> IQueryProvider.ExecuteScalarCommandAsync(DbCommand command, CancellationToken cancellationToken) => throw new NotImplementedException();
             TResult IQueryProvider.ExecuteStoredProcedure<TResult>(string storedProcedureName) => throw new NotImplementedException();
             TResult IQueryProvider.ExecuteStoredProcedure<TResult>(string storedProcedureName, CommandParameterCollection parameters) => throw new NotImplementedException();
+            Task<TResult> IQueryProvider.ExecuteStoredProcedureAsync<TResult>(string storedProcedureName, CancellationToken cancellationToken) => throw new NotImplementedException();
+            Task<TResult> IQueryProvider.ExecuteStoredProcedureAsync<TResult>(string storedProcedureName, CommandParameterCollection parameters, CancellationToken cancellationToken) => throw new NotImplementedException();
             DbCommand IQueryProvider.GetCommandForCurrentTransaction() => throw new NotImplementedException();
             ISqlExpressionVisitor IQueryProvider.GetExpressionVisitor() => throw new NotImplementedException();
             IIdGeneratorsForDatabaseInit IQueryProvider.GetIdGeneratorsForDatabaseInit() => throw new NotImplementedException();

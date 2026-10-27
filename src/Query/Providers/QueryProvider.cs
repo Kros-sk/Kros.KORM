@@ -94,6 +94,7 @@ namespace Kros.KORM.Query
         private readonly Cache<string, TableSchema> _tableSchemas =
             new Cache<string, TableSchema>(StringComparer.OrdinalIgnoreCase);
         private MethodInfo _nonGenericMaterializeMethod = null;
+        private MethodInfo _nonGenericMaterializeAsyncMethod = null;
         private readonly Lazy<TransactionHelper> _transactionHelper;
         private Lazy<ISqlExpressionVisitor> _sqlExpressionVisitor;
 
@@ -550,6 +551,111 @@ namespace Kros.KORM.Query
             return result;
         }
 
+        /// <inheritdoc cref="IQueryProvider.ExecuteStoredProcedureAsync{TResult}(string, CancellationToken)"/>
+        public virtual Task<TResult> ExecuteStoredProcedureAsync<TResult>(
+            string storedProcedureName,
+            CancellationToken cancellationToken = default)
+            => ExecuteStoredProcedureAsync<TResult>(storedProcedureName, null, cancellationToken);
+
+        /// <inheritdoc cref="IQueryProvider.ExecuteStoredProcedureAsync{TResult}(string, CommandParameterCollection, CancellationToken)"/>
+        public virtual async Task<TResult> ExecuteStoredProcedureAsync<TResult>(
+            string storedProcedureName,
+            CommandParameterCollection parameters,
+            CancellationToken cancellationToken = default)
+        {
+            CheckCommandParameters(parameters);
+            cancellationToken.ThrowIfCancellationRequested();
+
+            TResult result = default(TResult);
+
+            Data.ConnectionHelper cnHelper = null;
+            DbCommand command = null;
+            ModelBuilder.QueryDataReader reader = null;
+
+            try
+            {
+                cnHelper = await OpenConnectionAsync(cancellationToken);
+                command = CreateCommand(storedProcedureName, parameters);
+                command.CommandType = CommandType.StoredProcedure;
+                _logger.LogCommand(command);
+
+                DbParameter returnParameter = GetOrAddCommandReturnParameter(command);
+
+                if (typeof(IEnumerable).IsAssignableFrom(typeof(TResult)) || IsAsyncEnumerable(typeof(TResult)))
+                {
+                    reader = await ModelBuilder.QueryDataReader.CreateAsync(
+                        command, null, cnHelper.CloseConnection, cancellationToken);
+                    result = MaterializeStoredProcedureResult<TResult>(reader);
+                }
+                else
+                {
+                    result = await MaterializeStoredProcedureResultAsync<TResult>(
+                        command, returnParameter, cancellationToken);
+                }
+                FillOutputParameters(command, parameters);
+            }
+            catch
+            {
+                if (reader != null)
+                {
+                    // The reader owns the command and closes the connection when it is disposed.
+                    reader.Dispose();
+                }
+                else
+                {
+                    command?.Dispose();
+                    cnHelper?.Dispose();
+                }
+                throw;
+            }
+
+            if (reader == null)
+            {
+                command.Dispose();
+                cnHelper.Dispose();
+            }
+
+            return result;
+        }
+
+        private async Task<TResult> MaterializeStoredProcedureResultAsync<TResult>(
+            DbCommand command,
+            DbParameter returnParameter,
+            CancellationToken cancellationToken)
+        {
+            TResult result = default(TResult);
+
+            using (DbDataReader reader = await command.ExecuteReaderAsync(cancellationToken))
+            {
+                if (reader.HasRows)
+                {
+                    if (typeof(TResult).IsClass && (typeof(TResult) != typeof(string)))
+                    {
+                        await foreach (TResult item in _modelBuilder.MaterializeAsync<TResult>(reader)
+                            .WithCancellation(cancellationToken))
+                        {
+                            result = item;
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        await reader.ReadAsync(cancellationToken);
+                        result = (TResult)reader.GetValue(0);
+                    }
+                }
+                else if (returnParameter != null)
+                {
+                    result = (TResult)returnParameter.Value;
+                }
+            }
+
+            return result;
+        }
+
+        private static bool IsAsyncEnumerable(Type type)
+            => type.IsGenericType && (type.GetGenericTypeDefinition() == typeof(IAsyncEnumerable<>));
+
         private TResult MaterializeStoredProcedureResult<TResult>(DbCommand command, DbParameter returnParameter)
         {
             TResult result = default(TResult);
@@ -598,22 +704,28 @@ namespace Kros.KORM.Query
             {
                 throw new InvalidOperationException(Resources.ResultMustBeGenericIEnumerable);
             }
-            if (_nonGenericMaterializeMethod == null)
+            MethodInfo nonGenericMethod = IsAsyncEnumerable(tresult)
+                ? GetModelBuilderMethod(ref _nonGenericMaterializeAsyncMethod, nameof(IModelBuilder.MaterializeAsync))
+                : GetModelBuilderMethod(ref _nonGenericMaterializeMethod, nameof(IModelBuilder.Materialize));
+            MethodInfo materializeMethod = nonGenericMethod.MakeGenericMethod(tresult.GenericTypeArguments[0]);
+
+            return (TResult)materializeMethod.Invoke(_modelBuilder, new object[] { reader });
+        }
+
+        private MethodInfo GetModelBuilderMethod(ref MethodInfo cachedMethod, string methodName)
+        {
+            if (cachedMethod == null)
             {
-                _nonGenericMaterializeMethod = _modelBuilder.GetType().GetMethod(
-                    nameof(IModelBuilder.Materialize), new Type[] { typeof(IDataReader) });
-                if (_nonGenericMaterializeMethod == null)
+                cachedMethod = _modelBuilder.GetType().GetMethod(methodName, new Type[] { typeof(IDataReader) });
+                if (cachedMethod == null)
                 {
                     string modelBuilderType = _modelBuilder.GetType().FullName;
-                    const string methodName = nameof(IModelBuilder.Materialize);
                     const string methodArg = nameof(IDataReader);
                     throw new InvalidOperationException(
                         string.Format(Resources.MissingMethodInModelBuilder, modelBuilderType, methodName, methodArg));
                 }
             }
-            MethodInfo materializeMethod = _nonGenericMaterializeMethod.MakeGenericMethod(tresult.GenericTypeArguments[0]);
-
-            return (TResult)materializeMethod.Invoke(_modelBuilder, new object[] { reader });
+            return cachedMethod;
         }
 
         /// <summary>
