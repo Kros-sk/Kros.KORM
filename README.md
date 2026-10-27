@@ -41,6 +41,7 @@ To contribute with new topics/information or make changes, see [contributing](ht
 * [Model builder](#model-builder)
 * [Committing of changes](#committing-of-changes)
 * [SQL commands executing](#sql-commands-executing)
+* [Cancellation](#cancellation)
 * [Record types](#record-types)
 * [Logging](#logging)
 * [Supported database types](#supported-database-types)
@@ -66,6 +67,46 @@ foreach (var person in people)
 ```
 
 For more information take a look at definition of [IQuery](https://kros-sk.github.io/Kros.Libs.Documentation/api/Kros.KORM.Query.IQuery-1.html).
+
+#### Asynchronous queries
+
+Every query can be executed asynchronously. All asynchronous methods accept an optional `CancellationToken`.
+
+```CSharp
+var query = database.Query<Person>().Where("Age > @1", 18);
+
+List<Person> people = await query.ToListAsync(cancellationToken);
+Person first = await query.FirstOrDefaultAsync(cancellationToken);
+bool any = await query.AnyAsync(cancellationToken);
+
+// Rows are read one by one, without loading all of them into memory.
+await foreach (var person in query.AsAsyncEnumerable(cancellationToken))
+{
+    Console.WriteLine(person.FirstName);
+}
+
+// Scalar queries.
+int? count = await database.Query<Person>().Select("COUNT(*)").ExecuteScalarAsync<int>(cancellationToken);
+```
+
+Methods which accept a condition (`FirstOrDefaultAsync`, `AnyAsync`) have the `CancellationToken` parameter before the `params` arguments.
+Therefore `AnyAsync("Id > @1", 2)` does not compile (the number cannot be a token). Pass the token explicitly, or use named `args`:
+
+```CSharp
+var person = await database.Query<Person>().FirstOrDefaultAsync("Id = @1", cancellationToken, 5);
+bool any = await database.Query<Person>().AnyAsync("Id > @1", args: [2]);
+```
+
+Queries built with LINQ can be executed asynchronously with extension methods from `Kros.KORM.Query.QueryableAsyncExtensions`.
+
+```CSharp
+var people = await database.Query<Person>()
+    .Where(p => p.Age > 18)
+    .OrderBy(p => p.LastName)
+    .ToListAsync(cancellationToken);
+```
+
+If the `Microsoft.EntityFrameworkCore` namespace is imported in the same file, calls of these extensions can be ambiguous (compiler error CS0121). Call the method explicitly in that case, for example `QueryableAsyncExtensions.ToListAsync(query, cancellationToken)`.
 
 ### Linq to Kros.KORM
 
@@ -465,6 +506,8 @@ If you want to try some other implementation (for example based on reflexion) yo
 Database.DefaultModelFactory = new ReflectionModelfactory();
 ```
 
+`IModelBuilder` can materialize data from a reader also asynchronously, using `MaterializeAsync<T>(IDataReader)`. The returned `IAsyncEnumerable<T>` is single-use, it can be enumerated only once.
+
 ### Committing of changes
 
 You can use Kros.KORM also for editing, adding or deleting records from database. [IdDbSet](https://kros-sk.github.io/Kros.Libs.Documentation/api/Kros.KORM/Kros.KORM.Query.IDbSet-1.html) is designed for that.
@@ -521,6 +564,14 @@ foreach (var person in dataForUpdate)
 }
 
 people.BulkUpdate();
+```
+
+Asynchronous variants accept an optional `CancellationToken` as the last argument:
+
+```CSharp
+await people.BulkInsertAsync(cancellationToken);
+await people.BulkUpdateAsync(cancellationToken);
+await people.BulkInsertAsync(dataForImport, cancellationToken);
 ```
 
 This bulk way of inserting or updating data is several times faster than standard inserts or updates.
@@ -738,16 +789,19 @@ For simplifying calling methods (`Add`, `Edit`, `Delete`) use extension methods 
 ```CSharp
 await database.AddAsync(person);
 await database.AddAsync(people);
-await database.BulkAddAsync(people);
+await database.AddAsync(people, cancellationToken);
+await database.BulkAddAsync(people, cancellationToken);
 await database.DeleteAsync(person);
 await database.DeleteAsync(people);
+await database.DeleteAsync(people, cancellationToken);
 await database.DeleteAsync<Person>(2);
 await database.DeleteAsync<Person>(p => p.Id == 2);
-await database.DeleteAsync<Person>("Id = @1", 2);
+await database.DeleteAsync<Person>("Id = @1", cancellationToken, 2);
 await database.EditAsync(person);
-await database.EditAsync(person, "Id", "Age");
+await database.EditAsync(person, cancellationToken, "Id", "Age");
 await database.EditAsync(people);
-await database.BulkEditAsync(people);
+await database.EditAsync(people, cancellationToken);
+await database.BulkEditAsync(people, cancellationToken);
 await database.UpsertAsync(person);
 await database.UpsertAsync(people);
 
@@ -762,7 +816,7 @@ You can find these extension methods in `IDatabaseExtensions` class.
 
 ```CSharp
 database.ExecuteWithTempTable<TValue>(IEnumerable<TValue> values, action);
-await database.ExecuteWithTempTableAsync<TValue>(IEnumerable<TValue> values, function);
+await database.ExecuteWithTempTableAsync<TValue>(IEnumerable<TValue> values, function, cancellationToken: cancellationToken);
 
 database.ExecuteWithTempTable<TKey, TValue>(IDictionary<TKey, TValue> values, action);
 await database.ExecuteWithTempTable<TKey, TValue>(IDictionary<TKey, TValue> values, function);
@@ -806,6 +860,18 @@ _database.ExecuteWithTempTable(ids, (database, tableName)
         .ToList());
 ```
 
+The `CancellationToken` of asynchronous variants is not passed to the callback. Forward it inside the callback to the asynchronous calls made there:
+
+```CSharp
+await _database.ExecuteWithTempTableAsync(
+    ids,
+    async (database, tableName) =>
+        await database.ExecuteNonQueryAsync(
+            $"DELETE P FROM PERSON AS P INNER JOIN {tableName} AS T ON (P.Id = T.Value)",
+            cancellationToken),
+    cancellationToken: cancellationToken);
+```
+
 ### SQL commands executing
 
 Kros.KORM supports SQL commands execution. There are three types of commands:
@@ -828,6 +894,10 @@ Kros.KORM supports SQL commands execution. There are three types of commands:
   ```
 
 * ```ExecuteScalar``` for commands that return only one value (SELECT)
+
+  ```CSharp
+  int? count = await _database.ExecuteScalarAsync<int>("SELECT COUNT(*) FROM Person WHERE Age > @1", cancellationToken, 18);
+  ```
 
 * ```ExecuteStoredProcedure``` for executing of stored procedures. Stored procedure may return scalar value or list of values or it can return data in output parameters.
 
@@ -865,6 +935,16 @@ Person person = _database.ExecuteStoredProcedure<Person>("ProcedureName");
 
 // Stored procedure returns list of complex objects.
 IEnumerable<Person> persons = _database.ExecuteStoredProcedure<IEnumerable<Person>>("ProcedureName");
+
+
+// Asynchronous execution with cancellation. Stored procedure returns a stream of complex objects.
+IAsyncEnumerable<Person> personsStream = await _database.ExecuteStoredProcedureAsync<IAsyncEnumerable<Person>>(
+    "ProcedureName", cancellationToken);
+
+await foreach (var item in personsStream.WithCancellation(cancellationToken))
+{
+    Console.WriteLine(item.FirstName);
+}
 ```
 
 #### CommandTimeout support
@@ -908,16 +988,50 @@ builder.Services.AddKorm(builder.Configuration)
 
             options.AddRefreshViewsAction();
 
-            options.AddAfterMigrationAction(async (database, id) =>
+            options.AddAfterMigrationAction(async (database, id, cancellationToken) =>
             {
                 if (id <= scriptId)
                 {
-                    await database.ExecuteNonQueryAsync("INSERT ...");
+                    await database.ExecuteNonQueryAsync("INSERT ...", cancellationToken);
                 }
             });
         })
         .Migrate();
 ```
+
+The action receives a `CancellationToken` as its third argument. Forward it to the asynchronous calls inside the action. Migrations can also be run asynchronously and cancelled:
+
+```CSharp
+IMigrationsRunner runner = serviceProvider.GetRequiredService<IMigrationsRunner>();
+await runner.MigrateAsync(cancellationToken);
+```
+
+Custom `IMigrationScriptsProvider` implementations must implement `GetScriptAsync(ScriptInfo, CancellationToken)`.
+
+### Cancellation
+
+Every asynchronous method of Kros.KORM accepts a `CancellationToken` (an optional parameter, usually the last one before `params`). This includes queries, SQL commands, stored procedures, `BeginTransactionAsync`, `DbSet` operations (including bulk operations), `IDatabase` extensions and migrations.
+
+```CSharp
+using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+
+await foreach (var person in database.Query<Person>().AsAsyncEnumerable(cts.Token))
+{
+    Console.WriteLine(person.FirstName);
+}
+
+using var transaction = await database.BeginTransactionAsync(cts.Token);
+```
+
+Canceling a token throws `OperationCanceledException` and cancels the running database command. Disposing an enumerator of `AsAsyncEnumerable` early also cancels the command.
+
+Known limitations:
+
+* A custom primary key id generator performs synchronous I/O inside the bulk insert. This part is not cancellable.
+* The `DbTransaction` itself is created synchronously on the first command. `BeginTransactionAsync` opens the connection asynchronously only.
+* Stored procedure results of type `IEnumerable<T>` execute the reader asynchronously, but rows are read synchronously. Use `IAsyncEnumerable<T>` for fully asynchronous reading.
+* Cancelling a `BulkUpdate` in progress can leave a temporary table in the database until the connection is closed.
+* Cancellation support requires `Kros.Utils` version 4.6.0 or newer.
 
 ### Record types
 
