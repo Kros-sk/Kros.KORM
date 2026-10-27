@@ -1,9 +1,13 @@
 ﻿using Kros.Data;
 using Kros.KORM.Migrations;
+using Kros.KORM.Migrations.Providers;
 using Kros.UnitTests;
 using Microsoft.Data.SqlClient;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -56,7 +60,7 @@ FROM dbo.People";
         public async Task ExecuteInitialMigration()
         {
             var runner = CreateMigrationsRunner(nameof(ExecuteInitialMigration));
-            await runner.MigrateAsync();
+            await runner.MigrateAsync(TestContext.Current.CancellationToken);
 
             TableShouldExist("__KormMigrationsHistory");
             TableShouldExist("People");
@@ -70,7 +74,7 @@ FROM dbo.People";
             var runner = CreateMigrationsRunner(nameof(MigrateToLastVersion));
             InitDatabase();
 
-            await runner.MigrateAsync();
+            await runner.MigrateAsync(TestContext.Current.CancellationToken);
 
             TableShouldExist("People");
             TableShouldExist("Projects");
@@ -86,10 +90,40 @@ FROM dbo.People";
             var runner = CreateMigrationsRunner(nameof(MigrateWithActions), true);
             InitDatabase();
 
-            await runner.MigrateAsync();
+            await runner.MigrateAsync(TestContext.Current.CancellationToken);
 
             ColumnInViewShouldExist("PeopleView", "Age");
             TableShouldExist("Roles");
+        }
+
+        [Fact]
+        public async Task MigrateAsync_ThrowsWhenTokenAlreadyCancelled()
+        {
+            var runner = CreateMigrationsRunner(nameof(ExecuteInitialMigration));
+
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(
+                () => runner.MigrateAsync(new CancellationToken(canceled: true)));
+
+            TableShouldNotExist(Migration.TableName);
+            TableShouldNotExist("People");
+        }
+
+        [Fact]
+        public async Task MigrateAsync_CancelledBetweenScripts_DoesNotRunRemainingScripts()
+        {
+            using var cts = new CancellationTokenSource();
+            var innerProvider = new AssemblyMigrationScriptsProvider(
+                Assembly.GetExecutingAssembly(),
+                $"Kros.KORM.UnitTests.Resources.ScriptsForRunner.{nameof(MigrateToLastVersion)}");
+            var provider = new CancellingScriptsProvider(innerProvider, cts, cancelAfterScriptNumber: 2);
+            var options = new MigrationOptions();
+            options.AddScriptsProvider(provider);
+            var runner = new MigrationsRunner(ServerHelper.Connection.ConnectionString, options);
+
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => runner.MigrateAsync(cts.Token));
+
+            MigrationsHistoryShouldContainOnly(20190228001);
+            TableShouldNotExist("People");
         }
 
         private void InitDatabase()
@@ -115,6 +149,26 @@ FROM dbo.People";
             {
                 cmd.CommandText = $"SELECT Count(*) FROM sys.tables WHERE name = '{tableName}' AND type = 'U'";
                 Assert.Equal(1, (int)cmd.ExecuteScalar());
+            });
+        }
+
+        private void TableShouldNotExist(string tableName)
+        {
+            ExecuteCommand((cmd) =>
+            {
+                cmd.CommandText = $"SELECT Count(*) FROM sys.tables WHERE name = '{tableName}' AND type = 'U'";
+                Assert.Equal(0, (int)cmd.ExecuteScalar());
+            });
+        }
+
+        private void MigrationsHistoryShouldContainOnly(long migrationId)
+        {
+            ExecuteCommand((cmd) =>
+            {
+                cmd.CommandText = "SELECT Count(*) FROM __KormMigrationsHistory";
+                Assert.Equal(1, (int)cmd.ExecuteScalar());
+                cmd.CommandText = "SELECT MigrationId FROM __KormMigrationsHistory";
+                Assert.Equal(migrationId, (long)cmd.ExecuteScalar());
             });
         }
 
@@ -171,6 +225,34 @@ FROM dbo.People";
             }
 
             return new MigrationsRunner(ServerHelper.Connection.ConnectionString, options);
+        }
+
+        /// <summary>
+        /// Wraps another provider and cancels <paramref name="cts"/> right after returning the content
+        /// of the script number <paramref name="cancelAfterScriptNumber"/> (1-based).
+        /// </summary>
+        private sealed class CancellingScriptsProvider(
+            IMigrationScriptsProvider inner,
+            CancellationTokenSource cts,
+            int cancelAfterScriptNumber) : IMigrationScriptsProvider
+        {
+            private int _returnedScripts;
+
+            // Script infos must point to this provider, so that ScriptInfo.GetScriptAsync calls back here.
+            public IEnumerable<ScriptInfo> GetScripts()
+                => inner.GetScripts()
+                    .Select(s => new ScriptInfo(this) { Id = s.Id, Name = s.Name, Path = s.Path })
+                    .ToList();
+
+            public async Task<string> GetScriptAsync(ScriptInfo scriptInfo, CancellationToken cancellationToken = default)
+            {
+                string script = await inner.GetScriptAsync(scriptInfo, cancellationToken);
+                if (++_returnedScripts == cancelAfterScriptNumber)
+                {
+                    cts.Cancel();
+                }
+                return script;
+            }
         }
     }
 }
