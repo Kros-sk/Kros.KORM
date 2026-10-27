@@ -154,7 +154,7 @@ namespace Kros.KORM.Query
             => FirstOrDefault(whereCondition, whereCondition.GetArguments());
 
         /// <inheritdoc />
-        public Task<T> FirstOrDefaultAsync(
+        public async Task<T> FirstOrDefaultAsync(
             RawSqlString whereCondition,
             CancellationToken cancellationToken = default,
             params object[] args)
@@ -163,7 +163,7 @@ namespace Kros.KORM.Query
 
             SelectExpression.SetWhereExpression(new WhereExpression(whereCondition, args));
 
-            return FirstOrDefaultAsync(cancellationToken);
+            return await FirstOrDefaultAsync(cancellationToken);
         }
 
         /// <inheritdoc />

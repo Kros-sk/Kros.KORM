@@ -189,5 +189,21 @@ INSERT INTO [Foo] VALUES (4, 3, 'Jakub');";
             await Assert.ThrowsAsync<InvalidOperationException>(
                 () => source.ToListAsync(TestContext.Current.CancellationToken));
         }
+
+        [Fact]
+        public async Task AsyncOverloadsBindByNameAndWithoutToken()
+        {
+            using TestDatabase database = CreateDatabase(CreateTable_FooTable, InsertIntoFooScript);
+            CancellationToken ct = TestContext.Current.CancellationToken;
+
+            Assert.Equal("Juraj", (await database.Query<Foo>().FirstOrDefaultAsync("Id = @1", ct, 3)).Value);
+            Assert.Equal("Juraj", (await database.Query<Foo>().FirstOrDefaultAsync(
+                whereCondition: "Id = @1", cancellationToken: ct, args: new object[] { 3 })).Value);
+            Assert.Equal("Juraj", (await database.Query<Foo>().FirstOrDefaultAsync("Id = @1", args: new object[] { 3 })).Value);
+            Assert.True(await database.Query<Foo>().AnyAsync("Id > @1", args: new object[] { 2 }));
+            Assert.True(await database.Query<Foo>().AnyAsync($"Id > {2}"));
+            Assert.Equal(4, (await database.Query<Foo>().ToListAsync(cancellationToken: ct)).Count);
+            Assert.NotNull(await database.Query<Foo>().FirstOrDefaultAsync());
+        }
     }
 }
