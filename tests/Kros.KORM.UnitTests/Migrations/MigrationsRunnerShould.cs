@@ -1,4 +1,4 @@
-using Kros.Data;
+﻿using Kros.Data;
 using Kros.KORM.Migrations;
 using Kros.UnitTests;
 using Microsoft.Data.SqlClient;
@@ -156,16 +156,16 @@ FROM dbo.People";
             {
                 options.AddRefreshViewsAction();
 
-                options.AddAfterMigrationAction(async (db, id) =>
+                options.AddAfterMigrationAction(async (db, id, cancellationToken) =>
                 {
                     if (id <= 20250101001)
                     {
-                        await db.ExecuteNonQueryAsync("CREATE TABLE Departments (Id int);");
+                        await db.ExecuteNonQueryAsync("CREATE TABLE Departments (Id int);", cancellationToken);
                     }
 
                     if (id <= 20990101001)
                     {
-                        await db.ExecuteNonQueryAsync("CREATE TABLE Roles (Id int);");
+                        await db.ExecuteNonQueryAsync("CREATE TABLE Roles (Id int);", cancellationToken);
                     }
                 });
             }

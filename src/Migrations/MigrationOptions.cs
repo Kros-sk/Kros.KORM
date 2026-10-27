@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Kros.KORM.Migrations
@@ -18,7 +19,7 @@ namespace Kros.KORM.Migrations
         private const string DefaultRefreshViewsScriptName = "RefreshViews.sql";
 
         private List<IMigrationScriptsProvider> _providers = [];
-        private List<Func<IDatabase, long, Task>> _actions = [];
+        private List<Func<IDatabase, long, CancellationToken, Task>> _actions = [];
 
         /// <summary>
         /// List of <see cref="IMigrationScriptsProvider"/>.
@@ -29,7 +30,7 @@ namespace Kros.KORM.Migrations
         /// <summary>
         /// List of actions to be executed on database after migration scripts are executed.
         /// </summary>
-        public IEnumerable<Func<IDatabase, long, Task>> Actions => _actions;
+        public IEnumerable<Func<IDatabase, long, CancellationToken, Task>> Actions => _actions;
 
         /// <summary>
         /// Timeout for the migration script command.
@@ -62,8 +63,11 @@ namespace Kros.KORM.Migrations
         /// <summary>
         /// Add action to be executed on database after migration scripts are executed.
         /// </summary>
-        /// <param name="actionToExecute"></param>
-        public void AddAfterMigrationAction(Func<IDatabase, long, Task> actionToExecute)
+        /// <param name="actionToExecute">
+        /// Action to execute. Its parameters are the database, the id of the last executed migration script,
+        /// and the token to monitor for cancellation requests.
+        /// </param>
+        public void AddAfterMigrationAction(Func<IDatabase, long, CancellationToken, Task> actionToExecute)
         {
             _actions.Add(actionToExecute);
         }
@@ -75,12 +79,12 @@ namespace Kros.KORM.Migrations
         {
             var assembly = Assembly.GetExecutingAssembly();
             var resourceName = $"{assembly.GetName().Name}.{DefaultResourceNamespace}.{DefaultRefreshViewsScriptName}";
-            AddAfterMigrationAction(async (database, _) =>
+            AddAfterMigrationAction(async (database, _, cancellationToken) =>
             {
                 await using Stream resourceStream = assembly.GetManifestResourceStream(resourceName);
                 using var reader = new StreamReader(resourceStream, Encoding.UTF8);
-                string script = await reader.ReadToEndAsync();
-                await database.ExecuteNonQueryAsync(script);
+                string script = await reader.ReadToEndAsync(cancellationToken);
+                await database.ExecuteNonQueryAsync(script, cancellationToken);
             });
         }
     }

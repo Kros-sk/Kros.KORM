@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Kros.KORM.Migrations
@@ -86,7 +87,7 @@ namespace Kros.KORM.Migrations
 
                     foreach (var action in _migrationOptions.Actions)
                     {
-                        await action(helper.Database, maxScriptId);
+                        await action(helper.Database, maxScriptId, CancellationToken.None);
                     }
                 }
             }
