@@ -3,6 +3,9 @@ using NSubstitute;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
+using System.Threading;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Kros.KORM.UnitTests.Query.Providers
@@ -62,6 +65,17 @@ namespace Kros.KORM.UnitTests.Query.Providers
         }
 
         [Fact]
+        public async Task SkipFirstRecordsAndLimitOthersAsync()
+        {
+            var limitOffsetReader = new LimitOffsetDataReader(5, 2);
+            DbDataReader innerReader = CreateInnerAsyncReader();
+            limitOffsetReader.SetInnerReader(innerReader);
+
+            await CheckReaderDataAsync(limitOffsetReader, 3, 4, 5, 6, 7);
+            innerReader.DidNotReceive().Read();
+        }
+
+        [Fact]
         public void ReturnNoRowsWhenOffsetIsTooBig()
         {
             var limitOffsetReader = new LimitOffsetDataReader(5, 20);
@@ -82,6 +96,21 @@ namespace Kros.KORM.UnitTests.Query.Providers
             innerReader.ClearReceivedCalls();
             Assert.False(limitOffsetReader.Read());
             innerReader.Received(1).Read();
+        }
+
+        [Fact]
+        public async Task ReturnFalseImmediatelyWhenOffsetIsTooBigAsync()
+        {
+            var limitOffsetReader = new LimitOffsetDataReader(10, 20);
+            DbDataReader innerReader = CreateInnerAsyncReader();
+            limitOffsetReader.SetInnerReader(innerReader);
+
+            Assert.False(await limitOffsetReader.ReadAsync(TestContext.Current.CancellationToken));
+            await innerReader.Received(11).ReadAsync(Arg.Any<CancellationToken>());
+
+            innerReader.ClearReceivedCalls();
+            Assert.False(await limitOffsetReader.ReadAsync(TestContext.Current.CancellationToken));
+            await innerReader.Received(1).ReadAsync(Arg.Any<CancellationToken>());
         }
 
         [Fact]
@@ -128,6 +157,32 @@ namespace Kros.KORM.UnitTests.Query.Providers
             reader.GetInt32(0).ReturnsForAnyArgs(callInfo => counter);
 
             return reader;
+        }
+
+        private DbDataReader CreateInnerAsyncReader()
+        {
+            int counter = 0;
+            DbDataReader reader = Substitute.For<DbDataReader>();
+            reader.ReadAsync(Arg.Any<CancellationToken>()).Returns(
+                callInfo =>
+                {
+                    counter++;
+                    return Task.FromResult(counter <= 10);
+                });
+            reader.GetInt32(0).ReturnsForAnyArgs(callInfo => counter);
+
+            return reader;
+        }
+
+        private async Task CheckReaderDataAsync(LimitOffsetDataReader reader, params int[] expectedData)
+        {
+            var readerData = new List<int>();
+            while (await reader.ReadAsync(TestContext.Current.CancellationToken))
+            {
+                readerData.Add(reader.GetInt32(0));
+            }
+
+            Assert.Equivalent(expectedData, readerData);
         }
 
         private void CheckReaderData(IDataReader reader, params int[] expectedData)

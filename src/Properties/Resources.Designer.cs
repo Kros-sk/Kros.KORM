@@ -359,6 +359,15 @@ namespace Kros.KORM.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The asynchronous sequence can be enumerated only once..
+        /// </summary>
+        internal static string ModelBuilderAsyncEnumerableAlreadyEnumerated {
+            get {
+                return ResourceManager.GetString("ModelBuilderAsyncEnumerableAlreadyEnumerated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cannot execute query. There are more parameters than values in the query..
         /// </summary>
         internal static string MoreParametersThanValues {
