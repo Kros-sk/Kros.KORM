@@ -199,11 +199,15 @@ INSERT INTO [Foo] VALUES (4, 3, 'Jakub');";
             Assert.Equal("Juraj", (await database.Query<Foo>().FirstOrDefaultAsync("Id = @1", ct, 3)).Value);
             Assert.Equal("Juraj", (await database.Query<Foo>().FirstOrDefaultAsync(
                 whereCondition: "Id = @1", cancellationToken: ct, args: new object[] { 3 })).Value);
+#pragma warning disable xUnit1051 // overload-binding pins: the omitted token is the point of these calls
             Assert.Equal("Juraj", (await database.Query<Foo>().FirstOrDefaultAsync("Id = @1", args: new object[] { 3 })).Value);
             Assert.True(await database.Query<Foo>().AnyAsync("Id > @1", args: new object[] { 2 }));
             Assert.True(await database.Query<Foo>().AnyAsync($"Id > {2}"));
+#pragma warning restore xUnit1051
             Assert.Equal(4, (await database.Query<Foo>().ToListAsync(cancellationToken: ct)).Count);
+#pragma warning disable xUnit1051 // overload-binding pins: the omitted token is the point of these calls
             Assert.NotNull(await database.Query<Foo>().FirstOrDefaultAsync());
+#pragma warning restore xUnit1051
         }
 
         [Fact]

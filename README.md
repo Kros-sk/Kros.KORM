@@ -788,6 +788,8 @@ For simplifying calling methods (`Add`, `Edit`, `Delete`) use extension methods 
 
 ```CSharp
 await database.AddAsync(person);
+// The collection must be typed as IEnumerable<T>, see the note below.
+IEnumerable<Person> people = GetPeople();
 await database.AddAsync(people);
 await database.AddAsync(people, cancellationToken);
 await database.BulkAddAsync(people, cancellationToken);
@@ -807,6 +809,11 @@ await database.UpsertAsync(people);
 
 ```
 
+> **Note:** The collection overloads of `AddAsync`, `EditAsync` and `DeleteAsync` are used only when the argument is typed
+> as `IEnumerable<T>` (e.g. `IEnumerable<Person> people = …;`). A `List<T>` or an array binds to the single-entity
+> overload (with `TEntity` being `List<Person>`) and fails at runtime. `BulkAddAsync` and `BulkEditAsync` do not have
+> this issue.
+
 
 #### Execute with temp table
 
@@ -819,13 +826,13 @@ database.ExecuteWithTempTable<TValue>(IEnumerable<TValue> values, action);
 await database.ExecuteWithTempTableAsync<TValue>(IEnumerable<TValue> values, function, cancellationToken: cancellationToken);
 
 database.ExecuteWithTempTable<TKey, TValue>(IDictionary<TKey, TValue> values, action);
-await database.ExecuteWithTempTable<TKey, TValue>(IDictionary<TKey, TValue> values, function);
+await database.ExecuteWithTempTableAsync<TKey, TValue>(IDictionary<TKey, TValue> values, function);
 
 T database.ExecuteWithTempTable<T, TValue> (IEnumerable<TValue> values, action);
-await T database.ExecuteWithTempTable<T, TValue> (IEnumerable<TValue> values, function);
+await T database.ExecuteWithTempTableAsync<T, TValue> (IEnumerable<TValue> values, function);
 
 T database.ExecuteWithTempTable<T, TKey, TValue> (IDictionary<TKey, TValue> values, action);
-await T database.ExecuteWithTempTable<T,TKey, TValue> (IDictionary<TKey, TValue> values, function);
+await T database.ExecuteWithTempTableAsync<T,TKey, TValue> (IDictionary<TKey, TValue> values, function);
 
 public class Person
 {
