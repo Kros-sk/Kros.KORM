@@ -42,6 +42,33 @@ namespace Kros.KORM.Query
         object ExecuteScalar<T>(IQuery<T> query);
 
         /// <summary>
+        /// Asynchronously executes the specified query. The query is executed when the returned sequence is enumerated;
+        /// every enumeration executes it again.
+        /// </summary>
+        /// <typeparam name="T">Type of model result.</typeparam>
+        /// <param name="query">The query.</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+        /// <exception cref="ArgumentNullException">If query is null.</exception>
+        /// <returns>
+        /// Asynchronous sequence of models, which are materialized by the query.
+        /// </returns>
+        IAsyncEnumerable<T> ExecuteAsync<T>(IQuery<T> query, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Asynchronously executes the query and returns the first column of the first row in the result set.
+        /// Additional columns or rows are ignored.
+        /// </summary>
+        /// <typeparam name="T">Type of model.</typeparam>
+        /// <param name="query">The query.</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+        /// <exception cref="ArgumentNullException">If query is null.</exception>
+        /// <returns>
+        /// A task that represents the asynchronous operation. The task result contains the first column
+        /// of the first row in the result set, or <see langword="null"/> if the result set is empty.
+        /// </returns>
+        Task<object> ExecuteScalarAsync<T>(IQuery<T> query, CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// Executes the query, and returns the first column of the first row in the result
         /// set returned by the query. Additional columns or rows are ignored.
         /// </summary>

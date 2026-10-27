@@ -343,6 +343,7 @@ namespace Kros.KORM.UnitTests
             System.Linq.IQueryable System.Linq.IQueryProvider.CreateQuery(Expression expression) => throw new NotImplementedException();
             System.Linq.IQueryable<TElement> System.Linq.IQueryProvider.CreateQuery<TElement>(Expression expression) => throw new NotImplementedException();
             IEnumerable<T> IQueryProvider.Execute<T>(IQuery<T> query) => throw new NotImplementedException();
+            IAsyncEnumerable<T> IQueryProvider.ExecuteAsync<T>(IQuery<T> query, CancellationToken cancellationToken) => throw new NotImplementedException();
             object System.Linq.IQueryProvider.Execute(Expression expression) => throw new NotImplementedException();
             TResult System.Linq.IQueryProvider.Execute<TResult>(Expression expression) => throw new NotImplementedException();
             int IQueryProvider.ExecuteNonQuery(string query) => throw new NotImplementedException();
@@ -352,6 +353,7 @@ namespace Kros.KORM.UnitTests
             Task<int> IQueryProvider.ExecuteNonQueryAsync(string query, CommandParameterCollection parameters, CancellationToken cancellationToken) => throw new NotImplementedException();
             Task<int> IQueryProvider.ExecuteNonQueryCommandAsync(DbCommand command, CancellationToken cancellationToken) => throw new NotImplementedException();
             object IQueryProvider.ExecuteScalar<T>(IQuery<T> query) => throw new NotImplementedException();
+            Task<object> IQueryProvider.ExecuteScalarAsync<T>(IQuery<T> query, CancellationToken cancellationToken) => throw new NotImplementedException();
             object IQueryProvider.ExecuteScalarCommand(IDbCommand command) => throw new NotImplementedException();
             Task<object> IQueryProvider.ExecuteScalarCommandAsync(DbCommand command, CancellationToken cancellationToken) => throw new NotImplementedException();
             TResult IQueryProvider.ExecuteStoredProcedure<TResult>(string storedProcedureName) => throw new NotImplementedException();

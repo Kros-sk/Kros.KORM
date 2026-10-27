@@ -19,6 +19,7 @@ using System.Data.Common;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -250,6 +251,92 @@ namespace Kros.KORM.Query
                     {
                         reader.SetInnerReader(commandInfo.Command.ExecuteReader());
                         if (reader.Read())
+                        {
+                            return reader.GetValue(0);
+                        }
+                    }
+                }
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Asynchronously executes the specified query. The query is executed when the returned sequence is enumerated;
+        /// every enumeration executes it again.
+        /// </summary>
+        /// <typeparam name="T">Type of model result.</typeparam>
+        /// <param name="query">The query.</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+        /// <returns>
+        /// Asynchronous sequence of models, which are materialized by the query.
+        /// </returns>
+        /// <exception cref="ArgumentNullException">If query is null.</exception>
+        public virtual IAsyncEnumerable<T> ExecuteAsync<T>(IQuery<T> query, CancellationToken cancellationToken = default)
+        {
+            Check.NotNull(query, nameof(query));
+            return ExecuteAsyncCore(query, cancellationToken);
+        }
+
+        private async IAsyncEnumerable<T> ExecuteAsyncCore<T>(
+            IQuery<T> query,
+            [EnumeratorCancellation] CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            DbCommandInfo commandInfo = null;
+            Data.ConnectionHelper cnHelper = null;
+            ModelBuilder.QueryDataReader reader;
+            try
+            {
+                commandInfo = CreateCommand(query);
+                cnHelper = await OpenConnectionAsync(cancellationToken);
+                _logger.LogCommand(commandInfo.Command);
+                reader = await ModelBuilder.QueryDataReader.CreateAsync(
+                    commandInfo.Command, commandInfo.Reader, cnHelper.CloseConnection, cancellationToken);
+            }
+            catch
+            {
+                commandInfo?.Dispose();
+                cnHelper?.Dispose();
+                throw;
+            }
+
+            await foreach (T item in _modelBuilder.MaterializeAsync<T>(reader).WithCancellation(cancellationToken))
+            {
+                yield return item;
+            }
+        }
+
+        /// <summary>
+        /// Asynchronously executes the query and returns the first column of the first row in the result set.
+        /// Additional columns or rows are ignored.
+        /// </summary>
+        /// <typeparam name="T">Type of model.</typeparam>
+        /// <param name="query">The query.</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+        /// <returns>
+        /// A task that represents the asynchronous operation. The task result contains the first column
+        /// of the first row in the result set, or <see langword="null"/> if the result set is empty.
+        /// </returns>
+        /// <exception cref="ArgumentNullException">If query is null.</exception>
+        public virtual async Task<object> ExecuteScalarAsync<T>(IQuery<T> query, CancellationToken cancellationToken = default)
+        {
+            Check.NotNull(query, nameof(query));
+
+            using (Data.ConnectionHelper cnHelper = await OpenConnectionAsync(cancellationToken))
+            using (DbCommandInfo commandInfo = CreateCommand(query))
+            {
+                _logger.LogCommand(commandInfo.Command);
+                if (commandInfo.Reader == null)
+                {
+                    return await commandInfo.Command.ExecuteScalarAsync(cancellationToken);
+                }
+                else
+                {
+                    using (IDataReaderEnvelope reader = commandInfo.Reader)
+                    {
+                        reader.SetInnerReader(await commandInfo.Command.ExecuteReaderAsync(cancellationToken));
+                        if (await reader.ReadAsync(cancellationToken))
                         {
                             return reader.GetValue(0);
                         }
