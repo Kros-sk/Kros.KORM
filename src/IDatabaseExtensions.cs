@@ -32,8 +32,12 @@ namespace Kros.KORM
         /// <typeparam name="TEntity">Entities type.</typeparam>
         /// <param name="database"><see cref="IDatabase"/> instance.</param>
         /// <param name="entities">Entities to add.</param>
-        public static async Task AddAsync<TEntity>(this IDatabase database, IEnumerable<TEntity> entities) where TEntity : class
-            => await CommitChangesAsync(database, (IDbSet<TEntity> dbSet) => dbSet.Add(entities));
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+        public static async Task AddAsync<TEntity>(
+            this IDatabase database,
+            IEnumerable<TEntity> entities,
+            CancellationToken cancellationToken = default) where TEntity : class
+            => await CommitChangesAsync(database, (IDbSet<TEntity> dbSet) => dbSet.Add(entities), cancellationToken);
 
         /// <summary>
         /// Adds <paramref name="entities"/> to the database via bulk insert.
@@ -90,10 +94,12 @@ namespace Kros.KORM
         /// <typeparam name="TEntity">Entities type.</typeparam>
         /// <param name="database"><see cref="IDatabase"/> instance.</param>
         /// <param name="entities">Entities to delete.</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
         public static async Task DeleteAsync<TEntity>(
             this IDatabase database,
-            IEnumerable<TEntity> entities) where TEntity : class
-            => await CommitChangesAsync(database, (IDbSet<TEntity> dbSet) => dbSet.Delete(entities));
+            IEnumerable<TEntity> entities,
+            CancellationToken cancellationToken = default) where TEntity : class
+            => await CommitChangesAsync(database, (IDbSet<TEntity> dbSet) => dbSet.Delete(entities), cancellationToken);
 
         /// <summary>
         /// Deletes the <typeparamref name="TEntity"/> with <paramref name="id"/> from the database.
@@ -155,8 +161,12 @@ namespace Kros.KORM
         /// <typeparam name="TEntity">Entities type.</typeparam>
         /// <param name="database"><see cref="IDatabase"/> instance.</param>
         /// <param name="entities">Entities to edit.</param>
-        public static async Task EditAsync<TEntity>(this IDatabase database, IEnumerable<TEntity> entities) where TEntity : class
-            => await CommitChangesAsync(database, (IDbSet<TEntity> dbSet) => dbSet.Edit(entities));
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+        public static async Task EditAsync<TEntity>(
+            this IDatabase database,
+            IEnumerable<TEntity> entities,
+            CancellationToken cancellationToken = default) where TEntity : class
+            => await CommitChangesAsync(database, (IDbSet<TEntity> dbSet) => dbSet.Edit(entities), cancellationToken);
 
         /// <summary>
         /// Edits <paramref name="entities"/> in the database via bulk update.

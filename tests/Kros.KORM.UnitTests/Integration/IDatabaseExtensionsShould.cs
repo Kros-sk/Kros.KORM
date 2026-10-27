@@ -284,5 +284,58 @@ INSERT INTO {Table_TestTable} VALUES (2, 22, 'Kilie', 'Bistrol');";
                 Assert.Equal("John", database.Query<Person>().First(p => p.Id == 1).FirstName);
             }
         }
+
+        [Fact]
+        public async Task AddEntitiesAsync()
+        {
+            using (IDatabase database = CreateDatabase(CreateTable_TestTable, InsertDataScript))
+            {
+                await database.AddAsync(GetPeople(), TestContext.Current.CancellationToken);
+
+                Assert.Equal(4, database.Query<Person>().Count());
+            }
+        }
+
+        [Fact]
+        public async Task EditEntitiesAsync()
+        {
+            using (IDatabase database = CreateDatabase(CreateTable_TestTable, InsertDataScript))
+            {
+                IEnumerable<Person> people =
+                [
+                    new Person { Id = 1, Age = 99, FirstName = "John", LastName = "Smith" },
+                    new Person { Id = 2, Age = 99, FirstName = "Kilie", LastName = "Bistrol" },
+                ];
+
+                await database.EditAsync(people, TestContext.Current.CancellationToken);
+
+                Assert.All(database.Query<Person>(), p => Assert.Equal(99, p.Age));
+            }
+        }
+
+        [Fact]
+        public async Task DeleteEntitiesAsync()
+        {
+            using (IDatabase database = CreateDatabase(CreateTable_TestTable, InsertDataScript))
+            {
+                IEnumerable<Person> people = [new Person { Id = 1 }, new Person { Id = 2 }];
+
+                await database.DeleteAsync(people, TestContext.Current.CancellationToken);
+
+                Assert.Empty(database.Query<Person>());
+            }
+        }
+
+        [Fact]
+        public async Task AddEntitiesAsync_ThrowsWhenTokenAlreadyCancelled()
+        {
+            using (IDatabase database = CreateDatabase(CreateTable_TestTable, InsertDataScript))
+            {
+                await Assert.ThrowsAnyAsync<OperationCanceledException>(
+                    () => database.AddAsync(GetPeople(), new CancellationToken(canceled: true)));
+
+                Assert.Equal(2, database.Query<Person>().Count());
+            }
+        }
     }
 }
