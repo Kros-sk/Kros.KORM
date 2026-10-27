@@ -224,6 +224,35 @@ namespace Kros.KORM
         ITransaction BeginTransaction(IsolationLevel isolationLevel);
 
         /// <summary>
+        /// Asynchronously begins the transaction.
+        /// </summary>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+        /// <returns><see cref="ITransaction"/> wrapping access to the underlying store's transaction object.</returns>
+        /// <remarks>
+        /// The connection is opened asynchronously. The underlying <see cref="System.Data.Common.DbTransaction"/> is still
+        /// created synchronously when the first command is executed within the transaction.
+        /// </remarks>
+        /// <example>
+        /// <code source="..\Documentation\Examples\Kros.KORM.Examples\TransactionExample.cs" title="Transaction" region="Transaction" language="cs" />
+        /// </example>
+        Task<ITransaction> BeginTransactionAsync(CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Asynchronously begins the transaction using the specified isolation level.
+        /// </summary>
+        /// <param name="isolationLevel">The database isolation level with which the underlying store transaction will be created.</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+        /// <returns><see cref="ITransaction"/> wrapping access to the underlying store's transaction object.</returns>
+        /// <remarks>
+        /// The connection is opened asynchronously. The underlying <see cref="System.Data.Common.DbTransaction"/> is still
+        /// created synchronously when the first command is executed within the transaction.
+        /// </remarks>
+        /// <example>
+        /// <code source="..\Documentation\Examples\Kros.KORM.Examples\TransactionExample.cs" title="Transaction" region="TransactionsIsolationLevel" language="cs" />
+        /// </example>
+        Task<ITransaction> BeginTransactionAsync(IsolationLevel isolationLevel, CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// Initializes database for using ID generator. Initialization can mean creating necessary table and stored procedure.
         /// </summary>
         void InitDatabaseForIdGenerator();

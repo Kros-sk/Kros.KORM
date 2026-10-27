@@ -269,6 +269,14 @@ namespace Kros.KORM.Query
         ITransaction BeginTransaction(IsolationLevel isolationLevel);
 
         /// <summary>
+        /// Asynchronously begins a database transaction with the specified isolation level.
+        /// </summary>
+        /// <param name="isolationLevel">The database isolation level with which the underlying store transaction will be created.</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+        /// <returns><see cref="ITransaction"/> wrapping access to the underlying store's transaction object.</returns>
+        Task<ITransaction> BeginTransactionAsync(IsolationLevel isolationLevel, CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// Creates the identifier generator.
         /// </summary>
         /// <param name="tableName">Name of the database table.</param>

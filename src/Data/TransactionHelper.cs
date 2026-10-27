@@ -175,6 +175,23 @@ namespace Kros.KORM.Data
             return _transactions.Peek();
         }
 
+        public async Task<ITransaction> BeginTransactionAsync(IsolationLevel isolationLevel, CancellationToken cancellationToken)
+        {
+            if (_transactions.Count == 0)
+            {
+                ConnectionHelper connectionHelper = await ConnectionHelper.OpenAsync(_connection, cancellationToken);
+                _topTransaction = new Transaction(this, connectionHelper, isolationLevel);
+                _transactions.Push(_topTransaction);
+                _canCommit = true;
+            }
+            else
+            {
+                _transactions.Push(new NestedTransaction(this, _topTransaction.CommandTimeout));
+            }
+
+            return _transactions.Peek();
+        }
+
         public ITransaction BeginTransaction() => BeginTransaction(DefaultIsolationLevel);
 
         private bool CanCommitTransaction => _canCommit;

@@ -307,6 +307,14 @@ namespace Kros.KORM
             => _queryProvider.BeginTransaction(isolationLevel);
 
         /// <inheritdoc/>
+        public Task<ITransaction> BeginTransactionAsync(CancellationToken cancellationToken = default)
+            => BeginTransactionAsync(TransactionHelper.DefaultIsolationLevel, cancellationToken);
+
+        /// <inheritdoc/>
+        public Task<ITransaction> BeginTransactionAsync(IsolationLevel isolationLevel, CancellationToken cancellationToken = default)
+            => _queryProvider.BeginTransactionAsync(isolationLevel, cancellationToken);
+
+        /// <inheritdoc/>
         public void InitDatabaseForIdGenerator()
         {
             using (var idGenerators = _queryProvider.GetIdGeneratorsForDatabaseInit())

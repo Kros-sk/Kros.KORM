@@ -412,6 +412,30 @@ $@" CREATE PROCEDURE [dbo].[WaitForTwoSeconds] AS
             await DoTestWithConnectionAsync(openConnection, ExplicitTransactionCommitAsync, CreateDatabase);
         }
 
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task ExplicitTransactionShould_KeepMasterConnectionStateWhenCommitWasCalledAsync_BeginAsync(bool openConnection)
+        {
+            await DoTestWithConnectionAsync(openConnection, ExplicitTransactionBeginAndCommitAsync, CreateDatabase);
+        }
+
+        private async Task ExplicitTransactionBeginAndCommitAsync(TestDatabase database)
+        {
+            using (var korm = new Database(database.ConnectionString))
+            using (var transaction = await korm.BeginTransactionAsync(TestContext.Current.CancellationToken))
+            {
+                var dbSet = korm.Query<Invoice>().AsDbSet();
+
+                dbSet.Add(CreateTestData());
+                dbSet.CommitChanges();
+
+                await transaction.CommitAsync(TestContext.Current.CancellationToken);
+
+                DatabaseShouldContainInvoices(database.ConnectionString, CreateTestData());
+            }
+        }
+
         private async Task ExplicitTransactionCommitAsync(TestDatabase database)
         {
             using (var korm = new Database(database.ConnectionString))

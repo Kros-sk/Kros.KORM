@@ -542,6 +542,10 @@ namespace Kros.KORM.Query
             _transactionHelper.Value.BeginTransaction(isolationLevel);
 
         /// <inheritdoc/>
+        public Task<ITransaction> BeginTransactionAsync(IsolationLevel isolationLevel, CancellationToken cancellationToken = default) =>
+            _transactionHelper.Value.BeginTransactionAsync(isolationLevel, cancellationToken);
+
+        /// <inheritdoc/>
         [Obsolete("Method is deprecated. Use CreateIdGenerator(Type, string, int).")]
         public IIdGenerator CreateIdGenerator(string tableName, int batchSize)
             => CreateIdGenerator(typeof(int), tableName, batchSize);
