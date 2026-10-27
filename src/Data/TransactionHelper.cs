@@ -72,11 +72,11 @@ namespace Kros.KORM.Data
                 _wasCommitOrRollback = true;
                 if (useAsync)
                 {
-                    _transaction.Value.Rollback();
+                    await _transaction.Value.RollbackAsync(cancellationToken);
                 }
                 else
                 {
-                    await _transaction.Value.RollbackAsync(cancellationToken);
+                    _transaction.Value.Rollback();
                 }
                 _transactionHelper.EndTransaction(false);
             }
