@@ -43,7 +43,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Kros.Utils" Version="4.5.0" />
+    <PackageReference Include="Kros.Utils" Version="4.6.0" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.402" PrivateAssets="All" />
     <PackageReference Include="System.ValueTuple" Version="4.6.2" />
   </ItemGroup>
