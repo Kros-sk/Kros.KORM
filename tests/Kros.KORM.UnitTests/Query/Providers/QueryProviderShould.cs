@@ -126,6 +126,23 @@ namespace Kros.KORM.UnitTests.Query.Providers
             }
         }
 
+        private class TestItemWithAmbiguousConstructors
+        {
+            public TestItemWithAmbiguousConstructors(int id)
+            {
+                Id = id;
+            }
+
+            public TestItemWithAmbiguousConstructors(int id, int number)
+            {
+                Id = id;
+                Number = number;
+            }
+
+            public int Id { get; set; }
+            public int Number { get; set; }
+        }
+
         #endregion
 
         #region SQL Scripts
@@ -603,6 +620,24 @@ END";
                     async () => await ToListAsync(provider.ExecuteAsync(query, TestContext.Current.CancellationToken)));
 
                 Assert.Equal(ConnectionState.Closed, connection.State);
+            }
+        }
+
+        [Fact]
+        public async Task ExecuteAsyncClosesConnectionWhenModelFactoryFails()
+        {
+            using (SqlServerTestHelper helper = CreateHelper(CreateTable_TestTable))
+            using (var connection = new SqlConnection(helper.Connection.ConnectionString))
+            {
+                (SqlServerQueryProvider provider, IDatabaseMapper mapper) = CreateQueryProviderWithSqlGenerator(connection);
+                var query = new Query<TestItemWithAmbiguousConstructors>(mapper, provider);
+                query.Sql("SELECT [Id], [Number], [Description] FROM " + Table_TestTable);
+
+                await Assert.ThrowsAsync<InvalidOperationException>(
+                    async () => await ToListAsync(provider.ExecuteAsync(query, TestContext.Current.CancellationToken)));
+
+                Assert.Equal(ConnectionState.Closed, connection.State);
+                Assert.True(IsAnyReaderOpened(helper.Connection, Table_TestTable));
             }
         }
 

@@ -285,7 +285,8 @@ namespace Kros.KORM.Query
 
             DbCommandInfo commandInfo = null;
             Data.ConnectionHelper cnHelper = null;
-            ModelBuilder.QueryDataReader reader;
+            ModelBuilder.QueryDataReader reader = null;
+            IAsyncEnumerable<T> items;
             try
             {
                 commandInfo = CreateCommand(query);
@@ -293,15 +294,24 @@ namespace Kros.KORM.Query
                 _logger.LogCommand(commandInfo.Command);
                 reader = await ModelBuilder.QueryDataReader.CreateAsync(
                     commandInfo.Command, commandInfo.Reader, cnHelper.CloseConnection, cancellationToken);
+                items = _modelBuilder.MaterializeAsync<T>(reader);
             }
             catch
             {
-                commandInfo?.Dispose();
-                cnHelper?.Dispose();
+                if (reader != null)
+                {
+                    // The reader owns the command and closes the connection when it is disposed.
+                    reader.Dispose();
+                }
+                else
+                {
+                    commandInfo?.Dispose();
+                    cnHelper?.Dispose();
+                }
                 throw;
             }
 
-            await foreach (T item in _modelBuilder.MaterializeAsync<T>(reader).WithCancellation(cancellationToken))
+            await foreach (T item in items.WithCancellation(cancellationToken))
             {
                 yield return item;
             }
@@ -322,6 +332,7 @@ namespace Kros.KORM.Query
         public virtual async Task<object> ExecuteScalarAsync<T>(IQuery<T> query, CancellationToken cancellationToken = default)
         {
             Check.NotNull(query, nameof(query));
+            cancellationToken.ThrowIfCancellationRequested();
 
             using (Data.ConnectionHelper cnHelper = await OpenConnectionAsync(cancellationToken))
             using (DbCommandInfo commandInfo = CreateCommand(query))
