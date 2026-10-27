@@ -27,6 +27,9 @@ namespace Kros.KORM.Query.Providers
         /// Default implementation calls synchronous <see cref="IDataReader.Read"/>. Override it to read
         /// the inner reader asynchronously.
         /// </remarks>
-        Task<bool> ReadAsync(CancellationToken cancellationToken) => Task.FromResult(Read());
+        Task<bool> ReadAsync(CancellationToken cancellationToken)
+            => cancellationToken.IsCancellationRequested
+                ? Task.FromCanceled<bool>(cancellationToken)
+                : Task.FromResult(Read());
     }
 }

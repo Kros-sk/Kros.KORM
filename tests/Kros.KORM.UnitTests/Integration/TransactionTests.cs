@@ -472,6 +472,53 @@ $@" CREATE PROCEDURE [dbo].[WaitForTwoSeconds] AS
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
+        public async Task CommitChangesAsync_CancelledMidCommit_LeavesDatabaseUsable(bool openConnection)
+        {
+            await DoTestWithConnectionAsync(openConnection, CommitChangesCancelledMidCommit, CreateDatabase);
+        }
+
+        private async Task CommitChangesCancelledMidCommit(TestDatabase database)
+        {
+            using var cts = new CancellationTokenSource();
+            var dbSet = database.Query<CancellingInvoice>().AsDbSet();
+            dbSet.Add(new CancellingInvoice() { Id = 1, Code = "0001", Description = "Item 1" });
+            // The token is cancelled while the second item's INSERT command is being filled,
+            // i.e. after the first item has already been inserted within the transaction.
+            dbSet.Add(new CancellingInvoice() { Id = 2, Code = "0002", Description = "Item 2", CancelOnRead = cts });
+
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => dbSet.CommitChangesAsync(cts.Token));
+
+            Assert.Empty(database.Query<Invoice>());
+            InvoicesTableShouldBeEmpty(database.ConnectionString);
+
+            // A new transaction must be a real top-level transaction (not nested under the cancelled one),
+            // so its rollback really rolls the data back.
+            using (var transaction = database.BeginTransaction())
+            {
+                var invoices = database.Query<Invoice>().AsDbSet();
+                invoices.Add(CreateTestData());
+                invoices.CommitChanges();
+
+                transaction.Rollback();
+            }
+
+            InvoicesTableShouldBeEmpty(database.ConnectionString);
+
+            using (var transaction = database.BeginTransaction())
+            {
+                var invoices = database.Query<Invoice>().AsDbSet();
+                invoices.Add(CreateTestData());
+                invoices.CommitChanges();
+
+                transaction.Commit();
+            }
+
+            DatabaseShouldContainInvoices(database.ConnectionString, CreateTestData());
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
         public void ExplicitTransactionShould_KeepMasterConnectionStateWhenRollbackWasCalled(bool openConnection)
         {
             DoTestWithConnection(openConnection, ExplicitTransactionRollback, CreateDatabase);
@@ -649,6 +696,14 @@ $@" CREATE PROCEDURE [dbo].[WaitForTwoSeconds] AS
             DatabaseShouldContainInvoices(korm.ConnectionString, new List<Invoice>());
         }
 
+        private static void InvoicesTableShouldBeEmpty(string connectionString)
+        {
+            using (var korm = new Database(connectionString))
+            {
+                Assert.Empty(korm.Query<Invoice>());
+            }
+        }
+
         private void DatabaseShouldContainInvoices(string connectionString, IEnumerable<Invoice> expected)
         {
             using (var korm = new Database(connectionString))
@@ -686,6 +741,32 @@ $@" CREATE PROCEDURE [dbo].[WaitForTwoSeconds] AS
             public string Code { get; set; }
 
             public string Description { get; set; }
+        }
+
+        /// <summary>
+        /// Invoice which cancels <see cref="CancelOnRead"/> when its <see cref="Description"/> is read
+        /// (i.e. when KORM fills the command for it).
+        /// </summary>
+        [Alias("Invoices")]
+        public class CancellingInvoice
+        {
+            private string _description;
+
+            internal CancellationTokenSource CancelOnRead;
+
+            public int Id { get; set; }
+
+            public string Code { get; set; }
+
+            public string Description
+            {
+                get
+                {
+                    CancelOnRead?.Cancel();
+                    return _description;
+                }
+                set => _description = value;
+            }
         }
 
         #endregion

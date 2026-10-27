@@ -389,7 +389,8 @@ namespace Kros.KORM.Query
                 }
                 catch
                 {
-                    await transaction.RollbackAsync(cancellationToken);
+                    // Rollback must not be skipped just because the token has been cancelled.
+                    await transaction.RollbackAsync(CancellationToken.None);
                     throw;
                 }
             }

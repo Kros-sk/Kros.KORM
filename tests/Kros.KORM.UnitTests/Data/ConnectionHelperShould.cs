@@ -55,5 +55,17 @@ namespace Kros.KORM.UnitTests.Data
 
             Assert.Equal(0, cn.OpenAsyncCount);
         }
+
+        [Fact]
+        public async Task OpenAsync_ThrowsWhenTokenAlreadyCancelled_OnOpenConnection()
+        {
+            var cn = new FakeDbConnection();
+            cn.Open();
+
+            await Assert.ThrowsAnyAsync<System.OperationCanceledException>(
+                () => ConnectionHelper.OpenAsync(cn, new CancellationToken(canceled: true)));
+
+            Assert.Equal(0, cn.OpenAsyncCount);
+        }
     }
 }

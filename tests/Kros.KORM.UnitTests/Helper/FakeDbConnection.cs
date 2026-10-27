@@ -94,6 +94,7 @@ namespace Kros.KORM.UnitTests.Helper
 
         public override Task CommitAsync(CancellationToken cancellationToken = default)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             CommitAsyncCount++;
             return Task.CompletedTask;
         }
@@ -102,6 +103,7 @@ namespace Kros.KORM.UnitTests.Helper
 
         public override Task RollbackAsync(CancellationToken cancellationToken = default)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             RollbackAsyncCount++;
             return Task.CompletedTask;
         }

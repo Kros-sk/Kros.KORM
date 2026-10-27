@@ -77,7 +77,8 @@ namespace Kros.KORM.Migrations
             {
                 await InitMigrationsHistoryTable(helper.Database, cancellationToken);
 
-                Migration lastMigration = await GetLastMigrationInfoAsync(helper.Database, cancellationToken) ?? Migration.None;
+                Migration lastMigration =
+                    await GetLastMigrationInfoAsync(helper.Database, cancellationToken) ?? Migration.None;
                 var migrationScripts = GetMigrationScriptsToExecute(lastMigration).ToList();
 
                 if (migrationScripts.Any())
@@ -123,7 +124,10 @@ namespace Kros.KORM.Migrations
             .OrderBy(p => p.Id)
             .Where(p => p.Id > lastMigration.MigrationId);
 
-        private async Task AddNewMigrationInfo(IDatabase database, ScriptInfo scriptInfo, CancellationToken cancellationToken)
+        private async Task AddNewMigrationInfo(
+            IDatabase database,
+            ScriptInfo scriptInfo,
+            CancellationToken cancellationToken)
         {
             const string sql = "INSERT INTO [" + Migration.TableName + "] VALUES (@Id, @Name, @Info, @Updated)";
 
@@ -152,7 +156,10 @@ namespace Kros.KORM.Migrations
             }
         }
 
-        private async Task ExecuteMigrationScript(IDatabase database, string script, CancellationToken cancellationToken)
+        private async Task ExecuteMigrationScript(
+            IDatabase database,
+            string script,
+            CancellationToken cancellationToken)
         {
             string[] lines = ScriptLinesRegex.Split(script);
 
@@ -170,7 +177,8 @@ namespace Kros.KORM.Migrations
         private async Task InitMigrationsHistoryTable(IDatabase database, CancellationToken cancellationToken)
         {
             var sql = $"IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = '{Migration.TableName}' AND type = 'U')" +
-                Environment.NewLine + await GetResourceContent("Kros.KORM.Resources.MigrationsHistoryTableScript.sql", cancellationToken);
+                Environment.NewLine +
+                await GetResourceContent("Kros.KORM.Resources.MigrationsHistoryTableScript.sql", cancellationToken);
 
             await database.ExecuteNonQueryAsync(sql, cancellationToken);
         }

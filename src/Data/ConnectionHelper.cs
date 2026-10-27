@@ -42,6 +42,7 @@ namespace Kros.KORM.Data
             DbConnection connection,
             CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             bool closeConnection = !connection.State.HasFlag(ConnectionState.Open);
             if (closeConnection)
             {

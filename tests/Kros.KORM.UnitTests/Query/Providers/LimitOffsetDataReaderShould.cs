@@ -1,4 +1,5 @@
 using Kros.KORM.Query.Providers;
+using Kros.KORM.UnitTests.Helper;
 using NSubstitute;
 using System;
 using System.Collections.Generic;
@@ -140,6 +141,27 @@ namespace Kros.KORM.UnitTests.Query.Providers
             innerReader.Received().Close();
         }
 
+        [Fact]
+        public async Task DefaultEnvelopeReadAsync_ReturnsCancelledTaskWhenTokenAlreadyCancelled()
+        {
+            IDataReaderEnvelope envelope = new EnvelopeWithDefaultReadAsync();
+
+            Task<bool> readTask = envelope.ReadAsync(new CancellationToken(canceled: true));
+
+            Assert.True(readTask.IsCanceled);
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => readTask);
+            Assert.Null(((InMemoryDataReader)envelope).CurrentValues);
+        }
+
+        [Fact]
+        public async Task DefaultEnvelopeReadAsync_CallsSyncRead()
+        {
+            IDataReaderEnvelope envelope = new EnvelopeWithDefaultReadAsync();
+
+            Assert.True(await envelope.ReadAsync(TestContext.Current.CancellationToken));
+            Assert.False(await envelope.ReadAsync(TestContext.Current.CancellationToken));
+        }
+
         #endregion
 
         #region Helpers
@@ -194,6 +216,22 @@ namespace Kros.KORM.UnitTests.Query.Providers
             }
 
             Assert.Equivalent(expectedData, readerData);
+        }
+
+        /// <summary>
+        /// Envelope which does not override <see cref="IDataReaderEnvelope.ReadAsync"/>,
+        /// so the default interface implementation is used.
+        /// </summary>
+        private sealed class EnvelopeWithDefaultReadAsync : InMemoryDataReader, IDataReaderEnvelope
+        {
+            public EnvelopeWithDefaultReadAsync()
+                : base(new[] { new Dictionary<string, object>() { { "Id", 1 } } })
+            {
+            }
+
+            public void SetInnerReader(IDataReader innerReader)
+            {
+            }
         }
 
         #endregion

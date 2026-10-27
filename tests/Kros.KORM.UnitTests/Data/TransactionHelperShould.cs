@@ -74,6 +74,62 @@ namespace Kros.KORM.UnitTests.Data
         }
 
         [Fact]
+        public async Task BeginTransactionAsync_ThrowsWhenTokenAlreadyCancelled_OnOpenConnection()
+        {
+            var cn = new FakeDbConnection();
+            cn.Open();
+            var helper = new TransactionHelper(cn);
+
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(
+                () => helper.BeginTransactionAsync(IsolationLevel.ReadCommitted, new CancellationToken(canceled: true)));
+
+            Assert.Null(helper.CurrentTransaction);
+        }
+
+        [Fact]
+        public async Task RollbackAsync_WithCancelledToken_StillEndsTransaction()
+        {
+            var cn = new FakeDbConnection();
+            var helper = new TransactionHelper(cn);
+            using var tx = helper.BeginTransaction();
+            _ = helper.CurrentTransaction;
+
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(
+                () => tx.RollbackAsync(new CancellationToken(canceled: true)));
+
+            Assert.Null(helper.CurrentTransaction);
+        }
+
+        [Fact]
+        public async Task CommitAsync_WithCancelledToken_StillEndsTransaction()
+        {
+            var cn = new FakeDbConnection();
+            var helper = new TransactionHelper(cn);
+            using var tx = helper.BeginTransaction();
+            _ = helper.CurrentTransaction;
+
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(
+                () => tx.CommitAsync(new CancellationToken(canceled: true)));
+
+            Assert.Null(helper.CurrentTransaction);
+            Assert.Equal(0, cn.LastTransaction.CommitAsyncCount);
+        }
+
+        [Fact]
+        public void Dispose_WithoutAnyCommand_DoesNotCreateDbTransaction()
+        {
+            var cn = new FakeDbConnection();
+            var helper = new TransactionHelper(cn);
+            var tx = helper.BeginTransaction();
+
+            tx.Dispose();
+
+            Assert.Null(cn.LastTransaction);
+            Assert.Null(helper.CurrentTransaction);
+            Assert.Equal(1, cn.CloseCount);
+        }
+
+        [Fact]
         public void Rollback_CallsSyncRollbackOnDbTransaction()
         {
             var cn = new FakeDbConnection();

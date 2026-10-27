@@ -49,13 +49,22 @@ namespace Kros.KORM.Data
                 _wasCommitOrRollback = true;
                 if (_transactionHelper.CanCommitTransaction)
                 {
-                    if (useAsync)
+                    try
                     {
-                        await _transaction.Value.CommitAsync(cancellationToken);
+                        if (useAsync)
+                        {
+                            await _transaction.Value.CommitAsync(cancellationToken);
+                        }
+                        else
+                        {
+                            _transaction.Value.Commit();
+                        }
                     }
-                    else
+                    catch
                     {
-                        _transaction.Value.Commit();
+                        // Failed (or cancelled) commit must not leave this transaction on the stack.
+                        _transactionHelper.EndTransaction(false);
+                        throw;
                     }
                     _transactionHelper.EndTransaction(true);
                 }
@@ -70,15 +79,21 @@ namespace Kros.KORM.Data
             private async Task OnRollback(bool useAsync, CancellationToken cancellationToken = default)
             {
                 _wasCommitOrRollback = true;
-                if (useAsync)
+                try
                 {
-                    await _transaction.Value.RollbackAsync(cancellationToken);
+                    if (useAsync)
+                    {
+                        await _transaction.Value.RollbackAsync(cancellationToken);
+                    }
+                    else
+                    {
+                        _transaction.Value.Rollback();
+                    }
                 }
-                else
+                finally
                 {
-                    _transaction.Value.Rollback();
+                    _transactionHelper.EndTransaction(false);
                 }
-                _transactionHelper.EndTransaction(false);
             }
 
             public int CommandTimeout { get; set; } = TIMEOUT_DEFAULT;
@@ -91,7 +106,16 @@ namespace Kros.KORM.Data
             {
                 if (!_wasCommitOrRollback)
                 {
-                    Rollback();
+                    if (_transaction.IsValueCreated)
+                    {
+                        Rollback();
+                    }
+                    else
+                    {
+                        // No command has run, so there is no DB transaction to roll back.
+                        _wasCommitOrRollback = true;
+                        _transactionHelper.EndTransaction(false);
+                    }
                 }
                 if (_transaction.IsValueCreated)
                 {
