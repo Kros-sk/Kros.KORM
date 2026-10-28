@@ -237,6 +237,23 @@ namespace Kros.KORM.UnitTests.Data
         }
 
         [Fact]
+        public async Task CommitAsync_AfterNestedRollback_WithCancelledToken_StillRollsBack()
+        {
+            var cn = new FakeDbConnection();
+            var helper = new TransactionHelper(cn);
+            using var outer = helper.BeginTransaction();
+            using var inner = helper.BeginTransaction();
+            _ = helper.CurrentTransaction;
+
+            inner.Rollback();
+            await outer.CommitAsync(new CancellationToken(canceled: true));
+
+            Assert.Equal(1, cn.LastTransaction.RollbackAsyncCount);
+            Assert.Equal(0, cn.LastTransaction.CommitAsyncCount);
+            Assert.Null(helper.CurrentTransaction);
+        }
+
+        [Fact]
         public void Commit_AfterNestedRollback_WithoutAnyCommand_DoesNotCreateDbTransaction()
         {
             var cn = new FakeDbConnection();

@@ -72,7 +72,8 @@ namespace Kros.KORM.Data
                 else
                 {
                     // A nested transaction was rolled back, so the whole transaction must be rolled back.
-                    await RollbackCore(useAsync, cancellationToken);
+                    // Rollback must not be skipped or interrupted just because the token has been cancelled.
+                    await RollbackCore(useAsync, CancellationToken.None);
                 }
             }
 
