@@ -788,31 +788,29 @@ For simplifying calling methods (`Add`, `Edit`, `Delete`) use extension methods 
 
 ```CSharp
 await database.AddAsync(person);
-// The collection must be typed as IEnumerable<T>, see the note below.
 IEnumerable<Person> people = GetPeople();
-await database.AddAsync(people);
-await database.AddAsync(people, cancellationToken);
+await database.AddRangeAsync(people);
+await database.AddRangeAsync(people, cancellationToken);
 await database.BulkAddAsync(people, cancellationToken);
 await database.DeleteAsync(person);
-await database.DeleteAsync(people);
-await database.DeleteAsync(people, cancellationToken);
+await database.DeleteRangeAsync(people);
+await database.DeleteRangeAsync(people, cancellationToken);
 await database.DeleteAsync<Person>(2);
 await database.DeleteAsync<Person>(p => p.Id == 2);
 await database.DeleteAsync<Person>("Id = @1", cancellationToken, 2);
 await database.EditAsync(person);
 await database.EditAsync(person, cancellationToken, "Id", "Age");
-await database.EditAsync(people);
-await database.EditAsync(people, cancellationToken);
+await database.EditRangeAsync(people);
+await database.EditRangeAsync(people, cancellationToken);
 await database.BulkEditAsync(people, cancellationToken);
 await database.UpsertAsync(person);
 await database.UpsertAsync(people);
 
 ```
 
-> **Note:** The collection overloads of `AddAsync`, `EditAsync` and `DeleteAsync` are used only when the argument is typed
-> as `IEnumerable<T>` (e.g. `IEnumerable<Person> people = …;`). A `List<T>` or an array binds to the single-entity
-> overload (with `TEntity` being `List<Person>`) and fails at runtime. `BulkAddAsync` and `BulkEditAsync` do not have
-> this issue.
+> **Note:** Collections must be processed with `AddRangeAsync`, `EditRangeAsync` and `DeleteRangeAsync`. Passing a
+> collection to `AddAsync`, `EditAsync` or `DeleteAsync` is a compile error (or an `ArgumentException` for other
+> collection types than `IEnumerable<T>`, `List<T>` and `T[]`).
 
 
 #### Execute with temp table
