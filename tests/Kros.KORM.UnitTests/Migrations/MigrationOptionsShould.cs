@@ -17,12 +17,14 @@ namespace Kros.KORM.UnitTests.Migrations
             IDatabase receivedDatabase = null;
             long receivedId = 0;
 
+#pragma warning disable CS0618 // the obsolete overload is the subject of this test
             options.AddAfterMigrationAction((db, id) =>
             {
                 receivedDatabase = db;
                 receivedId = id;
                 return Task.CompletedTask;
             });
+#pragma warning restore CS0618
 
             await options.Actions.Single()(database, 20250101001, TestContext.Current.CancellationToken);
 

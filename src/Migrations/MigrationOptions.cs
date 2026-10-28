@@ -82,6 +82,7 @@ namespace Kros.KORM.Migrations
         /// <see cref="AddAfterMigrationAction(Func{IDatabase, long, CancellationToken, Task})"/>
         /// for an action which supports cancellation.
         /// </param>
+        [Obsolete("Use the overload with CancellationToken: AddAfterMigrationAction(Func<IDatabase, long, CancellationToken, Task>).")]
         public void AddAfterMigrationAction(Func<IDatabase, long, Task> actionToExecute)
         {
             Check.NotNull(actionToExecute, nameof(actionToExecute));
