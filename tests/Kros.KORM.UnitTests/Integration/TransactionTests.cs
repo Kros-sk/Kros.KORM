@@ -559,6 +559,188 @@ $@" CREATE PROCEDURE [dbo].[WaitForTwoSeconds] AS
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
+        public void ExplicitTransactionShould_RollbackOuterCommitWhenNestedTransactionWasRolledBack_AndLeaveDatabaseUsable(
+            bool openConnection)
+        {
+            DoTestWithConnection(openConnection, OuterCommitAfterNestedRollback, CreateDatabase);
+        }
+
+        private void OuterCommitAfterNestedRollback(TestDatabase database)
+        {
+            using (var outer = database.BeginTransaction())
+            {
+                var invoices = database.Query<Invoice>().AsDbSet();
+                invoices.Add(new Invoice() { Id = 1, Code = "0001", Description = "Item 1" });
+                invoices.CommitChanges();
+
+                using (var inner = database.BeginTransaction())
+                {
+                    inner.Rollback();
+                }
+
+                // Does not throw: the outer commit rolls back, because the nested transaction was rolled back.
+                outer.Commit();
+            }
+
+            DatabaseShouldBeEmpty(database);
+
+            using (var transaction = database.BeginTransaction())
+            {
+                var invoices = database.Query<Invoice>().AsDbSet();
+                invoices.Add(new Invoice() { Id = 1, Code = "0001", Description = "Item 1" });
+                invoices.CommitChanges();
+
+                transaction.Commit();
+            }
+
+            DatabaseShouldContainInvoiceCount(database, 1);
+
+            // A new transaction must be a real top-level transaction, so its rollback really rolls the data back.
+            using (var transaction = database.BeginTransaction())
+            {
+                var invoices = database.Query<Invoice>().AsDbSet();
+                invoices.Add(new Invoice() { Id = 2, Code = "0002", Description = "Item 2" });
+                invoices.CommitChanges();
+
+                transaction.Rollback();
+            }
+
+            DatabaseShouldContainInvoiceCount(database, 1);
+        }
+
+        private const string InsertThenAbortTransactionSql =
+            "SET XACT_ABORT ON; " +
+            "INSERT INTO [Invoices] ([Id], [Code], [Description]) VALUES (1, '0001', 'Item 1'); " +
+            "INSERT INTO [Invoices] ([Id], [Code], [Description]) VALUES (CAST('x' AS INT), '0002', 'Item 2');";
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task ExecuteInTransactionAsync_SurfacesOriginalExceptionWhenServerAbortedTransaction(bool openConnection)
+        {
+            await DoTestWithConnectionAsync(openConnection, ExecuteInTransactionAsyncServerAborted, CreateDatabase);
+        }
+
+        private async Task ExecuteInTransactionAsyncServerAborted(TestDatabase database)
+        {
+            var provider = (IQueryProvider)database.Query<Invoice>().Provider;
+
+            await Assert.ThrowsAsync<SqlException>(() => provider.ExecuteInTransactionAsync(
+                async ct =>
+                {
+                    using DbCommand command = provider.GetCommandForCurrentTransaction();
+                    command.CommandText = InsertThenAbortTransactionSql;
+                    await command.ExecuteNonQueryAsync(ct);
+                },
+                TestContext.Current.CancellationToken));
+
+            DatabaseShouldBeEmpty(database);
+            DatabaseShouldBeUsableAfterAbortedTransaction(database);
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void ExecuteInTransaction_SurfacesOriginalExceptionWhenServerAbortedTransaction(bool openConnection)
+        {
+            DoTestWithConnection(openConnection, ExecuteInTransactionServerAborted, CreateDatabase);
+        }
+
+        private void ExecuteInTransactionServerAborted(TestDatabase database)
+        {
+            var provider = (IQueryProvider)database.Query<Invoice>().Provider;
+
+            Assert.Throws<SqlException>(() => provider.ExecuteInTransaction(
+                () =>
+                {
+                    using DbCommand command = provider.GetCommandForCurrentTransaction();
+                    command.CommandText = InsertThenAbortTransactionSql;
+                    command.ExecuteNonQuery();
+                }));
+
+            DatabaseShouldBeEmpty(database);
+            DatabaseShouldBeUsableAfterAbortedTransaction(database);
+        }
+
+        // Only with a closed connection: the killed connection cannot stay open for the caller.
+        [Fact]
+        public async Task ExecuteInTransactionAsync_SurfacesOriginalExceptionWhenConnectionIsLostBeforeCommit()
+        {
+            await DoTestWithConnectionAsync(false, ExecuteInTransactionAsyncConnectionLost, CreateDatabase);
+        }
+
+        private async Task ExecuteInTransactionAsyncConnectionLost(TestDatabase database)
+        {
+            var provider = (IQueryProvider)database.Query<Invoice>().Provider;
+
+            // The commit fails with a transport-level SqlException and SqlClient zombies the transaction,
+            // so a following DB rollback would throw InvalidOperationException and mask the SqlException.
+            await Assert.ThrowsAsync<SqlException>(() => provider.ExecuteInTransactionAsync(
+                async ct =>
+                {
+                    using DbCommand command = provider.GetCommandForCurrentTransaction();
+                    command.CommandText = "INSERT INTO [Invoices] ([Id], [Code], [Description]) VALUES (1, '0001', 'Item 1')";
+                    await command.ExecuteNonQueryAsync(ct);
+                    await KillSessionAsync(database, (SqlConnection)command.Connection, ct);
+                },
+                TestContext.Current.CancellationToken));
+
+            DatabaseShouldBeEmpty(database);
+            DatabaseShouldBeUsableAfterAbortedTransaction(database);
+        }
+
+        // Only with a closed connection: the killed connection cannot stay open for the caller.
+        [Fact]
+        public void ExecuteInTransaction_SurfacesOriginalExceptionWhenConnectionIsLostBeforeCommit()
+        {
+            DoTestWithConnection(false, ExecuteInTransactionConnectionLost, CreateDatabase);
+        }
+
+        private void ExecuteInTransactionConnectionLost(TestDatabase database)
+        {
+            var provider = (IQueryProvider)database.Query<Invoice>().Provider;
+
+            Assert.Throws<SqlException>(() => provider.ExecuteInTransaction(
+                () =>
+                {
+                    using DbCommand command = provider.GetCommandForCurrentTransaction();
+                    command.CommandText = "INSERT INTO [Invoices] ([Id], [Code], [Description]) VALUES (1, '0001', 'Item 1')";
+                    command.ExecuteNonQuery();
+                    KillSessionAsync(database, (SqlConnection)command.Connection, TestContext.Current.CancellationToken)
+                        .GetAwaiter().GetResult();
+                }));
+
+            DatabaseShouldBeEmpty(database);
+            DatabaseShouldBeUsableAfterAbortedTransaction(database);
+        }
+
+        private static async Task KillSessionAsync(TestDatabase database, SqlConnection victim, CancellationToken cancellationToken)
+        {
+            var builder = new SqlConnectionStringBuilder(database.ConnectionString) { Pooling = false };
+            using var killer = new SqlConnection(builder.ConnectionString);
+            await killer.OpenAsync(cancellationToken);
+            using SqlCommand kill = killer.CreateCommand();
+            kill.CommandText = $"KILL {victim.ServerProcessId}";
+            await kill.ExecuteNonQueryAsync(cancellationToken);
+        }
+
+        private void DatabaseShouldBeUsableAfterAbortedTransaction(TestDatabase database)
+        {
+            using (var transaction = database.BeginTransaction())
+            {
+                var invoices = database.Query<Invoice>().AsDbSet();
+                invoices.Add(CreateTestData());
+                invoices.CommitChanges();
+
+                transaction.Commit();
+            }
+
+            DatabaseShouldContainInvoices(database.ConnectionString, CreateTestData());
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
         public void ExplicitTransactionShould_KeepMasterConnectionStateWhenRollbackWasCalled(bool openConnection)
         {
             DoTestWithConnection(openConnection, ExplicitTransactionRollback, CreateDatabase);
@@ -737,6 +919,15 @@ $@" CREATE PROCEDURE [dbo].[WaitForTwoSeconds] AS
             using (var korm = new Database(database.ConnectionString))
             {
                 Assert.Empty(korm.Query<Invoice>());
+            }
+        }
+
+        private static void DatabaseShouldContainInvoiceCount(TestDatabase database, int expectedCount)
+        {
+            // Checked through a separate connection, so it sees only committed data.
+            using (var korm = new Database(database.ConnectionString))
+            {
+                Assert.Equal(expectedCount, new List<Invoice>(korm.Query<Invoice>()).Count);
             }
         }
 

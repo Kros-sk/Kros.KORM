@@ -186,5 +186,128 @@ namespace Kros.KORM.UnitTests.Data
             Assert.Equal(1, cn.LastTransaction.RollbackCount);
             Assert.Equal(0, cn.LastTransaction.RollbackAsyncCount);
         }
+
+        [Fact]
+        public void Commit_AfterNestedRollback_RollsBackAndEndsTransaction()
+        {
+            var cn = new FakeDbConnection();
+            var helper = new TransactionHelper(cn);
+            var outer = helper.BeginTransaction();
+            var inner = helper.BeginTransaction();
+            _ = helper.CurrentTransaction;
+
+            inner.Rollback();
+            outer.Commit();
+
+            Assert.Equal(0, cn.LastTransaction.CommitCount);
+            Assert.Equal(1, cn.LastTransaction.RollbackCount);
+            Assert.Null(helper.CurrentTransaction);
+            inner.Dispose();
+            outer.Dispose();
+            Assert.Equal(1, cn.CloseCount);
+
+            using var next = helper.BeginTransaction();
+            Assert.Equal(2, cn.OpenCount);
+            Assert.NotNull(helper.CurrentTransaction);
+        }
+
+        [Fact]
+        public async Task CommitAsync_AfterNestedRollback_RollsBackAndEndsTransaction()
+        {
+            var cn = new FakeDbConnection();
+            var helper = new TransactionHelper(cn);
+            var outer = helper.BeginTransaction();
+            var inner = helper.BeginTransaction();
+            _ = helper.CurrentTransaction;
+
+            await inner.RollbackAsync(TestContext.Current.CancellationToken);
+            await outer.CommitAsync(TestContext.Current.CancellationToken);
+
+            Assert.Equal(0, cn.LastTransaction.CommitAsyncCount);
+            Assert.Equal(1, cn.LastTransaction.RollbackAsyncCount);
+            Assert.Equal(0, cn.LastTransaction.RollbackCount);
+            Assert.Null(helper.CurrentTransaction);
+            inner.Dispose();
+            outer.Dispose();
+            Assert.Equal(1, cn.CloseCount);
+
+            using var next = helper.BeginTransaction();
+            Assert.Equal(2, cn.OpenCount);
+            Assert.NotNull(helper.CurrentTransaction);
+        }
+
+        [Fact]
+        public void Commit_AfterNestedRollback_WithoutAnyCommand_DoesNotCreateDbTransaction()
+        {
+            var cn = new FakeDbConnection();
+            var helper = new TransactionHelper(cn);
+            var outer = helper.BeginTransaction();
+            var inner = helper.BeginTransaction();
+
+            inner.Rollback();
+            outer.Commit();
+
+            Assert.Null(cn.LastTransaction);
+            Assert.Null(helper.CurrentTransaction);
+            inner.Dispose();
+            outer.Dispose();
+            Assert.Null(cn.LastTransaction);
+            Assert.Equal(1, cn.CloseCount);
+        }
+
+        [Fact]
+        public void Rollback_SkipsDbRollbackWhenTransactionAlreadyCompleted()
+        {
+            var cn = new FakeDbConnection();
+            var helper = new TransactionHelper(cn);
+            using var tx = helper.BeginTransaction();
+            _ = helper.CurrentTransaction;
+            var commitException = new InvalidOperationException("commit failed");
+            cn.LastTransaction.ThrowOnCommit = commitException;
+            cn.LastTransaction.IsCompleted = true;
+
+            var ex = Assert.Throws<InvalidOperationException>(() => tx.Commit());
+            Assert.Same(commitException, ex);
+            tx.Rollback();
+
+            Assert.Equal(0, cn.LastTransaction.RollbackCount);
+            Assert.Null(helper.CurrentTransaction);
+        }
+
+        [Fact]
+        public async Task RollbackAsync_SkipsDbRollbackWhenTransactionAlreadyCompleted()
+        {
+            var cn = new FakeDbConnection();
+            var helper = new TransactionHelper(cn);
+            using var tx = helper.BeginTransaction();
+            _ = helper.CurrentTransaction;
+            var commitException = new InvalidOperationException("commit failed");
+            cn.LastTransaction.ThrowOnCommit = commitException;
+            cn.LastTransaction.IsCompleted = true;
+
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => tx.CommitAsync(TestContext.Current.CancellationToken));
+            Assert.Same(commitException, ex);
+            await tx.RollbackAsync(TestContext.Current.CancellationToken);
+
+            Assert.Equal(0, cn.LastTransaction.RollbackAsyncCount);
+            Assert.Null(helper.CurrentTransaction);
+        }
+
+        [Fact]
+        public void Dispose_SkipsDbRollbackWhenTransactionAlreadyCompleted()
+        {
+            var cn = new FakeDbConnection();
+            var helper = new TransactionHelper(cn);
+            var tx = helper.BeginTransaction();
+            _ = helper.CurrentTransaction;
+            cn.LastTransaction.IsCompleted = true;
+
+            tx.Dispose();
+
+            Assert.Equal(0, cn.LastTransaction.RollbackCount);
+            Assert.Equal(1, cn.CloseCount);
+            Assert.Null(helper.CurrentTransaction);
+        }
     }
 }

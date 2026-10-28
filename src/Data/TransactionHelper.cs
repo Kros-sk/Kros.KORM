@@ -69,6 +69,11 @@ namespace Kros.KORM.Data
                     }
                     EndOnce(true);
                 }
+                else
+                {
+                    // A nested transaction was rolled back, so the whole transaction must be rolled back.
+                    await RollbackCore(useAsync, cancellationToken);
+                }
             }
 
             public void Rollback()
@@ -77,18 +82,33 @@ namespace Kros.KORM.Data
             public Task RollbackAsync(CancellationToken cancellationToken = default)
                 => OnRollback(true, cancellationToken);
 
-            private async Task OnRollback(bool useAsync, CancellationToken cancellationToken = default)
+            private Task OnRollback(bool useAsync, CancellationToken cancellationToken = default)
             {
                 _wasCommitOrRollback = true;
+                return RollbackCore(useAsync, cancellationToken);
+            }
+
+            /// <summary>
+            /// Rolls back the DB transaction (if there is one which can still be rolled back)
+            /// and removes this transaction from the stack.
+            /// </summary>
+            private async Task RollbackCore(bool useAsync, CancellationToken cancellationToken)
+            {
                 try
                 {
-                    if (useAsync)
+                    // DbTransaction.Connection is null when the transaction is no longer valid (already committed,
+                    // rolled back, or aborted by the server or a lost connection). Rolling it back would throw
+                    // and mask the original exception of the caller.
+                    if (_transaction.IsValueCreated && _transaction.Value.Connection is not null)
                     {
-                        await _transaction.Value.RollbackAsync(cancellationToken);
-                    }
-                    else
-                    {
-                        _transaction.Value.Rollback();
+                        if (useAsync)
+                        {
+                            await _transaction.Value.RollbackAsync(cancellationToken);
+                        }
+                        else
+                        {
+                            _transaction.Value.Rollback();
+                        }
                     }
                 }
                 finally

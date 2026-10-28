@@ -91,7 +91,14 @@ namespace Kros.KORM.UnitTests.Helper
         /// </summary>
         public Exception ThrowOnCommit { get; set; }
 
-        protected override DbConnection DbConnection => _connection;
+        /// <summary>
+        /// When set, the transaction behaves as already completed (zombied), like a SqlClient transaction
+        /// after a failed commit or a server-side abort: <see cref="DbTransaction.Connection"/> returns
+        /// <see langword="null"/> and rollback throws <see cref="InvalidOperationException"/>.
+        /// </summary>
+        public bool IsCompleted { get; set; }
+
+        protected override DbConnection DbConnection => IsCompleted ? null : _connection;
 
         public override IsolationLevel IsolationLevel => _isolationLevel;
 
@@ -107,17 +114,34 @@ namespace Kros.KORM.UnitTests.Helper
         public override Task CommitAsync(CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
+            if (ThrowOnCommit is not null)
+            {
+                throw ThrowOnCommit;
+            }
             CommitAsyncCount++;
             return Task.CompletedTask;
         }
 
-        public override void Rollback() => RollbackCount++;
+        public override void Rollback()
+        {
+            ThrowIfCompleted();
+            RollbackCount++;
+        }
 
         public override Task RollbackAsync(CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
+            ThrowIfCompleted();
             RollbackAsyncCount++;
             return Task.CompletedTask;
+        }
+
+        private void ThrowIfCompleted()
+        {
+            if (IsCompleted)
+            {
+                throw new InvalidOperationException("This transaction has completed; it is no longer usable.");
+            }
         }
     }
 }
