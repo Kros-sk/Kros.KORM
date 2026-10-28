@@ -343,6 +343,9 @@ or only one public parametrized constructor.</value>
   <data name="UseConnectionMustBeCall" xml:space="preserve">
     <value>Method '{0}' must be call before '{1}'</value>
   </data>
+  <data name="UseRangeMethodForCollections" xml:space="preserve">
+    <value>The entity is a collection. Use {0} to process a collection of entities.</value>
+  </data>
   <data name="ValueGeneratedNeverNotSupported" xml:space="preserve">
     <value>ValueGenerated Never is not supported when using "{0}".</value>
   </data>

@@ -647,6 +647,15 @@ namespace Kros.KORM.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The entity is a collection. Use {0} to process a collection of entities..
+        /// </summary>
+        internal static string UseRangeMethodForCollections {
+            get {
+                return ResourceManager.GetString("UseRangeMethodForCollections", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to ValueGenerated Never is not supported when using &quot;{0}&quot;..
         /// </summary>
         internal static string ValueGeneratedNeverNotSupported {

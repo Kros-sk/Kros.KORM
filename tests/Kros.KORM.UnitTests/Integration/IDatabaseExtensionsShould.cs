@@ -286,54 +286,123 @@ INSERT INTO {Table_TestTable} VALUES (2, 22, 'Kilie', 'Bistrol');";
         }
 
         [Fact]
-        public async Task AddEntitiesAsync()
+        public async Task AddRangeAsync()
         {
             using (IDatabase database = CreateDatabase(CreateTable_TestTable, InsertDataScript))
             {
-                await database.AddAsync(GetPeople(), TestContext.Current.CancellationToken);
+                List<Person> people = GetPeople().ToList();
+
+                await database.AddRangeAsync(people, TestContext.Current.CancellationToken);
 
                 Assert.Equal(4, database.Query<Person>().Count());
             }
         }
 
         [Fact]
-        public async Task EditEntitiesAsync()
+        public async Task EditRangeAsync()
         {
             using (IDatabase database = CreateDatabase(CreateTable_TestTable, InsertDataScript))
             {
-                IEnumerable<Person> people =
+                Person[] people =
                 [
                     new Person { Id = 1, Age = 99, FirstName = "John", LastName = "Smith" },
                     new Person { Id = 2, Age = 99, FirstName = "Kilie", LastName = "Bistrol" },
                 ];
 
-                await database.EditAsync(people, TestContext.Current.CancellationToken);
+                await database.EditRangeAsync(people, TestContext.Current.CancellationToken);
 
                 Assert.All(database.Query<Person>(), p => Assert.Equal(99, p.Age));
             }
         }
 
         [Fact]
-        public async Task DeleteEntitiesAsync()
+        public async Task DeleteRangeAsync()
         {
             using (IDatabase database = CreateDatabase(CreateTable_TestTable, InsertDataScript))
             {
                 IEnumerable<Person> people = [new Person { Id = 1 }, new Person { Id = 2 }];
 
-                await database.DeleteAsync(people, TestContext.Current.CancellationToken);
+                await database.DeleteRangeAsync(people, TestContext.Current.CancellationToken);
 
                 Assert.Empty(database.Query<Person>());
             }
         }
 
         [Fact]
-        public async Task AddEntitiesAsync_ThrowsWhenTokenAlreadyCancelled()
+        public async Task AddRangeAsync_ThrowsWhenTokenAlreadyCancelled()
         {
             using (IDatabase database = CreateDatabase(CreateTable_TestTable, InsertDataScript))
             {
                 await Assert.ThrowsAnyAsync<OperationCanceledException>(
-                    () => database.AddAsync(GetPeople(), new CancellationToken(canceled: true)));
+                    () => database.AddRangeAsync(GetPeople(), new CancellationToken(canceled: true)));
 
+                Assert.Equal(2, database.Query<Person>().Count());
+            }
+        }
+
+        [Fact]
+        public async Task AddAsync_ThrowsWhenEntityIsCollection()
+        {
+            using (IDatabase database = CreateDatabase(CreateTable_TestTable, InsertDataScript))
+            {
+                var people = new HashSet<Person>(GetPeople());
+
+                ArgumentException ex = await Assert.ThrowsAsync<ArgumentException>(
+                    () => database.AddAsync(people, TestContext.Current.CancellationToken));
+
+                Assert.Contains("AddRangeAsync", ex.Message);
+                Assert.Equal(2, database.Query<Person>().Count());
+            }
+        }
+
+        [Fact]
+        public async Task EditAsync_ThrowsWhenEntityIsCollection()
+        {
+            using (IDatabase database = CreateDatabase(CreateTable_TestTable, InsertDataScript))
+            {
+                var people = new HashSet<Person>
+                {
+                    new Person { Id = 1, Age = 99, FirstName = "John", LastName = "Smith" },
+                    new Person { Id = 2, Age = 99, FirstName = "Kilie", LastName = "Bistrol" },
+                };
+
+                ArgumentException ex = await Assert.ThrowsAsync<ArgumentException>(
+                    () => database.EditAsync(people, TestContext.Current.CancellationToken));
+
+                Assert.Contains("EditRangeAsync", ex.Message);
+                Assert.DoesNotContain(database.Query<Person>(), p => p.Age == 99);
+            }
+        }
+
+        [Fact]
+        public async Task EditAsyncWithColumns_ThrowsWhenEntityIsCollection()
+        {
+            using (IDatabase database = CreateDatabase(CreateTable_TestTable, InsertDataScript))
+            {
+                var people = new HashSet<Person> { new Person { Id = 1, Age = 99 } };
+
+                ArgumentException ex = await Assert.ThrowsAsync<ArgumentException>(
+                    () => database.EditAsync(
+                        entity: people,
+                        cancellationToken: TestContext.Current.CancellationToken,
+                        columns: new string[] { "Id", "Age" }));
+
+                Assert.Contains("EditRangeAsync", ex.Message);
+                Assert.DoesNotContain(database.Query<Person>(), p => p.Age == 99);
+            }
+        }
+
+        [Fact]
+        public async Task DeleteAsync_ThrowsWhenEntityIsCollection()
+        {
+            using (IDatabase database = CreateDatabase(CreateTable_TestTable, InsertDataScript))
+            {
+                var people = new HashSet<Person> { new Person { Id = 1 }, new Person { Id = 2 } };
+
+                ArgumentException ex = await Assert.ThrowsAsync<ArgumentException>(
+                    () => database.DeleteAsync(people, TestContext.Current.CancellationToken));
+
+                Assert.Contains("DeleteRangeAsync", ex.Message);
                 Assert.Equal(2, database.Query<Person>().Count());
             }
         }
