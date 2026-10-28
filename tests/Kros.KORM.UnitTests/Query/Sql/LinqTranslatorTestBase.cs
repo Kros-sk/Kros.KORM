@@ -16,6 +16,8 @@ using System.Data;
 using System.Data.Common;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Kros.KORM.UnitTests.Query.Sql
@@ -216,6 +218,18 @@ namespace Kros.KORM.UnitTests.Query.Sql
                 }
 
                 return Enumerable.Empty<T>();
+            }
+
+            public override IAsyncEnumerable<T> ExecuteAsync<T>(IQuery<T> query, CancellationToken cancellationToken = default)
+            {
+                Execute(query);
+                return EmptyAsync<T>();
+            }
+
+            private static async IAsyncEnumerable<T> EmptyAsync<T>()
+            {
+                await Task.CompletedTask;
+                yield break;
             }
 
             protected override IDatabaseSchemaLoader GetSchemaLoader()

@@ -1,4 +1,4 @@
-using Kros.KORM.Query;
+﻿using Kros.KORM.Query;
 using Kros.KORM.UnitTests.Base;
 using System;
 using System.Collections.Generic;
@@ -98,6 +98,29 @@ INSERT INTO [Foo] VALUES (4, 3, 'Jakub');";
                 .AnyAsync($"Id = {id}", TestContext.Current.CancellationToken));
             Assert.False(await database.Query<Foo>()
                 .Sql("SELECT * FROM Foo WHERE Id > 100")
+                .AnyAsync(TestContext.Current.CancellationToken));
+        }
+
+        [Fact]
+        public async Task RawSqlQueryFirstOrDefaultAsyncReturnsFirstRow()
+        {
+            using TestDatabase database = CreateDatabase(CreateTable_FooTable, InsertIntoFooScript);
+
+            Foo foo = await database.Query<Foo>()
+                .Sql("SELECT * FROM Foo WHERE Id > 2 ORDER BY Id DESC")
+                .FirstOrDefaultAsync(TestContext.Current.CancellationToken);
+
+            Assert.NotNull(foo);
+            Assert.Equal(4, foo.Id);
+        }
+
+        [Fact]
+        public async Task RawSqlQueryAnyAsyncReturnsTrueWhenRowsExist()
+        {
+            using TestDatabase database = CreateDatabase(CreateTable_FooTable, InsertIntoFooScript);
+
+            Assert.True(await database.Query<Foo>()
+                .Sql("SELECT * FROM Foo WHERE Id > 2")
                 .AnyAsync(TestContext.Current.CancellationToken));
         }
 

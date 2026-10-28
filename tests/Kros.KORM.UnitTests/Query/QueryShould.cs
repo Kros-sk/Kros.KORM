@@ -1,4 +1,4 @@
-using Kros.KORM.Helper;
+﻿using Kros.KORM.Helper;
 using Kros.KORM.Materializer;
 using Kros.KORM.Metadata;
 using Kros.KORM.Metadata.Attribute;
@@ -355,11 +355,11 @@ namespace Kros.KORM.UnitTests.Query
         }
 
         [Fact]
-        public async Task AnyAsyncWithoutConditionReturnsTrueWhenProviderYieldsRow()
+        public async Task AnyAsyncWithoutConditionReturnsTrueWhenProviderYieldsTrue()
         {
             var provider = Substitute.For<KORM.Query.IQueryProvider>();
-            provider.ExecuteAsync<Person>(Arg.Any<IQuery<Person>>(), Arg.Any<CancellationToken>())
-                .Returns(ToAsync(new[] { new Person() { Id = 1 } }));
+            provider.ExecuteAsync<bool>(Arg.Any<IQuery<bool>>(), Arg.Any<CancellationToken>())
+                .Returns(ToAsync(new[] { true }));
 
             var query = new Query<Person>(new DatabaseMapper(new ConventionModelMapper()), provider);
 
@@ -367,11 +367,11 @@ namespace Kros.KORM.UnitTests.Query
         }
 
         [Fact]
-        public async Task AnyAsyncWithoutConditionReturnsFalseWhenSequenceIsEmpty()
+        public async Task AnyAsyncWithoutConditionReturnsFalseWhenProviderYieldsFalse()
         {
             var provider = Substitute.For<KORM.Query.IQueryProvider>();
-            provider.ExecuteAsync<Person>(Arg.Any<IQuery<Person>>(), Arg.Any<CancellationToken>())
-                .Returns(ToAsync(Array.Empty<Person>()));
+            provider.ExecuteAsync<bool>(Arg.Any<IQuery<bool>>(), Arg.Any<CancellationToken>())
+                .Returns(ToAsync(new[] { false }));
 
             var query = new Query<Person>(new DatabaseMapper(new ConventionModelMapper()), provider);
 

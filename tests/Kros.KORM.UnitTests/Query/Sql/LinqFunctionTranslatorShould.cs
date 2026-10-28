@@ -1,7 +1,10 @@
-﻿using Kros.KORM.Query.Providers;
+using Kros.KORM.Query;
+using Kros.KORM.Query.Providers;
 using Kros.KORM.Query.Sql;
 using System;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Kros.KORM.UnitTests.Query.Sql
@@ -162,6 +165,35 @@ namespace Kros.KORM.UnitTests.Query.Sql
             var item = query.FirstOrDefault();
 
             WasGeneratedSameSql(query, "SELECT TOP 1 Id, FirstName, LastName, PostAddress FROM People");
+        }
+
+        [Fact]
+        public async Task TranslateFirstOrDefaultAsyncMethod()
+        {
+            var query = Query<Person>();
+            var item = await query.FirstOrDefaultAsync(TestContext.Current.CancellationToken);
+
+            WasGeneratedSameSql(query, "SELECT TOP 1 Id, FirstName, LastName, PostAddress FROM People");
+        }
+
+        [Fact]
+        public async Task TranslateFirstOrDefaultAsyncAfterWhereMethod()
+        {
+            var query = Query<Person>();
+            var item = await query.Where(p => p.Id == 5).FirstOrDefaultAsync(TestContext.Current.CancellationToken);
+
+            WasGeneratedSameSql(query, "SELECT TOP 1 Id, FirstName, LastName, PostAddress FROM People" +
+                                       " WHERE ((Id = @1))", 5);
+        }
+
+        [Fact]
+        public async Task TranslateFirstOrDefaultAsyncAfterOrderByMethod()
+        {
+            var query = Query<Person>();
+            var item = await query.OrderByDescending(p => p.Id).FirstOrDefaultAsync(TestContext.Current.CancellationToken);
+
+            WasGeneratedSameSql(query, "SELECT TOP 1 Id, FirstName, LastName, PostAddress FROM People" +
+                                       " ORDER BY Id DESC");
         }
 
         [Fact]
@@ -345,6 +377,25 @@ namespace Kros.KORM.UnitTests.Query.Sql
             var item = query.Any();
 
             WasGeneratedSameSql(query, @"SELECT (CASE WHEN EXISTS(SELECT '' FROM People) THEN 1 ELSE 0 END)");
+        }
+
+        [Fact]
+        public async Task TranslateAnyAsyncMethod()
+        {
+            var query = Query<Person>();
+            var item = await query.AnyAsync(TestContext.Current.CancellationToken);
+
+            WasGeneratedSameSql(query, @"SELECT (CASE WHEN EXISTS(SELECT '' FROM People) THEN 1 ELSE 0 END)");
+        }
+
+        [Fact]
+        public async Task TranslateAnyAsyncAfterWhereMethod()
+        {
+            var query = Query<Person>();
+            var item = await query.Where(p => p.Id > 5).AnyAsync(TestContext.Current.CancellationToken);
+
+            WasGeneratedSameSql(query,
+                @"SELECT (CASE WHEN EXISTS(SELECT '' FROM People WHERE ((Id > @1))) THEN 1 ELSE 0 END)", 5);
         }
 
         [Fact]
