@@ -139,24 +139,31 @@ namespace Kros.KORM.Data
             /// <inheritdoc/>
             public void Dispose()
             {
-                if (!_wasCommitOrRollback)
+                try
                 {
+                    if (!_wasCommitOrRollback)
+                    {
+                        if (_transaction.IsValueCreated)
+                        {
+                            Rollback();
+                        }
+                        else
+                        {
+                            // No command has run, so there is no DB transaction to roll back.
+                            _wasCommitOrRollback = true;
+                            EndOnce(false);
+                        }
+                    }
+                }
+                finally
+                {
+                    // Resources are released even when the rollback fails (its exception still propagates).
                     if (_transaction.IsValueCreated)
                     {
-                        Rollback();
+                        _transaction.Value.Dispose();
                     }
-                    else
-                    {
-                        // No command has run, so there is no DB transaction to roll back.
-                        _wasCommitOrRollback = true;
-                        EndOnce(false);
-                    }
+                    _connectionHelper.Dispose();
                 }
-                if (_transaction.IsValueCreated)
-                {
-                    _transaction.Value.Dispose();
-                }
-                _connectionHelper.Dispose();
             }
         }
 

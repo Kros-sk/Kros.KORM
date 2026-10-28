@@ -98,6 +98,11 @@ namespace Kros.KORM.UnitTests.Helper
         /// </summary>
         public bool IsCompleted { get; set; }
 
+        /// <summary>
+        /// When set, <see cref="Rollback"/> and <see cref="RollbackAsync"/> throw this exception (simulates a failed rollback).
+        /// </summary>
+        public Exception ThrowOnRollback { get; set; }
+
         protected override DbConnection DbConnection => IsCompleted ? null : _connection;
 
         public override IsolationLevel IsolationLevel => _isolationLevel;
@@ -141,6 +146,10 @@ namespace Kros.KORM.UnitTests.Helper
             if (IsCompleted)
             {
                 throw new InvalidOperationException("This transaction has completed; it is no longer usable.");
+            }
+            if (ThrowOnRollback is not null)
+            {
+                throw ThrowOnRollback;
             }
         }
     }

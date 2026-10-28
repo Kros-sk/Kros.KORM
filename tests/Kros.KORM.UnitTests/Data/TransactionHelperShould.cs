@@ -326,5 +326,22 @@ namespace Kros.KORM.UnitTests.Data
             Assert.Equal(1, cn.CloseCount);
             Assert.Null(helper.CurrentTransaction);
         }
+
+        [Fact]
+        public void Dispose_ClosesConnectionEvenWhenRollbackThrows()
+        {
+            var cn = new FakeDbConnection();
+            var helper = new TransactionHelper(cn);
+            var tx = helper.BeginTransaction();
+            _ = helper.CurrentTransaction;
+            var rollbackException = new InvalidOperationException("rollback failed");
+            cn.LastTransaction.ThrowOnRollback = rollbackException;
+
+            var ex = Assert.Throws<InvalidOperationException>(() => tx.Dispose());
+
+            Assert.Same(rollbackException, ex);
+            Assert.Equal(1, cn.CloseCount);
+            Assert.Null(helper.CurrentTransaction);
+        }
     }
 }

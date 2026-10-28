@@ -613,6 +613,8 @@ $@" CREATE PROCEDURE [dbo].[WaitForTwoSeconds] AS
             "INSERT INTO [Invoices] ([Id], [Code], [Description]) VALUES (1, '0001', 'Item 1'); " +
             "INSERT INTO [Invoices] ([Id], [Code], [Description]) VALUES (CAST('x' AS INT), '0002', 'Item 2');";
 
+        // Regression coverage only (SqlClient's first rollback after a server abort is a silent no-op);
+        // the lost-connection facts below are the pin for the zombie-rollback fix.
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
@@ -638,6 +640,8 @@ $@" CREATE PROCEDURE [dbo].[WaitForTwoSeconds] AS
             DatabaseShouldBeUsableAfterAbortedTransaction(database);
         }
 
+        // Regression coverage only (SqlClient's first rollback after a server abort is a silent no-op);
+        // the lost-connection facts below are the pin for the zombie-rollback fix.
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
