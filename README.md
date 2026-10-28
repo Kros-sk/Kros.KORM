@@ -804,12 +804,12 @@ await database.EditRangeAsync(people);
 await database.EditRangeAsync(people, cancellationToken);
 await database.BulkEditAsync(people, cancellationToken);
 await database.UpsertAsync(person);
-await database.UpsertAsync(people);
+await database.UpsertRangeAsync(people);
 
 ```
 
-> **Note:** Collections must be processed with `AddRangeAsync`, `EditRangeAsync` and `DeleteRangeAsync`. Passing a
-> collection to `AddAsync`, `EditAsync` or `DeleteAsync` is a compile error (or an `ArgumentException` for other
+> **Note:** Collections must be processed with `AddRangeAsync`, `EditRangeAsync`, `DeleteRangeAsync` and `UpsertRangeAsync`.
+> Passing a collection to `AddAsync`, `EditAsync`, `DeleteAsync` or `UpsertAsync` is a compile error (or an `ArgumentException` for other
 > collection types than `IEnumerable<T>`, `List<T>` and `T[]`).
 
 

@@ -181,7 +181,7 @@ INSERT INTO {Table_TestTable} VALUES (2, 22, 'Kilie', 'Bistrol');";
         }
 
         [Fact]
-        public async Task UpsertMultipleEntities()
+        public async Task UpsertRangeAsync()
         {
             using (IDatabase database = CreateDatabase(CreateTable_TestTable, InsertDataScript))
             {
@@ -192,7 +192,7 @@ INSERT INTO {Table_TestTable} VALUES (2, 22, 'Kilie', 'Bistrol');";
                 pat.LastName = "Handy";
                 mat.LastName = "Handy";
 
-                await database.UpsertAsync<Person>(new Person[] { pat, mat }, TestContext.Current.CancellationToken);
+                await database.UpsertRangeAsync(new Person[] { pat, mat }, TestContext.Current.CancellationToken);
 
                 Person actualPat = database
                     .Query<Person>()
@@ -403,6 +403,21 @@ INSERT INTO {Table_TestTable} VALUES (2, 22, 'Kilie', 'Bistrol');";
                     () => database.DeleteAsync(people, TestContext.Current.CancellationToken));
 
                 Assert.Contains("DeleteRangeAsync", ex.Message);
+                Assert.Equal(2, database.Query<Person>().Count());
+            }
+        }
+
+        [Fact]
+        public async Task UpsertAsync_ThrowsWhenEntityIsCollection()
+        {
+            using (IDatabase database = CreateDatabase(CreateTable_TestTable, InsertDataScript))
+            {
+                var people = new HashSet<Person>(GetPeople());
+
+                ArgumentException ex = await Assert.ThrowsAsync<ArgumentException>(
+                    () => database.UpsertAsync(people, TestContext.Current.CancellationToken));
+
+                Assert.Contains("UpsertRangeAsync", ex.Message);
                 Assert.Equal(2, database.Query<Person>().Count());
             }
         }

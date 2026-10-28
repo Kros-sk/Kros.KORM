@@ -231,20 +231,23 @@ namespace Kros.KORM
             TEntity entity,
             CancellationToken cancellationToken = default,
             params string[] columns) where TEntity : class
-            => await CommitChangesAsync(
+        {
+            ThrowIfCollection(entity, nameof(UpsertRangeAsync));
+            await CommitChangesAsync(
                 database, (IDbSet<TEntity> dbSet) => dbSet.Upsert(entity),
                 cancellationToken,
                 columns);
+        }
 
         /// <summary>
         /// Inserts or updates <paramref name="entities"/> in the database.
         /// </summary>
         /// <typeparam name="TEntity">Entity type.</typeparam>
         /// <param name="database"><see cref="IDatabase"/> instance.</param>
-        /// <param name="entities">The entity to edit.</param>
+        /// <param name="entities">Entities to insert or update.</param>
         /// <param name="columns">Columns for editing.</param>
         /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
-        public static async Task UpsertAsync<TEntity>(
+        public static async Task UpsertRangeAsync<TEntity>(
             this IDatabase database,
             IEnumerable<TEntity> entities,
             CancellationToken cancellationToken = default,
@@ -392,6 +395,42 @@ namespace Kros.KORM
             TEntity[] entities,
             CancellationToken cancellationToken = default) where TEntity : class
             => throw new NotSupportedException("Use DeleteRangeAsync to delete a collection of entities.");
+
+        /// <summary>
+        /// Obsolete for collections. Use <see cref="UpsertRangeAsync{TEntity}(IDatabase, IEnumerable{TEntity}, CancellationToken, string[])"/> instead.
+        /// </summary>
+        [Obsolete("Use UpsertRangeAsync to upsert a collection of entities.", error: true)]
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public static Task UpsertAsync<TEntity>(
+            this IDatabase database,
+            IEnumerable<TEntity> entities,
+            CancellationToken cancellationToken = default,
+            params string[] columns) where TEntity : class
+            => throw new NotSupportedException("Use UpsertRangeAsync to upsert a collection of entities.");
+
+        /// <summary>
+        /// Obsolete for collections. Use <see cref="UpsertRangeAsync{TEntity}(IDatabase, IEnumerable{TEntity}, CancellationToken, string[])"/> instead.
+        /// </summary>
+        [Obsolete("Use UpsertRangeAsync to upsert a collection of entities.", error: true)]
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public static Task UpsertAsync<TEntity>(
+            this IDatabase database,
+            List<TEntity> entities,
+            CancellationToken cancellationToken = default,
+            params string[] columns) where TEntity : class
+            => throw new NotSupportedException("Use UpsertRangeAsync to upsert a collection of entities.");
+
+        /// <summary>
+        /// Obsolete for collections. Use <see cref="UpsertRangeAsync{TEntity}(IDatabase, IEnumerable{TEntity}, CancellationToken, string[])"/> instead.
+        /// </summary>
+        [Obsolete("Use UpsertRangeAsync to upsert a collection of entities.", error: true)]
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public static Task UpsertAsync<TEntity>(
+            this IDatabase database,
+            TEntity[] entities,
+            CancellationToken cancellationToken = default,
+            params string[] columns) where TEntity : class
+            => throw new NotSupportedException("Use UpsertRangeAsync to upsert a collection of entities.");
 
         #endregion
     }

@@ -281,7 +281,7 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
                 var olderPat = new Person { Id = 105, Age = 19, FirstName = "Pat", LastName = "Lefty" };
                 var matJunior = new Person { Id = 106, Age = 0, FirstName = "Mat Junior", LastName = "Righty" };
 
-                await database.UpsertAsync<Person>(new Person[] { pat, mat }, TestContext.Current.CancellationToken);
+                await database.UpsertRangeAsync(new Person[] { pat, mat }, TestContext.Current.CancellationToken);
 
                 IDbSet<Person> people = database.Query<Person>().AsDbSet()
                     .WithCustomUpsertConditionColumns(nameof(Person.FirstName), nameof(Person.LastName));
