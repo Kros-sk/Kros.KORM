@@ -1,4 +1,5 @@
 ﻿using Kros.KORM.Migrations.Providers;
+using Kros.Utils;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -70,6 +71,21 @@ namespace Kros.KORM.Migrations
         public void AddAfterMigrationAction(Func<IDatabase, long, CancellationToken, Task> actionToExecute)
         {
             _actions.Add(actionToExecute);
+        }
+
+        /// <summary>
+        /// Add action to be executed on database after migration scripts are executed.
+        /// </summary>
+        /// <param name="actionToExecute">
+        /// Action to execute. Its parameters are the database and the id of the last executed migration script.
+        /// The action does not observe the cancellation token; use
+        /// <see cref="AddAfterMigrationAction(Func{IDatabase, long, CancellationToken, Task})"/>
+        /// for an action which supports cancellation.
+        /// </param>
+        public void AddAfterMigrationAction(Func<IDatabase, long, Task> actionToExecute)
+        {
+            Check.NotNull(actionToExecute, nameof(actionToExecute));
+            AddAfterMigrationAction((database, migrationId, _) => actionToExecute(database, migrationId));
         }
 
         /// <summary>
