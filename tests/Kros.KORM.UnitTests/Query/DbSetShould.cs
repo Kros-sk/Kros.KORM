@@ -325,6 +325,7 @@ namespace Kros.KORM.UnitTests
         private class FakeProvider : IQueryProvider
         {
             async Task IQueryProvider.ExecuteInTransactionAsync(Func<CancellationToken, Task> action, CancellationToken cancellationToken) => await action(cancellationToken);
+            void IQueryProvider.ExecuteInTransaction(Action action) => action();
             int IQueryProvider.ExecuteNonQueryCommand(IDbCommand command) => command.ExecuteNonQuery();
             bool IQueryProvider.SupportsIdentity() => false;
             bool IQueryProvider.SupportsPrepareCommand() => true;
@@ -332,6 +333,9 @@ namespace Kros.KORM.UnitTests
 
             DbProviderFactory IQueryProvider.DbProviderFactory => throw new NotImplementedException();
             ITransaction IQueryProvider.BeginTransaction(IsolationLevel isolationLevel) => throw new NotImplementedException();
+
+            Task<ITransaction> IQueryProvider.BeginTransactionAsync(IsolationLevel isolationLevel, CancellationToken cancellationToken)
+                => throw new NotImplementedException();
             IBulkInsert IQueryProvider.CreateBulkInsert(object options) => throw new NotImplementedException();
             IBulkUpdate IQueryProvider.CreateBulkUpdate() => throw new NotImplementedException();
             IIdGenerator IQueryProvider.CreateIdGenerator(string tableName, int batchSize) => throw new NotImplementedException();
@@ -339,6 +343,7 @@ namespace Kros.KORM.UnitTests
             System.Linq.IQueryable System.Linq.IQueryProvider.CreateQuery(Expression expression) => throw new NotImplementedException();
             System.Linq.IQueryable<TElement> System.Linq.IQueryProvider.CreateQuery<TElement>(Expression expression) => throw new NotImplementedException();
             IEnumerable<T> IQueryProvider.Execute<T>(IQuery<T> query) => throw new NotImplementedException();
+            IAsyncEnumerable<T> IQueryProvider.ExecuteAsync<T>(IQuery<T> query, CancellationToken cancellationToken) => throw new NotImplementedException();
             object System.Linq.IQueryProvider.Execute(Expression expression) => throw new NotImplementedException();
             TResult System.Linq.IQueryProvider.Execute<TResult>(Expression expression) => throw new NotImplementedException();
             int IQueryProvider.ExecuteNonQuery(string query) => throw new NotImplementedException();
@@ -348,10 +353,13 @@ namespace Kros.KORM.UnitTests
             Task<int> IQueryProvider.ExecuteNonQueryAsync(string query, CommandParameterCollection parameters, CancellationToken cancellationToken) => throw new NotImplementedException();
             Task<int> IQueryProvider.ExecuteNonQueryCommandAsync(DbCommand command, CancellationToken cancellationToken) => throw new NotImplementedException();
             object IQueryProvider.ExecuteScalar<T>(IQuery<T> query) => throw new NotImplementedException();
+            Task<object> IQueryProvider.ExecuteScalarAsync<T>(IQuery<T> query, CancellationToken cancellationToken) => throw new NotImplementedException();
             object IQueryProvider.ExecuteScalarCommand(IDbCommand command) => throw new NotImplementedException();
             Task<object> IQueryProvider.ExecuteScalarCommandAsync(DbCommand command, CancellationToken cancellationToken) => throw new NotImplementedException();
             TResult IQueryProvider.ExecuteStoredProcedure<TResult>(string storedProcedureName) => throw new NotImplementedException();
             TResult IQueryProvider.ExecuteStoredProcedure<TResult>(string storedProcedureName, CommandParameterCollection parameters) => throw new NotImplementedException();
+            Task<TResult> IQueryProvider.ExecuteStoredProcedureAsync<TResult>(string storedProcedureName, CancellationToken cancellationToken) => throw new NotImplementedException();
+            Task<TResult> IQueryProvider.ExecuteStoredProcedureAsync<TResult>(string storedProcedureName, CommandParameterCollection parameters, CancellationToken cancellationToken) => throw new NotImplementedException();
             DbCommand IQueryProvider.GetCommandForCurrentTransaction() => throw new NotImplementedException();
             ISqlExpressionVisitor IQueryProvider.GetExpressionVisitor() => throw new NotImplementedException();
             IIdGeneratorsForDatabaseInit IQueryProvider.GetIdGeneratorsForDatabaseInit() => throw new NotImplementedException();

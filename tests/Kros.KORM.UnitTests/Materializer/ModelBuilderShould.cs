@@ -1,12 +1,16 @@
 ﻿using Kros.KORM.Materializer;
 using Kros.KORM.Metadata;
 using Kros.KORM.Metadata.Attribute;
+using Kros.KORM.Query.Providers;
 using Kros.KORM.UnitTests.Helper;
 using NSubstitute;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Kros.KORM.UnitTests.Materializer
@@ -89,6 +93,116 @@ namespace Kros.KORM.UnitTests.Materializer
 
             ModelBuilder builder = CreateBuilder();
             var data = builder.Materialize<Foo>(reader).ToList();
+
+            reader.DidNotReceive().Dispose();
+        }
+
+        [Fact]
+        public async Task MaterializeDataFromReaderAsync()
+        {
+            using var reader = new InMemoryDbDataReader(CreateDataForReader());
+
+            ModelBuilder builder = CreateBuilder();
+
+            var data = await builder.MaterializeAsync<Foo>(reader).ToListAsync(TestContext.Current.CancellationToken);
+
+            Assert.Equal(2, data.Count);
+            Assert.Equal(1, data[0].Id);
+            Assert.Equal(new Guid("ddc995d7-4dda-41ca-abab-7f45e651784a"), data[0].PropertyGuid);
+
+            Assert.Equal("Kitty", data[1].PropertyString);
+            Assert.Equal(new DateTime(1984, 4, 20), data[1].PropertyDateTime);
+            Assert.Equal(3, reader.ReadAsyncCallCount);
+        }
+
+        [Fact]
+        public async Task MaterializeAsyncFallsBackToSyncReadForPlainDataReader()
+        {
+            using IDataReader reader = new InMemoryDataReader(CreateDataForReader());
+
+            ModelBuilder builder = CreateBuilder();
+
+            var data = await builder.MaterializeAsync<Foo>(reader).ToListAsync(TestContext.Current.CancellationToken);
+
+            Assert.Equal(2, data.Count);
+            Assert.Equal(1, data[0].Id);
+            Assert.Equal(new Guid("ddc995d7-4dda-41ca-abab-7f45e651784a"), data[0].PropertyGuid);
+
+            Assert.Equal("Kitty", data[1].PropertyString);
+            Assert.Equal(new DateTime(1984, 4, 20), data[1].PropertyDateTime);
+        }
+
+        [Fact]
+        public async Task MaterializeAsyncThrowsWhenTokenIsAlreadyCancelled()
+        {
+            using var reader = new InMemoryDbDataReader(CreateDataForReader());
+            ModelBuilder builder = CreateBuilder();
+            await using IAsyncEnumerator<Foo> enumerator = builder
+                .MaterializeAsync<Foo>(reader)
+                .GetAsyncEnumerator(new CancellationToken(canceled: true));
+
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await enumerator.MoveNextAsync());
+
+            Assert.Equal(0, reader.ReadAsyncCallCount);
+        }
+
+        [Fact]
+        public async Task MaterializeAsyncThrowsOnSecondEnumeration()
+        {
+            using var reader = new InMemoryDbDataReader(CreateDataForReader());
+            ModelBuilder builder = CreateBuilder();
+            IAsyncEnumerable<Foo> data = builder.MaterializeAsync<Foo>(reader);
+
+            await data.ToListAsync(TestContext.Current.CancellationToken);
+
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(
+                async () => await data.ToListAsync(TestContext.Current.CancellationToken));
+            Assert.Equal("The asynchronous sequence can be enumerated only once.", ex.Message);
+        }
+
+        [Fact]
+        public async Task CallDisposeOnInternalReaderAndCloseConnectionAsync()
+        {
+            DbConnection connection = Substitute.For<DbConnection>();
+            var internalReader = new InMemoryDbDataReader(CreateDataForReader());
+            var command = new FakeDbCommand(connection, internalReader);
+
+            ModelBuilder.QueryDataReader reader = await ModelBuilder.QueryDataReader.CreateAsync(
+                command, null, true, TestContext.Current.CancellationToken);
+            ModelBuilder builder = CreateBuilder();
+            var data = await builder.MaterializeAsync<Foo>(reader).ToListAsync(TestContext.Current.CancellationToken);
+
+            Assert.Equal(2, data.Count);
+            Assert.True(command.ExecuteReaderAsyncCalled);
+            Assert.True(internalReader.IsDisposed);
+            connection.Received().Close();
+        }
+
+        [Fact]
+        public async Task CreateAsyncReadsThroughEnvelope()
+        {
+            DbConnection connection = Substitute.For<DbConnection>();
+            var internalReader = new InMemoryDbDataReader(CreateDataForReader());
+            var command = new FakeDbCommand(connection, internalReader);
+
+            ModelBuilder.QueryDataReader reader = await ModelBuilder.QueryDataReader.CreateAsync(
+                command, new LimitOffsetDataReader(1, 1), true, TestContext.Current.CancellationToken);
+            ModelBuilder builder = CreateBuilder();
+            var data = await builder.MaterializeAsync<Foo>(reader).ToListAsync(TestContext.Current.CancellationToken);
+
+            Foo item = Assert.Single(data);
+            Assert.Equal(2, item.Id);
+            Assert.Equal("Kitty", item.PropertyString);
+            Assert.Equal(2, internalReader.ReadAsyncCallCount);
+        }
+
+        [Fact]
+        public async Task NotCallDisposeMethodOnReaderAsync()
+        {
+            DbDataReader reader = Substitute.For<DbDataReader>();
+
+            ModelBuilder builder = CreateBuilder();
+            await builder.MaterializeAsync<Foo>(reader).ToListAsync(TestContext.Current.CancellationToken);
 
             reader.DidNotReceive().Dispose();
         }

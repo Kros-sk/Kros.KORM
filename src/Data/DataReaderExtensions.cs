@@ -1,5 +1,10 @@
-﻿using System;
+﻿using Kros.KORM.Materializer;
+using Kros.KORM.Query.Providers;
+using System;
 using System.Data;
+using System.Data.Common;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Kros.KORM.Data
 {
@@ -37,5 +42,26 @@ namespace Kros.KORM.Data
 
         public static float? GetNullableFloat(this IDataReader reader, int i)
             => reader.IsDBNull(i) ? null : reader.GetFloat(i);
+
+        /// <summary>
+        /// Asynchronously advances the <paramref name="reader"/> to the next record. Reader is read asynchronously
+        /// if it supports it (<see cref="DbDataReader"/>, <see cref="IDataReaderEnvelope"/>,
+        /// <see cref="ModelBuilder.QueryDataReader"/>), otherwise synchronous <see cref="IDataReader.Read"/> is used.
+        /// </summary>
+        /// <param name="reader">The reader.</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+        /// <returns>
+        /// Task with result <see langword="true"/> if there are more rows, otherwise <see langword="false"/>.
+        /// </returns>
+        internal static Task<bool> ReadAsync(this IDataReader reader, CancellationToken cancellationToken)
+            => reader switch
+            {
+                DbDataReader dbReader => dbReader.ReadAsync(cancellationToken),
+                IDataReaderEnvelope envelope => envelope.ReadAsync(cancellationToken),
+                ModelBuilder.QueryDataReader queryReader => queryReader.ReadAsync(cancellationToken),
+                _ => cancellationToken.IsCancellationRequested
+                    ? Task.FromCanceled<bool>(cancellationToken)
+                    : Task.FromResult(reader.Read())
+            };
     }
 }

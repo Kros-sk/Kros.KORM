@@ -4,6 +4,7 @@ using Kros.KORM.Helper;
 using Kros.KORM.Materializer;
 using Kros.KORM.Metadata;
 using Kros.KORM.Query;
+using Kros.KORM.Query.Providers;
 using Kros.KORM.Query.Sql;
 using Kros.KORM.UnitTests.Base;
 using Kros.UnitTests;
@@ -14,6 +15,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -122,6 +124,23 @@ namespace Kros.KORM.UnitTests.Query.Providers
             {
                 return base.GetHashCode();
             }
+        }
+
+        private class TestItemWithAmbiguousConstructors
+        {
+            public TestItemWithAmbiguousConstructors(int id)
+            {
+                Id = id;
+            }
+
+            public TestItemWithAmbiguousConstructors(int id, int number)
+            {
+                Id = id;
+                Number = number;
+            }
+
+            public int Id { get; set; }
+            public int Number { get; set; }
         }
 
         #endregion
@@ -324,6 +343,18 @@ END";
         }
 
         [Fact]
+        public async Task ExecuteNonQueryAsync_ThrowsWhenTokenAlreadyCancelled_AndLeavesConnectionClosed()
+        {
+            using (var database = CreateDatabase(CreateTable_TestTable) as TestDatabase)
+            {
+                await Assert.ThrowsAnyAsync<OperationCanceledException>(
+                    () => database.ExecuteNonQueryAsync("SELECT 1", new CancellationToken(canceled: true)));
+
+                Assert.Equal(ConnectionState.Closed, database.Connection.State);
+            }
+        }
+
+        [Fact]
         public void ThrowExceptionWhenParameterIsNullAndDataTypeIsNotSetInStoredProcedure()
         {
             var parameters = new CommandParameterCollection
@@ -467,6 +498,178 @@ END";
         }
 
         [Fact]
+        public async Task ThrowExceptionWhenParameterIsNullAndDataTypeIsNotSetInStoredProcedureAsync()
+        {
+            var parameters = new CommandParameterCollection
+            {
+                { "@Param1", 1 },
+                { "@Param2", null }
+            };
+
+            using (SqlServerTestHelper helper = CreateHelper((string)null))
+            {
+                QueryProvider provider = CreateQueryProvider(helper.Connection);
+                var ex = await Assert.ThrowsAsync<ArgumentException>(() => provider.ExecuteStoredProcedureAsync<int>(
+                    "NoProcedure", parameters, TestContext.Current.CancellationToken));
+                Assert.Contains("@Param2", ex.Message);
+            }
+        }
+
+        [Fact]
+        public async Task ReturnCorrectValueFromStoredProcedureAsync()
+        {
+            using (SqlServerTestHelper helper = CreateHelper(CreateProcedure_ScalarResult))
+            {
+                const int param1 = 11;
+                const int param2 = 22;
+                const int expected = 33;
+
+                var parameters = new CommandParameterCollection
+                {
+                    { "@Param1", param1 },
+                    { "@Param2", param2 }
+                };
+
+                QueryProvider provider = CreateQueryProvider(helper.Connection);
+                int result = await provider.ExecuteStoredProcedureAsync<int>(
+                    Procedure_ScalarResult, parameters, TestContext.Current.CancellationToken);
+
+                Assert.Equal(expected, result);
+            }
+        }
+
+        [Fact]
+        public async Task ReturnCorrectValueFromSelectScalarStoredProcedureAsync()
+        {
+            using (SqlServerTestHelper helper = CreateHelper(CreateProcedure_RowResultWithOneValue))
+            {
+                DateTime expected = new DateTime(1978, 12, 10);
+
+                QueryProvider provider = CreateQueryProvider(helper.Connection);
+                DateTime result = await provider.ExecuteStoredProcedureAsync<DateTime>(
+                    Procedure_RowResultWithOneValue, TestContext.Current.CancellationToken);
+
+                Assert.Equal(expected, result);
+            }
+        }
+
+        [Fact]
+        public async Task ReturnCorrectValueFromStoredProcedureUsingOutputParameterAsync()
+        {
+            using (SqlServerTestHelper helper = CreateHelper(CreateProcedure_OutputParameter))
+            {
+                const int inputParamValue = 10;
+                const int inputOutputParamValue = 100;
+
+                var parameters = new CommandParameterCollection
+                {
+                    { "@InputParam", inputParamValue },
+                    { "@InputOutputParam", inputOutputParamValue, DbType.Int32, ParameterDirection.InputOutput },
+                    { "@OutputParam", 0, DbType.Int32, ParameterDirection.Output }
+                };
+
+                QueryProvider provider = CreateQueryProvider(helper.Connection);
+                await provider.ExecuteStoredProcedureAsync<int>(
+                    Procedure_OutputParameter, parameters, TestContext.Current.CancellationToken);
+
+                Assert.Equal(inputParamValue * 2, parameters["@OutputParam"].Value);
+                Assert.Equal(inputOutputParamValue * 2, parameters["@InputOutputParam"].Value);
+            }
+        }
+
+        [Fact]
+        public async Task ReturnCorrectValueFromSelectRowStoredProcedureAsync()
+        {
+            using (SqlServerTestHelper helper = CreateHelper(CreateProcedure_RowResultWithMultipleValues))
+            {
+                var parameters = new CommandParameterCollection
+                {
+                    { "@Id", 1 },
+                    { "@Number", 10 },
+                    { "@Description", "Lorem ipsum" }
+                };
+
+                QueryProvider provider = CreateQueryProvider(helper.Connection);
+                TestItem result = await provider.ExecuteStoredProcedureAsync<TestItem>(
+                    Procedure_RowResultWithMultipleValues, parameters, TestContext.Current.CancellationToken);
+
+                Assert.Equal(new TestItem(1, 10, "Lorem ipsum"), result);
+            }
+        }
+
+        [Fact]
+        public async Task ReturnCorrectItemsFromSelectTableStoredProcedureAsync()
+        {
+            string[] initScripts = { CreateTable_TestTable, CreateProcedure_TableResult };
+            using (SqlServerTestHelper helper = CreateHelper(initScripts))
+            {
+                QueryProvider provider = CreateQueryProvider(helper.Connection);
+                IEnumerable<TestItem> items = await provider.ExecuteStoredProcedureAsync<IEnumerable<TestItem>>(
+                    Procedure_TableResult, TestContext.Current.CancellationToken);
+                List<TestItem> result = items.ToList();
+
+                Assert.Equivalent(new TestItem[] {
+                    new TestItem(1, 10, "Lorem ipsum"),
+                    new TestItem(2, 20, null),
+                    new TestItem(3, 30, "Hello world"),
+                }, result);
+            }
+        }
+
+        [Fact]
+        public async Task ReturnCorrectItemsFromSelectTableStoredProcedureAsAsyncEnumerable()
+        {
+            string[] initScripts = { CreateTable_TestTable, CreateProcedure_TableResult };
+            using (SqlServerTestHelper helper = CreateHelper(initScripts))
+            {
+                QueryProvider provider = CreateQueryProvider(helper.Connection);
+                IAsyncEnumerable<TestItem> items = await provider.ExecuteStoredProcedureAsync<IAsyncEnumerable<TestItem>>(
+                    Procedure_TableResult, TestContext.Current.CancellationToken);
+                var result = new List<TestItem>();
+                await foreach (TestItem item in items.WithCancellation(TestContext.Current.CancellationToken))
+                {
+                    result.Add(item);
+                }
+
+                Assert.Equivalent(new TestItem[] {
+                    new TestItem(1, 10, "Lorem ipsum"),
+                    new TestItem(2, 20, null),
+                    new TestItem(3, 30, "Hello world"),
+                }, result);
+                Assert.True(IsAnyReaderOpened(helper.Connection, Table_TestTable));
+            }
+        }
+
+        [Fact]
+        public async Task CloseReaderWhenCallStoredProcedureAsync()
+        {
+            string[] initScripts = { CreateTable_TestTable, CreateProcedure_TableResult };
+            using (SqlServerTestHelper helper = CreateHelper(initScripts))
+            {
+                QueryProvider provider = CreateQueryProvider(helper.Connection);
+                IEnumerable<TestItem> items = await provider.ExecuteStoredProcedureAsync<IEnumerable<TestItem>>(
+                    Procedure_TableResult, TestContext.Current.CancellationToken);
+                List<TestItem> result = items.ToList();
+
+                Assert.True(IsAnyReaderOpened(helper.Connection, Table_TestTable));
+            }
+        }
+
+        [Fact]
+        public async Task ExecuteStoredProcedureAsyncThrowsWhenTokenIsCancelled()
+        {
+            string[] initScripts = { CreateTable_TestTable, CreateProcedure_TableResult };
+            using (TestDatabase database = CreateDatabase(initScripts))
+            {
+                await Assert.ThrowsAnyAsync<OperationCanceledException>(
+                    () => database.ExecuteStoredProcedureAsync<IEnumerable<TestItem>>(
+                        Procedure_TableResult, new CancellationToken(canceled: true)));
+
+                Assert.Equal(ConnectionState.Closed, database.Connection.State);
+            }
+        }
+
+        [Fact]
         public void DisposeOfInternalConnection()
         {
             DbConnection connection = Substitute.For<DbConnection>();
@@ -492,6 +695,177 @@ END";
             connection.DidNotReceive().Dispose();
         }
 
+        [Fact]
+        public async Task ExecuteAsyncReturnsAllRows()
+        {
+            using (SqlServerTestHelper helper = CreateHelper(CreateTable_TestTable))
+            {
+                (SqlServerQueryProvider provider, IDatabaseMapper mapper) = CreateQueryProviderWithSqlGenerator(helper.Connection);
+                IQuery<TestItem> query = CreateTestItemQuery(mapper, provider, $"SELECT [Id], [Number], [Description] FROM {Table_TestTable}");
+
+                List<TestItem> result = await ToListAsync(provider.ExecuteAsync(query, TestContext.Current.CancellationToken));
+
+                Assert.Equivalent(new TestItem[] {
+                    new TestItem(1, 10, "Lorem ipsum"),
+                    new TestItem(2, 20, null),
+                    new TestItem(3, 30, "Hello world"),
+                }, result);
+            }
+        }
+
+        [Fact]
+        public async Task ExecuteAsyncExecutesQueryOnEachEnumeration()
+        {
+            using (SqlServerTestHelper helper = CreateHelper(CreateTable_TestTable))
+            {
+                (SqlServerQueryProvider provider, IDatabaseMapper mapper) = CreateQueryProviderWithSqlGenerator(helper.Connection);
+                IQuery<TestItem> query = CreateTestItemQuery(mapper, provider, $"SELECT [Id], [Number], [Description] FROM {Table_TestTable}");
+                IAsyncEnumerable<TestItem> items = provider.ExecuteAsync(query, TestContext.Current.CancellationToken);
+
+                List<TestItem> first = await ToListAsync(items);
+                await provider.ExecuteNonQueryAsync(
+                    $"INSERT INTO [{Table_TestTable}] ([Id], [Number], [Description]) VALUES (4, 40, 'Added')",
+                    TestContext.Current.CancellationToken);
+                List<TestItem> second = await ToListAsync(items);
+
+                Assert.Equal(3, first.Count);
+                Assert.Equal(4, second.Count);
+                Assert.Contains(new TestItem(4, 40, "Added"), second);
+            }
+        }
+
+        [Fact]
+        public async Task ExecuteAsyncThrowsOperationCanceledBeforeAnyRowIsRead()
+        {
+            using (SqlServerTestHelper helper = CreateHelper(CreateTable_TestTable))
+            {
+                (SqlServerQueryProvider provider, IDatabaseMapper mapper) = CreateQueryProviderWithSqlGenerator(helper.Connection);
+                IQuery<TestItem> query = CreateTestItemQuery(mapper, provider, $"SELECT [Id], [Number], [Description] FROM {Table_TestTable}");
+                var readItems = new List<TestItem>();
+
+                await Assert.ThrowsAnyAsync<OperationCanceledException>(async () =>
+                {
+                    await foreach (TestItem item in provider.ExecuteAsync(query, new CancellationToken(canceled: true)))
+                    {
+                        readItems.Add(item);
+                    }
+                });
+
+                Assert.Empty(readItems);
+                Assert.True(IsAnyReaderOpened(helper.Connection, Table_TestTable));
+            }
+        }
+
+        [Fact]
+        public async Task ExecuteAsyncClosesReaderAndConnectionWhenEnumerationIsDisposedEarly()
+        {
+            using (SqlServerTestHelper helper = CreateHelper(CreateTable_TestTable))
+            using (var connection = new SqlConnection(helper.Connection.ConnectionString))
+            {
+                (SqlServerQueryProvider provider, IDatabaseMapper mapper) = CreateQueryProviderWithSqlGenerator(connection);
+                IQuery<TestItem> query = CreateTestItemQuery(mapper, provider, $"SELECT [Id], [Number], [Description] FROM {Table_TestTable}");
+                Assert.Equal(ConnectionState.Closed, connection.State);
+
+                IAsyncEnumerator<TestItem> enumerator = provider
+                    .ExecuteAsync(query, TestContext.Current.CancellationToken)
+                    .GetAsyncEnumerator(TestContext.Current.CancellationToken);
+                Assert.True(await enumerator.MoveNextAsync());
+                Assert.Equal(ConnectionState.Open, connection.State);
+
+                await enumerator.DisposeAsync();
+
+                Assert.Equal(ConnectionState.Closed, connection.State);
+                Assert.True(IsAnyReaderOpened(helper.Connection, Table_TestTable));
+            }
+        }
+
+        [Fact]
+        public async Task ExecuteAsyncClosesConnectionWhenExecuteReaderFails()
+        {
+            using (SqlServerTestHelper helper = CreateHelper(CreateTable_TestTable))
+            using (var connection = new SqlConnection(helper.Connection.ConnectionString))
+            {
+                (SqlServerQueryProvider provider, IDatabaseMapper mapper) = CreateQueryProviderWithSqlGenerator(connection);
+                IQuery<TestItem> query = CreateTestItemQuery(mapper, provider, "SELECT * FROM NoSuchTable");
+
+                await Assert.ThrowsAsync<SqlException>(
+                    async () => await ToListAsync(provider.ExecuteAsync(query, TestContext.Current.CancellationToken)));
+
+                Assert.Equal(ConnectionState.Closed, connection.State);
+            }
+        }
+
+        [Fact]
+        public async Task ExecuteAsyncClosesConnectionWhenModelFactoryFails()
+        {
+            using (SqlServerTestHelper helper = CreateHelper(CreateTable_TestTable))
+            using (var connection = new SqlConnection(helper.Connection.ConnectionString))
+            {
+                (SqlServerQueryProvider provider, IDatabaseMapper mapper) = CreateQueryProviderWithSqlGenerator(connection);
+                var query = new Query<TestItemWithAmbiguousConstructors>(mapper, provider);
+                query.Sql("SELECT [Id], [Number], [Description] FROM " + Table_TestTable);
+
+                await Assert.ThrowsAsync<InvalidOperationException>(
+                    async () => await ToListAsync(provider.ExecuteAsync(query, TestContext.Current.CancellationToken)));
+
+                Assert.Equal(ConnectionState.Closed, connection.State);
+                Assert.True(IsAnyReaderOpened(helper.Connection, Table_TestTable));
+            }
+        }
+
+        [Fact]
+        public void ExecuteAsyncThrowsArgumentNullExceptionEagerly()
+        {
+            using (SqlServerTestHelper helper = CreateHelper(CreateTable_TestTable))
+            {
+                (SqlServerQueryProvider provider, _) = CreateQueryProviderWithSqlGenerator(helper.Connection);
+
+                Assert.Throws<ArgumentNullException>(
+                    () => provider.ExecuteAsync<TestItem>(null, TestContext.Current.CancellationToken));
+            }
+        }
+
+        [Fact]
+        public async Task ExecuteScalarAsyncReturnsFirstColumnOfFirstRow()
+        {
+            using (SqlServerTestHelper helper = CreateHelper(CreateTable_TestTable))
+            {
+                (SqlServerQueryProvider provider, IDatabaseMapper mapper) = CreateQueryProviderWithSqlGenerator(helper.Connection);
+                IQuery<TestItem> query = CreateTestItemQuery(mapper, provider, $"SELECT [Number], [Id] FROM {Table_TestTable} WHERE [Id] = 2");
+
+                object result = await provider.ExecuteScalarAsync(query, TestContext.Current.CancellationToken);
+
+                Assert.Equal(20, result);
+            }
+        }
+
+        [Fact]
+        public async Task ExecuteScalarAsyncReturnsNullForEmptyResult()
+        {
+            using (SqlServerTestHelper helper = CreateHelper(CreateTable_TestTable))
+            {
+                (SqlServerQueryProvider provider, IDatabaseMapper mapper) = CreateQueryProviderWithSqlGenerator(helper.Connection);
+                IQuery<TestItem> query = CreateTestItemQuery(mapper, provider, $"SELECT [Number] FROM {Table_TestTable} WHERE [Id] = -1");
+
+                object result = await provider.ExecuteScalarAsync(query, TestContext.Current.CancellationToken);
+
+                Assert.Null(result);
+            }
+        }
+
+        [Fact]
+        public async Task ExecuteScalarAsyncThrowsWhenTokenIsCancelled()
+        {
+            using (SqlServerTestHelper helper = CreateHelper(CreateTable_TestTable))
+            {
+                (SqlServerQueryProvider provider, IDatabaseMapper mapper) = CreateQueryProviderWithSqlGenerator(helper.Connection);
+                IQuery<TestItem> query = CreateTestItemQuery(mapper, provider, $"SELECT [Number] FROM {Table_TestTable} WHERE [Id] = 2");
+
+                await Assert.ThrowsAnyAsync<OperationCanceledException>(
+                    () => provider.ExecuteScalarAsync(query, new CancellationToken(canceled: true)));
+            }
+        }
+
         #endregion
 
         #region Helpers
@@ -513,6 +887,36 @@ END";
                 new ModelBuilder(Database.DefaultModelFactory),
                 Substitute.For<ILogger>(),
                 Substitute.For<IDatabaseMapper>());
+
+        private static (SqlServerQueryProvider Provider, IDatabaseMapper Mapper) CreateQueryProviderWithSqlGenerator(
+            SqlConnection connection)
+        {
+            var mapper = new DatabaseMapper(new ConventionModelMapper());
+            var provider = new SqlServerQueryProvider(
+                connection,
+                new SqlServerSqlExpressionVisitorFactory(mapper),
+                new ModelBuilder(Database.DefaultModelFactory),
+                Substitute.For<ILogger>(),
+                mapper);
+            return (provider, mapper);
+        }
+
+        private static IQuery<TestItem> CreateTestItemQuery(IDatabaseMapper mapper, QueryProvider provider, string sql)
+        {
+            var query = new Query<TestItem>(mapper, provider);
+            query.Sql(sql);
+            return query;
+        }
+
+        private static async Task<List<T>> ToListAsync<T>(IAsyncEnumerable<T> items)
+        {
+            var result = new List<T>();
+            await foreach (T item in items)
+            {
+                result.Add(item);
+            }
+            return result;
+        }
 
         private static SqlServerQueryProvider CreateQueryProvider(string connectionString)
             => new SqlServerQueryProvider(

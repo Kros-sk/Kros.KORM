@@ -4,7 +4,9 @@ using Kros.KORM.UnitTests.Base;
 using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -119,7 +121,9 @@ namespace Kros.KORM.UnitTests.Integration
                     (database, tableName) => database.ExecuteNonQueryAsync(
                         $@"UPDATE P
                           SET P.Age = 18
-                          FROM People AS P INNER JOIN {tableName} AS T ON (P.Id = T.Value)"));
+                          FROM People AS P INNER JOIN {tableName} AS T ON (P.Id = T.Value)",
+                        TestContext.Current.CancellationToken),
+                    cancellationToken: TestContext.Current.CancellationToken);
 
                 Assert.Equal(4, affectedCount);
             }
@@ -136,7 +140,9 @@ namespace Kros.KORM.UnitTests.Integration
                     (database, tableName) => database.ExecuteNonQueryAsync(
                         $@"UPDATE P
                           SET P.Age = 18
-                          FROM People AS P INNER JOIN {tableName} AS T ON (P.Id = T.Id)"));
+                          FROM People AS P INNER JOIN {tableName} AS T ON (P.Id = T.Id)",
+                        TestContext.Current.CancellationToken),
+                    cancellationToken: TestContext.Current.CancellationToken);
 
                 Assert.Equal(4, affectedCount);
             }
@@ -185,7 +191,8 @@ namespace Kros.KORM.UnitTests.Integration
                     (database, tableName) => database.Query<Person>()
                     .From($"People AS P INNER JOIN {tableName} AS T ON (P.Id = T.Value)")
                     .ToList()
-                    .AsTask());
+                    .AsTask(),
+                    cancellationToken: TestContext.Current.CancellationToken);
 
                 Assert.Equal(4, result.Count());
             }
@@ -203,7 +210,8 @@ namespace Kros.KORM.UnitTests.Integration
                     .Select("P.*")
                     .From($"People AS P INNER JOIN {tableName} AS T ON (P.Id = T.Id)")
                     .ToList()
-                    .AsTask());
+                    .AsTask(),
+                    cancellationToken: TestContext.Current.CancellationToken);
 
                 Assert.Equal(4, result.Count());
             }
@@ -239,7 +247,9 @@ namespace Kros.KORM.UnitTests.Integration
                     (database, tableName) => database.ExecuteNonQueryAsync(
                         @$"UPDATE P
                           SET P.FirstName = T.Value
-                          FROM People AS P INNER JOIN {tableName} AS T ON (P.Id = T.[Key])"));
+                          FROM People AS P INNER JOIN {tableName} AS T ON (P.Id = T.[Key])",
+                        TestContext.Current.CancellationToken),
+                    cancellationToken: TestContext.Current.CancellationToken);
 
                 Assert.Equal(2, affectedCount);
             }
@@ -284,17 +294,73 @@ namespace Kros.KORM.UnitTests.Integration
                         await database.ExecuteNonQueryAsync(
                             @$"UPDATE P
                           SET P.FirstName = T.Value
-                          FROM People AS P INNER JOIN {tableName} AS T ON (P.Id = T.[Key])");
+                          FROM People AS P INNER JOIN {tableName} AS T ON (P.Id = T.[Key])",
+                            TestContext.Current.CancellationToken);
 
                         return await database.Query<Person>()
                             .From($"People AS P INNER JOIN {tableName} AS T ON (P.Id = T.[Key])")
                             .ToList()
                             .AsTask();
-                    });
+                    },
+                    cancellationToken: TestContext.Current.CancellationToken);
 
                 Assert.Equal(2, result.Count());
             }
         }
+
+        [Fact]
+        public async Task ExecuteWithTempTableAsync_ThrowsWhenTokenAlreadyCancelled()
+        {
+            using (IDatabase database = CreateDatabase(CreateTable_TestTable, InsertDataScript2))
+            {
+                var ids = new List<int>() { 1, 2, 3 };
+                bool called = false;
+
+                await Assert.ThrowsAnyAsync<OperationCanceledException>(
+                    () => database.ExecuteWithTempTableAsync(
+                        ids,
+                        (database, tableName) =>
+                        {
+                            called = true;
+                            return Task.CompletedTask;
+                        },
+                        cancellationToken: new CancellationToken(canceled: true)));
+
+                Assert.False(called);
+                Assert.Equal(ConnectionState.Closed, ((TestDatabase)database).Connection.State);
+            }
+        }
+
+        [Fact]
+        public async Task ExecuteWithTempTableAsync_RollsBackWhenCallbackThrows()
+        {
+            using (IDatabase database = CreateDatabase(CreateTable_TestTable, InsertDataScript2))
+            {
+                var ids = new List<int>() { 1, 2, 3 };
+                List<int> agesBefore = GetAgesOrderedById(database);
+
+                await Assert.ThrowsAsync<InvalidOperationException>(
+                    () => database.ExecuteWithTempTableAsync(
+                        ids,
+                        async (database, tableName) =>
+                        {
+                            await database.ExecuteNonQueryAsync(
+                                "UPDATE People SET Age = 1",
+                                TestContext.Current.CancellationToken);
+                            throw new InvalidOperationException("Callback failed.");
+                        },
+                        cancellationToken: TestContext.Current.CancellationToken));
+
+                Assert.Equal(agesBefore, GetAgesOrderedById(database));
+            }
+        }
+
+        private static List<int> GetAgesOrderedById(IDatabase database)
+            => database.Query<Person>()
+                .AsEnumerable()
+                .OrderBy(p => p.Id)
+                .Select(p => p.Age)
+                .ToList();
 
         private static List<IdDto> CreateIds()
             => new List<IdDto>()

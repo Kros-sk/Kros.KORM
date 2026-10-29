@@ -19,6 +19,7 @@ using System.Data.Common;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -93,6 +94,7 @@ namespace Kros.KORM.Query
         private readonly Cache<string, TableSchema> _tableSchemas =
             new Cache<string, TableSchema>(StringComparer.OrdinalIgnoreCase);
         private MethodInfo _nonGenericMaterializeMethod = null;
+        private MethodInfo _nonGenericMaterializeAsyncMethod = null;
         private readonly Lazy<TransactionHelper> _transactionHelper;
         private Lazy<ISqlExpressionVisitor> _sqlExpressionVisitor;
 
@@ -259,6 +261,103 @@ namespace Kros.KORM.Query
             }
         }
 
+        /// <summary>
+        /// Asynchronously executes the specified query. The query is executed when the returned sequence is enumerated;
+        /// every enumeration executes it again.
+        /// </summary>
+        /// <typeparam name="T">Type of model result.</typeparam>
+        /// <param name="query">The query.</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+        /// <returns>
+        /// Asynchronous sequence of models, which are materialized by the query.
+        /// </returns>
+        /// <exception cref="ArgumentNullException">If query is null.</exception>
+        public virtual IAsyncEnumerable<T> ExecuteAsync<T>(IQuery<T> query, CancellationToken cancellationToken = default)
+        {
+            Check.NotNull(query, nameof(query));
+            return ExecuteAsyncCore(query, cancellationToken);
+        }
+
+        private async IAsyncEnumerable<T> ExecuteAsyncCore<T>(
+            IQuery<T> query,
+            [EnumeratorCancellation] CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            DbCommandInfo commandInfo = null;
+            Data.ConnectionHelper cnHelper = null;
+            ModelBuilder.QueryDataReader reader = null;
+            IAsyncEnumerable<T> items;
+            try
+            {
+                commandInfo = CreateCommand(query);
+                cnHelper = await OpenConnectionAsync(cancellationToken);
+                _logger.LogCommand(commandInfo.Command);
+                reader = await ModelBuilder.QueryDataReader.CreateAsync(
+                    commandInfo.Command, commandInfo.Reader, cnHelper.CloseConnection, cancellationToken);
+                items = _modelBuilder.MaterializeAsync<T>(reader);
+            }
+            catch
+            {
+                if (reader != null)
+                {
+                    // The reader owns the command and closes the connection when it is disposed.
+                    reader.Dispose();
+                }
+                else
+                {
+                    commandInfo?.Dispose();
+                    cnHelper?.Dispose();
+                }
+                throw;
+            }
+
+            await foreach (T item in items.WithCancellation(cancellationToken))
+            {
+                yield return item;
+            }
+        }
+
+        /// <summary>
+        /// Asynchronously executes the query and returns the first column of the first row in the result set.
+        /// Additional columns or rows are ignored.
+        /// </summary>
+        /// <typeparam name="T">Type of model.</typeparam>
+        /// <param name="query">The query.</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+        /// <returns>
+        /// A task that represents the asynchronous operation. The task result contains the first column
+        /// of the first row in the result set, or <see langword="null"/> if the result set is empty.
+        /// </returns>
+        /// <exception cref="ArgumentNullException">If query is null.</exception>
+        public virtual async Task<object> ExecuteScalarAsync<T>(IQuery<T> query, CancellationToken cancellationToken = default)
+        {
+            Check.NotNull(query, nameof(query));
+            cancellationToken.ThrowIfCancellationRequested();
+
+            using (Data.ConnectionHelper cnHelper = await OpenConnectionAsync(cancellationToken))
+            using (DbCommandInfo commandInfo = CreateCommand(query))
+            {
+                _logger.LogCommand(commandInfo.Command);
+                if (commandInfo.Reader == null)
+                {
+                    return await commandInfo.Command.ExecuteScalarAsync(cancellationToken);
+                }
+                else
+                {
+                    using (IDataReaderEnvelope reader = commandInfo.Reader)
+                    {
+                        reader.SetInnerReader(await commandInfo.Command.ExecuteReaderAsync(cancellationToken));
+                        if (await reader.ReadAsync(cancellationToken))
+                        {
+                            return reader.GetValue(0);
+                        }
+                    }
+                }
+                return null;
+            }
+        }
+
         /// <inheritdoc/>
         public object ExecuteScalarCommand(IDbCommand command)
         {
@@ -280,7 +379,7 @@ namespace Kros.KORM.Query
         /// <inheritdoc/>
         public async Task ExecuteInTransactionAsync(Func<CancellationToken, Task> action, CancellationToken cancellationToken = default)
         {
-            using (OpenConnection())
+            using (await OpenConnectionAsync(cancellationToken))
             using (var transaction = _transactionHelper.Value.BeginTransaction())
             {
                 try
@@ -290,7 +389,27 @@ namespace Kros.KORM.Query
                 }
                 catch
                 {
-                    await transaction.RollbackAsync(cancellationToken);
+                    // Rollback must not be skipped just because the token has been cancelled.
+                    await transaction.RollbackAsync(CancellationToken.None);
+                    throw;
+                }
+            }
+        }
+
+        /// <inheritdoc/>
+        public void ExecuteInTransaction(Action action)
+        {
+            using (OpenConnection())
+            using (var transaction = _transactionHelper.Value.BeginTransaction())
+            {
+                try
+                {
+                    action();
+                    transaction.Commit();
+                }
+                catch
+                {
+                    transaction.Rollback();
                     throw;
                 }
             }
@@ -374,7 +493,7 @@ namespace Kros.KORM.Query
         {
             CheckCommandParameters(parameters);
 
-            using (OpenConnection())
+            using (await OpenConnectionAsync(cancellationToken))
             using (DbCommand command = CreateCommand(query, parameters))
             {
                 return await ExecuteNonQueryCommandAsync(command, cancellationToken);
@@ -433,6 +552,111 @@ namespace Kros.KORM.Query
             return result;
         }
 
+        /// <inheritdoc cref="IQueryProvider.ExecuteStoredProcedureAsync{TResult}(string, CancellationToken)"/>
+        public virtual Task<TResult> ExecuteStoredProcedureAsync<TResult>(
+            string storedProcedureName,
+            CancellationToken cancellationToken = default)
+            => ExecuteStoredProcedureAsync<TResult>(storedProcedureName, null, cancellationToken);
+
+        /// <inheritdoc cref="IQueryProvider.ExecuteStoredProcedureAsync{TResult}(string, CommandParameterCollection, CancellationToken)"/>
+        public virtual async Task<TResult> ExecuteStoredProcedureAsync<TResult>(
+            string storedProcedureName,
+            CommandParameterCollection parameters,
+            CancellationToken cancellationToken = default)
+        {
+            CheckCommandParameters(parameters);
+            cancellationToken.ThrowIfCancellationRequested();
+
+            TResult result = default(TResult);
+
+            Data.ConnectionHelper cnHelper = null;
+            DbCommand command = null;
+            ModelBuilder.QueryDataReader reader = null;
+
+            try
+            {
+                cnHelper = await OpenConnectionAsync(cancellationToken);
+                command = CreateCommand(storedProcedureName, parameters);
+                command.CommandType = CommandType.StoredProcedure;
+                _logger.LogCommand(command);
+
+                DbParameter returnParameter = GetOrAddCommandReturnParameter(command);
+
+                if (typeof(IEnumerable).IsAssignableFrom(typeof(TResult)) || IsAsyncEnumerable(typeof(TResult)))
+                {
+                    reader = await ModelBuilder.QueryDataReader.CreateAsync(
+                        command, null, cnHelper.CloseConnection, cancellationToken);
+                    result = MaterializeStoredProcedureResult<TResult>(reader);
+                }
+                else
+                {
+                    result = await MaterializeStoredProcedureResultAsync<TResult>(
+                        command, returnParameter, cancellationToken);
+                }
+                FillOutputParameters(command, parameters);
+            }
+            catch
+            {
+                if (reader != null)
+                {
+                    // The reader owns the command and closes the connection when it is disposed.
+                    reader.Dispose();
+                }
+                else
+                {
+                    command?.Dispose();
+                    cnHelper?.Dispose();
+                }
+                throw;
+            }
+
+            if (reader == null)
+            {
+                command.Dispose();
+                cnHelper.Dispose();
+            }
+
+            return result;
+        }
+
+        private async Task<TResult> MaterializeStoredProcedureResultAsync<TResult>(
+            DbCommand command,
+            DbParameter returnParameter,
+            CancellationToken cancellationToken)
+        {
+            TResult result = default(TResult);
+
+            using (DbDataReader reader = await command.ExecuteReaderAsync(cancellationToken))
+            {
+                if (reader.HasRows)
+                {
+                    if (typeof(TResult).IsClass && (typeof(TResult) != typeof(string)))
+                    {
+                        await foreach (TResult item in _modelBuilder.MaterializeAsync<TResult>(reader)
+                            .WithCancellation(cancellationToken))
+                        {
+                            result = item;
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        await reader.ReadAsync(cancellationToken);
+                        result = (TResult)reader.GetValue(0);
+                    }
+                }
+                else if (returnParameter != null)
+                {
+                    result = (TResult)returnParameter.Value;
+                }
+            }
+
+            return result;
+        }
+
+        private static bool IsAsyncEnumerable(Type type)
+            => type.IsGenericType && (type.GetGenericTypeDefinition() == typeof(IAsyncEnumerable<>));
+
         private TResult MaterializeStoredProcedureResult<TResult>(DbCommand command, DbParameter returnParameter)
         {
             TResult result = default(TResult);
@@ -481,22 +705,28 @@ namespace Kros.KORM.Query
             {
                 throw new InvalidOperationException(Resources.ResultMustBeGenericIEnumerable);
             }
-            if (_nonGenericMaterializeMethod == null)
+            MethodInfo nonGenericMethod = IsAsyncEnumerable(tresult)
+                ? GetModelBuilderMethod(ref _nonGenericMaterializeAsyncMethod, nameof(IModelBuilder.MaterializeAsync))
+                : GetModelBuilderMethod(ref _nonGenericMaterializeMethod, nameof(IModelBuilder.Materialize));
+            MethodInfo materializeMethod = nonGenericMethod.MakeGenericMethod(tresult.GenericTypeArguments[0]);
+
+            return (TResult)materializeMethod.Invoke(_modelBuilder, new object[] { reader });
+        }
+
+        private MethodInfo GetModelBuilderMethod(ref MethodInfo cachedMethod, string methodName)
+        {
+            if (cachedMethod == null)
             {
-                _nonGenericMaterializeMethod = _modelBuilder.GetType().GetMethod(
-                    nameof(IModelBuilder.Materialize), new Type[] { typeof(IDataReader) });
-                if (_nonGenericMaterializeMethod == null)
+                cachedMethod = _modelBuilder.GetType().GetMethod(methodName, new Type[] { typeof(IDataReader) });
+                if (cachedMethod == null)
                 {
                     string modelBuilderType = _modelBuilder.GetType().FullName;
-                    const string methodName = nameof(IModelBuilder.Materialize);
                     const string methodArg = nameof(IDataReader);
                     throw new InvalidOperationException(
                         string.Format(Resources.MissingMethodInModelBuilder, modelBuilderType, methodName, methodArg));
                 }
             }
-            MethodInfo materializeMethod = _nonGenericMaterializeMethod.MakeGenericMethod(tresult.GenericTypeArguments[0]);
-
-            return (TResult)materializeMethod.Invoke(_modelBuilder, new object[] { reader });
+            return cachedMethod;
         }
 
         /// <summary>
@@ -521,6 +751,10 @@ namespace Kros.KORM.Query
         /// <inheritdoc/>
         public ITransaction BeginTransaction(IsolationLevel isolationLevel) =>
             _transactionHelper.Value.BeginTransaction(isolationLevel);
+
+        /// <inheritdoc/>
+        public Task<ITransaction> BeginTransactionAsync(IsolationLevel isolationLevel, CancellationToken cancellationToken = default) =>
+            _transactionHelper.Value.BeginTransactionAsync(isolationLevel, cancellationToken);
 
         /// <inheritdoc/>
         [Obsolete("Method is deprecated. Use CreateIdGenerator(Type, string, int).")]
@@ -648,6 +882,9 @@ namespace Kros.KORM.Query
         {
             return new Data.ConnectionHelper(Connection);
         }
+
+        private Task<Data.ConnectionHelper> OpenConnectionAsync(CancellationToken cancellationToken)
+            => Data.ConnectionHelper.OpenAsync(Connection, cancellationToken);
 
         private DbCommandInfo CreateCommand<T>(IQuery<T> query)
         {

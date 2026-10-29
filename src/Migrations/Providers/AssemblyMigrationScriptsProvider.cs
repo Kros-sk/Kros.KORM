@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.IO;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System;
 
@@ -40,7 +41,7 @@ namespace Kros.KORM.Migrations.Providers
         }
 
         /// <inheritdoc/>
-        public async Task<string> GetScriptAsync(ScriptInfo scriptInfo)
+        public async Task<string> GetScriptAsync(ScriptInfo scriptInfo, CancellationToken cancellationToken = default)
         {
             Check.NotNull(scriptInfo, nameof(scriptInfo));
 
@@ -54,7 +55,7 @@ namespace Kros.KORM.Migrations.Providers
 
             using (var reader = new StreamReader(resourceStream, Encoding.UTF8))
             {
-                return await reader.ReadToEndAsync();
+                return await reader.ReadToEndAsync(cancellationToken);
             }
         }
 

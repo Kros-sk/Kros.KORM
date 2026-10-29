@@ -226,6 +226,9 @@ or only one public parametrized constructor.</value>
   <data name="MissingMethodInModelBuilder" xml:space="preserve">
     <value>ModelBuilder instance ({0}) does not have method {1}({2}).</value>
   </data>
+  <data name="ModelBuilderAsyncEnumerableAlreadyEnumerated" xml:space="preserve">
+    <value>The asynchronous sequence can be enumerated only once.</value>
+  </data>
   <data name="MoreParametersThanValues" xml:space="preserve">
     <value>Cannot execute query. There are more parameters than values in the query.</value>
   </data>
@@ -268,6 +271,9 @@ or only one public parametrized constructor.</value>
   </data>
   <data name="QueryProviderFactoryNotRegisteredForProvider" xml:space="preserve">
     <value>QueryProviderFactory for provider '{0}' is not registered.</value>
+  </data>
+  <data name="QueryableIsNotKormQuery" xml:space="preserve">
+    <value>The queryable is not a KORM query.</value>
   </data>
   <data name="ResultMustBeGenericIEnumerable" xml:space="preserve">
     <value>Result type must be generic type IEnumerable&lt;T&gt;.</value>
@@ -336,6 +342,9 @@ or only one public parametrized constructor.</value>
   </data>
   <data name="UseConnectionMustBeCall" xml:space="preserve">
     <value>Method '{0}' must be call before '{1}'</value>
+  </data>
+  <data name="UseRangeMethodForCollections" xml:space="preserve">
+    <value>The entity is a collection. Use {0} to process a collection of entities.</value>
   </data>
   <data name="ValueGeneratedNeverNotSupported" xml:space="preserve">
     <value>ValueGenerated Never is not supported when using "{0}".</value>

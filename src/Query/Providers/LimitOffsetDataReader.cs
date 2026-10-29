@@ -1,7 +1,10 @@
-﻿using Kros.KORM.Properties;
+﻿using Kros.KORM.Data;
+using Kros.KORM.Properties;
 using Kros.Utils;
 using System;
 using System.Data;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Kros.KORM.Query.Providers
 {
@@ -139,6 +142,39 @@ namespace Kros.KORM.Query.Providers
             _readCount++;
             return _reader.Read();
         }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
+
+        /// <summary>
+        /// Asynchronously advances the reader to the next record, applying <see cref="Offset"/> and <see cref="Limit"/>.
+        /// Inner reader is read asynchronously if it supports it.
+        /// </summary>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+        /// <returns>
+        /// Task with result <see langword="true"/> if there are more rows, otherwise <see langword="false"/>.
+        /// </returns>
+        public async Task<bool> ReadAsync(CancellationToken cancellationToken)
+        {
+            if (!_offsetApplied)
+            {
+                for (var i = 0; i < Offset; i++)
+                {
+                    if (!await _reader.ReadAsync(cancellationToken))
+                    {
+                        return false;
+                    }
+                }
+                _offsetApplied = true;
+            }
+
+            if ((Limit > 0) && (_readCount >= Limit))
+            {
+                return false;
+            }
+            _readCount++;
+            return await _reader.ReadAsync(cancellationToken);
+        }
+
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 
         public void Close() => _reader?.Close();
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member

@@ -359,6 +359,15 @@ namespace Kros.KORM.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The asynchronous sequence can be enumerated only once..
+        /// </summary>
+        internal static string ModelBuilderAsyncEnumerableAlreadyEnumerated {
+            get {
+                return ResourceManager.GetString("ModelBuilderAsyncEnumerableAlreadyEnumerated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cannot execute query. There are more parameters than values in the query..
         /// </summary>
         internal static string MoreParametersThanValues {
@@ -481,6 +490,15 @@ namespace Kros.KORM.Properties {
         internal static string QueryProviderFactoryNotRegisteredForProvider {
             get {
                 return ResourceManager.GetString("QueryProviderFactoryNotRegisteredForProvider", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The queryable is not a KORM query..
+        /// </summary>
+        internal static string QueryableIsNotKormQuery {
+            get {
+                return ResourceManager.GetString("QueryableIsNotKormQuery", resourceCulture);
             }
         }
         
@@ -625,6 +643,15 @@ namespace Kros.KORM.Properties {
         internal static string UseConnectionMustBeCall {
             get {
                 return ResourceManager.GetString("UseConnectionMustBeCall", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The entity is a collection. Use {0} to process a collection of entities..
+        /// </summary>
+        internal static string UseRangeMethodForCollections {
+            get {
+                return ResourceManager.GetString("UseRangeMethodForCollections", resourceCulture);
             }
         }
         

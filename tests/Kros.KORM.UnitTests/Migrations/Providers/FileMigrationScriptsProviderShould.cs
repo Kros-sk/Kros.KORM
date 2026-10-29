@@ -1,7 +1,9 @@
-using Kros.KORM.Migrations.Providers;
+﻿using Kros.KORM.Migrations.Providers;
+using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -58,10 +60,25 @@ namespace Kros.KORM.UnitTests.Migrations.Providers
                 Id = 20190228001,
                 Name = "InitDatabase",
                 Path = GetFileFullName("20190228001_InitDatabase")
-            });
+            }, TestContext.Current.CancellationToken);
 
             var expected = await File.ReadAllTextAsync(GetFileFullName("20190228001_InitDatabase"), TestContext.Current.CancellationToken);
             Assert.Equal(expected, script);
+        }
+
+        [Fact]
+        public async Task LoadScript_ThrowsWhenTokenAlreadyCancelled()
+        {
+            var provider = new FileMigrationScriptsProvider(_folderFullPath);
+            var scriptInfo = new ScriptInfo(provider)
+            {
+                Id = 20190228001,
+                Name = "InitDatabase",
+                Path = GetFileFullName("20190228001_InitDatabase")
+            };
+
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(
+                () => provider.GetScriptAsync(scriptInfo, new CancellationToken(canceled: true)));
         }
 
         private string GetFileFullName(string fileName)

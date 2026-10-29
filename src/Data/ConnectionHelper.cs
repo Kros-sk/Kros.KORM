@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Kros.KORM.Data
 {
@@ -15,14 +17,38 @@ namespace Kros.KORM.Data
         private bool _disposedValue = false;
         private DbConnection _connection;
 
-        public ConnectionHelper(DbConnection connection)
+        private ConnectionHelper(DbConnection connection, bool closeConnection)
         {
             _connection = connection;
-            CloseConnection = !_connection.State.HasFlag(ConnectionState.Open);
+            CloseConnection = closeConnection;
+        }
+
+        public ConnectionHelper(DbConnection connection)
+            : this(connection, !connection.State.HasFlag(ConnectionState.Open))
+        {
             if (CloseConnection)
             {
                 _connection.Open();
             }
+        }
+
+        /// <summary>
+        /// Opens the <paramref name="connection"/> asynchronously, if it is not already open.
+        /// </summary>
+        /// <param name="connection">The connection.</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+        /// <returns>Helper which closes the connection on dispose, if this call opened it.</returns>
+        internal static async Task<ConnectionHelper> OpenAsync(
+            DbConnection connection,
+            CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            bool closeConnection = !connection.State.HasFlag(ConnectionState.Open);
+            if (closeConnection)
+            {
+                await connection.OpenAsync(cancellationToken);
+            }
+            return new ConnectionHelper(connection, closeConnection);
         }
 
         public bool CloseConnection { get; }

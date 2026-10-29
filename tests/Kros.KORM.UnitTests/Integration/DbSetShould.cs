@@ -7,8 +7,10 @@ using Kros.KORM.UnitTests.Properties;
 using Nito.AsyncEx;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -279,7 +281,7 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
                 var olderPat = new Person { Id = 105, Age = 19, FirstName = "Pat", LastName = "Lefty" };
                 var matJunior = new Person { Id = 106, Age = 0, FirstName = "Mat Junior", LastName = "Righty" };
 
-                await database.UpsertAsync<Person>(new Person[] { pat, mat }, TestContext.Current.CancellationToken);
+                await database.UpsertRangeAsync(new Person[] { pat, mat }, TestContext.Current.CancellationToken);
 
                 IDbSet<Person> people = database.Query<Person>().AsDbSet()
                     .WithCustomUpsertConditionColumns(nameof(Person.FirstName), nameof(Person.LastName));
@@ -610,7 +612,7 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
                 IDbSet<Person> dbSet = korm.Query<Person>().AsDbSet();
                 dbSet.Add(GetPersonData());
 
-                await dbSet.BulkInsertAsync();
+                await dbSet.BulkInsertAsync(TestContext.Current.CancellationToken);
 
                 AssertData(korm);
             }
@@ -623,7 +625,7 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
             {
                 IDbSet<Person> dbSet = korm.Query<Person>().AsDbSet();
 
-                await dbSet.BulkInsertAsync(GetPersonData());
+                await dbSet.BulkInsertAsync(GetPersonData(), TestContext.Current.CancellationToken);
 
                 AssertData(korm);
             }
@@ -685,6 +687,38 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
         }
 
         [Fact]
+        public async Task BulkInsertAsync_ThrowsWhenTokenAlreadyCancelled()
+        {
+            using (var korm = CreateDatabase(CreateTable_TestTable))
+            {
+                IDbSet<Person> dbSet = korm.Query<Person>().AsDbSet();
+                dbSet.Add(GetPersonData());
+
+                await Assert.ThrowsAnyAsync<OperationCanceledException>(
+                    () => dbSet.BulkInsertAsync(new CancellationToken(canceled: true)));
+
+                Assert.Empty(korm.Query<Person>());
+                Assert.Equal(2, dbSet.AddedItems.Count());
+            }
+        }
+
+        [Fact]
+        public async Task BulkInsertAsync_ThrowsWhenTokenIsCancelledDuringInsert()
+        {
+            using (var korm = CreateDatabase(CreateTable_TestTable))
+            using (var cts = new CancellationTokenSource())
+            {
+                IDbSet<Person> dbSet = korm.Query<Person>().AsDbSet();
+
+                await Assert.ThrowsAnyAsync<OperationCanceledException>(
+                    () => dbSet.BulkInsertAsync(PeopleCancellingOnSecondItem(cts), cts.Token));
+
+                Assert.Empty(korm.Query<Person>());
+                Assert.Equal(ConnectionState.Closed, ((TestDatabase)korm).Connection.State);
+            }
+        }
+
+        [Fact]
         public async Task BulkUpdateDataAsync()
         {
             using (var korm = CreateDatabase(CreateTable_TestTable, InsertDataScript))
@@ -693,7 +727,7 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
 
                 dbSet.Edit(GetPersonData());
 
-                await dbSet.BulkUpdateAsync();
+                await dbSet.BulkUpdateAsync(TestContext.Current.CancellationToken);
 
                 AssertData(korm);
             }
@@ -726,7 +760,7 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
 
                 dbSet.Edit(GetPersonData());
 
-                await dbSet.BulkUpdateAsync((c, t, s) => { });
+                await dbSet.BulkUpdateAsync((c, t, s) => { }, TestContext.Current.CancellationToken);
 
                 AssertData(korm);
             }
@@ -755,7 +789,7 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
             {
                 var dbSet = korm.Query<Person>().AsDbSet();
 
-                await dbSet.BulkUpdateAsync(GetPersonData());
+                await dbSet.BulkUpdateAsync(GetPersonData(), TestContext.Current.CancellationToken);
 
                 AssertData(korm);
             }
@@ -784,9 +818,25 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
             {
                 var dbSet = korm.Query<Person>().AsDbSet();
 
-                await dbSet.BulkUpdateAsync(GetPersonData(), (c, t, s) => { });
+                await dbSet.BulkUpdateAsync(GetPersonData(), (c, t, s) => { }, TestContext.Current.CancellationToken);
 
                 AssertData(korm);
+            }
+        }
+
+        [Fact]
+        public async Task BulkUpdateAsync_ThrowsWhenTokenAlreadyCancelled()
+        {
+            using (var korm = CreateDatabase(CreateTable_TestTable, InsertDataScript))
+            {
+                var dbSet = korm.Query<Person>().AsDbSet();
+                dbSet.Edit(GetPersonData());
+
+                await Assert.ThrowsAnyAsync<OperationCanceledException>(
+                    () => dbSet.BulkUpdateAsync(new CancellationToken(canceled: true)));
+
+                Assert.Equal("John", korm.Query<Person>().First(p => p.Id == 1).FirstName);
+                Assert.Equal(2, dbSet.EditedItems.Count());
             }
         }
 
@@ -934,6 +984,17 @@ INSERT INTO [{Table_LimitOffsetTest}] VALUES (20, 'twenty');";
         {
             List<DataTypesData> actualData = korm.Query<DataTypesData>().OrderBy(item => item.Id).ToList();
             Assert.Equivalent(GetDataTypesData(), actualData);
+        }
+
+        private static IEnumerable<Person> PeopleCancellingOnSecondItem(CancellationTokenSource cts)
+        {
+            var people = GetPersonData().ToList();
+
+            yield return people[0];
+
+            cts.Cancel();
+
+            yield return people[1];
         }
 
         private static IEnumerable<Person> GetPersonData()

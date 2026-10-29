@@ -1,6 +1,7 @@
 ﻿using Kros.Utils;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Kros.KORM.Migrations.Providers
@@ -22,8 +23,8 @@ namespace Kros.KORM.Migrations.Providers
         }
 
         /// <inheritdoc/>
-        public async Task<string> GetScriptAsync(ScriptInfo scriptInfo)
-            => await Task.FromResult(File.ReadAllText(scriptInfo.Path));
+        public Task<string> GetScriptAsync(ScriptInfo scriptInfo, CancellationToken cancellationToken = default)
+            => File.ReadAllTextAsync(scriptInfo.Path, cancellationToken);
 
         /// <inheritdoc/>
         public IEnumerable<ScriptInfo> GetScripts()

@@ -1,5 +1,7 @@
 ﻿using Kros.KORM.Query.Sql;
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Kros.KORM.Query
 {
@@ -98,6 +100,72 @@ namespace Kros.KORM.Query
         /// </example>
         /// <exception cref="ArgumentNullException">if <c>whereCondition</c> is null or white string.</exception>
         bool Any(FormattableString whereCondition);
+
+        /// <summary>
+        /// Asynchronously returns the first item which matches the condition, or a default value if it doesn't exist.
+        /// </summary>
+        /// <param name="whereCondition">The where condition.</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+        /// <param name="args">The arguments for where.</param>
+        /// <returns>
+        /// A task whose result is <see langword="null"/> if item doesn't exist; otherwise, the first item which match the condition.
+        /// </returns>
+        /// <example>
+        /// <code>
+        /// var item = await query.FirstOrDefaultAsync("Id = @1", cancellationToken, 22);
+        /// </code>
+        /// </example>
+        /// <exception cref="ArgumentNullException">if <c>whereCondition</c> is null or white string.</exception>
+        Task<T> FirstOrDefaultAsync(RawSqlString whereCondition, CancellationToken cancellationToken = default, params object[] args);
+
+        /// <summary>
+        /// Asynchronously returns the first item which matches the condition, or a default value if it doesn't exist.
+        /// </summary>
+        /// <param name="whereCondition">The where condition.</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+        /// <returns>
+        /// A task whose result is <see langword="null"/> if item doesn't exist; otherwise, the first item which match the condition.
+        /// </returns>
+        /// <example>
+        /// <code>
+        /// var item = await query.FirstOrDefaultAsync($"Id = {22}", cancellationToken);
+        /// </code>
+        /// </example>
+        /// <exception cref="ArgumentNullException">if <c>whereCondition</c> is null or white string.</exception>
+        Task<T> FirstOrDefaultAsync(FormattableString whereCondition, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Asynchronously checks if elements matching the condition exist in the table.
+        /// </summary>
+        /// <param name="whereCondition">The where condition.</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+        /// <param name="args">The arguments for where.</param>
+        /// <returns>
+        /// A task whose result is <see langword="true"/> if exist elements in the table which match condition; otherwise, false.
+        /// </returns>
+        /// <example>
+        /// <code>
+        /// var exist = await database.Query&lt;Person&gt;().AnyAsync("Age &gt; @1", cancellationToken, 18);
+        /// </code>
+        /// </example>
+        /// <exception cref="ArgumentNullException">if <c>whereCondition</c> is null or white string.</exception>
+        Task<bool> AnyAsync(RawSqlString whereCondition, CancellationToken cancellationToken = default, params object[] args);
+
+        /// <summary>
+        /// Asynchronously checks if elements matching the condition exist in the table.
+        /// </summary>
+        /// <param name="whereCondition">The where condition.</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+        /// <returns>
+        /// A task whose result is <see langword="true"/> if exist elements in the table which match condition; otherwise, false.
+        /// </returns>
+        /// <example>
+        /// <code>
+        /// var exist = await database.Query&lt;Person&gt;().AnyAsync($"Age &gt; {18}", cancellationToken);
+        /// </code>
+        /// </example>
+        /// <exception cref="ArgumentNullException">if <c>whereCondition</c> is null or white string.</exception>
+        Task<bool> AnyAsync(FormattableString whereCondition, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Add order by statement to sql.

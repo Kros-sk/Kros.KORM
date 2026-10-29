@@ -30,6 +30,7 @@ namespace Kros.KORM.Data
             private readonly Lazy<DbTransaction> _transaction;
             private readonly TransactionHelper _transactionHelper;
             private bool _wasCommitOrRollback = false;
+            private bool _ended = false;
 
             public Transaction(TransactionHelper transactionHelper, ConnectionHelper connectionHelper, IsolationLevel isolationLevel)
             {
@@ -49,15 +50,30 @@ namespace Kros.KORM.Data
                 _wasCommitOrRollback = true;
                 if (_transactionHelper.CanCommitTransaction)
                 {
-                    if (useAsync)
+                    try
                     {
-                        await _transaction.Value.CommitAsync(cancellationToken);
+                        if (useAsync)
+                        {
+                            await _transaction.Value.CommitAsync(cancellationToken);
+                        }
+                        else
+                        {
+                            _transaction.Value.Commit();
+                        }
                     }
-                    else
+                    catch
                     {
-                        _transaction.Value.Commit();
+                        // Failed (or cancelled) commit must not leave this transaction on the stack.
+                        EndOnce(false);
+                        throw;
                     }
-                    _transactionHelper.EndTransaction(true);
+                    EndOnce(true);
+                }
+                else
+                {
+                    // A nested transaction was rolled back, so the whole transaction must be rolled back.
+                    // Rollback must not be skipped or interrupted just because the token has been cancelled.
+                    await RollbackCore(useAsync, CancellationToken.None);
                 }
             }
 
@@ -67,18 +83,52 @@ namespace Kros.KORM.Data
             public Task RollbackAsync(CancellationToken cancellationToken = default)
                 => OnRollback(true, cancellationToken);
 
-            private async Task OnRollback(bool useAsync, CancellationToken cancellationToken = default)
+            private Task OnRollback(bool useAsync, CancellationToken cancellationToken = default)
             {
                 _wasCommitOrRollback = true;
-                if (useAsync)
+                return RollbackCore(useAsync, cancellationToken);
+            }
+
+            /// <summary>
+            /// Rolls back the DB transaction (if there is one which can still be rolled back)
+            /// and removes this transaction from the stack.
+            /// </summary>
+            private async Task RollbackCore(bool useAsync, CancellationToken cancellationToken)
+            {
+                try
                 {
-                    _transaction.Value.Rollback();
+                    // DbTransaction.Connection is null when the transaction is no longer valid (already committed,
+                    // rolled back, or aborted by the server or a lost connection). Rolling it back would throw
+                    // and mask the original exception of the caller.
+                    if (_transaction.IsValueCreated && _transaction.Value.Connection is not null)
+                    {
+                        if (useAsync)
+                        {
+                            await _transaction.Value.RollbackAsync(cancellationToken);
+                        }
+                        else
+                        {
+                            _transaction.Value.Rollback();
+                        }
+                    }
                 }
-                else
+                finally
                 {
-                    await _transaction.Value.RollbackAsync(cancellationToken);
+                    EndOnce(false);
                 }
-                _transactionHelper.EndTransaction(false);
+            }
+
+            /// <summary>
+            /// Removes this transaction from the stack of <see cref="TransactionHelper"/>, but only once.
+            /// A caller usually rolls back after a failed commit, which must not pop the stack again.
+            /// </summary>
+            private void EndOnce(bool success)
+            {
+                if (!_ended)
+                {
+                    _ended = true;
+                    _transactionHelper.EndTransaction(success);
+                }
             }
 
             public int CommandTimeout { get; set; } = TIMEOUT_DEFAULT;
@@ -89,15 +139,31 @@ namespace Kros.KORM.Data
             /// <inheritdoc/>
             public void Dispose()
             {
-                if (!_wasCommitOrRollback)
+                try
                 {
-                    Rollback();
+                    if (!_wasCommitOrRollback)
+                    {
+                        if (_transaction.IsValueCreated)
+                        {
+                            Rollback();
+                        }
+                        else
+                        {
+                            // No command has run, so there is no DB transaction to roll back.
+                            _wasCommitOrRollback = true;
+                            EndOnce(false);
+                        }
+                    }
                 }
-                if (_transaction.IsValueCreated)
+                finally
                 {
-                    _transaction.Value.Dispose();
+                    // Resources are released even when the rollback fails (its exception still propagates).
+                    if (_transaction.IsValueCreated)
+                    {
+                        _transaction.Value.Dispose();
+                    }
+                    _connectionHelper.Dispose();
                 }
-                _connectionHelper.Dispose();
             }
         }
 
@@ -164,6 +230,23 @@ namespace Kros.KORM.Data
             if (_transactions.Count == 0)
             {
                 _topTransaction = new Transaction(this, new ConnectionHelper(_connection), isolationLevel);
+                _transactions.Push(_topTransaction);
+                _canCommit = true;
+            }
+            else
+            {
+                _transactions.Push(new NestedTransaction(this, _topTransaction.CommandTimeout));
+            }
+
+            return _transactions.Peek();
+        }
+
+        public async Task<ITransaction> BeginTransactionAsync(IsolationLevel isolationLevel, CancellationToken cancellationToken)
+        {
+            if (_transactions.Count == 0)
+            {
+                ConnectionHelper connectionHelper = await ConnectionHelper.OpenAsync(_connection, cancellationToken);
+                _topTransaction = new Transaction(this, connectionHelper, isolationLevel);
                 _transactions.Push(_topTransaction);
                 _canCommit = true;
             }

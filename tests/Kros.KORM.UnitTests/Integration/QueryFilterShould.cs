@@ -1,6 +1,8 @@
 ﻿using Kros.KORM.Metadata;
 using Kros.KORM.UnitTests.Base;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Kros.KORM.UnitTests.Integration
@@ -49,6 +51,19 @@ INSERT INTO [Foo] VALUES (4, 3, 'Jakub');";
                     .Select(p => p.Id);
 
                 Assert.Equivalent(new int[] { 2 }, ids);
+            }
+        }
+
+        [Fact]
+        public async Task ApplyQueryFilterToAsyncQuery()
+        {
+            using (TestDatabase test = CreateDatabase(CreateTable_FooTable, InsertIntoFooScript))
+            using (IDatabase database = CreateDatabase(test))
+            {
+                List<Foo> items = await database.Query<Foo>()
+                    .ToListAsync(TestContext.Current.CancellationToken);
+
+                Assert.Equivalent(new int[] { 1, 2 }, items.Select(p => p.Id));
             }
         }
 

@@ -8,6 +8,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Kros.KORM.Query
 {
@@ -152,6 +154,23 @@ namespace Kros.KORM.Query
             => FirstOrDefault(whereCondition, whereCondition.GetArguments());
 
         /// <inheritdoc />
+        public async Task<T> FirstOrDefaultAsync(
+            RawSqlString whereCondition,
+            CancellationToken cancellationToken = default,
+            params object[] args)
+        {
+            Check.NotNullOrWhiteSpace(whereCondition.Format, nameof(whereCondition));
+
+            SelectExpression.SetWhereExpression(new WhereExpression(whereCondition, args));
+
+            return await FirstOrDefaultAsync(cancellationToken);
+        }
+
+        /// <inheritdoc />
+        public Task<T> FirstOrDefaultAsync(FormattableString whereCondition, CancellationToken cancellationToken = default)
+            => FirstOrDefaultAsync(whereCondition, cancellationToken, whereCondition.GetArguments());
+
+        /// <inheritdoc />
         public bool Any(RawSqlString whereCondition, params object[] args)
         {
             Check.NotNullOrWhiteSpace(whereCondition.Format, nameof(whereCondition));
@@ -165,6 +184,25 @@ namespace Kros.KORM.Query
 
         /// <inheritdoc />
         public bool Any(FormattableString whereCondition) => Any(whereCondition, whereCondition.GetArguments());
+
+        /// <inheritdoc />
+        public async Task<bool> AnyAsync(
+            RawSqlString whereCondition,
+            CancellationToken cancellationToken = default,
+            params object[] args)
+        {
+            Check.NotNullOrWhiteSpace(whereCondition.Format, nameof(whereCondition));
+            const string top = "TOP 1 1";
+
+            SelectExpression.SetColumnsExpression(new ColumnsExpression(top));
+            SelectExpression.SetWhereExpression(new WhereExpression(whereCondition, args));
+
+            return await _provider.ExecuteScalarAsync<T>(this, cancellationToken) != null;
+        }
+
+        /// <inheritdoc />
+        public Task<bool> AnyAsync(FormattableString whereCondition, CancellationToken cancellationToken = default)
+            => AnyAsync(whereCondition, cancellationToken, whereCondition.GetArguments());
 
         /// <inheritdoc />
         public IOrderedQuery<T> OrderBy(string orderBy)
@@ -221,6 +259,93 @@ namespace Kros.KORM.Query
         public TRet? ExecuteScalar<TRet>() where TRet : struct
         {
             var value = ExecuteScalar();
+
+            return !(value is DBNull || value == null) ? (TRet)value : new TRet?();
+        }
+
+        /// <inheritdoc />
+        public IAsyncEnumerable<T> AsAsyncEnumerable(CancellationToken cancellationToken = default)
+            => _provider.ExecuteAsync<T>(this, cancellationToken);
+
+        /// <inheritdoc />
+        public async Task<List<T>> ToListAsync(CancellationToken cancellationToken = default)
+        {
+            var result = new List<T>();
+            await foreach (T item in AsAsyncEnumerable(cancellationToken))
+            {
+                result.Add(item);
+            }
+
+            return result;
+        }
+
+        /// <inheritdoc />
+        public async Task<T> FirstOrDefaultAsync(CancellationToken cancellationToken = default)
+        {
+            IQuery<T> query = CreateLinqMethodQuery<T>(nameof(Queryable.FirstOrDefault)) ?? this;
+
+            await foreach (T item in _provider.ExecuteAsync(query, cancellationToken))
+            {
+                return item;
+            }
+
+            return default;
+        }
+
+        /// <inheritdoc />
+        public async Task<bool> AnyAsync(CancellationToken cancellationToken = default)
+        {
+            IQuery<bool> query = CreateLinqMethodQuery<bool>(nameof(Queryable.Any));
+            if (query is null)
+            {
+                await using IAsyncEnumerator<T> enumerator = AsAsyncEnumerable(cancellationToken)
+                    .GetAsyncEnumerator(cancellationToken);
+
+                return await enumerator.MoveNextAsync();
+            }
+
+            await foreach (bool any in _provider.ExecuteAsync(query, cancellationToken))
+            {
+                return any;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Creates the query which the synchronous LINQ method <paramref name="methodName"/>
+        /// (for example <see cref="Queryable.FirstOrDefault{TSource}(IQueryable{TSource})"/>) would send to the provider,
+        /// so the SQL generator translates it the same way (<c>TOP 1</c>, <c>EXISTS</c>, ...).
+        /// Returns <see langword="null"/> for a raw SQL query, which is executed as written.
+        /// </summary>
+        private IQuery<TResult> CreateLinqMethodQuery<TResult>(string methodName)
+            => typeof(IQueryable<T>).IsAssignableFrom(Expression.Type)
+                ? new Query<TResult>(_provider, Expression.Call(typeof(Queryable), methodName, [typeof(T)], Expression))
+                : null;
+
+        /// <inheritdoc />
+        public Task<object> ExecuteScalarAsync(CancellationToken cancellationToken = default)
+            => _provider.ExecuteScalarAsync(this, cancellationToken);
+
+        /// <inheritdoc />
+        public async Task<string> ExecuteStringScalarAsync(CancellationToken cancellationToken = default)
+        {
+            var value = await ExecuteScalarAsync(cancellationToken);
+
+            if (value is DBNull || value == null)
+            {
+                return null;
+            }
+            else
+            {
+                return value.ToString();
+            }
+        }
+
+        /// <inheritdoc />
+        public async Task<TRet?> ExecuteScalarAsync<TRet>(CancellationToken cancellationToken = default) where TRet : struct
+        {
+            var value = await ExecuteScalarAsync(cancellationToken);
 
             return !(value is DBNull || value == null) ? (TRet)value : new TRet?();
         }

@@ -237,53 +237,53 @@ namespace Kros.KORM.Query
         /// <inheritdoc />
         public void BulkInsert()
         {
-            BulkInsertCoreAsync(_addedItems, false, null).GetAwaiter().GetResult();
+            BulkInsertCoreAsync(_addedItems, false, null, CancellationToken.None).GetAwaiter().GetResult();
             _addedItems?.Clear();
         }
 
         /// <inheritdoc />
         public void BulkInsert(object options)
         {
-            BulkInsertCoreAsync(_addedItems, false, options).GetAwaiter().GetResult();
+            BulkInsertCoreAsync(_addedItems, false, options, CancellationToken.None).GetAwaiter().GetResult();
             _addedItems?.Clear();
         }
 
         /// <inheritdoc />
         public void BulkInsert(IEnumerable<T> items)
-            => BulkInsertCoreAsync(Check.NotNull(items, nameof(items)), false, null).GetAwaiter().GetResult();
+            => BulkInsertCoreAsync(Check.NotNull(items, nameof(items)), false, null, CancellationToken.None).GetAwaiter().GetResult();
 
         /// <inheritdoc />
         public void BulkInsert(IEnumerable<T> items, object options)
-            => BulkInsertCoreAsync(Check.NotNull(items, nameof(items)), false, options).GetAwaiter().GetResult();
+            => BulkInsertCoreAsync(Check.NotNull(items, nameof(items)), false, options, CancellationToken.None).GetAwaiter().GetResult();
 
         /// <inheritdoc />
-        public async Task BulkInsertAsync()
+        public async Task BulkInsertAsync(CancellationToken cancellationToken = default)
         {
-            await BulkInsertCoreAsync(_addedItems, true, null);
+            await BulkInsertCoreAsync(_addedItems, true, null, cancellationToken);
 
             _addedItems?.Clear();
         }
 
         /// <inheritdoc />
-        public async Task BulkInsertAsync(object options)
+        public async Task BulkInsertAsync(object options, CancellationToken cancellationToken = default)
         {
-            await BulkInsertCoreAsync(_addedItems, true, options);
+            await BulkInsertCoreAsync(_addedItems, true, options, cancellationToken);
 
             _addedItems?.Clear();
         }
 
         /// <inheritdoc />
-        public Task BulkInsertAsync(IEnumerable<T> items)
-            => BulkInsertCoreAsync(Check.NotNull(items, nameof(items)), true, null);
+        public Task BulkInsertAsync(IEnumerable<T> items, CancellationToken cancellationToken = default)
+            => BulkInsertCoreAsync(Check.NotNull(items, nameof(items)), true, null, cancellationToken);
 
         /// <inheritdoc />
-        public Task BulkInsertAsync(IEnumerable<T> items, object options)
-            => BulkInsertCoreAsync(Check.NotNull(items, nameof(items)), true, options);
+        public Task BulkInsertAsync(IEnumerable<T> items, object options, CancellationToken cancellationToken = default)
+            => BulkInsertCoreAsync(Check.NotNull(items, nameof(items)), true, options, cancellationToken);
 
         /// <inheritdoc />
         public void BulkUpdate()
         {
-            BulkUpdateCoreAsync(_editedItems, null, false).GetAwaiter().GetResult();
+            BulkUpdateCoreAsync(_editedItems, null, false, CancellationToken.None).GetAwaiter().GetResult();
             _editedItems?.Clear();
         }
 
@@ -292,13 +292,13 @@ namespace Kros.KORM.Query
         {
             Check.NotNull(items, nameof(items));
 
-            BulkUpdateCoreAsync(items, null, false).GetAwaiter().GetResult();
+            BulkUpdateCoreAsync(items, null, false, CancellationToken.None).GetAwaiter().GetResult();
         }
 
         /// <inheritdoc />
         public void BulkUpdate(Action<IDbConnection, IDbTransaction, string> tempTableAction)
         {
-            BulkUpdateCoreAsync(_editedItems, tempTableAction, false).GetAwaiter().GetResult();
+            BulkUpdateCoreAsync(_editedItems, tempTableAction, false, CancellationToken.None).GetAwaiter().GetResult();
             _editedItems?.Clear();
         }
 
@@ -307,65 +307,62 @@ namespace Kros.KORM.Query
         {
             Check.NotNull(items, nameof(items));
 
-            BulkUpdateCoreAsync(items, tempTableAction, false).GetAwaiter().GetResult();
+            BulkUpdateCoreAsync(items, tempTableAction, false, CancellationToken.None).GetAwaiter().GetResult();
         }
 
         /// <inheritdoc />
-        public async Task BulkUpdateAsync()
+        public async Task BulkUpdateAsync(CancellationToken cancellationToken = default)
         {
-            await BulkUpdateCoreAsync(_editedItems, null, true);
+            await BulkUpdateCoreAsync(_editedItems, null, true, cancellationToken);
             _editedItems?.Clear();
         }
 
         /// <inheritdoc />
-        public Task BulkUpdateAsync(IEnumerable<T> items)
+        public Task BulkUpdateAsync(IEnumerable<T> items, CancellationToken cancellationToken = default)
         {
             Check.NotNull(items, nameof(items));
 
-            return BulkUpdateCoreAsync(items, null, true);
+            return BulkUpdateCoreAsync(items, null, true, cancellationToken);
         }
 
         /// <inheritdoc />
-        public async Task BulkUpdateAsync(Action<IDbConnection, IDbTransaction, string> tempTableAction)
+        public async Task BulkUpdateAsync(Action<IDbConnection, IDbTransaction, string> tempTableAction, CancellationToken cancellationToken = default)
         {
-            await BulkUpdateCoreAsync(_editedItems, tempTableAction, true);
+            await BulkUpdateCoreAsync(_editedItems, tempTableAction, true, cancellationToken);
             _editedItems?.Clear();
         }
 
         /// <inheritdoc />
-        public Task BulkUpdateAsync(IEnumerable<T> items, Action<IDbConnection, IDbTransaction, string> tempTableAction)
+        public Task BulkUpdateAsync(IEnumerable<T> items, Action<IDbConnection, IDbTransaction, string> tempTableAction, CancellationToken cancellationToken = default)
         {
             Check.NotNull(items, nameof(items));
 
-            return BulkUpdateCoreAsync(items, tempTableAction, true);
+            return BulkUpdateCoreAsync(items, tempTableAction, true, cancellationToken);
         }
 
         /// <summary>
         /// Commits all pending changes to the database.
         /// </summary>
         public void CommitChanges(bool ignoreValueGenerators = false)
-            => CommitChangesCoreAsync(false, ignoreValueGenerators).GetAwaiter().GetResult();
+            => _provider.ExecuteInTransaction(
+                () => CommitAllChangesAsync(false, ignoreValueGenerators, CancellationToken.None).GetAwaiter().GetResult());
 
         /// <inheritdoc/>
         public Task CommitChangesAsync(CancellationToken cancellationToken = default, bool ignoreValueGenerators = false)
-            => CommitChangesCoreAsync(true, ignoreValueGenerators, cancellationToken);
+            => _provider.ExecuteInTransactionAsync(
+                token => CommitAllChangesAsync(true, ignoreValueGenerators, token),
+                cancellationToken);
 
-        private async Task CommitChangesCoreAsync(
-            bool useAsync,
-            bool ignoreValueGenerators,
-            CancellationToken cancellationToken = default)
+        private async Task CommitAllChangesAsync(bool useAsync, bool ignoreValueGenerators, CancellationToken cancellationToken)
         {
-            await _provider.ExecuteInTransactionAsync(async (token) =>
-            {
-                await CommitChangesAddedItemsAsync(_addedItems, useAsync, ignoreValueGenerators, token);
-                await CommitChangesEditedItemsAsync(_editedItems, useAsync, ignoreValueGenerators, token);
-                await CommitChangesUpsertedItemsAsync(_upsertedItems, useAsync, token);
-                await CommitChangesDeletedItemsAsync(_deletedItems, useAsync, token);
-                await CommitChangesDeletedItemsByIdAsync(_deletedItemsIds, useAsync, token);
-                await CommitChangesDeletedByConditionsAsync(_deleteExpressions, useAsync, token);
+            await CommitChangesAddedItemsAsync(_addedItems, useAsync, ignoreValueGenerators, cancellationToken);
+            await CommitChangesEditedItemsAsync(_editedItems, useAsync, ignoreValueGenerators, cancellationToken);
+            await CommitChangesUpsertedItemsAsync(_upsertedItems, useAsync, cancellationToken);
+            await CommitChangesDeletedItemsAsync(_deletedItems, useAsync, cancellationToken);
+            await CommitChangesDeletedItemsByIdAsync(_deletedItemsIds, useAsync, cancellationToken);
+            await CommitChangesDeletedByConditionsAsync(_deleteExpressions, useAsync, cancellationToken);
 
-                Clear();
-            }, cancellationToken);
+            Clear();
         }
 
         /// <summary>
@@ -618,10 +615,12 @@ namespace Kros.KORM.Query
             }
         }
 
-        private async Task BulkInsertCoreAsync(IEnumerable<T> items, bool useAsync, object options)
+        private async Task BulkInsertCoreAsync(IEnumerable<T> items, bool useAsync, object options, CancellationToken cancellationToken)
         {
             if (items != null)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 using (var bulkInsert = _provider.CreateBulkInsert(options))
                 {
                     bulkInsert.DestinationTableName = _tableInfo.Name;
@@ -638,7 +637,7 @@ namespace Kros.KORM.Query
                     {
                         if (useAsync)
                         {
-                            await bulkInsert.InsertAsync(reader);
+                            await bulkInsert.InsertAsync(reader, cancellationToken);
                         }
                         else
                         {
@@ -653,7 +652,8 @@ namespace Kros.KORM.Query
             IEnumerable<T> items,
             Action<IDbConnection, IDbTransaction, string>
             tempTableAction,
-            bool useAsync)
+            bool useAsync,
+            CancellationToken cancellationToken)
         {
             if (!_tableInfo.PrimaryKey.Any())
             {
@@ -662,6 +662,8 @@ namespace Kros.KORM.Query
 
             if (items != null)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 using (var bulkUpdate = _provider.CreateBulkUpdate())
                 {
                     bulkUpdate.DestinationTableName = _tableInfo.Name;
@@ -672,7 +674,7 @@ namespace Kros.KORM.Query
                     {
                         if (useAsync)
                         {
-                            await bulkUpdate.UpdateAsync(reader);
+                            await bulkUpdate.UpdateAsync(reader, cancellationToken);
                         }
                         else
                         {

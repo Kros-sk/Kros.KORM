@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 
 namespace Kros.KORM.Migrations
 {
@@ -10,6 +11,7 @@ namespace Kros.KORM.Migrations
         /// <summary>
         /// Executes database migrations.
         /// </summary>
-        Task MigrateAsync();
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+        Task MigrateAsync(CancellationToken cancellationToken = default);
     }
 }

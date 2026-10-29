@@ -1,11 +1,15 @@
 ﻿using Kros.KORM.Data;
+using Kros.KORM.Properties;
 using Kros.KORM.Query.Providers;
 using Kros.Utils;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Kros.KORM.Materializer
 {
@@ -31,19 +35,39 @@ namespace Kros.KORM.Materializer
             #region Constructor
 
             public QueryDataReader(IDbCommand command, IDataReaderEnvelope readerEnvelope, bool closeConnectionWhenFinished)
+                : this(
+                    command,
+                    WrapReader(Check.NotNull(command, nameof(command)).ExecuteReader(), readerEnvelope),
+                    closeConnectionWhenFinished)
+            {
+            }
+
+            private QueryDataReader(IDbCommand command, IDataReader executedReader, bool closeConnectionWhenFinished)
+            {
+                _command = command;
+                _reader = executedReader;
+                _closeConnectionWhenFinished = closeConnectionWhenFinished;
+            }
+
+            internal static async Task<QueryDataReader> CreateAsync(
+                DbCommand command,
+                IDataReaderEnvelope readerEnvelope,
+                bool closeConnectionWhenFinished,
+                CancellationToken cancellationToken)
             {
                 Check.NotNull(command, nameof(command));
-                _command = command;
+                DbDataReader executedReader = await command.ExecuteReaderAsync(cancellationToken);
+                return new QueryDataReader(command, WrapReader(executedReader, readerEnvelope), closeConnectionWhenFinished);
+            }
+
+            private static IDataReader WrapReader(IDataReader executedReader, IDataReaderEnvelope readerEnvelope)
+            {
                 if (readerEnvelope == null)
                 {
-                    _reader = _command.ExecuteReader();
+                    return executedReader;
                 }
-                else
-                {
-                    readerEnvelope.SetInnerReader(_command.ExecuteReader());
-                    _reader = readerEnvelope;
-                }
-                _closeConnectionWhenFinished = closeConnectionWhenFinished;
+                readerEnvelope.SetInnerReader(executedReader);
+                return readerEnvelope;
             }
 
             #endregion
@@ -90,6 +114,7 @@ namespace Kros.KORM.Materializer
             public bool IsDBNull(int i) { return _reader.IsDBNull(i); }
             public bool NextResult() { return _reader.NextResult(); }
             public bool Read() { return _reader.Read(); }
+            public Task<bool> ReadAsync(CancellationToken cancellationToken) => _reader.ReadAsync(cancellationToken);
 
             public void Close()
             {
@@ -264,6 +289,135 @@ namespace Kros.KORM.Materializer
             #endregion
         }
 
+        /// <summary>
+        /// Asynchronous enumerable which support iteration over the materialized models.
+        /// It can be enumerated only once.
+        /// </summary>
+        /// <typeparam name="T">Model type.</typeparam>
+        /// <seealso cref="System.Collections.Generic.IAsyncEnumerable{T}" />
+        public class ModelBuilderAsyncEnumerable<T>
+            : IAsyncEnumerable<T>
+        {
+            #region Private fields
+
+            private readonly Func<IDataReader, T> _modelFactory;
+            private readonly IDataReader _reader;
+            private int _enumerated;
+
+            #endregion
+
+            #region Constructor
+
+            internal ModelBuilderAsyncEnumerable(
+                Func<IDataReader, T> modelFactory,
+                IDataReader reader)
+            {
+                Check.NotNull(modelFactory, nameof(modelFactory));
+                Check.NotNull(reader, nameof(reader));
+                _modelFactory = modelFactory;
+                _reader = reader;
+            }
+
+            #endregion
+
+            #region IAsyncEnumerable
+
+            /// <summary>
+            /// Returns an enumerator that iterates asynchronously through the collection.
+            /// </summary>
+            /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+            /// <returns>
+            /// A <see cref="IAsyncEnumerator{T}" /> that can be used to iterate asynchronously through the collection.
+            /// </returns>
+            /// <exception cref="InvalidOperationException">The sequence was already enumerated.</exception>
+            public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default)
+            {
+                if (Interlocked.Exchange(ref _enumerated, 1) == 1)
+                {
+                    throw new InvalidOperationException(Resources.ModelBuilderAsyncEnumerableAlreadyEnumerated);
+                }
+                return new ModelBuilderAsyncEnumerator<T>(_modelFactory, _reader, cancellationToken);
+            }
+
+            #endregion
+        }
+
+        /// <summary>
+        /// Enumerator that iterates asynchronously through the materialized models.
+        /// </summary>
+        /// <typeparam name="T">Model type.</typeparam>
+        /// <seealso cref="System.Collections.Generic.IAsyncEnumerator{T}" />
+        public class ModelBuilderAsyncEnumerator<T>
+            : IAsyncEnumerator<T>
+        {
+            #region Private fields
+
+            private Func<IDataReader, T> _modelFactory;
+            private IDataReader _reader;
+            private readonly CancellationToken _cancellationToken;
+            private T _currentItem = default;
+
+            #endregion
+
+            #region Constructor
+
+            internal ModelBuilderAsyncEnumerator(
+                Func<IDataReader, T> modelFactory,
+                IDataReader reader,
+                CancellationToken cancellationToken)
+            {
+                Check.NotNull(modelFactory, nameof(modelFactory));
+                Check.NotNull(reader, nameof(reader));
+
+                _modelFactory = modelFactory;
+                _reader = reader;
+                _cancellationToken = cancellationToken;
+            }
+
+            #endregion
+
+            #region IAsyncEnumerator
+
+            /// <summary>
+            /// Gets the element in the collection at the current position of the enumerator.
+            /// </summary>
+            public T Current => _currentItem;
+
+            /// <summary>
+            /// Advances the enumerator asynchronously to the next element of the collection.
+            /// </summary>
+            /// <returns>
+            /// <see langword="true"/> if the enumerator was successfully advanced to the next element,
+            /// <see langword="false"/> if the enumerator has passed the end of the collection.
+            /// </returns>
+            public async ValueTask<bool> MoveNextAsync()
+            {
+                _cancellationToken.ThrowIfCancellationRequested();
+                var result = await _reader.ReadAsync(_cancellationToken);
+                _currentItem = result ? _modelFactory(_reader) : default;
+                return result;
+            }
+
+            /// <summary>
+            /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources
+            /// asynchronously.
+            /// </summary>
+            /// <returns>A task that represents the asynchronous dispose operation.</returns>
+            public ValueTask DisposeAsync()
+            {
+                if (_reader is QueryDataReader)
+                {
+                    _reader.Dispose();
+                }
+                _modelFactory = null;
+                _reader = null;
+                _currentItem = default;
+                return ValueTask.CompletedTask;
+            }
+
+            #endregion
+        }
+
         #endregion
 
         #region Private Fields
@@ -308,6 +462,21 @@ namespace Kros.KORM.Materializer
         public IEnumerable<T> Materialize<T>(IDataReader reader)
         {
             return new ModelBuilderEnumerable<T>(_modelFactory.GetFactory<T>(reader), reader);
+        }
+
+        /// <summary>
+        /// Materialize data from reader to instances of model type <typeparamref name="T"/> asynchronously; rows are read
+        /// with <see cref="DbDataReader.ReadAsync(CancellationToken)"/> when the reader supports it.
+        /// </summary>
+        /// <typeparam name="T">Type of model.</typeparam>
+        /// <param name="reader">The reader from which materialize data.</param>
+        /// <returns>
+        /// Asynchronous sequence of models.
+        /// </returns>
+        /// <remarks>Doesn't call dispose over reader. The returned sequence can be enumerated only once.</remarks>
+        public IAsyncEnumerable<T> MaterializeAsync<T>(IDataReader reader)
+        {
+            return new ModelBuilderAsyncEnumerable<T>(_modelFactory.GetFactory<T>(reader), reader);
         }
 
         /// <summary>

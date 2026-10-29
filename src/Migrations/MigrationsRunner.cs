@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Kros.KORM.Migrations
@@ -70,23 +71,24 @@ namespace Kros.KORM.Migrations
         }
 
         /// <inheritdoc />
-        public async Task MigrateAsync()
+        public async Task MigrateAsync(CancellationToken cancellationToken = default)
         {
             using (DatabaseHelper helper = CreateDatabaseHelper())
             {
-                await InitMigrationsHistoryTable(helper.Database);
+                await InitMigrationsHistoryTable(helper.Database, cancellationToken);
 
-                Migration lastMigration = GetLastMigrationInfo(helper.Database) ?? Migration.None;
+                Migration lastMigration =
+                    await GetLastMigrationInfoAsync(helper.Database, cancellationToken) ?? Migration.None;
                 var migrationScripts = GetMigrationScriptsToExecute(lastMigration).ToList();
 
                 if (migrationScripts.Any())
                 {
-                    await ExecuteMigrationScripts(helper.Database, migrationScripts);
+                    await ExecuteMigrationScripts(helper.Database, migrationScripts, cancellationToken);
                     long maxScriptId = migrationScripts.Max(s => s.Id);
 
                     foreach (var action in _migrationOptions.Actions)
                     {
-                        await action(helper.Database, maxScriptId);
+                        await action(helper.Database, maxScriptId, cancellationToken);
                     }
                 }
             }
@@ -97,19 +99,22 @@ namespace Kros.KORM.Migrations
                 ? new DatabaseHelper(new Database(_connectionString), true)
                 : new DatabaseHelper(_database, false);
 
-        private async Task ExecuteMigrationScripts(IDatabase database, IEnumerable<ScriptInfo> migrationScripts)
+        private async Task ExecuteMigrationScripts(
+            IDatabase database,
+            IEnumerable<ScriptInfo> migrationScripts,
+            CancellationToken cancellationToken)
         {
             foreach (ScriptInfo scriptInfo in migrationScripts)
             {
-                using (Data.ITransaction transaction = database.BeginTransaction())
+                using (Data.ITransaction transaction = await database.BeginTransactionAsync(cancellationToken))
                 {
-                    var script = await scriptInfo.GetScriptAsync();
+                    var script = await scriptInfo.GetScriptAsync(cancellationToken);
                     transaction.CommandTimeout = (int)_migrationOptions.Timeout.TotalSeconds;
 
-                    await ExecuteMigrationScript(database, script);
-                    await AddNewMigrationInfo(database, scriptInfo);
+                    await ExecuteMigrationScript(database, script, cancellationToken);
+                    await AddNewMigrationInfo(database, scriptInfo, cancellationToken);
 
-                    transaction.Commit();
+                    await transaction.CommitAsync(cancellationToken);
                 }
             }
         }
@@ -119,7 +124,10 @@ namespace Kros.KORM.Migrations
             .OrderBy(p => p.Id)
             .Where(p => p.Id > lastMigration.MigrationId);
 
-        private async Task AddNewMigrationInfo(IDatabase database, ScriptInfo scriptInfo)
+        private async Task AddNewMigrationInfo(
+            IDatabase database,
+            ScriptInfo scriptInfo,
+            CancellationToken cancellationToken)
         {
             const string sql = "INSERT INTO [" + Migration.TableName + "] VALUES (@Id, @Name, @Info, @Updated)";
 
@@ -131,7 +139,8 @@ namespace Kros.KORM.Migrations
                     { "@Name", scriptInfo.Name },
                     { "@Info", Assembly.GetEntryAssembly().FullName },
                     { "@Updated", DateTime.Now }
-                });
+                },
+                cancellationToken);
         }
 
         private static Regex _scriptLinesRegex;
@@ -147,36 +156,40 @@ namespace Kros.KORM.Migrations
             }
         }
 
-        private async Task ExecuteMigrationScript(IDatabase database, string script)
+        private async Task ExecuteMigrationScript(
+            IDatabase database,
+            string script,
+            CancellationToken cancellationToken)
         {
             string[] lines = ScriptLinesRegex.Split(script);
 
             foreach (string line in lines.Where(p => p.Length > 0))
             {
-                await database.ExecuteNonQueryAsync(line);
+                await database.ExecuteNonQueryAsync(line, cancellationToken);
             }
         }
 
-        private Migration GetLastMigrationInfo(IDatabase database)
+        private Task<Migration> GetLastMigrationInfoAsync(IDatabase database, CancellationToken cancellationToken)
             => database.Query<Migration>()
             .OrderByDescending(p => p.MigrationId)
-            .FirstOrDefault();
+            .FirstOrDefaultAsync(cancellationToken);
 
-        private async Task InitMigrationsHistoryTable(IDatabase database)
+        private async Task InitMigrationsHistoryTable(IDatabase database, CancellationToken cancellationToken)
         {
             var sql = $"IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = '{Migration.TableName}' AND type = 'U')" +
-                Environment.NewLine + await GetResourceContent("Kros.KORM.Resources.MigrationsHistoryTableScript.sql");
+                Environment.NewLine +
+                await GetResourceContent("Kros.KORM.Resources.MigrationsHistoryTableScript.sql", cancellationToken);
 
-            await database.ExecuteNonQueryAsync(sql);
+            await database.ExecuteNonQueryAsync(sql, cancellationToken);
         }
 
-        private static async Task<string> GetResourceContent(string resourceFile)
+        private static async Task<string> GetResourceContent(string resourceFile, CancellationToken cancellationToken)
         {
             var assembly = Assembly.GetExecutingAssembly();
             Stream resourceStream = assembly.GetManifestResourceStream(resourceFile);
             using (var reader = new StreamReader(resourceStream, Encoding.UTF8))
             {
-                return await reader.ReadToEndAsync();
+                return await reader.ReadToEndAsync(cancellationToken);
             }
         }
     }

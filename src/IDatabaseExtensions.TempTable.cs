@@ -5,6 +5,7 @@ using Kros.KORM.Metadata;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Kros.KORM
@@ -43,18 +44,27 @@ namespace Kros.KORM
         /// <param name="values">Values for inserting into temp table.</param>
         /// <param name="actionAsync">Execute action.</param>
         /// <param name="commandTimeout">Command timeount in seconds. A value of 0 indicates no limit.</param>
-        /// <remarks>Whole action is executed in transaction and is asynchronous.</remarks>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+        /// <remarks>
+        /// <para>Whole action is executed in transaction and is asynchronous.</para>
+        /// <para>
+        /// The <paramref name="cancellationToken"/> is not passed to <paramref name="actionAsync"/>. To make the work
+        /// done inside the callback cancellable, capture the token in the callback's closure and forward it
+        /// to the asynchronous calls made there.
+        /// </para>
+        /// </remarks>
         public static async Task ExecuteWithTempTableAsync<TValue>(
             this IDatabase database,
             IEnumerable<TValue> values,
             Func<IDatabase, string, Task> actionAsync,
-            int commandTimeout = TransactionHelper.TIMEOUT_DEFAULT)
+            int commandTimeout = TransactionHelper.TIMEOUT_DEFAULT,
+            CancellationToken cancellationToken = default)
         {
-            using ITransaction transaction = BeginTransaction(database, commandTimeout);
+            using ITransaction transaction = await BeginTransactionAsync(database, commandTimeout, cancellationToken);
 
-            await actionAsync(database, CreateTempTable(database, values));
+            await actionAsync(database, await CreateTempTableAsync(database, values, cancellationToken));
 
-            TryCommitTransaction(transaction);
+            await TryCommitTransactionAsync(transaction, cancellationToken);
         }
 
         /// <summary>
@@ -91,18 +101,27 @@ namespace Kros.KORM
         /// <param name="values">Values for inserting into temp table.</param>
         /// <param name="actionAsync">Execute action.</param>
         /// <param name="commandTimeout">Command timeount in seconds. A value of 0 indicates no limit.</param>
-        /// <remarks>Whole action is executed in transaction and is asynchronous.</remarks>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+        /// <remarks>
+        /// <para>Whole action is executed in transaction and is asynchronous.</para>
+        /// <para>
+        /// The <paramref name="cancellationToken"/> is not passed to <paramref name="actionAsync"/>. To make the work
+        /// done inside the callback cancellable, capture the token in the callback's closure and forward it
+        /// to the asynchronous calls made there.
+        /// </para>
+        /// </remarks>
         public static async Task ExecuteWithTempTableAsync<TKey, TValue>(
             this IDatabase database,
             IDictionary<TKey, TValue> values,
             Func<IDatabase, string, Task> actionAsync,
-            int commandTimeout = TransactionHelper.TIMEOUT_DEFAULT)
+            int commandTimeout = TransactionHelper.TIMEOUT_DEFAULT,
+            CancellationToken cancellationToken = default)
         {
-            using ITransaction transaction = BeginTransaction(database, commandTimeout);
+            using ITransaction transaction = await BeginTransactionAsync(database, commandTimeout, cancellationToken);
 
-            await actionAsync(database, CreateTempTable(database, values));
+            await actionAsync(database, await CreateTempTableAsync(database, values, cancellationToken));
 
-            TryCommitTransaction(transaction);
+            await TryCommitTransactionAsync(transaction, cancellationToken);
         }
 
         /// <summary>
@@ -142,19 +161,28 @@ namespace Kros.KORM
         /// <param name="values">Values for inserting into temp table.</param>
         /// <param name="actionAsync">Execute action.</param>
         /// <param name="commandTimeout">Command timeount in seconds. A value of 0 indicates no limit.</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
         /// <returns>User defined type <typeparamref name="T"/>.</returns>
-        /// <remarks>Whole action is executed in transaction and is asynchronous.</remarks>
+        /// <remarks>
+        /// <para>Whole action is executed in transaction and is asynchronous.</para>
+        /// <para>
+        /// The <paramref name="cancellationToken"/> is not passed to <paramref name="actionAsync"/>. To make the work
+        /// done inside the callback cancellable, capture the token in the callback's closure and forward it
+        /// to the asynchronous calls made there.
+        /// </para>
+        /// </remarks>
         public static async Task<T> ExecuteWithTempTableAsync<T, TValue>(
             this IDatabase database,
             IEnumerable<TValue> values,
             Func<IDatabase, string, Task<T>> actionAsync,
-            int commandTimeout = TransactionHelper.TIMEOUT_DEFAULT)
+            int commandTimeout = TransactionHelper.TIMEOUT_DEFAULT,
+            CancellationToken cancellationToken = default)
         {
-            using ITransaction transaction = BeginTransaction(database, commandTimeout);
+            using ITransaction transaction = await BeginTransactionAsync(database, commandTimeout, cancellationToken);
 
-            T ret = await actionAsync(database, CreateTempTable(database, values));
+            T ret = await actionAsync(database, await CreateTempTableAsync(database, values, cancellationToken));
 
-            TryCommitTransaction(transaction);
+            await TryCommitTransactionAsync(transaction, cancellationToken);
 
             return ret;
         }
@@ -198,19 +226,28 @@ namespace Kros.KORM
         /// <param name="values">Values for inserting into temp table.</param>
         /// <param name="actionAsync">Execute action.</param>
         /// <param name="commandTimeout">Command timeount in seconds. A value of 0 indicates no limit.</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
         /// <returns>User defined type <typeparamref name="T"/>.</returns>
-        /// <remarks>Whole action is executed in transaction and is asynchronous.</remarks>
+        /// <remarks>
+        /// <para>Whole action is executed in transaction and is asynchronous.</para>
+        /// <para>
+        /// The <paramref name="cancellationToken"/> is not passed to <paramref name="actionAsync"/>. To make the work
+        /// done inside the callback cancellable, capture the token in the callback's closure and forward it
+        /// to the asynchronous calls made there.
+        /// </para>
+        /// </remarks>
         public static async Task<T> ExecuteWithTempTableAsync<T, TKey, TValue>(
             this IDatabase database,
             IDictionary<TKey, TValue> values,
             Func<IDatabase, string, Task<T>> actionAsync,
-            int commandTimeout = TransactionHelper.TIMEOUT_DEFAULT)
+            int commandTimeout = TransactionHelper.TIMEOUT_DEFAULT,
+            CancellationToken cancellationToken = default)
         {
-            using ITransaction transaction = BeginTransaction(database, commandTimeout);
+            using ITransaction transaction = await BeginTransactionAsync(database, commandTimeout, cancellationToken);
 
-            T ret = await actionAsync(database, CreateTempTable(database, values));
+            T ret = await actionAsync(database, await CreateTempTableAsync(database, values, cancellationToken));
 
-            TryCommitTransaction(transaction);
+            await TryCommitTransactionAsync(transaction, cancellationToken);
 
             return ret;
         }
@@ -295,6 +332,93 @@ namespace Kros.KORM
         private static ITransaction BeginTransaction(IDatabase database, int commandTimeout)
         {
             ITransaction transaction = database.BeginTransaction();
+
+            if (commandTimeout != TransactionHelper.TIMEOUT_DEFAULT)
+            {
+                transaction.CommandTimeout = commandTimeout;
+            }
+
+            return transaction;
+        }
+
+        private static async Task TryCommitTransactionAsync(ITransaction transaction, CancellationToken cancellationToken)
+        {
+            try
+            {
+                await transaction.CommitAsync(cancellationToken);
+            }
+            catch
+            {
+                // Rollback must not be skipped just because the token has been cancelled.
+                await transaction.RollbackAsync(CancellationToken.None);
+                throw;
+            }
+        }
+
+        private static async Task<string> CreateTempTableAsync<TValue>(
+            IDatabase database,
+            IEnumerable<TValue> values,
+            CancellationToken cancellationToken)
+        {
+            string tempTableName = GetTempTableName();
+            await InsertValuesIntoTempTableAsync(database, values, tempTableName, cancellationToken);
+
+            return tempTableName;
+        }
+
+        private static async Task<string> CreateTempTableAsync<TKey, TValue>(
+            IDatabase database,
+            IDictionary<TKey, TValue> values,
+            CancellationToken cancellationToken)
+        {
+            string tempTableName = GetTempTableName();
+            await InsertValuesIntoTempTableAsync(database, values, tempTableName, cancellationToken);
+
+            return tempTableName;
+        }
+
+        private static async Task InsertValuesIntoTempTableAsync<TValue>(
+            IDatabase database,
+            IEnumerable<TValue> values,
+            string tempTableName,
+            CancellationToken cancellationToken)
+        {
+            TableInfo tableInfo = Database.DatabaseMapper.GetTableInfo<TValue>();
+            string columns = GetColumnsWithSqlTypes(tableInfo, typeof(TValue));
+            await database.ExecuteNonQueryAsync($"CREATE TABLE {tempTableName} ( {columns} )", cancellationToken);
+
+            using IBulkInsert bulkInsert = database.CreateBulkInsert();
+
+            bulkInsert.DestinationTableName = tempTableName;
+
+            using var reader = new EnumerableDataReader<TValue>(values, GetColumns(tableInfo, typeof(TValue)));
+
+            await bulkInsert.InsertAsync(reader, cancellationToken);
+        }
+
+        private static async Task InsertValuesIntoTempTableAsync<TKey, TValue>(
+            IDatabase database,
+            IDictionary<TKey, TValue> values,
+            string tempTableName,
+            CancellationToken cancellationToken)
+        {
+            await database.ExecuteNonQueryAsync(
+                $"CREATE TABLE {tempTableName}([Key] {typeof(TKey).ToSqlDataType()}, [Value] {typeof(TValue).ToSqlDataType()})",
+                cancellationToken);
+
+            using IBulkInsert bulkInsert = database.CreateBulkInsert();
+            bulkInsert.DestinationTableName = tempTableName;
+
+            using var reader = new EnumerableDataReader<KeyValuePair<TKey, TValue>>(values, new string[] { "Key", "Value" });
+            await bulkInsert.InsertAsync(reader, cancellationToken);
+        }
+
+        private static async Task<ITransaction> BeginTransactionAsync(
+            IDatabase database,
+            int commandTimeout,
+            CancellationToken cancellationToken)
+        {
+            ITransaction transaction = await database.BeginTransactionAsync(cancellationToken);
 
             if (commandTimeout != TransactionHelper.TIMEOUT_DEFAULT)
             {

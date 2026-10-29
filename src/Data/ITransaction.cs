@@ -12,11 +12,13 @@ namespace Kros.KORM.Data
     {
         /// <summary>
         /// Commits all changes made to the database in the current transaction.
+        /// If a nested transaction was rolled back, the whole transaction is rolled back instead of committed; no exception is thrown for the rolled-back nested transaction.
         /// </summary>
         void Commit();
 
         /// <summary>
         /// Async commits all changes made to the database in the current transaction.
+        /// If a nested transaction was rolled back, the whole transaction is rolled back instead of committed; no exception is thrown for the rolled-back nested transaction.
         /// </summary>
         Task CommitAsync(CancellationToken cancellationToken = default);
 

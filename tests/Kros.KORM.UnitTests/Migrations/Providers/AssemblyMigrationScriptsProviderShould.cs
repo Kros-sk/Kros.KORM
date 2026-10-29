@@ -1,8 +1,10 @@
-using Kros.KORM.Migrations.Providers;
+﻿using Kros.KORM.Migrations.Providers;
+using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -89,12 +91,27 @@ namespace Kros.KORM.UnitTests.Migrations.Providers
                 Id = 20190228001,
                 Name = "InitDatabase",
                 Path = "Kros.KORM.UnitTests.SqlScripts.20190228001_InitDatabase.sql"
-            });
+            }, TestContext.Current.CancellationToken);
 
             var expected = await GetStringFromResourceFileAsync(
                 "Kros.KORM.UnitTests.SqlScripts.20190228001_InitDatabase.sql");
 
             Assert.Equal(expected, script);
+        }
+
+        [Fact]
+        public async Task LoadScript_ThrowsWhenTokenAlreadyCancelled()
+        {
+            var provider = CreateDefaultProvider();
+            var scriptInfo = new ScriptInfo(provider)
+            {
+                Id = 20190228001,
+                Name = "InitDatabase",
+                Path = "Kros.KORM.UnitTests.SqlScripts.20190228001_InitDatabase.sql"
+            };
+
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(
+                () => provider.GetScriptAsync(scriptInfo, new CancellationToken(canceled: true)));
         }
 
         private static async Task<string> GetStringFromResourceFileAsync(string resourceFile)

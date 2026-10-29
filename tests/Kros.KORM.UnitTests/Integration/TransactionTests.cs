@@ -5,6 +5,8 @@ using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -411,6 +413,30 @@ $@" CREATE PROCEDURE [dbo].[WaitForTwoSeconds] AS
             await DoTestWithConnectionAsync(openConnection, ExplicitTransactionCommitAsync, CreateDatabase);
         }
 
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task ExplicitTransactionShould_KeepMasterConnectionStateWhenCommitWasCalledAsync_BeginAsync(bool openConnection)
+        {
+            await DoTestWithConnectionAsync(openConnection, ExplicitTransactionBeginAndCommitAsync, CreateDatabase);
+        }
+
+        private async Task ExplicitTransactionBeginAndCommitAsync(TestDatabase database)
+        {
+            using (var korm = new Database(database.ConnectionString))
+            using (var transaction = await korm.BeginTransactionAsync(TestContext.Current.CancellationToken))
+            {
+                var dbSet = korm.Query<Invoice>().AsDbSet();
+
+                dbSet.Add(CreateTestData());
+                dbSet.CommitChanges();
+
+                await transaction.CommitAsync(TestContext.Current.CancellationToken);
+
+                DatabaseShouldContainInvoices(database.ConnectionString, CreateTestData());
+            }
+        }
+
         private async Task ExplicitTransactionCommitAsync(TestDatabase database)
         {
             using (var korm = new Database(database.ConnectionString))
@@ -425,6 +451,295 @@ $@" CREATE PROCEDURE [dbo].[WaitForTwoSeconds] AS
 
                 DatabaseShouldContainInvoices(database.ConnectionString, CreateTestData());
             }
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task CommitChangesAsync_ThrowsWhenTokenAlreadyCancelled_AndKeepsConnectionState(bool openConnection)
+        {
+            await DoTestWithConnectionAsync(openConnection, CommitChangesWithCancelledToken, CreateDatabase);
+        }
+
+        private async Task CommitChangesWithCancelledToken(TestDatabase database)
+        {
+            var dbSet = database.Query<Invoice>().AsDbSet();
+            dbSet.Add(CreateTestData());
+
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(
+                () => dbSet.CommitChangesAsync(new CancellationToken(canceled: true)));
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task CommitChangesAsync_CancelledMidCommit_LeavesDatabaseUsable(bool openConnection)
+        {
+            await DoTestWithConnectionAsync(openConnection, CommitChangesCancelledMidCommit, CreateDatabase);
+        }
+
+        private async Task CommitChangesCancelledMidCommit(TestDatabase database)
+        {
+            using var cts = new CancellationTokenSource();
+            var dbSet = database.Query<CancellingInvoice>().AsDbSet();
+            dbSet.Add(new CancellingInvoice() { Id = 1, Code = "0001", Description = "Item 1" });
+            // The token is cancelled while the second item's INSERT command is being filled,
+            // i.e. after the first item has already been inserted within the transaction.
+            dbSet.Add(new CancellingInvoice() { Id = 2, Code = "0002", Description = "Item 2", CancelOnRead = cts });
+
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => dbSet.CommitChangesAsync(cts.Token));
+
+            Assert.Empty(database.Query<Invoice>());
+            DatabaseShouldBeEmpty(database);
+
+            // A new transaction must be a real top-level transaction (not nested under the cancelled one),
+            // so its rollback really rolls the data back.
+            using (var transaction = database.BeginTransaction())
+            {
+                var invoices = database.Query<Invoice>().AsDbSet();
+                invoices.Add(CreateTestData());
+                invoices.CommitChanges();
+
+                transaction.Rollback();
+            }
+
+            DatabaseShouldBeEmpty(database);
+
+            using (var transaction = database.BeginTransaction())
+            {
+                var invoices = database.Query<Invoice>().AsDbSet();
+                invoices.Add(CreateTestData());
+                invoices.CommitChanges();
+
+                transaction.Commit();
+            }
+
+            DatabaseShouldContainInvoices(database.ConnectionString, CreateTestData());
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task ExecuteInTransactionAsync_CancelledRightBeforeCommit_SurfacesCancellationAndRollsBack(
+            bool openConnection)
+        {
+            await DoTestWithConnectionAsync(openConnection, ExecuteInTransactionCancelledRightBeforeCommit, CreateDatabase);
+        }
+
+        private async Task ExecuteInTransactionCancelledRightBeforeCommit(TestDatabase database)
+        {
+            var provider = (IQueryProvider)database.Query<Invoice>().Provider;
+            using var cts = new CancellationTokenSource();
+
+            // The work succeeds and the token is cancelled after it, so the commit itself is cancelled.
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => provider.ExecuteInTransactionAsync(
+                async ct =>
+                {
+                    using DbCommand command = provider.GetCommandForCurrentTransaction();
+                    command.CommandText = "INSERT INTO [Invoices] ([Id], [Code], [Description]) VALUES (1, '0001', 'Item 1')";
+                    await command.ExecuteNonQueryAsync(ct);
+                    cts.Cancel();
+                },
+                cts.Token));
+
+            DatabaseShouldBeEmpty(database);
+
+            using (var transaction = database.BeginTransaction())
+            {
+                var invoices = database.Query<Invoice>().AsDbSet();
+                invoices.Add(CreateTestData());
+                invoices.CommitChanges();
+
+                transaction.Commit();
+            }
+
+            DatabaseShouldContainInvoices(database.ConnectionString, CreateTestData());
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void ExplicitTransactionShould_RollbackOuterCommitWhenNestedTransactionWasRolledBack_AndLeaveDatabaseUsable(
+            bool openConnection)
+        {
+            DoTestWithConnection(openConnection, OuterCommitAfterNestedRollback, CreateDatabase);
+        }
+
+        private void OuterCommitAfterNestedRollback(TestDatabase database)
+        {
+            using (var outer = database.BeginTransaction())
+            {
+                var invoices = database.Query<Invoice>().AsDbSet();
+                invoices.Add(new Invoice() { Id = 1, Code = "0001", Description = "Item 1" });
+                invoices.CommitChanges();
+
+                using (var inner = database.BeginTransaction())
+                {
+                    inner.Rollback();
+                }
+
+                // Does not throw: the outer commit rolls back, because the nested transaction was rolled back.
+                outer.Commit();
+            }
+
+            DatabaseShouldBeEmpty(database);
+
+            using (var transaction = database.BeginTransaction())
+            {
+                var invoices = database.Query<Invoice>().AsDbSet();
+                invoices.Add(new Invoice() { Id = 1, Code = "0001", Description = "Item 1" });
+                invoices.CommitChanges();
+
+                transaction.Commit();
+            }
+
+            DatabaseShouldContainInvoiceCount(database, 1);
+
+            // A new transaction must be a real top-level transaction, so its rollback really rolls the data back.
+            using (var transaction = database.BeginTransaction())
+            {
+                var invoices = database.Query<Invoice>().AsDbSet();
+                invoices.Add(new Invoice() { Id = 2, Code = "0002", Description = "Item 2" });
+                invoices.CommitChanges();
+
+                transaction.Rollback();
+            }
+
+            DatabaseShouldContainInvoiceCount(database, 1);
+        }
+
+        private const string InsertThenAbortTransactionSql =
+            "SET XACT_ABORT ON; " +
+            "INSERT INTO [Invoices] ([Id], [Code], [Description]) VALUES (1, '0001', 'Item 1'); " +
+            "INSERT INTO [Invoices] ([Id], [Code], [Description]) VALUES (CAST('x' AS INT), '0002', 'Item 2');";
+
+        // Regression coverage only (SqlClient's first rollback after a server abort is a silent no-op);
+        // the lost-connection facts below are the pin for the zombie-rollback fix.
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task ExecuteInTransactionAsync_SurfacesOriginalExceptionWhenServerAbortedTransaction(bool openConnection)
+        {
+            await DoTestWithConnectionAsync(openConnection, ExecuteInTransactionAsyncServerAborted, CreateDatabase);
+        }
+
+        private async Task ExecuteInTransactionAsyncServerAborted(TestDatabase database)
+        {
+            var provider = (IQueryProvider)database.Query<Invoice>().Provider;
+
+            await Assert.ThrowsAsync<SqlException>(() => provider.ExecuteInTransactionAsync(
+                async ct =>
+                {
+                    using DbCommand command = provider.GetCommandForCurrentTransaction();
+                    command.CommandText = InsertThenAbortTransactionSql;
+                    await command.ExecuteNonQueryAsync(ct);
+                },
+                TestContext.Current.CancellationToken));
+
+            DatabaseShouldBeEmpty(database);
+            DatabaseShouldBeUsableAfterAbortedTransaction(database);
+        }
+
+        // Regression coverage only (SqlClient's first rollback after a server abort is a silent no-op);
+        // the lost-connection facts below are the pin for the zombie-rollback fix.
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void ExecuteInTransaction_SurfacesOriginalExceptionWhenServerAbortedTransaction(bool openConnection)
+        {
+            DoTestWithConnection(openConnection, ExecuteInTransactionServerAborted, CreateDatabase);
+        }
+
+        private void ExecuteInTransactionServerAborted(TestDatabase database)
+        {
+            var provider = (IQueryProvider)database.Query<Invoice>().Provider;
+
+            Assert.Throws<SqlException>(() => provider.ExecuteInTransaction(
+                () =>
+                {
+                    using DbCommand command = provider.GetCommandForCurrentTransaction();
+                    command.CommandText = InsertThenAbortTransactionSql;
+                    command.ExecuteNonQuery();
+                }));
+
+            DatabaseShouldBeEmpty(database);
+            DatabaseShouldBeUsableAfterAbortedTransaction(database);
+        }
+
+        // Only with a closed connection: the killed connection cannot stay open for the caller.
+        [Fact]
+        public async Task ExecuteInTransactionAsync_SurfacesOriginalExceptionWhenConnectionIsLostBeforeCommit()
+        {
+            await DoTestWithConnectionAsync(false, ExecuteInTransactionAsyncConnectionLost, CreateDatabase);
+        }
+
+        private async Task ExecuteInTransactionAsyncConnectionLost(TestDatabase database)
+        {
+            var provider = (IQueryProvider)database.Query<Invoice>().Provider;
+
+            // The commit fails with a transport-level SqlException and SqlClient zombies the transaction,
+            // so a following DB rollback would throw InvalidOperationException and mask the SqlException.
+            await Assert.ThrowsAsync<SqlException>(() => provider.ExecuteInTransactionAsync(
+                async ct =>
+                {
+                    using DbCommand command = provider.GetCommandForCurrentTransaction();
+                    command.CommandText = "INSERT INTO [Invoices] ([Id], [Code], [Description]) VALUES (1, '0001', 'Item 1')";
+                    await command.ExecuteNonQueryAsync(ct);
+                    await KillSessionAsync(database, (SqlConnection)command.Connection, ct);
+                },
+                TestContext.Current.CancellationToken));
+
+            DatabaseShouldBeEmpty(database);
+            DatabaseShouldBeUsableAfterAbortedTransaction(database);
+        }
+
+        // Only with a closed connection: the killed connection cannot stay open for the caller.
+        [Fact]
+        public void ExecuteInTransaction_SurfacesOriginalExceptionWhenConnectionIsLostBeforeCommit()
+        {
+            DoTestWithConnection(false, ExecuteInTransactionConnectionLost, CreateDatabase);
+        }
+
+        private void ExecuteInTransactionConnectionLost(TestDatabase database)
+        {
+            var provider = (IQueryProvider)database.Query<Invoice>().Provider;
+
+            Assert.Throws<SqlException>(() => provider.ExecuteInTransaction(
+                () =>
+                {
+                    using DbCommand command = provider.GetCommandForCurrentTransaction();
+                    command.CommandText = "INSERT INTO [Invoices] ([Id], [Code], [Description]) VALUES (1, '0001', 'Item 1')";
+                    command.ExecuteNonQuery();
+                    KillSessionAsync(database, (SqlConnection)command.Connection, TestContext.Current.CancellationToken)
+                        .GetAwaiter().GetResult();
+                }));
+
+            DatabaseShouldBeEmpty(database);
+            DatabaseShouldBeUsableAfterAbortedTransaction(database);
+        }
+
+        private static async Task KillSessionAsync(TestDatabase database, SqlConnection victim, CancellationToken cancellationToken)
+        {
+            var builder = new SqlConnectionStringBuilder(database.ConnectionString) { Pooling = false };
+            using var killer = new SqlConnection(builder.ConnectionString);
+            await killer.OpenAsync(cancellationToken);
+            using SqlCommand kill = killer.CreateCommand();
+            kill.CommandText = $"KILL {victim.ServerProcessId}";
+            await kill.ExecuteNonQueryAsync(cancellationToken);
+        }
+
+        private void DatabaseShouldBeUsableAfterAbortedTransaction(TestDatabase database)
+        {
+            using (var transaction = database.BeginTransaction())
+            {
+                var invoices = database.Query<Invoice>().AsDbSet();
+                invoices.Add(CreateTestData());
+                invoices.CommitChanges();
+
+                transaction.Commit();
+            }
+
+            DatabaseShouldContainInvoices(database.ConnectionString, CreateTestData());
         }
 
         [Theory]
@@ -602,9 +917,22 @@ $@" CREATE PROCEDURE [dbo].[WaitForTwoSeconds] AS
             Assert.Equivalent(expected, korm.Query<Invoice>());
         }
 
-        private void DatabaseShouldBeEmpty(TestDatabase korm)
+        private static void DatabaseShouldBeEmpty(TestDatabase database)
         {
-            DatabaseShouldContainInvoices(korm.ConnectionString, new List<Invoice>());
+            // Checked through a separate connection, so it sees only committed data.
+            using (var korm = new Database(database.ConnectionString))
+            {
+                Assert.Empty(korm.Query<Invoice>());
+            }
+        }
+
+        private static void DatabaseShouldContainInvoiceCount(TestDatabase database, int expectedCount)
+        {
+            // Checked through a separate connection, so it sees only committed data.
+            using (var korm = new Database(database.ConnectionString))
+            {
+                Assert.Equal(expectedCount, new List<Invoice>(korm.Query<Invoice>()).Count);
+            }
         }
 
         private void DatabaseShouldContainInvoices(string connectionString, IEnumerable<Invoice> expected)
@@ -644,6 +972,32 @@ $@" CREATE PROCEDURE [dbo].[WaitForTwoSeconds] AS
             public string Code { get; set; }
 
             public string Description { get; set; }
+        }
+
+        /// <summary>
+        /// Invoice which cancels <see cref="CancelOnRead"/> when its <see cref="Description"/> is read
+        /// (i.e. when KORM fills the command for it).
+        /// </summary>
+        [Alias("Invoices")]
+        public class CancellingInvoice
+        {
+            private string _description;
+
+            internal CancellationTokenSource CancelOnRead;
+
+            public int Id { get; set; }
+
+            public string Code { get; set; }
+
+            public string Description
+            {
+                get
+                {
+                    CancelOnRead?.Cancel();
+                    return _description;
+                }
+                set => _description = value;
+            }
         }
 
         #endregion
