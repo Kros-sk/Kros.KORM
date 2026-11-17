@@ -232,9 +232,9 @@ namespace Kros.KORM.UnitTests.Materializer
         {
             List<Dictionary<string, object>> ret = new List<Dictionary<string, object>>();
 
-            AddRow(ret, 1, "Hello", 45.78, (decimal)785.78, new DateTime(1980, 7, 24),
+            AddRow(ret, 1, "Hello", 45.78, 785.78M, new DateTime(1980, 7, 24),
                 true, new Guid("ddc995d7-4dda-41ca-abab-7f45e651784a"));
-            AddRow(ret, 2, "Kitty", 47.98, (decimal)75.8, new DateTime(1984, 4, 20),
+            AddRow(ret, 2, "Kitty", 47.98, 75.8M, new DateTime(1984, 4, 20),
                 true, new Guid("ddc995d7-4dda-41ca-abab-7f45e6517844"));
 
             return ret;
