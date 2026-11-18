@@ -548,7 +548,7 @@ namespace Kros.KORM.UnitTests.Materializer
         {
             List<Dictionary<string, object>> ret = new List<Dictionary<string, object>>();
 
-            AddRow(ret, 1, "Hello", 45.78, (decimal)785.78, new DateTime(1980, 7, 24),
+            AddRow(ret, 1, "Hello", 45.78, 785.78M, new DateTime(1980, 7, 24),
                 true, new Guid("ddc995d7-4dda-41ca-abab-7f45e651784a"), 18.5F,
                 floatValue: 12.8F,
                 floatNullableValue: 45.89F,
