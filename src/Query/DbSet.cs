@@ -1,4 +1,5 @@
-﻿using Kros.KORM.CommandGenerator;
+﻿using Kros.Data;
+using Kros.KORM.CommandGenerator;
 using Kros.KORM.Data;
 using Kros.KORM.Exceptions;
 using Kros.KORM.Metadata;
@@ -481,14 +482,12 @@ namespace Kros.KORM.Query
         {
             if (CanGeneratePrimaryKeys(out ColumnInfo primaryKey))
             {
-                Type dataType = primaryKey.PropertyInfo.PropertyType;
-                string generatorName = primaryKey.AutoIncrementGeneratorName ?? _tableInfo.Name;
-                using (var generator = _provider.CreateIdGenerator(dataType, generatorName, items.Count))
+                var itemsWithoutKey = items.Where(item => primaryKey.IsDefaultValue(primaryKey.GetValue(item))).ToList();
+                if (itemsWithoutKey.Count > 0)
                 {
-                    foreach (T item in items)
+                    using (IIdGenerator generator = CreateIdGenerator(primaryKey, itemsWithoutKey.Count))
                     {
-                        var currentValue = primaryKey.GetValue(item);
-                        if (primaryKey.IsDefaultValue(currentValue))
+                        foreach (T item in itemsWithoutKey)
                         {
                             primaryKey.SetValue(item, generator.GetNext());
                         }
@@ -496,6 +495,12 @@ namespace Kros.KORM.Query
                 }
             }
         }
+
+        private IIdGenerator CreateIdGenerator(ColumnInfo primaryKey, int batchSize)
+            => _provider.CreateIdGenerator(
+                primaryKey.PropertyInfo.PropertyType,
+                primaryKey.AutoIncrementGeneratorName ?? _tableInfo.Name,
+                batchSize);
 
         private bool CanGeneratePrimaryKeys(out ColumnInfo pkColumn)
         {
@@ -628,12 +633,11 @@ namespace Kros.KORM.Query
                     const int defaultBatchSize = 100;
                     var batchSize = items is ICollection<T> coll ? coll.Count : defaultBatchSize;
 
-                    var idGenerator = CanGeneratePrimaryKeys(out ColumnInfo pkColumn)
-                        ? _provider.CreateIdGenerator(pkColumn.PropertyInfo.PropertyType,
-                            pkColumn.AutoIncrementGeneratorName ?? _tableInfo.Name, batchSize)
+                    Func<IIdGenerator> idGeneratorFactory = CanGeneratePrimaryKeys(out ColumnInfo pkColumn)
+                        ? () => CreateIdGenerator(pkColumn, batchSize)
                         : null;
 
-                    using (var reader = new KormBulkInsertDataReader<T>(items, _commandGenerator, idGenerator, _tableInfo))
+                    using (var reader = new KormBulkInsertDataReader<T>(items, _commandGenerator, idGeneratorFactory, _tableInfo))
                     {
                         if (useAsync)
                         {

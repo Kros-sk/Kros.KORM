@@ -81,6 +81,7 @@ namespace Kros.KORM.Query
         #region Constants
 
         private const string RETURN_VALUE_PARAM_NAME = "returnValue";
+        internal const string IdGeneratorApplicationNameSuffix = " (KORM IdGenerator)";
 
         #endregion
 
@@ -776,6 +777,7 @@ namespace Kros.KORM.Query
         private IDbConnection GetConnectionForIdGenerator()
         {
             var connection = (Connection as ICloneable).Clone() as DbConnection;
+            UseOwnConnectionPool(connection);
             try
             {
                 connection.Open();
@@ -787,6 +789,39 @@ namespace Kros.KORM.Query
             }
             return connection;
         }
+
+        // Generator runs outside of the caller's transaction, so it needs its own connection. With the same connection
+        // string it would come from the same pool and concurrent transactions waiting for it could exhaust the pool.
+        private void UseOwnConnectionPool(DbConnection connection)
+        {
+            if (connection is SqlConnection sqlConnection)
+            {
+                string connectionString = GetIdGeneratorConnectionString(
+                    IsExternalConnection ? sqlConnection.ConnectionString : ConnectionString);
+                if (connectionString is not null)
+                {
+                    sqlConnection.ConnectionString = connectionString;
+                }
+            }
+        }
+
+        // Only a connection string with a password or with managed identity is rebuilt. Connection string of an opened
+        // connection does not contain password (unless Persist Security Info is set), other authentication methods
+        // keep the cloned connection as before.
+        internal static string GetIdGeneratorConnectionString(string connectionString)
+        {
+            var builder = new SqlConnectionStringBuilder(connectionString);
+            if (!string.IsNullOrEmpty(builder.Password) || IsManagedIdentity(builder.Authentication))
+            {
+                builder.ApplicationName += IdGeneratorApplicationNameSuffix;
+                return builder.ConnectionString;
+            }
+            return null;
+        }
+
+        private static bool IsManagedIdentity(SqlAuthenticationMethod authentication)
+            => authentication is SqlAuthenticationMethod.ActiveDirectoryManagedIdentity
+                or SqlAuthenticationMethod.ActiveDirectoryMSI;
 
         /// <inheritdoc />
         public ISqlExpressionVisitor GetExpressionVisitor() => _sqlExpressionVisitor.Value;
