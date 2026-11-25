@@ -797,8 +797,7 @@ namespace Kros.KORM.Query
             if (connection is SqlConnection sqlConnection)
             {
                 string connectionString = GetIdGeneratorConnectionString(
-                    IsExternalConnection ? sqlConnection.ConnectionString : ConnectionString,
-                    passwordMayBeHidden: IsExternalConnection && sqlConnection.Credential is null);
+                    IsExternalConnection ? sqlConnection.ConnectionString : ConnectionString);
                 if (connectionString is not null)
                 {
                     sqlConnection.ConnectionString = connectionString;
@@ -806,31 +805,23 @@ namespace Kros.KORM.Query
             }
         }
 
-        internal static string GetIdGeneratorConnectionString(string connectionString, bool passwordMayBeHidden)
+        // Only a connection string with a password or with managed identity is rebuilt. Connection string of an opened
+        // connection does not contain password (unless Persist Security Info is set), other authentication methods
+        // keep the cloned connection as before.
+        internal static string GetIdGeneratorConnectionString(string connectionString)
         {
             var builder = new SqlConnectionStringBuilder(connectionString);
-            if (passwordMayBeHidden && IsPasswordMissing(builder))
+            if (!string.IsNullOrEmpty(builder.Password) || IsManagedIdentity(builder.Authentication))
             {
-                return null;
+                builder.ApplicationName += IdGeneratorApplicationNameSuffix;
+                return builder.ConnectionString;
             }
-            builder.ApplicationName += IdGeneratorApplicationNameSuffix;
-            return builder.ConnectionString;
+            return null;
         }
 
-        // Connection string of an opened connection does not contain password, unless Persist Security Info is set.
-        private static bool IsPasswordMissing(SqlConnectionStringBuilder builder)
-            => UsesPassword(builder) && !string.IsNullOrEmpty(builder.UserID) && string.IsNullOrEmpty(builder.Password);
-
-#pragma warning disable CS0618 // ActiveDirectoryPassword is obsolete, but still sends a password.
-        private static bool UsesPassword(SqlConnectionStringBuilder builder)
-            => builder.Authentication switch
-            {
-                SqlAuthenticationMethod.NotSpecified => !builder.IntegratedSecurity,
-                SqlAuthenticationMethod.SqlPassword => true,
-                SqlAuthenticationMethod.ActiveDirectoryPassword => true,
-                _ => false
-            };
-#pragma warning restore CS0618
+        private static bool IsManagedIdentity(SqlAuthenticationMethod authentication)
+            => authentication is SqlAuthenticationMethod.ActiveDirectoryManagedIdentity
+                or SqlAuthenticationMethod.ActiveDirectoryMSI;
 
         /// <inheritdoc />
         public ISqlExpressionVisitor GetExpressionVisitor() => _sqlExpressionVisitor.Value;
