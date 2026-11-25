@@ -1,8 +1,10 @@
 using Kros.Data;
+using Kros.KORM.Data;
 using Kros.KORM.Metadata;
 using Kros.KORM.Metadata.Attribute;
 using Kros.KORM.Query;
 using Kros.KORM.UnitTests.Base;
+using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -174,6 +176,119 @@ $@"CREATE TABLE [dbo].[{Table_TestTable}] (
                 dbSet.BulkInsert(sourcePeople);
                 Assert.Equal(1, iterationCount);
             }
+        }
+
+        [Theory]
+        [InlineData(false, false)]
+        [InlineData(true, false)]
+        [InlineData(false, true)]
+        [InlineData(true, true)]
+        public void GeneratePrimaryKeyInTransactionWhenConnectionPoolHasSingleConnection(
+            bool bulkInsert,
+            bool persistSecurityInfo)
+        {
+            using var korm = CreateTestDatabase();
+            using var pools = new ClearPoolsOnDispose();
+            using var database = new Database(SingleConnectionPoolConnectionString(korm, persistSecurityInfo));
+
+            AddPersonInTransaction(database, bulkInsert);
+
+            Assert.Equal(1, korm.Query<Person>().Single().Id);
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void GeneratePrimaryKeyInTransactionOnExternalConnectionWhenConnectionPoolHasSingleConnection(bool bulkInsert)
+        {
+            using var korm = CreateTestDatabase();
+            using var pools = new ClearPoolsOnDispose();
+            using var connection = new SqlConnection(SingleConnectionPoolConnectionString(korm, persistSecurityInfo: true));
+            using var database = new Database(connection);
+
+            AddPersonInTransaction(database, bulkInsert);
+
+            Assert.Equal(1, korm.Query<Person>().Single().Id);
+        }
+
+        private static string SingleConnectionPoolConnectionString(TestDatabase korm, bool persistSecurityInfo)
+            => new SqlConnectionStringBuilder(korm.ConnectionString)
+            {
+                Pooling = true,
+                MaxPoolSize = 1,
+                ConnectTimeout = 5,
+                PersistSecurityInfo = persistSecurityInfo
+            }.ConnectionString;
+
+        private static void AddPersonInTransaction(Database database, bool bulkInsert)
+        {
+            using ITransaction transaction = database.BeginTransaction();
+            IDbSet<Person> dbSet = database.Query<Person>().AsDbSet();
+            dbSet.Add(new Person() { FirstName = "Alice" });
+            CommitAdded(dbSet, bulkInsert);
+            transaction.Commit();
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void NotOpenIdGeneratorConnectionWhenAllPrimaryKeysAreSet(bool bulkInsert)
+        {
+            using var korm = CreateTestDatabase();
+            using var pools = new ClearPoolsOnDispose();
+            using var database = new Database(PooledConnectionString(korm));
+
+            IDbSet<Person> dbSet = database.Query<Person>().AsDbSet();
+            dbSet.Add(new Person() { Id = 10, FirstName = "Alice" });
+            CommitAdded(dbSet, bulkInsert);
+
+            Assert.Equal(0, CountIdGeneratorSessions(korm.ConnectionString));
+            Assert.Equal(10, korm.Query<Person>().Single().Id);
+        }
+
+        [Fact]
+        public void OpenIdGeneratorConnectionInOwnConnectionPool()
+        {
+            using var korm = CreateTestDatabase();
+            using var pools = new ClearPoolsOnDispose();
+            using var database = new Database(PooledConnectionString(korm));
+
+            IDbSet<Person> dbSet = database.Query<Person>().AsDbSet();
+            dbSet.Add(new Person() { FirstName = "Alice" });
+            dbSet.CommitChanges();
+
+            Assert.Equal(1, CountIdGeneratorSessions(korm.ConnectionString));
+        }
+
+        private static string PooledConnectionString(TestDatabase korm)
+            => new SqlConnectionStringBuilder(korm.ConnectionString) { Pooling = true }.ConnectionString;
+
+        private sealed class ClearPoolsOnDispose : IDisposable
+        {
+            public void Dispose() => SqlConnection.ClearAllPools();
+        }
+
+        private static void CommitAdded(IDbSet<Person> dbSet, bool bulkInsert)
+        {
+            if (bulkInsert)
+            {
+                dbSet.BulkInsert();
+            }
+            else
+            {
+                dbSet.CommitChanges();
+            }
+        }
+
+        private static int CountIdGeneratorSessions(string connectionString)
+        {
+            using var connection = new SqlConnection(connectionString);
+            connection.Open();
+            using SqlCommand command = connection.CreateCommand();
+            command.CommandText =
+                "SELECT COUNT(*) FROM sys.dm_exec_sessions WHERE database_id = DB_ID() AND program_name LIKE @programName";
+            command.Parameters.AddWithValue("@programName", "%" + QueryProvider.IdGeneratorApplicationNameSuffix);
+            return (int)command.ExecuteScalar();
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Kros.Data;
 using Kros.KORM.CommandGenerator;
 using Kros.KORM.Metadata;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -8,6 +9,7 @@ namespace Kros.KORM.Data
 {
     internal class KormBulkInsertDataReader<T> : KormDataReader<T>
     {
+        private readonly Func<IIdGenerator> _idGeneratorFactory;
         private IIdGenerator _idGenerator;
         private readonly TableInfo _tableInfo;
         private readonly ColumnInfo _primaryKey;
@@ -15,14 +17,14 @@ namespace Kros.KORM.Data
 
         public KormBulkInsertDataReader(IEnumerable<T> data,
             ICommandGenerator<T> generator,
-            IIdGenerator idGenerator,
+            Func<IIdGenerator> idGeneratorFactory,
             TableInfo tableInfo)
             : base(data, generator)
         {
             _tableInfo = tableInfo;
-            _idGenerator = idGenerator;
+            _idGeneratorFactory = idGeneratorFactory;
 
-            if (_idGenerator is not null)
+            if (_idGeneratorFactory is not null)
             {
                 _primaryKey = _tableInfo.PrimaryKey.Single(p => p.AutoIncrementMethodType == AutoIncrementMethodType.Custom);
                 _primaryKeyOrdinal = GetOrdinal(_primaryKey.Name);
@@ -45,6 +47,7 @@ namespace Kros.KORM.Data
 
         private object GenerateId()
         {
+            _idGenerator ??= _idGeneratorFactory();
             var id = _idGenerator.GetNext();
             _primaryKey.SetValue(DataEnumerator.Current, id);
 

@@ -81,6 +81,7 @@ namespace Kros.KORM.Query
         #region Constants
 
         private const string RETURN_VALUE_PARAM_NAME = "returnValue";
+        internal const string IdGeneratorApplicationNameSuffix = " (KORM IdGenerator)";
 
         #endregion
 
@@ -776,6 +777,7 @@ namespace Kros.KORM.Query
         private IDbConnection GetConnectionForIdGenerator()
         {
             var connection = (Connection as ICloneable).Clone() as DbConnection;
+            UseOwnConnectionPool(connection);
             try
             {
                 connection.Open();
@@ -787,6 +789,27 @@ namespace Kros.KORM.Query
             }
             return connection;
         }
+
+        // Generator runs outside of the caller's transaction, so it needs its own connection. With the same connection
+        // string it would come from the same pool and concurrent transactions waiting for it could exhaust the pool.
+        private void UseOwnConnectionPool(DbConnection connection)
+        {
+            if (connection is SqlConnection sqlConnection)
+            {
+                var builder = new SqlConnectionStringBuilder(IsExternalConnection ? sqlConnection.ConnectionString : ConnectionString);
+                if (CanRebuildConnectionString(builder, sqlConnection))
+                {
+                    builder.ApplicationName += IdGeneratorApplicationNameSuffix;
+                    sqlConnection.ConnectionString = builder.ConnectionString;
+                }
+            }
+        }
+
+        // Connection string of an opened connection does not contain password, unless Persist Security Info is set.
+        private static bool CanRebuildConnectionString(SqlConnectionStringBuilder builder, SqlConnection connection)
+            => string.IsNullOrEmpty(builder.UserID)
+                || !string.IsNullOrEmpty(builder.Password)
+                || connection.Credential is not null;
 
         /// <inheritdoc />
         public ISqlExpressionVisitor GetExpressionVisitor() => _sqlExpressionVisitor.Value;
